@@ -71,309 +71,27 @@ Upstream bug fixes are merged regularly via merge commits.
 
 ## Highlights
 
-### + Code Mode (Tool Orchestration via Code Generation)
-
-Replace sequential tool-calling with LLM-generated JavaScript for parallel, multi-step operations:
-
-- **Single round-trip**: LLM writes one async JS function that orchestrates multiple tools, eliminating context re-sends
-- **Parallel execution**: `Promise.all()` for independent operations (read 5 files in one call instead of 5 round trips)
-- **Typed API**: Auto-generated TypeScript declarations from tool schemas, injected into the tool description
-- **Transparent rendering**: Sub-tool calls render individually in the TUI (bash boxes, read groups, grep results) as if called normally
-- **Sandboxed execution**: Runs via `AsyncFunction` with common globals shadowed; not a security boundary but guides LLM toward the codemode API
-- Toggle via Settings > Agent > Code Mode (enabled by default)
-
-### + Commit Tool (AI-Powered Git Commits)
-
-AI-powered conventional commit generation with intelligent change analysis:
-
-- **Agentic mode**: Tool-based git inspection with `git-overview`, `git-file-diff`, `git-hunk` for fine-grained analysis
-- **Split commits**: Automatically separates unrelated changes into atomic commits with dependency ordering
-- **Hunk-level staging**: Stage individual hunks when changes span multiple concerns
-- **Changelog generation**: Proposes and applies changelog entries to `CHANGELOG.md` files
-- **Commit validation**: Detects filler words, meta phrases, and enforces conventional commit format
-- **Legacy mode**: `--legacy` flag for deterministic pipeline when preferred
-- Run via `omp commit` with options: `--push`, `--dry-run`, `--no-changelog`, `--context`
-
-### + Python Tool (IPython Kernel)
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/python.webp?raw=true" alt="python">
-</p>
-
-Execute Python code with a persistent IPython kernel and rich helper prelude:
-
-- **Streaming output**: Real-time stdout/stderr with image and JSON rendering
-- **Prelude helpers**: File I/O, search, find/replace, line operations, shell, and text utilities built into the kernel
-- **Line operations**: `lines()`, `insert_at()`, `delete_lines()`, `delete_matching()` and related helpers for precise edits
-- **Shared gateway**: Resource-efficient kernel reuse across sessions (`python.sharedGateway` setting)
-- **Custom modules**: Load extensions from `.omp/modules/` and `~/.omp/agent/modules/`
-- **Rich output**: Supports `display()` for HTML, Markdown, images, and interactive JSON trees
-- **Mermaid diagrams**: Renders mermaid code blocks as inline graphics in iTerm2/Kitty terminals
-- Install dependencies via `omp setup python`
-
-### + LSP Integration (Language Server Protocol)
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/lspv.webp?raw=true" alt="lsp">
-</p>
-
-Full IDE-like code intelligence with automatic formatting and diagnostics:
-
-- **Format-on-write**: Auto-format code using the language server's formatter (rustfmt, gofmt, prettier, etc.)
-- **Diagnostics on write/edit**: Immediate feedback on syntax errors and type issues after every file change
-- **Workspace diagnostics**: Check entire project for errors with `lsp` action `diagnostics` (without a file)
-- **40+ language configs**: Out-of-the-box support for Rust, Go, Python, TypeScript, Java, Kotlin, Scala, Haskell, OCaml, Elixir, Ruby, PHP, C#, Lua, Nix, and many more
-- **Local binary resolution**: Auto-discovers project-local LSP servers in `node_modules/.bin/`, `.venv/bin/`, etc.
-- Hover docs, symbol references, code actions, workspace-wide symbol search
-
-### + Time Traveling Streamed Rules (TTSR)
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/ttsr.webp?raw=true" alt="ttsr">
-</p>
-
-Zero context-use rules that inject themselves only when needed:
-
-- **Pattern-triggered injection**: Rules define regex triggers that watch the model's output stream
-- **Just-in-time activation**: When a pattern matches, the stream aborts, the rule injects as a system reminder, and the request retries
-- **Zero upfront cost**: TTSR rules consume no context until they're actually relevant
-- **One-shot per session**: Each rule only triggers once, preventing loops
-- Define via `ttsrTrigger` field in rule files (regex pattern)
-
-Example: A "don't use deprecated API" rule only activates when the model starts writing deprecated code, saving context for sessions that never touch that API.
-
-### + Interactive Code Review
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/review.webp?raw=true" alt="review">
-</p>
-
-Structured code review with priority-based findings:
-
-- **`/review` command**: Interactive mode selection (branch comparison, uncommitted changes, commit review)
-- **Structured findings**: `report_finding` tool with priority levels (P0-P3: critical → nit)
-- **Verdict rendering**: aggregates findings into approve/request-changes/comment
-- Combined result tree showing verdict and all findings
-
-### + Task Tool (Subagent System)
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/task.webp?raw=true" alt="task">
-</p>
-
-Parallel execution framework with specialized agents and real-time streaming:
-
-- **6 bundled agents**: explore, plan, designer, reviewer, task, quick_task
-- **Parallel exploration**: Reviewer agent can spawn explore agents for large codebase analysis
-- **Real-time artifact streaming**: Task outputs stream as they're created, not just at completion
-- **Full output access**: Read complete subagent output via `agent://<id>` resources when previews truncate
-- **Isolated execution**: `isolated: true` runs tasks in git worktrees, generates patches, and applies cleanly
-- User-level (`~/.omp/agent/agents/`) and project-level (`.omp/agents/`) custom agents
-- Concurrency-limited batch execution with progress tracking
-
-### + Model Roles
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/models.webp?raw=true" alt="models">
-</p>
-
-Configure different models for different purposes with automatic discovery:
-
-- **Role-based routing**: `default`, `smol`, `slow`, `plan`, and `commit` roles
-- **Configurable discovery**: Role defaults are auto-resolved and can be overridden per role
-- **Role-based selection**: Task tool agents can use `model: pi/smol` for cost-effective exploration
-- CLI args (`--smol`, `--slow`, `--plan`) and env vars (`PI_SMOL_MODEL`, `PI_SLOW_MODEL`, `PI_PLAN_MODEL`)
-- Configure roles interactively via `/model` selector and persist assignments to settings
-
-### + Todo Tool (Task Tracking)
-
-Structured task management with persistent visual tracking:
-
-- **`todo_write` tool**: Create and manage task lists during coding sessions
-- **Persistent panel**: Todo list displays above the editor with real-time progress
-- **Task states**: `pending`, `in_progress`, `completed` with automatic status updates
-- **Completion reminders**: Agent warned when stopping with incomplete todos (`todo.reminders` setting)
-- **Toggle visibility**: `Ctrl+T` expands/collapses the todo panel
-
-### + Ask Tool (Interactive Questioning)
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/ask.webp?raw=true" alt="ask">
-</p>
-
-Structured user interaction with typed options:
-
-- **Multiple choice questions**: Present options with descriptions for user selection
-- **Multi-select support**: Allow multiple answers when choices aren't mutually exclusive
-- **Multi-part questions**: Ask multiple related questions in sequence via `questions` array parameter
-
-### + Custom TypeScript Slash Commands
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/slash.webp?raw=true" alt="slash">
-</p>
-
-Programmable commands with full API access:
-
-- Create at `~/.omp/agent/commands/[name]/index.ts` or `.omp/commands/[name]/index.ts`
-- Export factory returning `{ name, description, execute(args, ctx) }`
-- Full access to `HookCommandContext` for UI dialogs, session control, shell execution
-- Return string to send as LLM prompt, or void for fire-and-forget actions
-- Also loads from Claude Code directories (`~/.claude/commands/`, `.claude/commands/`)
-
-### + Universal Config Discovery
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/discovery.webp?raw=true" alt="discovery">
-</p>
-
-Unified capability-based discovery that loads configuration from 8 AI coding tools:
-
-- **Multi-tool support**: Claude Code, Cursor, Windsurf, Gemini, Codex, Cline, GitHub Copilot, VS Code
-- **Discovers everything**: MCP servers, rules, skills, hooks, tools, slash commands, prompts, context files
-- **Native format support**: Cursor MDC frontmatter, Windsurf rules, Cline `.clinerules`, Copilot `applyTo` globs, Gemini `system.md`, Codex `AGENTS.md`
-- **Provider attribution**: See which tool contributed each configuration item
-- **Discovery settings**: Enable/disable individual providers via `/extensions` interactive dashboard
-- **Priority ordering**: Multi-path resolution across `.omp`, `.claude`, `.codex`, and `.gemini` directories
-
-### + MCP & Plugin System
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/perplexity.webp?raw=true" alt="perplexity">
-</p>
-
-Full Model Context Protocol support with external tool integration:
-
-- Stdio and HTTP transports for connecting to MCP servers
-- Plugin CLI (`omp plugin install/enable/configure/doctor`)
-- Hot-loadable plugins from `~/.omp/plugins/` with npm/bun integration
-- Automatic Exa MCP server filtering with API key extraction
-
-### + Web Search & Fetch
-
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/arxiv.webp?raw=true" alt="arxiv">
-</p>
-
-Multi-provider search and full-page scraping with specialized handlers:
-
-- **Multi-provider search**: `auto`, `exa`, `jina`, `zai`, `anthropic`, `perplexity`, `gemini`, `codex`
-- **Specialized handlers**: Site-specific extraction for code hosts, registries, research sources, forums, and docs
-- **Package registries**: npm, PyPI, crates.io, Hex, Hackage, NuGet, Maven, RubyGems, Packagist, pub.dev, Go packages
-- **Security databases**: NVD, OSV, CISA KEV vulnerability data
-- HTML-to-markdown conversion with link preservation
-
-### + SSH Tool
-
-Remote command execution with persistent connections:
-
-- **Project discovery**: Reads SSH hosts from `ssh.json` / `.ssh.json` in your project
-- **Persistent connections**: Reuses SSH connections across commands for faster execution
-- **OS/shell detection**: Automatically detects remote OS and shell type
-- **SSHFS mounts**: Optional automatic mounting of remote directories
-- **Compat mode**: Windows host support with automatic shell probing
-
-### + Browser Tool (Puppeteer with Stealth)
-
-Headless browser automation with 14 stealth scripts to evade bot detection:
-
-- **Automation actions**: Navigate, click, type, fill, scroll, drag, screenshot, evaluate JS, and extract readable content
-- **Accessibility snapshots**: Observe interactive elements via the accessibility tree with numeric IDs for reliable targeting
-- **14 stealth plugins**: Custom scripts covering toString tampering, WebGL fingerprinting, audio context, screen dimensions, font enumeration, plugin/mime-type mocking, hardware concurrency, codec availability, iframe detection, locale spoofing, worker detection, and more
-- **User agent spoofing**: Removes `HeadlessChrome` identifier, generates proper Client Hints brand lists, applies overrides via CDP Network and Emulation domains
-- **Selector flexibility**: CSS, `aria/`, `text/`, `xpath/`, `pierce/` query handlers for Shadow DOM piercing
-- **Reader mode**: `extract_readable` action uses Mozilla Readability for clean article extraction
-- **Headless/visible toggle**: Switch modes at runtime via `/browser` command or `browser.headless` setting
-
-### + Cursor Provider
-
-Use your Cursor Pro subscription for AI completions:
-
-- **Browser-based OAuth**: Authenticate through Cursor's OAuth flow
-- **Tool execution bridge**: Maps Cursor's native tools to omp equivalents (read, write, shell, diagnostics)
-- **Conversation caching**: Persists context across requests in the same session
-- **Shell streaming**: Real-time stdout/stderr during command execution
-
-### + Multi-Credential Support
-
-Distribute load across multiple API keys:
-
-- **Round-robin distribution**: Automatically cycles through credentials per session
-- **Usage-aware selection**: For OpenAI Codex, checks account limits before credential selection
-- **Automatic fallback**: Switches credentials mid-session when rate limits are hit
-- **Consistent hashing**: FNV-1a hashing ensures stable credential assignment per session
-
-### + Image Generation
-
-Create images directly from the agent:
-
-- **Gemini integration**: Uses `gemini-3-pro-image-preview` by default
-- **OpenRouter fallback**: Automatically uses OpenRouter when `OPENROUTER_API_KEY` is set
-- **Inline display**: Images render in terminals supporting Kitty/iTerm2 graphics
-- Saves to temp files and reports paths for further manipulation
-
-### + TUI Overhaul
-
-Modern terminal interface with smart session management:
-
-- **Auto session titles**: Sessions automatically titled based on first message using smol model
-- **Welcome screen**: Logo, tips, recent sessions with selection
-- **Powerline footer**: Model, cwd, git branch/status, token usage, context %
-- **LSP status**: Shows which language servers are active and ready
-- **Hotkeys**: `?` displays shortcuts when editor empty
-- **Persistent prompt history**: SQLite-backed with `Ctrl+R` search across sessions
-- **Grouped tool display**: Consecutive Read calls shown in compact tree view
-- **Emergency terminal restore**: Crash handlers prevent terminal corruption
-
-### + Hashline Edits
-
-Hashline gives every line a short content-hash anchor. The model references anchors instead of reproducing text — no whitespace reproduction, no "string not found", no ambiguous matches. If the file changed since the last read, hashes won't match and the edit is rejected before anything gets corrupted.
-
-Benchmarked across 16 models, 180 tasks, 3 runs each:
-
-- **Grok Code Fast 1**: 6.7% → 68.3% — a _tenfold_ improvement hidden behind mechanical patch failures
-- **Gemini 3 Flash**: +5pp over `str_replace`, beating Google's own best attempt
-- **Grok 4 Fast**: 61% fewer output tokens — stopped burning context on retry loops
-- **MiniMax**: more than doubled success rate
-- Matches or beats `str_replace` for nearly every model tested; weakest models gain the most
-
-### + Native Engine (Rust N-API)
-
-~7,500 lines of Rust compiled to a platform-tagged N-API addon, providing performance-critical operations without shelling out to external commands:
-
-| Module        |  Lines | What it does                                                                                                                                         | Powered by                                                        |
-| ------------- | -----: | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **grep**      | ~1,300 | Regex search over files and in-memory content, parallel/sequential modes, glob/type filtering, context lines, fuzzy find for autocomplete            | `grep-regex`, `grep-searcher`, `grep-matcher` (ripgrep internals) |
-| **shell**     | ~1,025 | Embedded bash execution with persistent sessions, streaming output, timeout/abort, custom builtins                                                   | [brush-shell](https://github.com/reubeno/brush) (vendored)        |
-| **text**      | ~1,280 | ANSI-aware visible width, truncation with ellipsis, column slicing, text wrapping that preserves SGR codes across line breaks — all UTF-16 optimized | `unicode-width`, `unicode-segmentation`                           |
-| **keys**      | ~1,300 | Kitty keyboard protocol parser with legacy xterm/VT100 fallback, modifier support, PHF perfect-hash lookup                                           | `phf`                                                             |
-| **highlight** |   ~475 | Syntax highlighting with 11 semantic color categories, 30+ language aliases                                                                          | `syntect`                                                         |
-| **glob**      |   ~340 | Filesystem discovery with glob patterns, type filtering, mtime sorting, `.gitignore` respect                                                         | `ignore`, `globset` (ripgrep internals)                           |
-| **task**      |   ~350 | Blocking work scheduler on libuv thread pool, cooperative/external cancellation, timeout, profiling hooks                                            | `tokio`, `napi`                                                   |
-| **ps**        |   ~290 | Cross-platform process tree kill and descendant listing — `/proc` on Linux, `libproc` on macOS, `CreateToolhelp32Snapshot` on Windows                | `libc`                                                            |
-| **prof**      |   ~250 | Always-on circular buffer profiler with folded-stack output and optional SVG flamegraph generation                                                   | `inferno`                                                         |
-| **image**     |   ~150 | Decode/encode PNG/JPEG/WebP/GIF, resize with 5 sampling filters                                                                                      | `image`                                                           |
-| **clipboard** |    ~95 | Text copy and image read from system clipboard — no `xclip`/`pbcopy` needed                                                                          | `arboard`                                                         |
-| **html**      |    ~50 | HTML-to-Markdown conversion with optional content cleaning                                                                                           | `html-to-markdown-rs`                                             |
-
-Supported platforms: `linux-x64`, `linux-arm64`, `darwin-x64`, `darwin-arm64`, `win32-x64`.
-
-### ... and many more
-
-- **`omp config` subcommand**: Manage settings from CLI (`list`, `get`, `set`, `reset`, `path`)
-- **`omp setup` subcommand**: Install optional dependencies (e.g., `omp setup python` for Jupyter kernel)
-- **`omp stats` subcommand**: Local observability dashboard for AI usage (requests, cost, cache rate, tokens/s)
-- **`xhigh` thinking level**: Extended reasoning for Anthropic models with increased token budgets
-- **Background mode**: `/background` detaches UI and continues agent execution
-- **Completion notifications**: Configurable bell/OSC99/OSC9 when agent finishes
-- **65+ built-in themes**: Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, and material variants
-- **Auto environment detection**: OS, distro, kernel, CPU, GPU, shell, terminal, DE in system prompt
-- **Git context**: System prompt includes branch, status, recent commits
-- **Bun runtime**: Native TypeScript execution, faster startup, all packages migrated
-- **Centralized file logging**: Debug logs with daily rotation to `~/.omp/logs/`
-- **Bash interceptor**: Optionally block shell commands that have dedicated tools
-- **@file auto-read**: Type `@path/to/file` in prompts to inject file contents inline
-- **Additional tools**: AST (structural code analysis), Replace (find & replace across files)
+Everything from [upstream](https://github.com/can1357/oh-my-pi), plus:
+
+- **Code Mode** -- LLM writes JS to orchestrate tools in parallel (`Promise.all`) instead of sequential round-trips. Typed API auto-generated from tool schemas.
+- **Undo Edit** -- agent can revert its own file edits
+- **Simplified Task/Subagent** -- removed worktree isolation, streamlined executor (-2700 lines)
+
+Inherited from upstream:
+
+- **Hashline Edits** -- content-hash anchors for every line, no "string not found" failures
+- **LSP Integration** -- format-on-write, diagnostics, hover, references, 40+ languages
+- **Python Tool** -- persistent IPython kernel with streaming output and rich display
+- **Commit Tool** -- agentic git analysis, split commits, hunk-level staging, changelog generation
+- **Task Tool** -- parallel subagent execution with 6 bundled agents
+- **Browser Tool** -- Puppeteer with 14 stealth scripts, accessibility snapshots
+- **SSH Tool** -- persistent connections, OS/shell detection, SSHFS mounts
+- **Web Search & Fetch** -- multi-provider search, site-specific extractors, package registry support
+- **TTSR** -- zero-cost rules that inject only when regex triggers match model output
+- **Universal Config Discovery** -- loads config from Claude Code, Cursor, Windsurf, Gemini, Codex, Cline, Copilot
+- **MCP & Plugins** -- stdio/HTTP transports, hot-loadable plugins
+- **Native Engine** -- 7500 lines of Rust for grep, shell, text, keys, highlighting, image, PTY
+- **65+ themes**, model roles, multi-credential rotation, image generation, TUI with powerline footer
 
 ---
 
@@ -565,23 +283,11 @@ Use `/model` in the TUI and assign role models:
 - `default` → normal implementation work
 - `smol` → fast/cheap exploration and lightweight tasks
 - `slow` → deep reasoning for complex debugging/refactors
-- `plan` → model used while plan mode is active (`/plan`)
 - `commit` → model used by commit/changelog workflows
 
 This setup is interactive and persisted for you.
 
-#### 3) Use `/plan` before making large changes
-
-`/plan` toggles plan mode. Use it when you want architecture and execution sequencing before edits.
-
-Typical flow:
-
-1. Run `/plan`
-2. Ask for a concrete implementation plan
-3. Refine the plan
-4. Approve and execute
-
-#### 4) Review context via `/extensions`
+#### 3) Review context via `/extensions`
 
 If context usage is unexpectedly high, inspect discovered external provider assets (rules/prompts/context/hooks/extensions).
 
@@ -601,7 +307,6 @@ These are **in-chat slash commands** (not CLI subcommands).
 | Command | Description |
 | ------- | ----------- |
 | `/settings` | Open settings menu |
-| `/plan` | Toggle plan mode |
 | `/model` (`/models`) | Open model selector |
 | `/export [path]` | Export session to HTML |
 | `/dump` | Copy session transcript to clipboard |
@@ -676,7 +381,6 @@ Bundled custom slash commands include `/review` (interactive code review launche
 | Ctrl+P / Shift+Ctrl+P | Cycle role models (slow/default/smol), temporary on shift |
 | Alt+P                 | Select model temporarily                                  |
 | Ctrl+L                | Open model selector                                       |
-| Alt+Shift+P           | Toggle plan mode                                          |
 | Ctrl+R                | Search prompt history                                     |
 | Ctrl+O                | Toggle tool output expansion                              |
 | Ctrl+T                | Toggle todo list expansion                                |
@@ -1061,7 +765,6 @@ omp <command> [args] [flags]
 | `--model <id>`                        | Model ID (supports fuzzy match)                                    |
 | `--smol <id>`                         | Override the `smol` role model for this run                        |
 | `--slow <id>`                         | Override the `slow` role model for this run                        |
-| `--plan <id>`                         | Override the `plan` role model for this run                        |
 | `--models <patterns>`                 | Comma-separated model patterns for role cycling                    |
 | `--list-models [pattern]`             | List available models (optional fuzzy filter)                      |
 | `--thinking <level>`                  | Thinking level: `off`, `minimal`, `low`, `medium`, `high`, `xhigh` |
@@ -1145,7 +848,7 @@ omp --export session.jsonl output.html
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc.       | Provider credentials                                    |
 | `PI_CODING_AGENT_DIR`                             | Override agent data directory (default: `~/.omp/agent`) |
 | `PI_PACKAGE_DIR`                                  | Override package directory resolution                   |
-| `PI_SMOL_MODEL`, `PI_SLOW_MODEL`, `PI_PLAN_MODEL` | Role-model overrides                                    |
+| `PI_SMOL_MODEL`, `PI_SLOW_MODEL` | Role-model overrides                                    |
 | `PI_NO_PTY`                                       | Disable PTY-based bash execution                        |
 | `VISUAL`, `EDITOR`                                | External editor for Ctrl+G                              |
 
