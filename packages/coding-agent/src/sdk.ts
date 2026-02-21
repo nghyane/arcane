@@ -43,7 +43,6 @@ import {
 	DocsProtocolHandler,
 	InternalUrlRouter,
 	MemoryProtocolHandler,
-	PlanProtocolHandler,
 	RuleProtocolHandler,
 	SkillProtocolHandler,
 } from "./internal-urls";
@@ -740,14 +739,13 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			if (model) return formatModelString(model);
 			return undefined;
 		},
-		getPlanModeState: () => session.getPlanModeState(),
 		getCompactContext: () => session.formatCompactContext(),
 		settings,
 		authStorage,
 		modelRegistry,
 	};
 
-	// Initialize internal URL router for internal protocols (agent://, artifact://, plan://, memory://, skill://, rule://)
+	// Initialize internal URL router for internal protocols (agent://, artifact://, memory://, skill://, rule://)
 	const internalRouter = new InternalUrlRouter();
 	const getArtifactsDir = () => {
 		const sessionFile = sessionManager.getSessionFile();
@@ -755,12 +753,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	};
 	internalRouter.register(new AgentProtocolHandler({ getArtifactsDir }));
 	internalRouter.register(new ArtifactProtocolHandler({ getArtifactsDir }));
-	internalRouter.register(
-		new PlanProtocolHandler({
-			getPlansDirectory: () => settings.getPlansDirectory(),
-			cwd,
-		}),
-	);
 	internalRouter.register(
 		new MemoryProtocolHandler({
 			getMemoryRoot: () => getMemoryRoot(agentDir, settings.getCwd()),
@@ -1089,10 +1081,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	const toolNamesFromRegistry = Array.from(toolRegistry.keys());
 	const requestedToolNames = options.toolNames ?? toolNamesFromRegistry;
 	const normalizedRequested = requestedToolNames.filter(name => toolRegistry.has(name));
-	const includeExitPlanMode = options.toolNames?.includes("exit_plan_mode") ?? false;
-	const initialToolNames = includeExitPlanMode
-		? normalizedRequested
-		: normalizedRequested.filter(name => name !== "exit_plan_mode");
+	const initialToolNames = normalizedRequested;
 
 	// Custom tools and extension-registered tools are always included regardless of toolNames filter
 	const alwaysInclude: string[] = [

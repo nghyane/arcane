@@ -128,7 +128,7 @@ export interface SessionInitEntry extends SessionEntryBase {
 	outputSchema?: unknown;
 }
 
-/** Mode change entry - tracks agent mode transitions (e.g. plan mode). */
+/** Mode change entry - tracks agent mode transitions. */
 export interface ModeChangeEntry extends SessionEntryBase {
 	type: "mode_change";
 	/** Current mode name, or "none" when exiting a mode */

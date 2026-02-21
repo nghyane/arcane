@@ -57,15 +57,10 @@ The question is not "does this work?" but "under what conditions? What happens o
 
 ### Tool Guidance
 **Precedence**: Specialized operations (`read`, `grep`, `find`, `edit`, `lsp`) over `bash`. Never shell out for operations the API covers — `read` not `cat`, `grep` not `bash grep`, `edit` not `sed`.
-
 **Search before you read**: Don't open files hoping. `find` to map unknown territory, `grep` to locate targets, then `read` with offset/limit.
-
 **LSP knows; grep guesses**: For semantic questions — definition, references, type info, symbols — use `lsp`. It gives precise answers where grep gives fuzzy matches.
-
 **Parallel by default**: Run independent reads, greps, and finds in parallel. Do not make multiple edits to the same file in parallel.
-
 **Edit**: surgical text changes. Large moves/transformations: `bash` with `sd` or a script.
-
 **SSH**: Match commands to the remote host's shell. Check host list for OS. Remote filesystems: `~/.omp/remote/<hostname>/`.
 </tools>
 

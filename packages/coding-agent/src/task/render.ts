@@ -1,12 +1,5 @@
-/**
- * TUI rendering for task tool.
- *
- * Provides renderCall and renderResult functions for displaying
- * task execution in the terminal UI.
- */
-import path from "node:path";
 import type { Component } from "@oh-my-pi/pi-tui";
-import { Container, Text } from "@oh-my-pi/pi-tui";
+import { Text } from "@oh-my-pi/pi-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import {
@@ -18,13 +11,6 @@ import {
 	replaceTabs,
 	truncateToWidth,
 } from "../tools/render-utils";
-import {
-	type FindingPriority,
-	getPriorityInfo,
-	PRIORITY_LABELS,
-	type ReportFindingDetails,
-	type SubmitReviewDetails,
-} from "../tools/review";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine } from "../tui";
 import { subprocessToolRegistry } from "./subprocess-tool-registry";
 import type { AgentProgress, SingleResult, TaskParams, TaskToolDetails } from "./types";
@@ -47,25 +33,6 @@ function getStatusIcon(status: AgentProgress["status"], theme: Theme, spinnerFra
 		case "aborted":
 			return formatStatusIcon("aborted", theme);
 	}
-}
-
-function formatFindingSummary(findings: ReportFindingDetails[], theme: Theme): string {
-	if (findings.length === 0) return theme.fg("dim", "Findings: none");
-
-	const counts: { [P in FindingPriority]?: number } = {};
-	for (const finding of findings) {
-		counts[finding.priority] = (counts[finding.priority] ?? 0) + 1;
-	}
-
-	const parts: string[] = [];
-	for (const label of PRIORITY_LABELS) {
-		const { symbol, color } = getPriorityInfo(label);
-		const count = counts[label] ?? 0;
-		const text = theme.fg(color, `${label}:${count}`);
-		parts.push(theme.styledSymbol(symbol, color) ? `${theme.styledSymbol(symbol, color)} ${text}` : text);
-	}
-
-	return `${theme.fg("dim", "Findings:")} ${parts.join(theme.sep.dot)}`;
 }
 
 function formatJsonScalar(value: unknown, _theme: Theme): string {
@@ -558,153 +525,10 @@ function renderAgentProgress(
 		}
 	}
 
-	// Render extracted tool data inline (e.g., review findings)
-	if (progress.extractedToolData) {
-		// For completed tasks, check for review verdict from submit_result tool
-		if (progress.status === "completed") {
-			const completeData = progress.extractedToolData.submit_result as Array<{ data: unknown }> | undefined;
-			const reportFindingData = progress.extractedToolData.report_finding as ReportFindingDetails[] | undefined;
-			const reviewData = completeData
-				?.map(c => c.data as SubmitReviewDetails)
-				.filter(d => d && typeof d === "object" && "overall_correctness" in d);
-			if (reviewData && reviewData.length > 0) {
-				const summary = reviewData[reviewData.length - 1];
-				const findings = reportFindingData ?? [];
-				lines.push(...renderReviewResult(summary, findings, continuePrefix, expanded, theme));
-				return lines; // Review result handles its own rendering
-			}
-		}
-
-		for (const [toolName, dataArray] of Object.entries(progress.extractedToolData)) {
-			// Handle report_finding with tree formatting
-			if (toolName === "report_finding" && (dataArray as ReportFindingDetails[]).length > 0) {
-				const findings = dataArray as ReportFindingDetails[];
-				lines.push(`${continuePrefix}${formatFindingSummary(findings, theme)}`);
-				lines.push(...renderFindings(findings, continuePrefix, expanded, theme));
-				continue;
-			}
-
-			const handler = subprocessToolRegistry.getHandler(toolName);
-			if (handler?.renderInline) {
-				const displayCount = expanded ? (dataArray as unknown[]).length : 3;
-				const recentData = (dataArray as unknown[]).slice(-displayCount);
-				for (const data of recentData) {
-					const component = handler.renderInline(data, theme);
-					if (component instanceof Text) {
-						lines.push(`${continuePrefix}${component.getText()}`);
-					}
-				}
-				if ((dataArray as unknown[]).length > displayCount) {
-					lines.push(
-						`${continuePrefix}${theme.fg(
-							"dim",
-							formatMoreItems((dataArray as unknown[]).length - displayCount, "item"),
-						)}`,
-					);
-				}
-			}
-		}
-	}
-
 	// Expanded view: recent output and tools
 	if (expanded && progress.status === "running") {
 		const output = progress.recentOutput.join("\n");
 		lines.push(...renderOutputSection(output, continuePrefix, true, theme, 2, 6));
-	}
-
-	return lines;
-}
-
-/**
- * Render review result with combined verdict + findings in tree structure.
- */
-function renderReviewResult(
-	summary: SubmitReviewDetails,
-	findings: ReportFindingDetails[],
-	continuePrefix: string,
-	expanded: boolean,
-	theme: Theme,
-): string[] {
-	const lines: string[] = [];
-
-	// Verdict line
-	const verdictColor = summary.overall_correctness === "correct" ? "success" : "error";
-	const verdictIcon = summary.overall_correctness === "correct" ? theme.status.success : theme.status.error;
-	lines.push(
-		`${continuePrefix} Patch is ${theme.fg(verdictColor, summary.overall_correctness)} ${theme.fg(
-			verdictColor,
-			verdictIcon,
-		)} ${theme.fg("dim", `(${(summary.confidence * 100).toFixed(0)}% confidence)`)}`,
-	);
-
-	// Explanation preview (first ~80 chars when collapsed, full when expanded)
-	if (summary.explanation) {
-		if (expanded) {
-			lines.push(`${continuePrefix}${theme.fg("dim", "Summary")}`);
-			const explanationLines = summary.explanation.split("\n");
-			for (const line of explanationLines) {
-				lines.push(`${continuePrefix}  ${theme.fg("dim", replaceTabs(line))}`);
-			}
-		} else {
-			// Preview: first sentence or ~100 chars
-			const preview = truncateToWidth(`${summary.explanation.split(/[.!?]/)[0]}.`, 100);
-			lines.push(`${continuePrefix}${theme.fg("dim", preview)}`);
-		}
-	}
-
-	// Findings summary + list
-	lines.push(`${continuePrefix}${formatFindingSummary(findings, theme)}`);
-
-	if (findings.length > 0) {
-		lines.push(...renderFindings(findings, continuePrefix, expanded, theme));
-	}
-
-	return lines;
-}
-
-/**
- * Render review findings list.
- */
-function renderFindings(
-	findings: ReportFindingDetails[],
-	continuePrefix: string,
-	expanded: boolean,
-	theme: Theme,
-): string[] {
-	const lines: string[] = [];
-
-	// Sort by priority (lower = more severe) when collapsed to show most important first
-	const sortedFindings = expanded
-		? findings
-		: [...findings].sort((a, b) => getPriorityInfo(a.priority).ord - getPriorityInfo(b.priority).ord);
-	const displayCount = expanded ? sortedFindings.length : Math.min(3, sortedFindings.length);
-
-	for (let i = 0; i < displayCount; i++) {
-		const finding = sortedFindings[i];
-		const isLastFinding = i === displayCount - 1 && (expanded || sortedFindings.length <= 3);
-		const findingPrefix = isLastFinding ? theme.tree.last : theme.tree.branch;
-		const findingContinue = isLastFinding ? "   " : `${theme.tree.vertical}  `;
-
-		const { color } = getPriorityInfo(finding.priority);
-		const titleText = finding.title?.replace(/^\[P\d\]\s*/, "") ?? "Untitled";
-		const loc = `${path.basename(finding.file_path)}:${finding.line_start}`;
-
-		lines.push(
-			`${continuePrefix}${findingPrefix} ${theme.fg(color, `[${finding.priority}]`)} ${titleText} ${theme.fg("dim", loc)}`,
-		);
-
-		// Show body when expanded
-		if (expanded && finding.body) {
-			// Wrap body text
-			const bodyLines = finding.body.split("\n");
-			for (const bodyLine of bodyLines) {
-				lines.push(`${continuePrefix}${findingContinue}${theme.fg("dim", replaceTabs(bodyLine))}`);
-			}
-		}
-	}
-
-	if (!expanded && findings.length > 3) {
-		lines.push(`${continuePrefix}${theme.fg("dim", formatMoreItems(findings.length - 3, "finding"))}`);
 	}
 
 	return lines;
@@ -756,92 +580,9 @@ function renderAgentResult(result: SingleResult, isLast: boolean, expanded: bool
 
 	lines.push(...renderTaskSection(result.task, continuePrefix, expanded, theme));
 
-	// Check for review result (submit_result with review schema + report_finding)
-	const completeData = result.extractedToolData?.submit_result as Array<{ data: unknown }> | undefined;
-	const reportFindingData = result.extractedToolData?.report_finding as ReportFindingDetails[] | undefined;
-
-	// Extract review verdict from submit_result tool's data field if it matches SubmitReviewDetails
-	const reviewData = completeData
-		?.map(c => c.data as SubmitReviewDetails)
-		.filter(d => d && typeof d === "object" && "overall_correctness" in d);
-	const submitReviewData = reviewData && reviewData.length > 0 ? reviewData : undefined;
-
-	if (submitReviewData && submitReviewData.length > 0) {
-		// Use combined review renderer
-		const summary = submitReviewData[submitReviewData.length - 1];
-		const findings = reportFindingData ?? [];
-		lines.push(...renderReviewResult(summary, findings, continuePrefix, expanded, theme));
-		return lines;
-	}
-	if (reportFindingData && reportFindingData.length > 0) {
-		const hasCompleteData = completeData && completeData.length > 0;
-		const message = hasCompleteData
-			? "Review verdict missing expected fields"
-			: "Review incomplete (submit_result not called)";
-		lines.push(`${continuePrefix}${theme.fg("warning", theme.status.warning)} ${theme.fg("dim", message)}`);
-		lines.push(`${continuePrefix}${formatFindingSummary(reportFindingData, theme)}`);
-		lines.push(...renderFindings(reportFindingData, continuePrefix, expanded, theme));
-		return lines;
-	}
-
-	// Check for extracted tool data with custom renderers (skip review tools)
-	let hasCustomRendering = false;
-	const deferredToolLines: string[] = [];
-	if (result.extractedToolData) {
-		for (const [toolName, dataArray] of Object.entries(result.extractedToolData)) {
-			// Skip review tools - handled above
-			if (toolName === "submit_result" || toolName === "report_finding") continue;
-
-			const handler = subprocessToolRegistry.getHandler(toolName);
-			if (handler?.renderFinal && (dataArray as unknown[]).length > 0) {
-				const isTaskTool = toolName === "task";
-				const component = handler.renderFinal(dataArray as unknown[], theme, expanded);
-				const target = isTaskTool ? deferredToolLines : lines;
-				if (!isTaskTool) {
-					hasCustomRendering = true;
-					target.push(`${continuePrefix}${theme.fg("dim", `Tool: ${toolName}`)}`);
-				}
-				if (component instanceof Text) {
-					// Prefix each line with continuePrefix
-					const text = component.getText();
-					for (const line of text.split("\n")) {
-						target.push(`${continuePrefix}${line}`);
-					}
-				} else if (component instanceof Container) {
-					// For containers, render each child
-					for (const child of (component as Container).children) {
-						if (child instanceof Text) {
-							target.push(`${continuePrefix}${child.getText()}`);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if (hasCustomRendering && missingCompleteWarning) {
-		lines.push(
-			`${continuePrefix}${theme.fg("warning", theme.status.warning)} ${theme.fg(
-				"dim",
-				truncateToWidth(missingCompleteWarning, 80),
-			)}`,
-		);
-	}
-
-	// Fallback to output preview if no custom rendering
-	if (!hasCustomRendering) {
-		lines.push(
-			...renderOutputSection(outputWithoutWarning, continuePrefix, expanded, theme, 3, 12, missingCompleteWarning),
-		);
-	}
-
-	if (deferredToolLines.length > 0) {
-		lines.push(...deferredToolLines);
-	}
-
-	if (result.patchPath && !aborted && result.exitCode === 0) {
-		lines.push(`${continuePrefix}${theme.fg("dim", `Patch: ${result.patchPath}`)}`);
-	}
+	lines.push(
+		...renderOutputSection(outputWithoutWarning, continuePrefix, expanded, theme, 3, 12, missingCompleteWarning),
+	);
 
 	// Error message
 	if (result.error && !success) {

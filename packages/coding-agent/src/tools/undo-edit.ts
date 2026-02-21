@@ -87,7 +87,7 @@ interface UndoEditRenderArgs {
 export const undoEditToolRenderer = {
 	mergeCallAndResult: true,
 
-	renderCall(args: UndoEditRenderArgs, uiTheme: Theme): Component {
+	renderCall(args: UndoEditRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const filePath = shortenPath(args.path ?? "");
 		const pathDisplay = filePath ? uiTheme.fg("accent", filePath) : uiTheme.fg("toolOutput", "…");
 		const text = renderStatusLine({ icon: "pending", title: "Undo", description: pathDisplay }, uiTheme);

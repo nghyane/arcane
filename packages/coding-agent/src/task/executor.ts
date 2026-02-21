@@ -671,7 +671,6 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 				enableLsp: lspEnabled,
 				skipPythonPreflight,
 				enableMCP,
-				lightweightStartup: true,
 				customTools: mcpProxyTools.length > 0 ? mcpProxyTools : undefined,
 			});
 
