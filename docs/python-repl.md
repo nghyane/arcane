@@ -35,9 +35,9 @@ The tool is `concurrency = "exclusive"` for a session, so calls do not overlap.
 
 There are two gateway paths:
 
-1. **External gateway** (`PI_PYTHON_GATEWAY_URL` set)
+1. **External gateway** (`ARCANE_PYTHON_GATEWAY_URL` set)
    - Uses the configured URL directly.
-   - Optional auth with `PI_PYTHON_GATEWAY_TOKEN`.
+   - Optional auth with `ARCANE_PYTHON_GATEWAY_TOKEN`.
    - No local gateway process is spawned or managed.
 
 2. **Local shared gateway** (default path)
@@ -124,7 +124,7 @@ If an intermediate cell fails:
 Environment is filtered before launching gateway/kernel runtime:
 
 - Allowlist includes core vars like `PATH`, `HOME`, locale vars, `VIRTUAL_ENV`, `PYTHONPATH`, etc.
-- Allow-prefixes: `LC_`, `XDG_`, `PI_`
+- Allow-prefixes: `LC_`, `XDG_`, `ARCANE_`
 - Denylist strips common API keys (OpenAI/Anthropic/Gemini/etc.)
 
 Runtime selection order:
@@ -143,13 +143,13 @@ Kernel env initialization inside Python also:
 
 ## Tool availability and mode selection
 
-`python.toolMode` (default `both`) + optional `PI_PY` override controls exposure:
+`python.toolMode` (default `both`) + optional `ARCANE_PY` override controls exposure:
 
 - `ipy-only`
 - `bash-only`
 - `both`
 
-`PI_PY` accepted values:
+`ARCANE_PY` accepted values:
 
 - `0` / `bash` -> `bash-only`
 - `1` / `py` -> `ipy-only`
@@ -236,9 +236,9 @@ Tool results can include truncation metadata and `artifact://<id>` for full outp
 Set:
 
 ```bash
-export PI_PYTHON_GATEWAY_URL="http://127.0.0.1:8888"
+export ARCANE_PYTHON_GATEWAY_URL="http://127.0.0.1:8888"
 # Optional:
-export PI_PYTHON_GATEWAY_TOKEN="..."
+export ARCANE_PYTHON_GATEWAY_TOKEN="..."
 ```
 
 Behavior differences from local shared gateway:
@@ -251,7 +251,7 @@ Behavior differences from local shared gateway:
 ## Operational troubleshooting (current failure modes)
 
 - **Python tool not available**
-  - Check `python.toolMode` / `PI_PY`.
+  - Check `python.toolMode` / `ARCANE_PY`.
   - If preflight fails, runtime falls back to bash-only.
 
 - **Kernel availability errors**
@@ -265,7 +265,7 @@ Behavior differences from local shared gateway:
   - This is expected with current implementation.
 
 - **External gateway auth/reachability failures**
-  - 401/403 -> set `PI_PYTHON_GATEWAY_TOKEN`.
+  - 401/403 -> set `ARCANE_PYTHON_GATEWAY_TOKEN`.
   - timeout/unreachable -> verify URL/network and gateway health.
 
 - **Execution hangs then times out**
@@ -283,9 +283,9 @@ Behavior differences from local shared gateway:
 
 ## Relevant environment variables
 
-- `PI_PY` — tool exposure override (`bash-only`/`ipy-only`/`both` mapping above)
-- `PI_PYTHON_GATEWAY_URL` — use external gateway
-- `PI_PYTHON_GATEWAY_TOKEN` — optional external gateway auth token
-- `PI_PYTHON_SKIP_CHECK=1` — bypass Python preflight/warm checks
-- `PI_PYTHON_IPC_TRACE=1` — log kernel IPC send/receive traces
-- `PI_DEBUG_STARTUP=1` — emit startup-stage debug markers
+- `ARCANE_PY` — tool exposure override (`bash-only`/`ipy-only`/`both` mapping above)
+- `ARCANE_PYTHON_GATEWAY_URL` — use external gateway
+- `ARCANE_PYTHON_GATEWAY_TOKEN` — optional external gateway auth token
+- `ARCANE_PYTHON_SKIP_CHECK=1` — bypass Python preflight/warm checks
+- `ARCANE_PYTHON_IPC_TRACE=1` — log kernel IPC send/receive traces
+- `ARCANE_DEBUG_STARTUP=1` — emit startup-stage debug markers

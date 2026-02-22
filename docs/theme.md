@@ -104,7 +104,7 @@ Theme lookup order (`loadThemeJson`):
 Custom themes directory comes from `getCustomThemesDir()`:
 
 - default: `~/.arcane/agent/themes`
-- overridden by `PI_CODING_AGENT_DIR` (`$PI_CODING_AGENT_DIR/themes`)
+- overridden by `ARCANE_CODING_AGENT_DIR` (`$ARCANE_CODING_AGENT_DIR/themes`)
 
 `getAvailableThemes()` returns merged built-in + custom names, sorted, with built-ins taking precedence on name collision.
 

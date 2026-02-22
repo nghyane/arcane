@@ -119,7 +119,7 @@ Resource exhaustion recovery:
 
 Kernel startup receives optional env map from executor:
 
-- `PI_SESSION_FILE` (session state file path)
+- `ARCANE_SESSION_FILE` (session state file path)
 - `ARTIFACTS` (artifact directory)
 
 `PythonKernel.#initializeKernelEnvironment(...)` then runs init script inside kernel to:

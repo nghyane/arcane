@@ -179,7 +179,7 @@ If denied: immediate `Cannot spawn '...'. Allowed: ...` response.
 
 ### Blocked self-recursion env guard
 
-`PI_BLOCKED_AGENT` is read at tool construction. If request matches, execution is rejected with recursion-prevention message.
+`ARCANE_BLOCKED_AGENT` is read at tool construction. If request matches, execution is rejected with recursion-prevention message.
 
 ### Recursion-depth gating (task tool availability inside child sessions)
 

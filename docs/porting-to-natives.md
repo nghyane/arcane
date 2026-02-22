@@ -62,7 +62,7 @@ Avoid ports that depend on JS-only state or dynamic imports. N-API exports shoul
 5. **Build the native binary**
 
 - `bun --cwd=packages/natives run build:native`
-- Use `bun --cwd=packages/natives run dev:native` for debug builds (`arcane_natives.dev.node`) and set `PI_DEV=1` when loading it.
+- Use `bun --cwd=packages/natives run dev:native` for debug builds (`arcane_natives.dev.node`) and set `ARCANE_DEV=1` when loading it.
 
 6. **Run the benchmark**
 
@@ -77,7 +77,7 @@ Avoid ports that depend on JS-only state or dynamic imports. N-API exports shoul
 
 ### 1) Stale `arcane_natives.node` prevents new exports
 
-The loader prefers the platform-tagged binary in `packages/natives/native` (`arcane_natives.<platform>-<arch>.node`). When `PI_DEV=1`, it will load `arcane_natives.dev.node` instead. There is also a fallback `arcane_natives.node`. Carcaneiled binaries extract to `~/.arcane/natives/<version>/arcane_natives.<platform>-<arch>.node`. If any of these are stale, exports won’t update.
+The loader prefers the platform-tagged binary in `packages/natives/native` (`arcane_natives.<platform>-<arch>.node`). When `ARCANE_DEV=1`, it will load `arcane_natives.dev.node` instead. There is also a fallback `arcane_natives.node`. Compiled binaries extract to `~/.arcane/natives/<version>/arcane_natives.<platform>-<arch>.node`. If any of these are stale, exports won’t update.
 
 **Fix:** remove the stale file before rebuilding.
 

@@ -61,7 +61,7 @@ Filename strategy:
 
 - Release: `arcane_natives.<platform>-<arch>.node`
 - x64 variant release: `arcane_natives.<platform>-<arch>-modern.node` and/or `...-baseline.node`
-- Dev: `arcane_natives.dev.node` (preferred when `PI_DEV` is set)
+- Dev: `arcane_natives.dev.node` (preferred when `ARCANE_DEV` is set)
 
 ### Platform-specific variant detection
 
@@ -71,13 +71,13 @@ For x64, variant selection uses:
 - **macOS**: `sysctl machdep.cpu.leaf7_features` / `machdep.cpu.features`
 - **Windows**: PowerShell check for `System.Runtime.Intrinsics.X86.Avx2`
 
-`PI_NATIVE_VARIANT` can explicitly force `modern` or `baseline`.
+`ARCANE_NATIVE_VARIANT` can explicitly force `modern` or `baseline`.
 
 ### Binary distribution and extraction model
 
 `packages/natives/package.json` includes both `src` and `native` in published files. The `native/` directory stores prebuilt platform artifacts.
 
-For compiled binaries (`PI_COMPILED` or Bun embedded runtime markers), loader behavior is:
+For compiled binaries (`ARCANE_COMPILED` or Bun embedded runtime markers), loader behavior is:
 
 1. Check versioned user cache path: `<getNativesDir()>/<packageVersion>/...`
 2. Check legacy compiled-binary location:

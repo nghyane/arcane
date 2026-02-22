@@ -34,9 +34,9 @@ At module initialization (`export const native = loadNative();`), `native.ts` co
     - Windows: `%LOCALAPPDATA%/arcane` (or `%USERPROFILE%/AppData/Local/arcane`).
     - Non-Windows: `~/.local/bin`.
 - **Carcaneiled-binary mode** (`isCarcaneiledBinary`): true if any of:
-  - `PI_COMPILED` env var is set, or
+  - `ARCANE_COMPILED` env var is set, or
   - `import.meta.url` contains Bun-embedded markers (`$bunfs`, `~BUN`, `%7EBUN`).
-- **Variant override**: `PI_NATIVE_VARIANT` (`modern`/`baseline` only; invalid values ignored).
+- **Variant override**: `ARCANE_NATIVE_VARIANT` (`modern`/`baseline` only; invalid values ignored).
 - **Selected variant**: explicit override, otherwise runtime AVX2 detection on x64 (`modern` if AVX2, else `baseline`).
 
 ## Platform support and tag resolution
@@ -61,7 +61,7 @@ This preserves useful diagnostics for near-miss cases while still failing hard f
 
 ### x64 behavior
 
-1. If `PI_NATIVE_VARIANT` is `modern` or `baseline`, that value wins.
+1. If `ARCANE_NATIVE_VARIANT` is `modern` or `baseline`, that value wins.
 2. Else detect AVX2 support:
    - Linux: scan `/proc/cpuinfo` for `avx2`.
    - macOS: query `sysctl` (`machdep.cpu.leaf7_features`, fallback `machdep.cpu.features`).
@@ -90,7 +90,7 @@ The `addonLabel` used in final error messages is either `<tag>` or `<tag> (<vari
 
 `native.ts` builds candidate pools before any `require(...)` call.
 
-### Debug/dev candidates (only when `PI_DEV` is set)
+### Debug/dev candidates (only when `ARCANE_DEV` is set)
 
 Prepended first:
 
@@ -107,7 +107,7 @@ Built from variant-resolved filename list and searched in this order:
   1. `<nativeDir>/<filename>`
   2. `<execDir>/<filename>`
 
-- **Carcaneiled runtime** (`PI_COMPILED` or Bun embedded markers):
+- **Carcaneiled runtime** (`ARCANE_COMPILED` or Bun embedded markers):
   1. `<versionedDir>/<filename>`
   2. `<userDataDir>/<filename>`
   3. `<nativeDir>/<filename>`
@@ -255,12 +255,12 @@ In normal package/runtime mode final diagnostics include:
 
 ## Dev/debug versus release behavior
 
-When `PI_DEV` is set:
+When `ARCANE_DEV` is set:
 
 - `arcane_natives.dev.node` candidates are prepended ahead of all release candidates.
 - Loader emits per-candidate console diagnostics (`Loaded native addon...` and load errors).
 
-Without `PI_DEV`:
+Without `ARCANE_DEV`:
 
 - Only release candidate chain is used.
 - No dev console diagnostics are emitted.

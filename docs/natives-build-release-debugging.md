@@ -81,7 +81,7 @@ Dev build (`--dev`):
 - `arcane_natives.dev.node`
 
 Runtime loader candidate order in `native.ts`:
-- if `PI_DEV` is set: try `arcane_natives.dev.node` first
+- if `ARCANE_DEV` is set: try `arcane_natives.dev.node` first
 - then release candidates
 - compiled mode prepends extracted/cache candidates before package-local files
 
@@ -89,9 +89,9 @@ Runtime loader candidate order in `native.ts`:
 
 ## Runtime flags
 
-- `PI_DEV` (loader behavior): prefer dev addon candidates first
-- `PI_NATIVE_VARIANT` (loader behavior, x64 only): force `modern` or `baseline` selection at runtime
-- `PI_COMPILED` (loader behavior): enable compiled-binary candidate/extraction behavior
+- `ARCANE_DEV` (loader behavior): prefer dev addon candidates first
+- `ARCANE_NATIVE_VARIANT` (loader behavior, x64 only): force `modern` or `baseline` selection at runtime
+- `ARCANE_COMPILED` (loader behavior): enable compiled-binary candidate/extraction behavior
 
 ## Build-time flags/options
 
@@ -146,13 +146,13 @@ Typical local loop:
 1. Build addon:
    - release: `bun --cwd=packages/natives run build:native`
    - debug: `bun --cwd=packages/natives run dev:native`
-2. Set `PI_DEV=1` when testing debug addon loading
+2. Set `ARCANE_DEV=1` when testing debug addon loading
 3. Loader in `native.ts` resolves package-local `native/` (and executable-dir fallback) candidates
 4. `validateNative` enforces export compatibility before wrappers use the binding
 
 ## Shipped/compiled binary workflow
 
-In compiled mode (`PI_COMPILED` or Bun embedded markers):
+In compiled mode (`ARCANE_COMPILED` or Bun embedded markers):
 
 1. Loader computes versioned cache dir: `<getNativesDir()>/<packageVersion>` (operationally `~/.arcane/natives/<version>`)
 2. If embedded manifest matches current platform+version, loader may extract selected embedded file into that versioned dir
@@ -209,8 +209,8 @@ If any required symbol is missing, loader fails fast with a rebuild hint.
 
 | Symptom | Likely cause | Verify | Fix |
 | --- | --- | --- | --- |
-| `Native addon missing exports ... Missing: <name>` | Stale `.node` binary, Rust export name mismatch, or wrong binary loaded | Run with `PI_DEV=1` to see loaded path; inspect export list for that file | Rebuild `build:native`; ensure Rust `#[napi(js_name=...)]` matches JS name; remove stale cached/versioned files |
-| x64 machine loads baseline when modern expected | `PI_NATIVE_VARIANT=baseline`, no AVX2 detected, or only baseline file present | Check `PI_NATIVE_VARIANT`; inspect `native/` for `-modern` file | Build modern variant (`TARGET_VARIANT=modern ... build:native`) and ensure file is shipped |
+| `Native addon missing exports ... Missing: <name>` | Stale `.node` binary, Rust export name mismatch, or wrong binary loaded | Run with `ARCANE_DEV=1` to see loaded path; inspect export list for that file | Rebuild `build:native`; ensure Rust `#[napi(js_name=...)]` matches JS name; remove stale cached/versioned files |
+| x64 machine loads baseline when modern expected | `ARCANE_NATIVE_VARIANT=baseline`, no AVX2 detected, or only baseline file present | Check `ARCANE_NATIVE_VARIANT`; inspect `native/` for `-modern` file | Build modern variant (`TARGET_VARIANT=modern ... build:native`) and ensure file is shipped |
 | Cross-build produces unusable/wrong-labeled binary | Mismatch between `CROSS_TARGET` and `TARGET_PLATFORM`/`TARGET_ARCH`, or missing `TARGET_VARIANT` for x64 | Confirm env tuple and output filename | Re-run with consistent env values and explicit x64 `TARGET_VARIANT` |
 | Carcaneiled binary fails after upgrade | Stale extracted cache (`~/.arcane/natives/<old-or-mismatched-version>`) or embedded manifest mismatch | Inspect versioned natives dir and loader error list | Delete versioned natives cache for the package version and rerun; regenerate embedded manifest during packaging |
 | Loader probes many paths and none work | Platform mismatch or missing release artifact in package `native/` | Check `platformTag` vs actual filename(s) | Ensure built filename exactly matches `arcane_natives.<platform>-<arch>(-variant).node` convention and package includes `native/` |
@@ -222,7 +222,7 @@ If any required symbol is missing, loader fails fast with a rebuild hint.
 # Release artifact for current host
 bun --cwd=packages/natives run build:native
 
-# Debug artifact (load first when PI_DEV=1)
+# Debug artifact (load first when ARCANE_DEV=1)
 bun --cwd=packages/natives run dev:native
 
 # Build explicit x64 variants

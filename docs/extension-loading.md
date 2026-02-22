@@ -51,7 +51,7 @@ Configured path sources in the main session startup path (`sdk.ts`):
 
 Global settings file:
 
-- `~/.arcane/agent/config.yml` (or custom agent dir via `PI_CODING_AGENT_DIR`)
+- `~/.arcane/agent/config.yml` (or custom agent dir via `ARCANE_CODING_AGENT_DIR`)
 
 Project settings file:
 

@@ -81,7 +81,7 @@ Before execution, the tool allocates an artifact path/id (best-effort) and injec
 `BashTool` chooses PTY execution only when all are true:
 
 - `bash.virtualTerminal === "on"`
-- `PI_NO_PTY !== "1"`
+- `ARCANE_NO_PTY !== "1"`
 - tool context has UI (`ctx.hasUI === true` and `ctx.ui` set)
 
 Otherwise it uses non-interactive `executeBash()`.
@@ -241,7 +241,7 @@ This component is wired by `CommandController.handleBashCommand()` and fed from 
 
 | Surface                        | Entry path                                            | PTY eligible                                                         | Live output UX                                                           | Error surfacing                                  |
 | ------------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------ |
-| Interactive tool call          | `BashTool.execute`                                    | Yes, when `bash.virtualTerminal=on` and UI exists and `PI_NO_PTY!=1` | PTY overlay (interactive) or streamed tail updates                       | Tool errors become `toolResult.isError`          |
+| Interactive tool call          | `BashTool.execute`                                    | Yes, when `bash.virtualTerminal=on` and UI exists and `ARCANE_NO_PTY!=1` | PTY overlay (interactive) or streamed tail updates                       | Tool errors become `toolResult.isError`          |
 | Print mode tool call           | `BashTool.execute`                                    | No (no UI context)                                                   | No TUI overlay; output appears in event stream/final assistant text flow | Same tool error mapping                          |
 | RPC tool call (agent tooling)  | `BashTool.execute`                                    | Usually no UI -> non-PTY                                             | Structured tool events/results                                           | Same tool error mapping                          |
 | Interactive bang command (`!`) | `AgentSession.executeBash` + `BashExecutionCarcaneonent` | No (uses executor directly)                                          | Dedicated bash execution component                                       | Controller catches exceptions and shows UI error |
