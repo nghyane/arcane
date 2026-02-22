@@ -44,10 +44,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          cat > bunfig.toml << EOF
-          [install]
-          registry = { url = "https://registry.npmjs.org", token = "$NPM_TOKEN" }
-          EOF
+          printf '[install]\nregistry = { url = "https://registry.npmjs.org", token = "%s" }\n' "$NPM_TOKEN" > "$HOME/.bunfig.toml"
           FAILED=0
           for pkg in packages/*/; do
             if jq -e '.private == true' "$pkg/package.json" > /dev/null 2>&1; then
