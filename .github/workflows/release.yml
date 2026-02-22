@@ -42,12 +42,13 @@ jobs:
           merge-multiple: true
       - name: Publish to npm
         env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [ -z "$NPM_CONFIG_TOKEN" ]; then
+          if [ -z "$NPM_TOKEN" ]; then
             echo "::error::NPM_TOKEN secret is not set"
             exit 1
           fi
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$HOME/.npmrc"
           FAILED=0
           for pkg in packages/*/; do
             if jq -e '.private == true' "$pkg/package.json" > /dev/null 2>&1; then
