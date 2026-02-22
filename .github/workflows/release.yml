@@ -44,8 +44,11 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::error::NPM_TOKEN secret is not set"
+            exit 1
+          fi
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$HOME/.npmrc"
-          printf '[install]\nregistry = { url = "https://registry.npmjs.org", token = "%s" }\n' "$NPM_TOKEN" > "$HOME/.bunfig.toml"
           FAILED=0
           for pkg in packages/*/; do
             if jq -e '.private == true' "$pkg/package.json" > /dev/null 2>&1; then
@@ -56,6 +59,7 @@ jobs:
             echo "Publishing $PKG_NAME@$PKG_VERSION..."
             (cd "$pkg" && bun publish --access public --tolerate-republish) || FAILED=1
           done
+          if [ "$FAILED" -eq 1 ]; then exit 1; fi
           if [ "$FAILED" -eq 1 ]; then exit 1; fi
 
   native:
