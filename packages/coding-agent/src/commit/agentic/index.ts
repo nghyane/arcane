@@ -7,7 +7,7 @@ import { detectChangelogBoundaries } from "../../commit/changelog/detect";
 import { parseUnreleasedSection } from "../../commit/changelog/parse";
 import { ControlledGit } from "../../commit/git";
 import { formatCommitMessage } from "../../commit/message";
-import { resolvePrimaryModel, resolveFastModel } from "../../commit/model-selection";
+import { resolveFastModel, resolvePrimaryModel } from "../../commit/model-selection";
 import type { CommitCommandArgs, ConventionalAnalysis } from "../../commit/types";
 import { ModelRegistry } from "../../config/model-registry";
 import { renderPromptTemplate } from "../../config/prompt-templates";

@@ -1097,6 +1097,11 @@ export class TUI extends Container {
 		this.#previousBuffer = currentBuffer;
 		this.#previousLines = viewportLines;
 		this.#previousWidth = width;
+
+		// Re-apply selection highlight after render so it survives streaming updates
+		if (this.#selectionActive) {
+			this.#renderSelection(true);
+		}
 	}
 
 	/**
