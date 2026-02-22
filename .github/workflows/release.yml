@@ -190,6 +190,7 @@ jobs:
       - name: Stage native addons for release
         run: cp packages/natives/native/*.node packages/coding-agent/binaries/
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
