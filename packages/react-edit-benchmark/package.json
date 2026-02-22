@@ -1,43 +1,43 @@
 {
-	"type": "module",
-	"private": true,
-	"name": "@nghyane/arcane-react-edit-benchmark",
-	"version": "0.0.1",
-	"description": "Edit benchmark suite using React source code mutations",
-	"author": "Can Bölük",
-	"license": "GPL-3.0-or-later",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/nghyane/arcane.git",
-		"directory": "packages/react-edit-benchmark"
-	},
-	"main": "./src/index.ts",
-	"bin": {
-		"react-edit-benchmark": "src/index.ts"
-	},
-	"scripts": {
-		"start": "bun run src/index.ts",
-		"generate": "bun run src/generate.ts --react-dir /tmp/react-source --count-per-type 4",
-		"check": "tsgo -p tsconfig.json --noEmit"
-	},
-	"dependencies": {
-		"@babel/generator": "7.29.1",
-		"@babel/parser": "7.29.0",
-		"@babel/traverse": "7.29.0",
-		"@babel/types": "7.29.0",
-		"@nghyane/arcane-agent": "workspace:*",
-		"@nghyane/arcane": "workspace:*",
-		"@nghyane/arcane-utils": "workspace:*",
-		"diff": "^8.0.3",
-		"prettier": "^3.8.1",
-		"regexp-tree": "0.1.27"
-	},
-	"devDependencies": {
-		"@types/babel__generator": "7.27.0",
-		"@types/babel__traverse": "7.28.0",
-		"@types/bun": "^1.3.9"
-	},
-	"engines": {
-		"bun": ">=1.3.7"
-	}
+  "type": "module",
+  "private": true,
+  "name": "@nghyane/arcane-react-edit-benchmark",
+  "version": "0.1.0",
+  "description": "Edit benchmark suite using React source code mutations",
+  "author": "Can Bölük",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nghyane/arcane.git",
+    "directory": "packages/react-edit-benchmark"
+  },
+  "main": "./src/index.ts",
+  "bin": {
+    "react-edit-benchmark": "src/index.ts"
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "generate": "bun run src/generate.ts --react-dir /tmp/react-source --count-per-type 4",
+    "check": "tsgo -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@babel/generator": "7.29.1",
+    "@babel/parser": "7.29.0",
+    "@babel/traverse": "7.29.0",
+    "@babel/types": "7.29.0",
+    "@nghyane/arcane-agent": "workspace:*",
+    "@nghyane/arcane": "workspace:*",
+    "@nghyane/arcane-utils": "workspace:*",
+    "diff": "^8.0.3",
+    "prettier": "^3.8.1",
+    "regexp-tree": "0.1.27"
+  },
+  "devDependencies": {
+    "@types/babel__generator": "7.27.0",
+    "@types/babel__traverse": "7.28.0",
+    "@types/bun": "^1.3.9"
+  },
+  "engines": {
+    "bun": ">=1.3.7"
+  }
 }

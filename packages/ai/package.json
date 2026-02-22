@@ -1,130 +1,130 @@
 {
-	"type": "module",
-	"name": "@nghyane/arcane-ai",
-	"version": "12.19.0",
-	"description": "Unified LLM API with automatic model discovery and provider configuration",
-	"homepage": "https://github.com/nghyane/arcane",
-	"author": "Can Bölük",
-	"contributors": [
-		"Mario Zechner"
-	],
-	"license": "GPL-3.0-or-later",
-	"publishConfig": {
-		"access": "public"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/nghyane/arcane.git",
-		"directory": "packages/ai"
-	},
-	"bugs": {
-		"url": "https://github.com/nghyane/arcane/issues"
-	},
-	"keywords": [
-		"ai",
-		"llm",
-		"openai",
-		"anthropic",
-		"gemini",
-		"unified",
-		"api"
-	],
-	"main": "./src/index.ts",
-	"types": "./src/index.ts",
-	"bin": {
-		"pi-ai": "./src/cli.ts"
-	},
-	"scripts": {
-		"check": "tsgo -p tsconfig.json",
-		"generate-models": "bun scripts/generate-models.ts",
-		"test": "bun test"
-	},
-	"dependencies": {
-		"@anthropic-ai/sdk": "^0.74.0",
-		"@aws-sdk/client-bedrock-runtime": "^3.990.0",
-		"@bufbuild/protobuf": "^2.11.0",
-		"@connectrpc/connect": "^2.1.1",
-		"@connectrpc/connect-node": "^2.1.1",
-		"@google/genai": "^1.41.0",
-		"@mistralai/mistralai": "^1.14.0",
-		"@nghyane/arcane-utils": "workspace:*",
-		"@sinclair/typebox": "^0.34.48",
-		"@smithy/node-http-handler": "^4.4.10",
-		"ajv": "^8.18.0",
-		"ajv-formats": "^3.0.1",
-		"chalk": "^5.6.2",
-		"openai": "^6.22.0",
-		"partial-json": "^0.1.7",
-		"zod": "^4.3.6",
-		"zod-to-json-schema": "^3.25.1"
-	},
-	"devDependencies": {
-		"@types/bun": "^1.3.9"
-	},
-	"engines": {
-		"bun": ">=1.3.7"
-	},
-	"files": [
-		"src",
-		"README.md",
-		"CHANGELOG.md"
-	],
-	"exports": {
-		".": {
-			"types": "./src/index.ts",
-			"import": "./src/index.ts"
-		},
-		"./*": {
-			"types": "./src/*.ts",
-			"import": "./src/*.ts"
-		},
-		"./models.json": {
-			"types": "./src/models.json.d.ts",
-			"import": "./src/models.json"
-		},
-		"./provider-models": {
-			"types": "./src/provider-models/index.ts",
-			"import": "./src/provider-models/index.ts"
-		},
-		"./provider-models/*": {
-			"types": "./src/provider-models/*.ts",
-			"import": "./src/provider-models/*.ts"
-		},
-		"./providers/*": {
-			"types": "./src/providers/*.ts",
-			"import": "./src/providers/*.ts"
-		},
-		"./providers/cursor/gen/*": {
-			"types": "./src/providers/cursor/gen/*.ts",
-			"import": "./src/providers/cursor/gen/*.ts"
-		},
-		"./providers/openai-codex/*": {
-			"types": "./src/providers/openai-codex/*.ts",
-			"import": "./src/providers/openai-codex/*.ts"
-		},
-		"./usage/*": {
-			"types": "./src/usage/*.ts",
-			"import": "./src/usage/*.ts"
-		},
-		"./utils/*": {
-			"types": "./src/utils/*.ts",
-			"import": "./src/utils/*.ts"
-		},
-		"./utils/discovery": {
-			"types": "./src/utils/discovery/index.ts",
-			"import": "./src/utils/discovery/index.ts"
-		},
-		"./utils/discovery/*": {
-			"types": "./src/utils/discovery/*.ts",
-			"import": "./src/utils/discovery/*.ts"
-		},
-		"./utils/oauth": {
-			"types": "./src/utils/oauth/index.ts",
-			"import": "./src/utils/oauth/index.ts"
-		},
-		"./utils/oauth/*": {
-			"types": "./src/utils/oauth/*.ts",
-			"import": "./src/utils/oauth/*.ts"
-		}
-	}
+  "type": "module",
+  "name": "@nghyane/arcane-ai",
+  "version": "0.1.0",
+  "description": "Unified LLM API with automatic model discovery and provider configuration",
+  "homepage": "https://github.com/nghyane/arcane",
+  "author": "Can Bölük",
+  "contributors": [
+    "Mario Zechner"
+  ],
+  "license": "GPL-3.0-or-later",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nghyane/arcane.git",
+    "directory": "packages/ai"
+  },
+  "bugs": {
+    "url": "https://github.com/nghyane/arcane/issues"
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "openai",
+    "anthropic",
+    "gemini",
+    "unified",
+    "api"
+  ],
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "bin": {
+    "pi-ai": "./src/cli.ts"
+  },
+  "scripts": {
+    "check": "tsgo -p tsconfig.json",
+    "generate-models": "bun scripts/generate-models.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.990.0",
+    "@bufbuild/protobuf": "^2.11.0",
+    "@connectrpc/connect": "^2.1.1",
+    "@connectrpc/connect-node": "^2.1.1",
+    "@google/genai": "^1.41.0",
+    "@mistralai/mistralai": "^1.14.0",
+    "@nghyane/arcane-utils": "workspace:*",
+    "@sinclair/typebox": "^0.34.48",
+    "@smithy/node-http-handler": "^4.4.10",
+    "ajv": "^8.18.0",
+    "ajv-formats": "^3.0.1",
+    "chalk": "^5.6.2",
+    "openai": "^6.22.0",
+    "partial-json": "^0.1.7",
+    "zod": "^4.3.6",
+    "zod-to-json-schema": "^3.25.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.9"
+  },
+  "engines": {
+    "bun": ">=1.3.7"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./*": {
+      "types": "./src/*.ts",
+      "import": "./src/*.ts"
+    },
+    "./models.json": {
+      "types": "./src/models.json.d.ts",
+      "import": "./src/models.json"
+    },
+    "./provider-models": {
+      "types": "./src/provider-models/index.ts",
+      "import": "./src/provider-models/index.ts"
+    },
+    "./provider-models/*": {
+      "types": "./src/provider-models/*.ts",
+      "import": "./src/provider-models/*.ts"
+    },
+    "./providers/*": {
+      "types": "./src/providers/*.ts",
+      "import": "./src/providers/*.ts"
+    },
+    "./providers/cursor/gen/*": {
+      "types": "./src/providers/cursor/gen/*.ts",
+      "import": "./src/providers/cursor/gen/*.ts"
+    },
+    "./providers/openai-codex/*": {
+      "types": "./src/providers/openai-codex/*.ts",
+      "import": "./src/providers/openai-codex/*.ts"
+    },
+    "./usage/*": {
+      "types": "./src/usage/*.ts",
+      "import": "./src/usage/*.ts"
+    },
+    "./utils/*": {
+      "types": "./src/utils/*.ts",
+      "import": "./src/utils/*.ts"
+    },
+    "./utils/discovery": {
+      "types": "./src/utils/discovery/index.ts",
+      "import": "./src/utils/discovery/index.ts"
+    },
+    "./utils/discovery/*": {
+      "types": "./src/utils/discovery/*.ts",
+      "import": "./src/utils/discovery/*.ts"
+    },
+    "./utils/oauth": {
+      "types": "./src/utils/oauth/index.ts",
+      "import": "./src/utils/oauth/index.ts"
+    },
+    "./utils/oauth/*": {
+      "types": "./src/utils/oauth/*.ts",
+      "import": "./src/utils/oauth/*.ts"
+    }
+  }
 }
