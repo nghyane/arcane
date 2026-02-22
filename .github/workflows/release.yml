@@ -57,7 +57,8 @@ jobs:
             PKG_NAME=$(jq -r .name "$pkg/package.json")
             PKG_VERSION=$(jq -r .version "$pkg/package.json")
             echo "Publishing $PKG_NAME@$PKG_VERSION..."
-            (cd "$pkg" && npm publish --access public --provenance --tolerate-republish) || FAILED=1
+            TARBALL=$(cd "$pkg" && bun pack 2>/dev/null | tail -1)
+            (cd "$pkg" && npm publish "$TARBALL" --access public --provenance --tolerate-republish) || FAILED=1
           done
           if [ "$FAILED" -eq 1 ]; then exit 1; fi
 
