@@ -31,7 +31,6 @@ import { PythonTool } from "./python";
 import { ReadTool } from "./read";
 import { ReviewerTool } from "./reviewer-tool";
 import { loadSshTool } from "./ssh";
-import { SubmitResultTool } from "./submit-result";
 import { TodoWriteTool } from "./todo-write";
 import { UndoEditTool } from "./undo-edit";
 import { WriteTool } from "./write";
@@ -94,7 +93,6 @@ export { OracleTool } from "./oracle";
 export { PythonTool, type PythonToolDetails, type PythonToolOptions } from "./python";
 export { ReadTool, type ReadToolDetails, type ReadToolInput } from "./read";
 export { loadSshTool, type SSHToolDetails, SshTool } from "./ssh";
-export { SubmitResultTool } from "./submit-result";
 export { type TodoItem, TodoWriteTool, type TodoWriteToolDetails } from "./todo-write";
 export { UndoEditTool, type UndoEditToolDetails } from "./undo-edit";
 export { WriteTool, type WriteToolDetails, type WriteToolInput } from "./write";
@@ -129,9 +127,6 @@ export interface ToolSession {
 	/** Event bus for tool/extension communication */
 	eventBus?: EventBus;
 	/** Output schema for structured completion (subagents) */
-	outputSchema?: unknown;
-	/** Whether to include the submit_result tool by default */
-	requireSubmitResultTool?: boolean;
 	/** Task recursion depth (0 = top-level, 1 = first child, etc.) */
 	taskDepth?: number;
 	/** Get session file */
@@ -191,10 +186,6 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	write: s => new WriteTool(s),
 };
 
-export const HIDDEN_TOOLS: Record<string, ToolFactory> = {
-	submit_result: s => new SubmitResultTool(s),
-};
-
 export type ToolName = keyof typeof BUILTIN_TOOLS;
 
 export type PythonToolMode = "ipy-only" | "bash-only" | "both";
@@ -232,7 +223,6 @@ function getPythonModeFromEnv(): PythonToolMode | null {
  */
 export async function createTools(session: ToolSession, toolNames?: string[]): Promise<Tool[]> {
 	time("createTools:start");
-	const includeSubmitResult = session.requireSubmitResultTool === true;
 	const enableLsp = session.enableLsp ?? true;
 	const requestedTools = toolNames && toolNames.length > 0 ? [...new Set(toolNames)] : undefined;
 	const pythonMode = getPythonModeFromEnv() ?? session.settings.get("python.toolMode");
@@ -278,12 +268,12 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 	) {
 		requestedTools.push("bash");
 	}
-	const allTools: Record<string, ToolFactory> = { ...BUILTIN_TOOLS, ...HIDDEN_TOOLS };
+	const allTools: Record<string, ToolFactory> = { ...BUILTIN_TOOLS };
 	const isToolAllowed = (name: string) => {
 		if (name === "lsp") return enableLsp;
 		if (name === "bash") return allowBash;
 		if (name === "python") return allowPython;
-		if (name === "todo_write") return !includeSubmitResult && session.settings.get("todo.enabled");
+		if (name === "todo_write") return session.settings.get("todo.enabled");
 		if (name === "find") return session.settings.get("find.enabled");
 		if (name === "grep") return session.settings.get("grep.enabled");
 		if (name === "notebook") return session.settings.get("notebook.enabled");
@@ -301,19 +291,13 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		}
 		return true;
 	};
-	if (includeSubmitResult && requestedTools && !requestedTools.includes("submit_result")) {
-		requestedTools.push("submit_result");
-	}
 
 	const filteredRequestedTools = requestedTools?.filter(name => name in allTools && isToolAllowed(name));
 
 	const entries =
 		filteredRequestedTools !== undefined
 			? filteredRequestedTools.map(name => [name, allTools[name]] as const)
-			: [
-					...Object.entries(BUILTIN_TOOLS).filter(([name]) => isToolAllowed(name)),
-					...(includeSubmitResult ? ([["submit_result", HIDDEN_TOOLS.submit_result]] as const) : []),
-				];
+			: [...Object.entries(BUILTIN_TOOLS).filter(([name]) => isToolAllowed(name))];
 
 	const results = await Promise.all(
 		entries.map(async ([name, factory]) => {

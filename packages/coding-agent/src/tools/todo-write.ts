@@ -78,39 +78,6 @@ function normalizeTodos(items: Array<{ id?: string; content?: string; status?: s
 	});
 }
 
-function validateSequentialTodos(todos: TodoItem[]): { valid: boolean; error?: string } {
-	if (todos.length === 0) return { valid: true };
-
-	const firstIncompleteIndex = todos.findIndex(todo => todo.status !== "completed");
-	if (firstIncompleteIndex >= 0) {
-		for (let i = firstIncompleteIndex + 1; i < todos.length; i++) {
-			if (todos[i].status === "completed") {
-				return {
-					valid: false,
-					error: `Error: Cannot complete "${todos[i].content}" before completing "${todos[firstIncompleteIndex].content}". Todos must be completed sequentially.`,
-				};
-			}
-		}
-	}
-
-	const inProgressIndices = todos.reduce<number[]>((acc, todo, index) => {
-		if (todo.status === "in_progress") acc.push(index);
-		return acc;
-	}, []);
-
-	for (const idx of inProgressIndices) {
-		const hasPriorIncomplete = todos.slice(0, idx).some(t => t.status === "pending");
-		if (hasPriorIncomplete) {
-			return {
-				valid: false,
-				error: `Cannot start "${todos[idx].content}" while earlier tasks are still pending.`,
-			};
-		}
-	}
-
-	return { valid: true };
-}
-
 async function loadTodoFile(filePath: string): Promise<TodoFile | null> {
 	const file = Bun.file(filePath);
 	if (!(await file.exists())) return null;
@@ -168,10 +135,6 @@ export class TodoWriteTool implements AgentTool<typeof todoWriteSchema, TodoWrit
 		_context?: AgentToolContext,
 	): Promise<AgentToolResult<TodoWriteToolDetails>> {
 		const todos = normalizeTodos(params.todos ?? []);
-		const validation = validateSequentialTodos(todos);
-		if (!validation.valid) {
-			throw new Error(validation.error ?? "Todos must be completed sequentially.");
-		}
 		const updatedAt = Date.now();
 
 		const sessionFile = this.session.getSessionFile();

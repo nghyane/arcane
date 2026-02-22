@@ -24,26 +24,13 @@ export const TASK_SUBAGENT_EVENT_CHANNEL = "task:subagent:event";
 /** EventBus channel for aggregated subagent progress */
 export const TASK_SUBAGENT_PROGRESS_CHANNEL = "task:subagent:progress";
 
-/** Single task item for parallel execution */
-export const taskItemSchema = Type.Object({
-	id: Type.String({
-		description: "CamelCase identifier, max 32 chars",
-		maxLength: 32,
-	}),
-	description: Type.String({
-		description: "Short one-liner for UI display only — not seen by the subagent",
-	}),
-	assignment: Type.String({
-		description:
-			"Complete per-task instructions the subagent executes. Must follow the Target/Change/Edge Cases/Acceptance structure. Only include per-task deltas — shared background belongs in `context`.",
-	}),
-	skills: Type.Optional(
-		Type.Array(Type.String(), {
-			description: "Skill names to preload into the subagent. Use only where it changes correctness.",
-		}),
-	),
-});
-export type TaskItem = Static<typeof taskItemSchema>;
+/** Single task item for execution */
+export interface TaskItem {
+	id: string;
+	description: string;
+	assignment: string;
+	skills?: string[];
+}
 
 /** Task schema — single task with optional context */
 export const taskSchema = Type.Object({

@@ -10,11 +10,13 @@ Execute JavaScript code to accomplish tasks. Instead of calling tools individual
 
 - Write an async arrow function: `async () => { ... }`
 - Use `await` for all `codemode.*` calls
-- Use `Promise.all()` to run independent operations in parallel
+- Default to `Promise.all()` — serialize only when there is a strict data dependency. Do not limit parallel calls to 3-4; batch as many independent operations as possible. Use `Promise.allSettled()` when partial failure is acceptable
 - Return the final result from your function
-- Tool results are already displayed to the user — do NOT repeat raw output in your response. Summarize or analyze instead.
+- Tool results are already displayed to the user — do NOT repeat raw output in your response text. Summarize or analyze instead.
 - Do NOT use `console.log()` — tool results are already streamed to the UI as they execute
 - Handle errors with try/catch when needed
+- Browser and notebook are stateful singletons — call them sequentially
+- Prefer smaller parallel edits over one massive sequential operation — fan out when targets are disjoint
 
 ## Persistent State
 
@@ -23,48 +25,21 @@ A `state` Map and `memo` helper persist across all code executions in the conver
 - `state` — raw Map for manual get/set
 - `memo(key, fn)` — cache-on-first-call: returns cached value or calls `fn`, caches, and returns
 
-```javascript
-async () => {
-  const config = await memo("config", () => codemode.read({ path: "config.json" }));
-  const pkg = await memo("pkg", () => codemode.read({ path: "package.json" }));
-  return { config, pkg };
-}
-```
-
 ## Examples
 
-Read a file and search for a pattern:
+Parallel reads, then parallel edits, then verify:
 ```javascript
 async () => {
-  const content = await codemode.read({ path: "src/index.ts" });
-  const matches = await codemode.grep({ pattern: "TODO", path: "src/" });
-  return { content, matches };
-}
-```
-
-Run multiple independent operations in parallel:
-```javascript
-async () => {
-  const [readme, pkg, tests] = await Promise.all([
-    codemode.read({ path: "README.md" }),
-    codemode.read({ path: "package.json" }),
-    codemode.bash({ command: "bun test" }),
+  const [src, test] = await Promise.all([
+    codemode.read({ path: "src/app.ts" }),
+    codemode.read({ path: "test/app.test.ts" }),
   ]);
-  return { readme, pkg, tests };
-}
-```
 
-Multi-step workflow:
-```javascript
-async () => {
-  // Read current state
-  const content = await codemode.read({ path: "src/config.ts" });
+  await Promise.all([
+    codemode.edit({ path: "src/app.ts", edits: [...] }),
+    codemode.edit({ path: "test/app.test.ts", edits: [...] }),
+  ]);
 
-  // Make changes
-  await codemode.write({ path: "src/config.ts", content: content + "\nexport const VERSION = '2.0';" });
-
-  // Verify
-  const result = await codemode.bash({ command: "bun check" });
-  return result;
+  return await codemode.bash({ command: "bun test" });
 }
 ```

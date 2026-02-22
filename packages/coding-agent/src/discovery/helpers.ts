@@ -232,12 +232,7 @@ export function parseAgentFields(frontmatter: Record<string, unknown>): ParsedAg
 		return null;
 	}
 
-	let tools = parseArrayOrCSV(frontmatter.tools);
-
-	// Subagents with output schema need submit_result to return structured data
-	if (tools && frontmatter.output && !tools.includes("submit_result")) {
-		tools = [...tools, "submit_result"];
-	}
+	const tools = parseArrayOrCSV(frontmatter.tools);
 
 	const model = parseModelList(frontmatter.model);
 	const thinkingLevel = parseThinkingLevel(frontmatter);

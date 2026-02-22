@@ -101,7 +101,7 @@ describe("runAgent lightweight fork", () => {
 		enableLsp: false,
 	};
 
-	it("runs a single prompt without submit_result reminder loop", async () => {
+	it("runs a single prompt to completion", async () => {
 		const prompts: string[] = [];
 		const session = createMockSession(({ text, emit, state }) => {
 			prompts.push(text);

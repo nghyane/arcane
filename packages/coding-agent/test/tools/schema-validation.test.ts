@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { Settings } from "@nghyane/arcane/config/settings";
-import { createTools, HIDDEN_TOOLS, type ToolSession } from "@nghyane/arcane/tools";
+import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 import { sanitizeSchemaForGoogle } from "@nghyane/arcane-ai";
 
 /**
@@ -342,27 +342,6 @@ describe("tool schema validation (post-sanitization)", () => {
 			const sanitized = sanitizeSchemaForGoogle(schema);
 			const violations = validateSchema(sanitized, tool.name).filter(v => v.key === "examples");
 			expect(violations).toEqual([]);
-		}
-	});
-
-	it("hidden tools also have valid sanitized schemas", async () => {
-		const session = createTestSession();
-
-		for (const [name, factory] of Object.entries(HIDDEN_TOOLS)) {
-			const tool = await factory(session);
-			if (!tool) continue;
-
-			const schema = tool.parameters;
-			if (!schema) continue;
-
-			const sanitized = sanitizeSchemaForGoogle(schema);
-			const violations = validateSchema(sanitized, name);
-			const errors = violations.filter(v => v.severity === "error");
-
-			if (errors.length > 0) {
-				const details = errors.map(v => `  - ${v.path}: ${v.key} = ${JSON.stringify(v.value)}`).join("\n");
-				throw new Error(`Hidden tool ${name} has prohibited schema features after sanitization:\n${details}`);
-			}
 		}
 	});
 

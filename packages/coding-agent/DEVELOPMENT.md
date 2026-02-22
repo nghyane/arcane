@@ -383,7 +383,6 @@ wrapToolWithMetaNotice(...) appends human/meta notices
 `packages/coding-agent/src/tools/index.ts` centralizes tool wiring through two registries:
 
 - `BUILTIN_TOOLS: Record<string, ToolFactory>`
-- `HIDDEN_TOOLS: Record<string, ToolFactory>`
 
 A `ToolFactory` is `(session: ToolSession) => Tool | null | Promise<Tool | null>`, so tool creation can be async and conditional.
 
@@ -395,7 +394,6 @@ A `ToolFactory` is `(session: ToolSession) => Tool | null | Promise<Tool | null>
 4. Carcutes effective gating (`isToolAllowed`) from settings and runtime state:
    - feature toggles (`find.enabled`, `grep.enabled`, etc.)
    - recursion guard for `task` (`task.maxRecursionDepth` vs `session.taskDepth`)
-   - submit-result mode (`requireSubmitResultTool`) and `todo_write` suppression
 5. Instantiates tools in parallel with `Promise.all`, records slow factory timings when `ARCANE_TIMING=1`.
 6. Wraps every tool with `wrapToolWithMetaNotice` before returning.
 
@@ -864,7 +862,7 @@ mapWithConcurrencyLimit(...)
       └── ...
       │
       ▼
-submit_result/fallback normalization
+stdout/stderr output collection
       │
       ▼
 aggregated task results (+ optional worktree patches)
@@ -916,23 +914,13 @@ What _is_ isolated is execution context and artifacts, not process memory:
 - Adds `task` tool automatically when `agent.spawns` is set and recursion depth permits.
 - Removes `task` when max recursion depth is reached (`task.maxRecursionDepth`).
 - Expands legacy `exec` alias into `python` and/or `bash` based on `python.toolMode`.
-- Forces `requireSubmitResultTool: true` in `createAgentSession(...)`.
 - Filters parent-owned tools out of child tools (`todo_write` is removed).
 
 If parent MCP connections exist, executor creates in-process MCP proxy tools with `createMCPProxyTools(...)` so children reuse parent MCP connectivity rather than creating independent MCP sessions.
 
-## Submit/Result Contract and Completion Semantics
+## Task Completion Semantics
 
-`executor.ts` enforces structured completion around `submit_result`:
-
-- Tracks tool events and extracted data through `subprocessToolRegistry` handlers.
-- Retries reminder prompts up to 3 times (`MAX_SUBMIT_RESULT_RETRIES`) using `subagent-submit-reminder.md` if `submit_result` was not called.
-- Final output normalization is centralized in `finalizeSubprocessOutput(...)`:
-  - If `submit_result.status === "aborted"`, task is converted to an aborted result payload.
-  - If missing `submit_result`, fallback attempts JSON parse/validation against output schema.
-  - Emits warnings when `submit_result` is missing/null and fallback cannot safely validate.
-
-This module also accumulates token/cost usage from assistant `message_end` events and truncates returned output with `truncateTail(...)` using `MAX_OUTPUT_BYTES` and `MAX_OUTPUT_LINES`.
+Task executor reads subagent output via stdout/stderr. Exit code determines success/failure. The executor accumulates token/cost usage from assistant `message_end` events and truncates returned output with `truncateTail(...)` using `MAX_OUTPUT_BYTES` and `MAX_OUTPUT_LINES`.
 
 ## Parallelization Model
 
@@ -1123,8 +1111,7 @@ Primary file: `packages/coding-agent/src/tools/index.ts`.
 3. Register a factory in `BUILTIN_TOOLS`.
    - `export const BUILTIN_TOOLS: Record<string, ToolFactory> = { ... }`
    - Key is the external tool name (e.g. `"read"`, `"web_search"`).
-4. If it should be hidden/system-only, register under `HIDDEN_TOOLS` instead.
-   - Existing hidden names: `submit_result`, `report_finding`, `exit_plan_mode`.
+4. All tools go in `BUILTIN_TOOLS`. There is no separate hidden tools registry.
 5. Wire feature gates in `isToolAllowed(name)` when the tool needs runtime enable/disable behavior.
    - Existing gates use `session.settings.get("<tool>.enabled")` and recursion limits for `task`.
 6. If the tool should be selectable by type, update `ToolName = keyof typeof BUILTIN_TOOLS` consumers as needed.
@@ -1132,7 +1119,6 @@ Primary file: `packages/coding-agent/src/tools/index.ts`.
 Notes from current behavior:
 
 - `createTools()` automatically injects `exit_plan_mode` when `toolNames` are specified.
-- `submit_result` is force-added when `session.requireSubmitResultTool === true`.
 - Python/Bash availability is mode-driven (`ARCANE_PY`, `python.toolMode`) and can auto-fallback to bash.
 
 ### Playbook: add an RPC command

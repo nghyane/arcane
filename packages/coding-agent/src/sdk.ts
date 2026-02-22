@@ -157,10 +157,6 @@ export interface CreateAgentSessionOptions {
 	/** Tool names explicitly requested (enables disabled-by-default tools) */
 	toolNames?: string[];
 
-	/** Output schema for structured completion (subagents) */
-	outputSchema?: unknown;
-	/** Whether to include the submit_result tool by default */
-	requireSubmitResultTool?: boolean;
 	/** Task recursion depth (for subagent sessions). Default: 0 */
 	taskDepth?: number;
 	/** Parent task ID prefix for nested artifact naming (e.g., "6-Extensions") */
@@ -722,8 +718,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		contextFiles,
 		skills,
 		eventBus,
-		outputSchema: options.outputSchema,
-		requireSubmitResultTool: options.requireSubmitResultTool,
 		taskDepth: options.taskDepth ?? 0,
 		getSessionFile: () => sessionManager.getSessionFile() ?? null,
 		getSessionId: () => sessionManager.getSessionId?.() ?? null,

@@ -18,11 +18,11 @@ Use proactively:
 	 - in_progress: working
 	 - completed: finished
 2. **Task Management**:
-   - Update status in real time
-   - Mark complete IMMEDIATELY after finishing (no batching)
-   - Keep exactly ONE task in_progress at a time
+   - Update status each turn
+   - Mark completed after each code execution finishes — do not defer to a later turn
+   - Multiple tasks may be in_progress simultaneously when working in parallel
    - Remove tasks no longer relevant
-   - Complete tasks in list order (do not mark later tasks completed while earlier tasks remain incomplete)
+   - Mark tasks completed as they finish, regardless of list order
 3. **Task Completion Requirements**:
    - ONLY mark completed when FULLY accomplished
    - On errors/blockers/inability to finish, keep in_progress

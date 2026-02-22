@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { type SettingPath, Settings } from "@nghyane/arcane/config/settings";
-import { createTools, HIDDEN_TOOLS, type ToolSession } from "@nghyane/arcane/tools";
+import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 
 Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 
@@ -98,14 +98,6 @@ describe("createTools", () => {
 		expect(names).toEqual(["read", "write"]);
 	});
 
-	it("includes submit_result tool when required", async () => {
-		const session = createTestSession({ requireSubmitResultTool: true });
-		const tools = await createTools(session);
-		const names = tools.map(t => t.name);
-
-		expect(names).toContain("submit_result");
-	});
-
 	it("excludes ask tool when hasUI is false", async () => {
 		const session = createTestSession({ hasUI: false });
 		const tools = await createTools(session);
@@ -120,9 +112,5 @@ describe("createTools", () => {
 		const names = tools.map(t => t.name);
 
 		expect(names).toContain("ask");
-	});
-
-	it("HIDDEN_TOOLS contains expected tools", () => {
-		expect(Object.keys(HIDDEN_TOOLS).sort()).toEqual(["submit_result"]);
 	});
 });

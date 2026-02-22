@@ -124,8 +124,6 @@ export interface SessionInitEntry extends SessionEntryBase {
 	task: string;
 	/** Tools available to the agent */
 	tools: string[];
-	/** Output schema if structured output was requested */
-	outputSchema?: unknown;
 }
 
 /** Mode change entry - tracks agent mode transitions. */
@@ -1685,7 +1683,7 @@ export class SessionManager {
 	}
 
 	/** Append session init metadata (for subagent debugging/replay). Returns entry id. */
-	appendSessionInit(init: { systemPrompt: string; task: string; tools: string[]; outputSchema?: unknown }): string {
+	appendSessionInit(init: { systemPrompt: string; task: string; tools: string[] }): string {
 		const entry: SessionInitEntry = {
 			type: "session_init",
 			id: generateId(this.#byId),
