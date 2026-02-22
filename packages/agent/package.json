@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "@nghyane/arcane-agent",
-	"version": "0.1.6",
+	"version": "0.1.7",
 	"description": "General-purpose agent with transport abstraction, state management, and attachment support",
 	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
@@ -34,9 +34,9 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@nghyane/arcane-ai": "^0.1.6",
-		"@nghyane/arcane-tui": "^0.1.6",
-		"@nghyane/arcane-utils": "^0.1.5"
+		"@nghyane/arcane-ai": "^0.1.7",
+		"@nghyane/arcane-tui": "^0.1.7",
+		"@nghyane/arcane-utils": "^0.1.6"
 	},
 	"devDependencies": {
 		"@sinclair/typebox": "^0.34.48",
