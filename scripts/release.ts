@@ -1,61 +1,23 @@
 #!/usr/bin/env bun
 /**
- * Release script for arcane
+ * Zero-arg release script for arcane monorepo.
+ *
+ * Detects changed packages since their last release, bumps patch version,
+ * updates CHANGELOGs, commits, tags per-package, and pushes.
  *
  * Usage:
- *   bun scripts/release.ts <version>   Full release (preflight, version, changelog, commit, push)
- *
- * Example: bun scripts/release.ts 3.10.0
+ *   bun scripts/release.ts              # auto-detect + patch bump
+ *   bun scripts/release.ts minor        # auto-detect + minor bump
+ *   bun scripts/release.ts major        # auto-detect + major bump
  */
 
 import { $, Glob } from "bun";
+import * as path from "node:path";
+import { detectChangedPackages } from "./detect-changes.ts";
 
-const changelogGlob = new Glob("packages/*/CHANGELOG.md");
-const packageJsonGlob = new Glob("packages/*/package.json");
+type BumpType = "patch" | "minor" | "major";
+
 const cargoTomlGlob = new Glob("crates/*/Cargo.toml");
-
-// =============================================================================
-// Shared functions
-// =============================================================================
-
-
-function hasUnreleasedContent(content: string): boolean {
-	const unreleasedMatch = content.match(/## \[Unreleased\]\s*\n([\s\S]*?)(?=## \[\d|$)/);
-	if (!unreleasedMatch) return false;
-	const sectionContent = unreleasedMatch[1].trim();
-	return sectionContent.length > 0;
-}
-
-function removeEmptyVersionEntries(content: string): string {
-	// Remove version entries that have no content (just whitespace until next ## [ or EOF)
-	return content.replace(/## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}\s*\n(?=## \[|\s*$)/g, "");
-}
-
-async function updateChangelogsForRelease(version: string): Promise<void> {
-	const date = new Date().toISOString().split("T")[0];
-
-	for await (const changelog of changelogGlob.scan(".")) {
-		let content = await Bun.file(changelog).text();
-
-		if (!content.includes("## [Unreleased]")) {
-			console.log(`  Skipping ${changelog}: no [Unreleased] section`);
-			continue;
-		}
-
-		// Only create version entry if [Unreleased] has content
-		if (hasUnreleasedContent(content)) {
-			content = content.replace("## [Unreleased]", `## [${version}] - ${date}`);
-			content = content.replace(/^(# Changelog\n\n)/, `$1## [Unreleased]\n\n`);
-		}
-
-		// Clean up any existing empty version entries
-		content = removeEmptyVersionEntries(content);
-
-		await Bun.write(changelog, content);
-		console.log(`  Updated ${changelog}`);
-	}
-}
-
 
 function parseVersion(v: string): [number, number, number] {
 	const match = v.replace(/^v/, "").match(/^(\d+)\.(\d+)\.(\d+)/);
@@ -63,129 +25,178 @@ function parseVersion(v: string): [number, number, number] {
 	return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
 }
 
-function compareVersions(a: string, b: string): number {
-	const [aMajor, aMinor, aPatch] = parseVersion(a);
-	const [bMajor, bMinor, bPatch] = parseVersion(b);
-	if (aMajor !== bMajor) return aMajor - bMajor;
-	if (aMinor !== bMinor) return aMinor - bMinor;
-	return aPatch - bPatch;
+function bumpVersion(version: string, bump: BumpType): string {
+	const [major, minor, patch] = parseVersion(version);
+	switch (bump) {
+		case "major":
+			return `${major + 1}.0.0`;
+		case "minor":
+			return `${major}.${minor + 1}.0`;
+		case "patch":
+			return `${major}.${minor}.${patch + 1}`;
+	}
 }
 
-async function cmdRelease(version: string): Promise<void> {
-	console.log("\n=== Release Script ===\n");
+function hasUnreleasedContent(content: string): boolean {
+	const unreleasedMatch = content.match(/## \[Unreleased\]\s*\n([\s\S]*?)(?=## \[\d|$)/);
+	if (!unreleasedMatch) return false;
+	return unreleasedMatch[1].trim().length > 0;
+}
 
-	// 1. Pre-flight checks
+function removeEmptyVersionEntries(content: string): string {
+	return content.replace(/## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}\s*\n(?=## \[|\s*$)/g, "");
+}
+
+async function updateChangelog(pkgDir: string, version: string): Promise<void> {
+	const changelogPath = path.join(pkgDir, "CHANGELOG.md");
+	const file = Bun.file(changelogPath);
+	try {
+		let content = await file.text();
+		if (!content.includes("## [Unreleased]")) return;
+
+		const date = new Date().toISOString().split("T")[0];
+		if (hasUnreleasedContent(content)) {
+			content = content.replace("## [Unreleased]", `## [${version}] - ${date}`);
+			content = content.replace(/^(# Changelog\n\n)/, `$1## [Unreleased]\n\n`);
+		}
+		content = removeEmptyVersionEntries(content);
+		await Bun.write(changelogPath, content);
+		console.log(`  Updated ${changelogPath}`);
+	} catch {
+		// No changelog — that's fine
+	}
+}
+
+async function updateRustVersionIfNeeded(version: string): Promise<void> {
+	// Update workspace version in root Cargo.toml
+	const cargoToml = await Bun.file("Cargo.toml").text();
+	const currentMatch = cargoToml.match(/^\[workspace\.package\][\s\S]*?^version = "([^"]+)"/m);
+	if (!currentMatch) return;
+
+	if (currentMatch[1] !== version) {
+		await $`sd '^version = "[^"]+"' ${`version = "${version}"`} Cargo.toml`.quiet();
+		console.log(`  Updated Cargo.toml workspace version to ${version}`);
+	}
+}
+
+async function main(): Promise<void> {
+	console.log("\n=== Arcane Release ===\n");
+
+	// Parse bump type
+	const bumpArg = process.argv[2] as BumpType | undefined;
+	const bump: BumpType = bumpArg && ["patch", "minor", "major"].includes(bumpArg)
+		? bumpArg
+		: "patch";
+
+	// Pre-flight checks
 	console.log("Pre-flight checks...");
-
-	const branch = await $`git branch --show-current`.text();
-	if (branch.trim() !== "main") {
-		console.error(`Error: Must be on main branch (currently on '${branch.trim()}')`);
+	const branch = (await $`git branch --show-current`.text()).trim();
+	if (branch !== "main") {
+		console.error(`Error: Must be on main branch (currently on '${branch}')`);
 		process.exit(1);
 	}
 	console.log("  On main branch");
 
-	const status = await $`git status --porcelain`.text();
-	if (status.trim()) {
+	const status = (await $`git status --porcelain`.text()).trim();
+	if (status) {
 		console.error("Error: Uncommitted changes detected. Commit or stash first.");
 		console.error(status);
 		process.exit(1);
 	}
-	console.log("  Working directory clean");
+	console.log("  Working directory clean\n");
 
-	const currentVersion = (await Bun.file("packages/coding-agent/package.json").json()).version as string;
-	if (compareVersions(version, currentVersion) <= 0) {
-		console.error(`Error: Version ${version} must be greater than current version ${currentVersion}`);
-		process.exit(1);
-	}
-	console.log(`  Version ${version} > ${currentVersion}\n`);
+	// Detect changed packages
+	console.log("Detecting changed packages...");
+	const changedPackages = await detectChangedPackages();
 
-	// 2. Update package versions
-	console.log(`Updating package versions to ${version}…`);
-	const pkgJsonPaths = await Array.fromAsync(packageJsonGlob.scan("."));
-
-	// Filter out private packages
-	const publicPkgPaths: string[] = [];
-	for (const pkgPath of pkgJsonPaths) {
-		const pkgJson = await Bun.file(pkgPath).json();
-		if (pkgJson.private) {
-			console.log(`  Skipping ${pkgJson.name} (private)`);
-			continue;
-		}
-		publicPkgPaths.push(pkgPath);
+	if (changedPackages.length === 0) {
+		console.log("No packages changed since last release. Nothing to do.");
+		process.exit(0);
 	}
 
-	await $`sd '"version": "[^"]+"' ${`"version": "${version}"`} ${publicPkgPaths}`;
-
-	// Verify
-	console.log("  Verifying versions:");
-	for (const pkgPath of publicPkgPaths) {
-		const pkgJson = await Bun.file(pkgPath).json();
-		console.log(`    ${pkgJson.name}: ${pkgJson.version}`);
+	for (const pkg of changedPackages) {
+		console.log(`  ${pkg.name} (${pkg.dir})`);
 	}
 	console.log();
 
-	// 3. Update Rust workspace version
-	console.log(`Updating Rust workspace version to ${version}…`);
-	await $`sd '^version = "[^"]+"' ${`version = "${version}"`} Cargo.toml`;
+	// Bump versions
+	console.log(`Bumping versions (${bump})...`);
+	const tags: string[] = [];
+	let highestNewVersion = "0.0.0";
 
-	// Verify
-	const cargoToml = await Bun.file("Cargo.toml").text();
-	const versionMatch = cargoToml.match(/^\[workspace\.package\][\s\S]*?^version = "([^"]+)"/m);
-	if (versionMatch) {
-		console.log(`  workspace: ${versionMatch[1]}`);
-	}
+	for (const pkg of changedPackages) {
+		const newVersion = bumpVersion(pkg.version, bump);
+		const pkgJsonPath = path.join(pkg.dir, "package.json");
 
-	// List crates using workspace version
-	for await (const cargoPath of cargoTomlGlob.scan(".")) {
-		const content = await Bun.file(cargoPath).text();
-		if (content.includes("version.workspace = true")) {
-			const nameMatch = content.match(/^name = "([^"]+)"/m);
-			if (nameMatch) {
-				console.log(`  ${nameMatch[1]}: ${version} (workspace)`);
+		// Read, modify, write JSON properly instead of regex substitution
+		const pkgJson = await Bun.file(pkgJsonPath).json();
+		pkgJson.version = newVersion;
+
+		// Update inter-package dependency versions
+		for (const changed of changedPackages) {
+			const depNewVersion = bumpVersion(changed.version, bump);
+			if (pkgJson.dependencies?.[changed.name]) {
+				pkgJson.dependencies[changed.name] = `^${depNewVersion}`;
+			}
+			if (pkgJson.devDependencies?.[changed.name]) {
+				pkgJson.devDependencies[changed.name] = `^${depNewVersion}`;
 			}
 		}
+
+		await Bun.write(pkgJsonPath, JSON.stringify(pkgJson, null, "\t") + "\n");
+
+		console.log(`  ${pkg.name}: ${pkg.version} -> ${newVersion}`);
+		tags.push(`${pkg.name}@${newVersion}`);
+
+		if (parseVersion(newVersion) > parseVersion(highestNewVersion)) {
+			highestNewVersion = newVersion;
+		}
+
+		// Update changelog
+		await updateChangelog(pkg.dir, newVersion);
 	}
 	console.log();
 
-	// 4. Regenerate lockfiles
-	console.log("Regenerating lockfiles...");
-	await $`rm -f bun.lock`;
-	await $`bun install`;
-	console.log();
+	// Update Rust version if natives package changed
+	const nativesChanged = changedPackages.some((p) => p.dir === "packages/natives");
+	if (nativesChanged) {
+		console.log("Updating Rust workspace version...");
+		await updateRustVersionIfNeeded(highestNewVersion);
+		console.log();
+	}
 
-	// 5. Update changelogs
-	console.log("Updating CHANGELOGs...");
-	await updateChangelogsForRelease(version);
-	console.log();
+	// Regenerate lockfile
+	console.log("Regenerating lockfile...");
+	await $`rm -f bun.lock`.quiet();
+	await $`bun install`.quiet();
+	console.log("  Done\n");
 
+	// Commit and tag
+	const changedNames = changedPackages.map((p) => p.name.replace("@nghyane/arcane-", "").replace("@nghyane/", "")).join(", ");
+	const commitMsg = `chore: release ${changedNames}`;
 
-	// 6. Commit and tag
 	console.log("Committing and tagging...");
 	await $`git add .`;
-	await $`git commit -m ${`chore: bump version to ${version}`}`;
-	await $`git tag ${`v${version}`}`;
+	await $`git commit -m ${commitMsg}`.quiet();
+
+	// Per-package tags for version tracking
+	for (const tag of tags) {
+		await $`git tag ${tag}`;
+		console.log(`  Tagged ${tag}`);
+	}
+
+	// Single trigger tag for CI (one CI run publishes everything)
+	const releaseTag = `release/${new Date().toISOString().replace(/[:.]/g, "-")}`;
+	await $`git tag ${releaseTag}`;
+	console.log(`  Tagged ${releaseTag} (CI trigger)`);
 	console.log();
 
-	// 7. Push
+	// Push commit + all tags at once
 	console.log("Pushing to remote...");
-	await $`git push origin main`;
-	await $`git push origin ${`v${version}`}`;
+	await $`git push origin main --tags`.quiet();
 	console.log();
 
-	console.log(`=== Released v${version} ===`);
-	console.log("CI will publish to npm automatically when checks pass.");
-}
+	console.log(`=== Released: ${tags.join(", ")} ===");
+	console.log("CI will publish changed packages automatically.");
 
-// =============================================================================
-// Main
-// =============================================================================
-
-const arg = process.argv[2];
-
-if (!arg || !/^\d+\.\d+\.\d+/.test(arg)) {
-	console.error("Usage:");
-	console.error("  bun scripts/release.ts <version>   Full release");
-	process.exit(1);
-}
-
-await cmdRelease(arg);
+await main();

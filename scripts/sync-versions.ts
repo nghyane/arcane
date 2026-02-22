@@ -1,12 +1,13 @@
 #!/usr/bin/env bun
 
 /**
- * Syncs ALL @nghyane/* package dependency versions to match their current versions.
- * This ensures lockstep versioning across the monorepo.
+ * Syncs inter-package dependency versions across the monorepo.
+ * Each package maintains its own version independently.
+ * This script ensures dependency references match actual package versions.
  */
 
-import { readdirSync } from "node:fs";
-import { join } from "node:path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 interface PackageJson {
 	name: string;
@@ -21,19 +22,19 @@ interface PackageInfo {
 	data: PackageJson;
 }
 
-const packagesDir = join(process.cwd(), "packages");
-const packageDirs = readdirSync(packagesDir, { withFileTypes: true })
+const packagesDir = path.join(process.cwd(), "packages");
+const packageDirs = fs.readdirSync(packagesDir, { withFileTypes: true })
 	.filter((dirent) => dirent.isDirectory())
 	.map((dirent) => dirent.name);
 
-// Read all package.json files and build version map
 const packages: Record<string, PackageInfo> = {};
 const versionMap: Record<string, string> = {};
 
 for (const dir of packageDirs) {
-	const pkgPath = join(packagesDir, dir, "package.json");
+	const pkgPath = path.join(packagesDir, dir, "package.json");
 	try {
-		const pkg = await Bun.file(pkgPath).json<PackageJson>();
+		const content = fs.readFileSync(pkgPath, "utf-8");
+		const pkg = JSON.parse(content) as PackageJson;
 		packages[dir] = { path: pkgPath, data: pkg };
 		versionMap[pkg.name] = pkg.version;
 	} catch (e) {
@@ -47,38 +48,18 @@ for (const [name, version] of Object.entries(versionMap).sort()) {
 	console.log(`  ${name}: ${version}`);
 }
 
-// Verify all non-private packages have the same version (lockstep)
-const publicVersionMap = Object.fromEntries(
-	Object.entries(versionMap).filter(([name]) => {
-		const pkg = Object.values(packages).find((p) => p.data.name === name);
-		return pkg && !pkg.data.private;
-	}),
-);
-const versions = new Set(Object.values(publicVersionMap));
-if (versions.size > 1) {
-	console.error("\n❌ ERROR: Not all public packages have the same version!");
-	console.error("Expected lockstep versioning. Run one of:");
-	console.error("  npm run version:patch");
-	console.error("  npm run version:minor");
-	console.error("  npm run version:major");
-	process.exit(1);
-}
-
-console.log("\n✅ All packages at same version (lockstep)");
-
-// Update all inter-package dependencies
+// Update all inter-package dependencies to match actual versions
 let totalUpdates = 0;
-for (const [dir, pkg] of Object.entries(packages)) {
+for (const [_dir, pkg] of Object.entries(packages)) {
 	let updated = false;
 
-	// Check dependencies
 	if (pkg.data.dependencies) {
 		for (const [depName, currentVersion] of Object.entries(pkg.data.dependencies)) {
 			if (versionMap[depName]) {
 				const newVersion = `^${versionMap[depName]}`;
-				if (currentVersion !== newVersion) {
+				if (currentVersion !== newVersion && currentVersion !== "workspace:*") {
 					console.log(`\n${pkg.data.name}:`);
-					console.log(`  ${depName}: ${currentVersion} → ${newVersion}`);
+					console.log(`  ${depName}: ${currentVersion} -> ${newVersion}`);
 					pkg.data.dependencies[depName] = newVersion;
 					updated = true;
 					totalUpdates++;
@@ -87,14 +68,13 @@ for (const [dir, pkg] of Object.entries(packages)) {
 		}
 	}
 
-	// Check devDependencies
 	if (pkg.data.devDependencies) {
 		for (const [depName, currentVersion] of Object.entries(pkg.data.devDependencies)) {
 			if (versionMap[depName]) {
 				const newVersion = `^${versionMap[depName]}`;
-				if (currentVersion !== newVersion) {
+				if (currentVersion !== newVersion && currentVersion !== "workspace:*") {
 					console.log(`\n${pkg.data.name}:`);
-					console.log(`  ${depName}: ${currentVersion} → ${newVersion} (devDependencies)`);
+					console.log(`  ${depName}: ${currentVersion} -> ${newVersion}`);
 					pkg.data.devDependencies[depName] = newVersion;
 					updated = true;
 					totalUpdates++;
@@ -103,14 +83,13 @@ for (const [dir, pkg] of Object.entries(packages)) {
 		}
 	}
 
-	// Write if updated
 	if (updated) {
-		await Bun.write(pkg.path, JSON.stringify(pkg.data, null, "\t") + "\n");
+		fs.writeFileSync(pkg.path, JSON.stringify(pkg.data, null, "\t") + "\n");
 	}
 }
 
-if (totalUpdates === 0) {
-	console.log("\nAll inter-package dependencies already in sync.");
+if (totalUpdates > 0) {
+	console.log(`\nUpdated ${totalUpdates} dependency version(s).`);
 } else {
-	console.log(`\n✅ Updated ${totalUpdates} dependency version(s)`);
+	console.log("\nAll inter-package dependencies are up to date.");
 }

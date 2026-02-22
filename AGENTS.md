@@ -491,11 +491,20 @@ Use these sections under `## [Unreleased]`:
 
 ## Releasing
 
-1. **Update CHANGELOGs**: Ensure all changes since last release are documented in the `[Unreleased]` section of each affected package's CHANGELOG.md
+Per-package independent versioning. Only changed packages are bumped and published.
 
-2. **Run release script**:
+1. **Update CHANGELOGs**: Ensure changes are in the `[Unreleased]` section of affected packages
+
+2. **Run release**:
    ```bash
-   bun run release
+   bun run release          # auto-detect changed packages, patch bump
+   bun run release minor    # minor bump
+   bun run release major    # major bump
    ```
 
-The script handles: version bump, CHANGELOG finalization, commit, tag, publish, and adding new `[Unreleased]` sections.
+3. **Check what changed** (dry run):
+   ```bash
+   bun run changed
+   ```
+
+The script: detects changed packages since last release, bumps versions, updates CHANGELOGs, commits, creates per-package tags (`@nghyane/arcane-utils@0.1.4`), and pushes. CI publishes only the tagged package.
