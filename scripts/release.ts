@@ -196,7 +196,8 @@ async function main(): Promise<void> {
 	await $`git push origin main --tags`.quiet();
 	console.log();
 
-	console.log(`=== Released: ${tags.join(", ")} ===");
+	console.log(`=== Released: ${tags.join(", ")} ===`);
 	console.log("CI will publish changed packages automatically.");
+}
 
 await main();
