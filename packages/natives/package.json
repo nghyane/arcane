@@ -38,7 +38,7 @@
 		"bench": "bun bench/grep.ts"
 	},
 	"dependencies": {
-		"@nghyane/pi-utils": "workspace:*"
+		"@nghyane/pi-utils": "^12.18.4"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.3.9"

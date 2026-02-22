@@ -31,9 +31,9 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@nghyane/pi-ai": "workspace:*",
-		"@nghyane/pi-tui": "workspace:*",
-		"@nghyane/pi-utils": "workspace:*"
+		"@nghyane/pi-ai": "^12.18.4",
+		"@nghyane/pi-tui": "^12.18.4",
+		"@nghyane/pi-utils": "^12.18.4"
 	},
 	"devDependencies": {
 		"@sinclair/typebox": "^0.34.48",

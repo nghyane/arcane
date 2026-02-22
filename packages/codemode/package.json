@@ -24,8 +24,8 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@nghyane/pi-agent-core": "workspace:*",
-		"@nghyane/pi-utils": "workspace:*",
+		"@nghyane/pi-agent-core": "^12.18.4",
+		"@nghyane/pi-utils": "^12.18.4",
 		"@sinclair/typebox": "^0.34.48"
 	},
 	"devDependencies": {
@@ -46,7 +46,9 @@
 		"directory": "packages/codemode"
 	},
 	"homepage": "https://github.com/can1357/oh-my-pi",
-	"bugs": { "url": "https://github.com/can1357/oh-my-pi/issues" },
+	"bugs": {
+		"url": "https://github.com/can1357/oh-my-pi/issues"
+	},
 	"engines": {
 		"bun": ">=1.3.7"
 	}
