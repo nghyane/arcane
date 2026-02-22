@@ -12,7 +12,7 @@ import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
 import { type ImageContent, supportsXhigh } from "@nghyane/arcane-ai";
 import { $env, postmortem } from "@nghyane/arcane-utils";
-import { getProjectDir, setProjectDir, VERSION } from "@nghyane/arcane-utils/dirs";
+import { getProjectDir, setProjectDir } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import type { Args } from "./cli/args";
 import { processFileArguments } from "./cli/file-processor";
@@ -33,6 +33,7 @@ import { type SessionInfo, SessionManager } from "./session/session-manager";
 import { resolvePromptInput } from "./system-prompt";
 import { getChangelogPath, getNewEntries, parseChangelog } from "./utils/changelog";
 import { printTimings, time } from "./utils/timings";
+import { VERSION } from "./version";
 
 /** Conditional startup debug prints (stderr) when ARCANE_DEBUG_STARTUP is set */
 const debugStartup = $env.ARCANE_DEBUG_STARTUP

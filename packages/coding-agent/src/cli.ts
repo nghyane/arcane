@@ -4,7 +4,8 @@
  * lightweight CLI runner from pi-utils.
  */
 import { type CommandEntry, run } from "@nghyane/arcane-utils/cli";
-import { APP_NAME, VERSION } from "@nghyane/arcane-utils/dirs";
+import { APP_NAME } from "@nghyane/arcane-utils/dirs";
+import { VERSION } from "./version";
 
 // Detect known Bun errata that cause TUI crashes (e.g. Bun.stringWidth mishandling OSC sequences).
 if (Bun.stringWidth("\x1b[0m\x1b]8;;\x07") !== 0) {

@@ -2,7 +2,8 @@
  * System information collection for debug reports.
  */
 import * as os from "node:os";
-import { getProjectDir, VERSION } from "@nghyane/arcane-utils/dirs";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
+import { VERSION } from "../version";
 
 export interface SystemInfo {
 	os: string;

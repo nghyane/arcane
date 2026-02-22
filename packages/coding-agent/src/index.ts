@@ -7,7 +7,7 @@ export { StringEnum } from "@nghyane/arcane-ai";
 export { Container, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 // Logging
 export { logger } from "@nghyane/arcane-utils";
-export { getAgentDir, VERSION } from "@nghyane/arcane-utils/dirs";
+export { getAgentDir } from "@nghyane/arcane-utils/dirs";
 export { formatKeyHint, formatKeyHints } from "./config/keybindings";
 export { ModelRegistry } from "./config/model-registry";
 // Prompt templates
@@ -273,3 +273,4 @@ export {
 	type WriteToolDetails,
 	type WriteToolInput,
 } from "./tools";
+export { VERSION } from "./version";
