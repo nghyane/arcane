@@ -191,9 +191,10 @@ async function main(): Promise<void> {
 	console.log(`  Tagged ${releaseTag} (CI trigger)`);
 	console.log();
 
-	// Push commit + all tags at once
+	// Push commit + only new tags (not all tags — old v* tags may be blocked by push protection)
 	console.log("Pushing to remote...");
-	await $`git push origin main --tags`.quiet();
+	const allNewTags = [...tags, releaseTag];
+	await $`git push origin main ${allNewTags.map(t => `refs/tags/${t}`)}`.quiet();
 	console.log();
 
 	console.log(`=== Released: ${tags.join(", ")} ===`);

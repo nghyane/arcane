@@ -20,11 +20,11 @@
     },
     "packages/agent": {
       "name": "@nghyane/arcane-agent",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "dependencies": {
-        "@nghyane/arcane-ai": "workspace:*",
-        "@nghyane/arcane-tui": "workspace:*",
-        "@nghyane/arcane-utils": "workspace:*",
+        "@nghyane/arcane-ai": "^0.1.4",
+        "@nghyane/arcane-tui": "^0.1.4",
+        "@nghyane/arcane-utils": "^0.1.4",
       },
       "devDependencies": {
         "@sinclair/typebox": "^0.34.48",
@@ -33,7 +33,7 @@
     },
     "packages/ai": {
       "name": "@nghyane/arcane-ai",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "bin": {
         "pi-ai": "./src/cli.ts",
       },
@@ -45,7 +45,7 @@
         "@connectrpc/connect-node": "^2.1.1",
         "@google/genai": "^1.41.0",
         "@mistralai/mistralai": "^1.14.0",
-        "@nghyane/arcane-utils": "workspace:*",
+        "@nghyane/arcane-utils": "^0.1.4",
         "@sinclair/typebox": "^0.34.48",
         "@smithy/node-http-handler": "^4.4.10",
         "ajv": "^8.18.0",
@@ -62,10 +62,10 @@
     },
     "packages/codemode": {
       "name": "@nghyane/arcane-codemode",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "dependencies": {
-        "@nghyane/arcane-agent": "workspace:*",
-        "@nghyane/arcane-utils": "workspace:*",
+        "@nghyane/arcane-agent": "^0.1.4",
+        "@nghyane/arcane-utils": "^0.1.4",
         "@sinclair/typebox": "^0.34.48",
       },
       "devDependencies": {
@@ -74,19 +74,19 @@
     },
     "packages/coding-agent": {
       "name": "@nghyane/arcane",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "bin": {
         "arc": "src/cli.ts",
       },
       "dependencies": {
         "@mozilla/readability": "0.6.0",
-        "@nghyane/arcane-agent": "workspace:*",
-        "@nghyane/arcane-ai": "workspace:*",
-        "@nghyane/arcane-codemode": "workspace:*",
-        "@nghyane/arcane-natives": "workspace:*",
-        "@nghyane/arcane-stats": "workspace:*",
-        "@nghyane/arcane-tui": "workspace:*",
-        "@nghyane/arcane-utils": "workspace:*",
+        "@nghyane/arcane-agent": "^0.1.4",
+        "@nghyane/arcane-ai": "^0.1.4",
+        "@nghyane/arcane-codemode": "^0.1.4",
+        "@nghyane/arcane-natives": "^0.1.4",
+        "@nghyane/arcane-stats": "^0.1.4",
+        "@nghyane/arcane-tui": "^0.1.4",
+        "@nghyane/arcane-utils": "^0.1.4",
         "@sinclair/typebox": "^0.34.48",
         "@xterm/headless": "^6.0.0",
         "ajv": "^8.18.0",
@@ -111,9 +111,9 @@
     },
     "packages/natives": {
       "name": "@nghyane/arcane-natives",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "dependencies": {
-        "@nghyane/arcane-utils": "workspace:*",
+        "@nghyane/arcane-utils": "^0.1.4",
       },
       "devDependencies": {
         "@types/bun": "^1.3.9",
@@ -145,13 +145,13 @@
     },
     "packages/stats": {
       "name": "@nghyane/arcane-stats",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "bin": {
         "arc-stats": "./src/index.ts",
       },
       "dependencies": {
-        "@nghyane/arcane-ai": "workspace:*",
-        "@nghyane/arcane-utils": "workspace:*",
+        "@nghyane/arcane-ai": "^0.1.4",
+        "@nghyane/arcane-utils": "^0.1.4",
         "@tailwindcss/node": "4.2.0",
         "chart.js": "4.5.1",
         "date-fns": "4.1.0",
@@ -170,7 +170,7 @@
     },
     "packages/swarm-extension": {
       "name": "@nghyane/arcane-swarm",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "bin": {
         "arc-swarm": "src/cli.ts",
       },
@@ -183,10 +183,10 @@
     },
     "packages/tui": {
       "name": "@nghyane/arcane-tui",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "dependencies": {
-        "@nghyane/arcane-natives": "workspace:*",
-        "@nghyane/arcane-utils": "workspace:*",
+        "@nghyane/arcane-natives": "^0.1.4",
+        "@nghyane/arcane-utils": "^0.1.4",
         "@types/mime-types": "^3.0.1",
         "chalk": "^5.6.2",
         "marked": "^17.0.2",
@@ -199,7 +199,7 @@
     },
     "packages/utils": {
       "name": "@nghyane/arcane-utils",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "dependencies": {
         "winston": "^3.19.0",
         "winston-daily-rotate-file": "^5.0.0",
