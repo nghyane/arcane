@@ -51,7 +51,7 @@ const EMBEDDED_AGENT_DEFS: EmbeddedAgentDef[] = [
 		frontmatter: {
 			name: "quick_task",
 			description: "Low-reasoning agent for strictly mechanical updates or data collection only",
-			model: "pi/smol",
+			model: "arcane/fast",
 			thinkingLevel: "minimal",
 		},
 		template: taskMd,

@@ -314,7 +314,7 @@ export function isDefaultModelAlias(value: string | string[] | undefined): boole
 }
 
 /**
- * Expand a role alias like "arcane/smol" to the configured model string.
+ * Expand a role alias like "arcane/fast" to the configured model string.
  */
 export function expandRoleAlias(value: string, settings?: Settings): string {
 	const normalized = value.trim();
@@ -730,12 +730,12 @@ export async function restoreModelFromSession(
 }
 
 /**
- * Find a smol/fast model using the priority chain.
+ * Find a fast model using the priority chain.
  * Tries exact matches first, then fuzzy matches.
  *
  * @param modelRegistry The model registry to search
  * @param savedModel Optional saved model string from settings (provider/modelId)
- * @returns The best available smol model, or undefined if none found
+ * @returns The best available fast model, or undefined if none found
  */
 export async function findSmolModel(
 	modelRegistry: ModelRegistry,
@@ -754,7 +754,7 @@ export async function findSmolModel(
 	}
 
 	// 2. Try priority chain
-	for (const pattern of MODEL_PRIO.smol) {
+	for (const pattern of MODEL_PRIO.fast) {
 		// Try exact match with provider prefix
 		const providerMatch = availableModels.find(m => `${m.provider}/${m.id}`.toLowerCase() === pattern);
 		if (providerMatch) return providerMatch;
@@ -773,12 +773,12 @@ export async function findSmolModel(
 }
 
 /**
- * Find a slow/comprehensive model using the priority chain.
+ * Find a oracle/comprehensive model using the priority chain.
  * Prioritizes reasoning and codex models for thorough analysis.
  *
  * @param modelRegistry The model registry to search
  * @param savedModel Optional saved model string from settings (provider/modelId)
- * @returns The best available slow model, or undefined if none found
+ * @returns The best available oracle model, or undefined if none found
  */
 export async function findSlowModel(
 	modelRegistry: ModelRegistry,
@@ -797,7 +797,7 @@ export async function findSlowModel(
 	}
 
 	// 2. Try priority chain
-	for (const pattern of MODEL_PRIO.slow) {
+	for (const pattern of MODEL_PRIO.oracle) {
 		// Try exact match first
 		const exactMatch = availableModels.find(m => m.id.toLowerCase() === pattern.toLowerCase());
 		if (exactMatch) return exactMatch;

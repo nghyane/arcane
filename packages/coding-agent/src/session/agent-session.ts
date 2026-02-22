@@ -2219,7 +2219,7 @@ export class AgentSession {
 	/**
 	 * Cycle through configured role models in a fixed order.
 	 * Skips missing roles.
-	 * @param roleOrder - Order of roles to cycle through (e.g., ["slow", "default", "smol"])
+	 * @param roleOrder - Order of roles to cycle through (e.g., ["oracle", "default", "fast"])
 	 * @param options - Optional settings: `temporary` to not persist to settings
 	 */
 	async cycleRoleModels(

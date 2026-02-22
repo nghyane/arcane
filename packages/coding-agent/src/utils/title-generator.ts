@@ -35,7 +35,7 @@ function getTitleModelCandidates(registry: ModelRegistry, savedSmolModel?: strin
 		}
 	}
 
-	for (const pattern of MODEL_PRIO.smol) {
+	for (const pattern of MODEL_PRIO.fast) {
 		const needle = pattern.toLowerCase();
 		const exactMatch = availableModels.find(model => model.id.toLowerCase() === needle);
 		addCandidate(exactMatch);

@@ -19,7 +19,7 @@ export async function resolvePrimaryModel(
 ): Promise<{ model: Model<Api>; apiKey: string }> {
 	const available = modelRegistry.getAvailable();
 	const matchPreferences = { usageOrder: settings.getStorage()?.getModelUsageOrder() };
-	const roleOrder = ["commit", "smol", ...MODEL_ROLE_IDS] as const;
+	const roleOrder = ["commit", "fast", ...MODEL_ROLE_IDS] as const;
 	const model = override
 		? resolveModelFromString(expandRoleAlias(override, settings), available, matchPreferences)
 		: resolveModelFromSettings({
@@ -49,7 +49,7 @@ export async function resolveSmolModel(
 ): Promise<{ model: Model<Api>; apiKey: string }> {
 	const available = modelRegistry.getAvailable();
 	const matchPreferences = { usageOrder: settings.getStorage()?.getModelUsageOrder() };
-	const role = settings.getModelRole("smol");
+	const role = settings.getModelRole("fast");
 	const roleModel = role
 		? resolveModelFromString(expandRoleAlias(role, settings), available, matchPreferences)
 		: undefined;
@@ -58,7 +58,7 @@ export async function resolveSmolModel(
 		if (apiKey) return { model: roleModel, apiKey };
 	}
 
-	for (const pattern of MODEL_PRIO.smol) {
+	for (const pattern of MODEL_PRIO.fast) {
 		const candidate = parseModelPattern(pattern, available, matchPreferences).model;
 		if (!candidate) continue;
 		const apiKey = await modelRegistry.getApiKey(candidate);

@@ -1,5 +1,5 @@
 {
-	"smol": [
+	"fast": [
 		"cerebras/zai-glm-4.7",
 		"cerebras/zai-glm-4.6",
 		"cerebras/zai-glm",
@@ -9,7 +9,13 @@
 		"flash",
 		"mini"
 	],
-	"slow": [
+	"reviewer": [
+		"gemini-2.5-pro",
+		"gemini-2.5",
+		"gemini-pro",
+		"pro"
+	],
+	"oracle": [
 		"gpt-5.3-codex",
 		"gpt-5.3",
 		"gpt-5.2-codex",
@@ -22,7 +28,6 @@
 		"opus-4.5",
 		"opus-4-5",
 		"opus-4.1",
-		"opus-4-1",
-		"pro"
+		"opus-4-1"
 	]
 }

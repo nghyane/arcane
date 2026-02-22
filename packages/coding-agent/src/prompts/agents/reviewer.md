@@ -3,7 +3,7 @@ name: reviewer
 description: "Code review specialist for quality/security analysis"
 tools: read, grep, find, bash
 spawns: explore, task
-model: arcane/slow
+model: arcane/reviewer
 thinking-level: high
 ---
 
