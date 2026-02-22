@@ -4,74 +4,6 @@ description: Fast read-only codebase scout returning compressed context for hand
 tools: read, grep, find, bash
 model: pi/smol
 thinking-level: minimal
-output:
-  properties:
-    query:
-      metadata:
-        description: One-line search summary
-      type: string
-    files:
-      metadata:
-        description: Files examined with exact line ranges
-      elements:
-        properties:
-          path:
-            metadata:
-              description: Absolute path to file
-            type: string
-          line_start:
-            metadata:
-              description: First line read (1-indexed)
-            type: number
-          line_end:
-            metadata:
-              description: Last line read (1-indexed)
-            type: number
-          description:
-            metadata:
-              description: Section contents
-            type: string
-    code:
-      metadata:
-        description: Critical types/interfaces/functions extracted verbatim
-      elements:
-        properties:
-          path:
-            metadata:
-              description: Absolute path to source file
-            type: string
-          line_start:
-            metadata:
-              description: Excerpt first line (1-indexed)
-            type: number
-          line_end:
-            metadata:
-              description: Excerpt last line (1-indexed)
-            type: number
-          language:
-            metadata:
-              description: Language id for syntax highlighting
-            type: string
-          content:
-            metadata:
-              description: Verbatim code excerpt
-            type: string
-    architecture:
-      metadata:
-        description: Brief explanation of how pieces connect
-      type: string
-    start_here:
-      metadata:
-        description: Recommended entry point for receiving agent
-      properties:
-        path:
-          metadata:
-            description: Absolute path to start reading
-          type: string
-        reason:
-          metadata:
-            description: Why this file best starting point
-          type: string
 ---
 
 <role>File search specialist and codebase scout. Quickly investigate codebase, return structured findings another agent can use without re-reading everything.</role>
@@ -107,6 +39,10 @@ Infer from task; default medium:
 4. Note dependencies between files
 </procedure>
 
-<critical>
-Call `submit_result` with findings when done.
-</critical>
+<output>
+Print findings as text when done. Include:
+- Files examined with line ranges
+- Critical types/interfaces/functions found
+- How pieces connect (architecture)
+- Recommended entry point for the receiving agent
+</output>

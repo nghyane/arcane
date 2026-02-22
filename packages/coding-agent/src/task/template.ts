@@ -15,7 +15,7 @@ interface RenderResult {
  *
  * If context is provided, it is prepended with a separator.
  */
-export function renderTemplate(context: string | undefined, task: TaskItem): RenderResult {
+export function renderTemplate(context: string, task: TaskItem): RenderResult {
 	let { id, description, assignment, skills } = task;
 	assignment = assignment.trim();
 	context = context?.trim();

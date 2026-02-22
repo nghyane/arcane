@@ -302,13 +302,11 @@ export const bashToolRenderer = {
 				const hasOutput = displayOutput.trim().length > 0;
 				if (hasOutput) {
 					if (expanded) {
-						outputLines.push(
-							...displayOutput.split("\n").map(line => uiTheme.fg("toolOutput", replaceTabs(line))),
-						);
+						outputLines.push(...displayOutput.split("\n").map(line => replaceTabs(line)));
 					} else {
 						const styledOutput = displayOutput
 							.split("\n")
-							.map(line => uiTheme.fg("toolOutput", replaceTabs(line)))
+							.map(line => replaceTabs(line))
 							.join("\n");
 						const textContent = styledOutput;
 						const result = truncateToVisualLines(textContent, previewLines, width);

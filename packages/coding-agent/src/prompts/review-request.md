@@ -39,8 +39,8 @@ Reviewer should:
 1. Focus ONLY on assigned files
 2. {{#if skipDiff}}Run `git diff`/`git show` for assigned files{{else}}Use diff hunks below (don't re-run git diff){{/if}}
 3. Read full file context as needed via `read`
-4. Call `report_finding` per issue
-5. Call `submit_result` with verdict when done
+4. Report each issue inline with priority, location, and explanation
+5. Print verdict summary when done
 
 {{#if skipDiff}}
 ### Diff Previews

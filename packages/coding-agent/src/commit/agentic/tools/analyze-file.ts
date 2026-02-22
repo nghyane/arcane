@@ -5,38 +5,15 @@ import type { NumstatEntry } from "../../../commit/types";
 import type { ModelRegistry } from "../../../config/model-registry";
 import { renderPromptTemplate } from "../../../config/prompt-templates";
 import type { Settings } from "../../../config/settings";
-import type { CustomTool, CustomToolContext } from "../../../extensibility/custom-tools/types";
+import type { CustomTool } from "../../../extensibility/custom-tools/types";
 import type { AuthStorage } from "../../../session/auth-storage";
-import { TaskTool } from "../../../task";
-import type { TaskParams } from "../../../task/types";
-import type { ToolSession } from "../../../tools";
+import { runTaskBatch } from "../../../task/batch";
 import { getFilePriority } from "./git-file-diff";
 
 const analyzeFileSchema = Type.Object({
 	files: Type.Array(Type.String({ description: "File path" }), { minItems: 1 }),
 	goal: Type.Optional(Type.String({ description: "Optional analysis focus" })),
 });
-
-function buildToolSession(
-	ctx: CustomToolContext,
-	options: {
-		cwd: string;
-		authStorage: AuthStorage;
-		modelRegistry: ModelRegistry;
-		settings: Settings;
-		spawns: string;
-	},
-): ToolSession {
-	return {
-		cwd: options.cwd,
-		hasUI: false,
-		getSessionFile: () => ctx.sessionManager.getSessionFile() ?? null,
-		getSessionSpawns: () => options.spawns,
-		settings: options.settings,
-		authStorage: options.authStorage,
-		modelRegistry: options.modelRegistry,
-	};
-}
 
 export function createAnalyzeFileTool(options: {
 	cwd: string;
@@ -51,9 +28,7 @@ export function createAnalyzeFileTool(options: {
 		label: "Analyze Files",
 		description: "Spawn quick_task agents to analyze files.",
 		parameters: analyzeFileSchema,
-		async execute(toolCallId, params, onUpdate, ctx, signal) {
-			const toolSession = buildToolSession(ctx, options);
-			const taskTool = await TaskTool.create(toolSession);
+		async execute(_toolCallId, params, _onUpdate, ctx, signal) {
 			const numstat = options.state.overview?.numstat ?? [];
 			const tasks = params.files.map((file, index) => {
 				const relatedFiles = formatRelatedFiles(params.files, file, numstat);
@@ -65,14 +40,39 @@ export function createAnalyzeFileTool(options: {
 				return {
 					id: `AnalyzeFile${index + 1}`,
 					description: `Analyze ${file}`,
-					assignment: prompt,
+					task: prompt,
 				};
 			});
-			const taskParams: TaskParams = {
-				agent: "quick_task",
-				tasks,
-			};
-			return taskTool.execute(toolCallId, taskParams, signal, onUpdate);
+
+			try {
+				const { results } = await runTaskBatch({
+					cwd: options.cwd,
+					agentName: "quick_task",
+					tasks,
+					sessionFile: ctx.sessionManager.getSessionFile() ?? null,
+					signal,
+					authStorage: options.authStorage,
+					modelRegistry: options.modelRegistry,
+					settings: options.settings,
+				});
+
+				const output = results
+					.filter(Boolean)
+					.map(r => r!.output.trim())
+					.filter(Boolean)
+					.join("\n\n---\n\n");
+
+				return {
+					content: [{ type: "text", text: output || "(no output)" }],
+					details: {},
+				};
+			} catch (err) {
+				const message = err instanceof Error ? err.message : "Task batch failed";
+				return {
+					content: [{ type: "text", text: message }],
+					details: {},
+				};
+			}
 		},
 	};
 }

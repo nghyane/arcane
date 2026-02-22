@@ -231,7 +231,7 @@ export class ReviewCommand implements CustomCommand {
 
 	async execute(_args: string[], ctx: HookCommandContext): Promise<string | undefined> {
 		if (!ctx.hasUI) {
-			return "Use the Task tool to run the 'reviewer' agent to review recent code changes.";
+			return "Use the Review tool to review recent code changes.";
 		}
 
 		const mode = await ctx.ui.select("Review Mode", [
@@ -377,7 +377,7 @@ Custom review instructions
 
 ${instructions}
 
-Use the Task tool with \`agent: "reviewer"\` to execute this review.`;
+Use the Review tool to execute this review.`;
 			}
 
 			default:

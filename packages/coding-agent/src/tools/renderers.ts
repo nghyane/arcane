@@ -50,6 +50,8 @@ export const toolRenderers: Record<string, ToolRenderer> = {
 	read: readToolRenderer as ToolRenderer,
 	ssh: sshToolRenderer as ToolRenderer,
 	task: taskToolRenderer as ToolRenderer,
+	explore: taskToolRenderer as ToolRenderer,
+	review: taskToolRenderer as ToolRenderer,
 	todo_write: todoWriteToolRenderer as ToolRenderer,
 	undo_edit: undoEditToolRenderer as ToolRenderer,
 	fetch: fetchToolRenderer as ToolRenderer,

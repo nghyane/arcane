@@ -1,15 +1,8 @@
 /**
- * Task tool - Delegate tasks to specialized agents.
+ * Task tool — delegate parallel tasks to worker subagents.
  *
- * Lightweight fork mode:
- *   - Reuses parent session capabilities
- *   - Runs tasks directly in current workspace
- *
- * Supports:
- *   - Single agent execution
- *   - Parallel execution with concurrency limits
- *   - Progress tracking via JSON events
- *   - Session artifacts for debugging
+ * Uses the bundled `task` agent definition. No agent selection —
+ * explore and reviewer are standalone tools now.
  */
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
@@ -18,22 +11,18 @@ import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@oh-my
 import type { Usage } from "@oh-my-pi/pi-ai";
 import { Snowflake } from "@oh-my-pi/pi-utils";
 import type { ToolSession } from "..";
-import { isDefaultModelAlias } from "../config/model-resolver";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { Theme } from "../modes/theme/theme";
 import taskDescriptionTemplate from "../prompts/tools/task.md" with { type: "text" };
 import taskSummaryTemplate from "../prompts/tools/task-summary.md" with { type: "text" };
 import { formatDuration } from "../tools/render-utils";
-// Import review tools for side effects (registers subagent tool handlers)
-import "../tools/review";
-import { loadBundledAgents } from "./agents";
+import { getBundledAgent } from "./agents";
 import { runAgent } from "./executor";
 import { AgentOutputManager } from "./output-manager";
 import { mapWithConcurrencyLimit } from "./parallel";
 import { renderCall, renderResult } from "./render";
 import { renderTemplate } from "./template";
 import {
-	type AgentDefinition,
 	type AgentProgress,
 	type SingleResult,
 	type TaskParams,
@@ -90,30 +79,20 @@ function addUsageTotals(target: Usage, usage: Partial<Usage>): void {
 
 // Re-export types and utilities
 export { loadBundledAgents as BUNDLED_AGENTS } from "./agents";
+export { type BatchOptions, type BatchResult, type BatchTask, runTaskBatch } from "./batch";
 export { discoverAgents, getAgent } from "./discovery";
 export { AgentOutputManager } from "./output-manager";
 export type { AgentDefinition, AgentProgress, SingleResult, TaskParams, TaskToolDetails } from "./types";
 export { taskSchema } from "./types";
-
-/**
- * Render the tool description from a cached agent list and current settings.
- */
-function renderDescription(agents: AgentDefinition[], maxConcurrency: number, disabledAgents: string[]): string {
-	const filteredAgents = disabledAgents.length > 0 ? agents.filter(a => !disabledAgents.includes(a.name)) : agents;
-	return renderPromptTemplate(taskDescriptionTemplate, {
-		agents: filteredAgents,
-		MAX_CONCURRENCY: maxConcurrency,
-	});
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Tool Class
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Task tool - Delegate tasks to specialized agents.
+ * Task tool — delegate parallel tasks to worker subagents.
  *
- * Uses bundled agent metadata for description/help text only.
+ * Always uses the bundled `task` agent. No agent selection.
  * Use `TaskTool.create(session)` to instantiate.
  */
 export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
@@ -122,25 +101,16 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 	readonly parameters: TaskSchema;
 	readonly renderCall = renderCall;
 	readonly renderResult = renderResult;
-	readonly #discoveredAgents: AgentDefinition[];
 
-	/** Dynamic description that reflects current disabled-agent settings */
-	get description(): string {
-		const disabledAgents = (this.session.settings.get("task.disabledAgents") ?? []) as string[];
-		const maxConcurrency = this.session.settings.get("task.maxConcurrency");
-		return renderDescription(this.#discoveredAgents, maxConcurrency, disabledAgents);
-	}
-	private constructor(
-		private readonly session: ToolSession,
-		discoveredAgents: AgentDefinition[],
-	) {
+	readonly description = renderPromptTemplate(taskDescriptionTemplate);
+
+	private constructor(private readonly session: ToolSession) {
 		this.parameters = taskSchema;
-		this.#discoveredAgents = discoveredAgents;
 	}
 
 	/** Create a TaskTool instance. */
 	static async create(session: ToolSession): Promise<TaskTool> {
-		return new TaskTool(session, loadBundledAgents());
+		return new TaskTool(session);
 	}
 
 	async execute(
@@ -150,55 +120,26 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 		onUpdate?: AgentToolUpdateCallback<TaskToolDetails>,
 	): Promise<AgentToolResult<TaskToolDetails>> {
 		const startTime = Date.now();
-		const { agent: agentName, context } = params;
+		const { context } = params;
 		const maxConcurrency = this.session.settings.get("task.maxConcurrency");
+		const agentName = "task";
 
-		const disabledAgents = (this.session.settings.get("task.disabledAgents") ?? []) as string[];
-		if (disabledAgents.length > 0 && disabledAgents.includes(agentName)) {
-			const enabled = this.#discoveredAgents.filter(a => !disabledAgents.includes(a.name)).map(a => a.name);
+		const effectiveAgent = getBundledAgent("task");
+		if (!effectiveAgent) {
 			return {
-				content: [
-					{
-						type: "text",
-						text: `Agent "${agentName}" is disabled in settings.${enabled.length > 0 ? ` Available: ${enabled.join(", ")}` : ""}`,
-					},
-				],
-				details: {
-					results: [],
-					totalDurationMs: 0,
-				},
+				content: [{ type: "text", text: "Task agent not found." }],
+				details: { results: [], totalDurationMs: 0 },
 			};
 		}
 
-		const configuredAgent = this.#discoveredAgents.find(agent => agent.name === agentName);
-		if (!configuredAgent) {
-			const available = this.#discoveredAgents.map(agent => agent.name).join(", ") || "none";
-			return {
-				content: [{ type: "text", text: `Unknown agent "${agentName}". Available: ${available}` }],
-				details: {
-					results: [],
-					totalDurationMs: 0,
-				},
-			};
-		}
-
-		const effectiveAgent: AgentDefinition = configuredAgent;
-
-		const agentModelOverrides = this.session.settings.get("task.agentModelOverrides") as Record<string, string>;
-		const settingsModelOverride = agentModelOverrides[agentName];
-		const effectiveAgentModel = isDefaultModelAlias(effectiveAgent.model) ? undefined : effectiveAgent.model;
-		const modelOverride =
-			settingsModelOverride ??
-			effectiveAgentModel ??
-			this.session.getActiveModelString?.() ??
-			this.session.getModelString?.();
+		const modelOverride = this.session.getActiveModelString?.() ?? this.session.getModelString?.();
 
 		if (!params.tasks || params.tasks.length === 0) {
 			return {
 				content: [
 					{
 						type: "text",
-						text: "No tasks provided. Use: { agent, context, tasks: [{id, description, assignment}, ...] }",
+						text: "No tasks provided. Use: { context?, tasks: [{id, description, assignment}, ...] }",
 					},
 				],
 				details: {
@@ -348,6 +289,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 					toolCount: 0,
 					tokens: 0,
 					durationMs: 0,
+					toolHistory: [],
 					description: t.description,
 				});
 			}

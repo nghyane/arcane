@@ -46,15 +46,10 @@ export const taskItemSchema = Type.Object({
 export type TaskItem = Static<typeof taskItemSchema>;
 
 export const taskSchema = Type.Object({
-	agent: Type.String({
-		description: "Agent type for all tasks in this batch. Must be one of the agents listed in the tool description.",
+	context: Type.String({
+		description:
+			"Shared background prepended to every task's assignment. Put goal, non-goals, constraints, conventions, reference paths, API contracts, and global acceptance commands here once \u2014 instead of duplicating across assignments.",
 	}),
-	context: Type.Optional(
-		Type.String({
-			description:
-				"Shared background prepended to every task's assignment. Put goal, non-goals, constraints, conventions, reference paths, and global acceptance commands here once — instead of duplicating across assignments.",
-		}),
-	),
 	tasks: Type.Array(taskItemSchema, {
 		description:
 			"Tasks to execute in parallel. Each must be small-scoped (3-5 files max) and self-contained given context + assignment.",
@@ -95,6 +90,8 @@ export interface AgentProgress {
 	toolCount: number;
 	tokens: number;
 	durationMs: number;
+	/** Full history of tool calls for nested display */
+	toolHistory: Array<{ tool: string; args: string; status: "success" | "error" | "running" }>;
 }
 
 /** Result from a single agent execution */
@@ -120,6 +117,8 @@ export interface SingleResult {
 	outputPath?: string;
 	/** Output metadata for agent:// URL integration */
 	outputMeta?: { lineCount: number; charCount: number };
+	/** Full history of tool calls for nested display */
+	toolHistory?: Array<{ tool: string; args: string; status: "success" | "error" }>;
 }
 
 /** Tool details for TUI rendering */

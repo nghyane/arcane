@@ -17,13 +17,123 @@ type ReadEntry = {
 	text: Text;
 };
 
+type ToolHistoryEntry = { tool: string; args: string; status: "success" | "error" | "running" };
+
+const SUBAGENT_TOOLS = new Set(["explore", "oracle", "librarian", "code_review"]);
+
+const SUBAGENT_LABELS: Record<string, string> = {
+	explore: "Explore",
+	oracle: "Oracle",
+	librarian: "Librarian",
+	code_review: "Code Review",
+};
+
+class SubagentComponent implements Component, ToolExecutionHandle {
+	#label: string;
+	#description: string;
+	#status: "pending" | "success" | "error" = "pending";
+	#toolHistory: ToolHistoryEntry[] = [];
+	#dirty = true;
+	#cachedLines: string[] = [];
+	#cachedWidth = 0;
+
+	constructor(toolName: string, args: Record<string, unknown>) {
+		this.#label = SUBAGENT_LABELS[toolName] ?? toolName;
+		const raw = ((args.query ?? args.task ?? args.diff_description ?? "") as string).trim();
+		this.#description = raw;
+	}
+
+	// --- Component ---
+
+	render(width: number): string[] {
+		if (!this.#dirty && this.#cachedWidth === width) return this.#cachedLines;
+		this.#cachedWidth = width;
+		this.#dirty = false;
+
+		const lines: string[] = [];
+
+		// Header line: ✓ Explore  Find all code that references...
+		const icon = this.#statusIcon(this.#status);
+		const desc = this.#description ? `  ${theme.fg("dim", this.#description)}` : "";
+		lines.push(`${icon} ${theme.fg("toolTitle", theme.bold(this.#label))}${desc}`);
+
+		// Child tool history with inner tree branches
+		for (let i = 0; i < this.#toolHistory.length; i++) {
+			const entry = this.#toolHistory[i];
+			const isLast = i === this.#toolHistory.length - 1;
+			const branch = getTreeBranch(isLast, theme);
+			const childIcon = this.#statusIcon(entry.status);
+			const toolLabel = this.#childToolLabel(entry);
+			const line = `${theme.fg("dim", branch)} ${childIcon} ${toolLabel}`;
+			lines.push(line);
+		}
+
+		this.#cachedLines = lines;
+		return lines;
+	}
+
+	invalidate(): void {
+		this.#dirty = true;
+	}
+
+	// --- ToolExecutionHandle ---
+
+	updateArgs(): void {}
+
+	updateResult(result: any, isPartial?: boolean): void {
+		if (isPartial) {
+			const progress = result?.details?.progress as Array<{ toolHistory?: ToolHistoryEntry[] }> | undefined;
+			if (progress?.[0]?.toolHistory) {
+				this.#toolHistory = progress[0].toolHistory;
+				this.#dirty = true;
+			}
+			return;
+		}
+		this.#status = result?.isError ? "error" : "success";
+		// Final result may also carry toolHistory
+		const progress = result?.details?.progress as Array<{ toolHistory?: ToolHistoryEntry[] }> | undefined;
+		if (progress?.[0]?.toolHistory) {
+			this.#toolHistory = progress[0].toolHistory;
+		}
+		this.#dirty = true;
+	}
+
+	setArgsComplete(): void {}
+	setExpanded(): void {}
+
+	// --- Private ---
+
+	#statusIcon(status: "pending" | "success" | "error" | "running"): string {
+		switch (status) {
+			case "success":
+				return theme.fg("success", theme.status.success);
+			case "error":
+				return theme.fg("error", theme.status.error);
+			case "running":
+				return theme.fg("dim", theme.status.pending);
+			default:
+				return theme.fg("dim", theme.status.pending);
+		}
+	}
+
+	#childToolLabel(entry: ToolHistoryEntry): string {
+		const name = theme.fg("toolTitle", theme.bold(this.#prettyToolName(entry.tool)));
+		const args = entry.args ? `  ${theme.fg("dim", entry.args)}` : "";
+		return `${name}${args}`;
+	}
+
+	#prettyToolName(name: string): string {
+		// Capitalize first letter: grep → Grep, read → Read
+		return name.charAt(0).toUpperCase() + name.slice(1);
+	}
+}
+
 export class CodeModeGroupComponent implements Component, ToolExecutionHandle {
 	#header: Text;
 	#logsText: Text;
 	#orderedSubTools: Component[] = [];
 	#entries = new Map<string, { toolCallId: string; component: ToolExecutionComponent }>();
 	#readEntries = new Map<string, ReadEntry>();
-	#toolCount = 0;
 	#intent = "";
 	#expanded = false;
 	#logs: string[] = [];
@@ -128,13 +238,16 @@ export class CodeModeGroupComponent implements Component, ToolExecutionHandle {
 		if (toolName === "read") {
 			return this.#addReadItem(toolCallId, args);
 		}
+		if (SUBAGENT_TOOLS.has(toolName)) {
+			const component = new SubagentComponent(toolName, args as Record<string, unknown>);
+			this.#orderedSubTools.push(component);
+			return component;
+		}
 
 		const component = new ToolExecutionComponent(toolName, args, options, tool, ui, cwd, { compact: true });
 		component.setExpanded(this.#expanded);
 		this.#entries.set(toolCallId, { toolCallId, component });
 		this.#orderedSubTools.push(component);
-		this.#toolCount++;
-		this.#updateHeader();
 		return component;
 	}
 
@@ -156,9 +269,7 @@ export class CodeModeGroupComponent implements Component, ToolExecutionHandle {
 		};
 		this.#readEntries.set(toolCallId, entry);
 		this.#orderedSubTools.push(text);
-		this.#toolCount++;
 		this.#updateReadDisplay(entry);
-		this.#updateHeader();
 
 		return {
 			updateArgs: (newArgs: any, _toolCallId?: string) => {
@@ -215,13 +326,9 @@ export class CodeModeGroupComponent implements Component, ToolExecutionHandle {
 	// --- Rendering ---
 
 	#updateHeader(): void {
-		const count = this.#toolCount;
-		const bullet = theme.format.bullet;
-		const title = theme.fg("toolTitle", theme.bold("Code"));
-		const countLabel = count > 0 ? theme.fg("dim", ` (${count} tool${count === 1 ? "" : "s"})`) : "";
-		const doneLabel = this.#done ? theme.fg("dim", " done") : "";
-		const intent = this.#intent ? `  ${theme.fg("dim", this.#intent)}` : "";
-		this.#header.setText(` ${bullet} ${title}${countLabel}${doneLabel}${intent}`);
+		const icon = this.#done ? theme.fg("success", theme.status.success) : theme.fg("muted", theme.format.bullet);
+		const intent = this.#intent || "Running";
+		this.#header.setText(` ${icon} ${theme.fg("muted", intent)}`);
 	}
 
 	#updateLogs(): void {

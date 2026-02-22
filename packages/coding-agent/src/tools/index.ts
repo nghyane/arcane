@@ -19,14 +19,17 @@ import { AskTool } from "./ask";
 import { BashTool } from "./bash";
 import { BrowserTool } from "./browser";
 import { CalculatorTool } from "./calculator";
+import { ExploreTool } from "./explore";
 import { FetchTool } from "./fetch";
 import { FindTool } from "./find";
 import { GrepTool } from "./grep";
+import { LibrarianTool } from "./librarian";
 import { NotebookTool } from "./notebook";
+import { OracleTool } from "./oracle";
 import { wrapToolWithMetaNotice } from "./output-meta";
 import { PythonTool } from "./python";
 import { ReadTool } from "./read";
-import { reportFindingTool } from "./review";
+import { ReviewerTool } from "./reviewer-tool";
 import { loadSshTool } from "./ssh";
 import { SubmitResultTool } from "./submit-result";
 import { TodoWriteTool } from "./todo-write";
@@ -70,14 +73,16 @@ export { AskTool, type AskToolDetails } from "./ask";
 export { BashTool, type BashToolDetails, type BashToolInput, type BashToolOptions } from "./bash";
 export { BrowserTool, type BrowserToolDetails } from "./browser";
 export { CalculatorTool, type CalculatorToolDetails } from "./calculator";
+export { ExploreTool } from "./explore";
 export { FetchTool, type FetchToolDetails } from "./fetch";
 export { type FindOperations, FindTool, type FindToolDetails, type FindToolInput, type FindToolOptions } from "./find";
 export { setPreferredImageProvider } from "./gemini-image";
 export { GrepTool, type GrepToolDetails, type GrepToolInput } from "./grep";
+export { LibrarianTool } from "./librarian";
 export { NotebookTool, type NotebookToolDetails } from "./notebook";
+export { OracleTool } from "./oracle";
 export { PythonTool, type PythonToolDetails, type PythonToolOptions } from "./python";
 export { ReadTool, type ReadToolDetails, type ReadToolInput } from "./read";
-export { reportFindingTool, type SubmitReviewDetails } from "./review";
 export { loadSshTool, type SSHToolDetails, SshTool } from "./ssh";
 export { SubmitResultTool } from "./submit-result";
 export { type TodoItem, TodoWriteTool, type TodoWriteToolDetails } from "./todo-write";
@@ -169,12 +174,16 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	ssh: loadSshTool,
 	edit: s => new EditTool(s),
 	find: s => new FindTool(s),
+	explore: s => new ExploreTool(s),
 	grep: s => new GrepTool(s),
+	librarian: s => new LibrarianTool(s),
 	lsp: LspTool.createIf,
 	notebook: s => new NotebookTool(s),
+	oracle: s => new OracleTool(s),
 	read: s => new ReadTool(s),
 	browser: s => new BrowserTool(s),
 	task: TaskTool.create,
+	code_review: s => new ReviewerTool(s),
 	todo_write: s => new TodoWriteTool(s),
 	undo_edit: s => new UndoEditTool(s),
 	fetch: s => new FetchTool(s),
@@ -184,7 +193,6 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 
 export const HIDDEN_TOOLS: Record<string, ToolFactory> = {
 	submit_result: s => new SubmitResultTool(s),
-	report_finding: () => reportFindingTool,
 };
 
 export type ToolName = keyof typeof BUILTIN_TOOLS;
@@ -284,6 +292,8 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		if (name === "lsp") return session.settings.get("lsp.enabled");
 		if (name === "calc") return session.settings.get("calc.enabled");
 		if (name === "browser") return session.settings.get("browser.enabled");
+		if (name === "librarian") return session.settings.get("librarian.enabled");
+		if (name === "oracle") return session.settings.get("oracle.enabled");
 		if (name === "task") {
 			const maxDepth = session.settings.get("task.maxRecursionDepth") ?? 2;
 			const currentDepth = session.taskDepth ?? 0;

@@ -24,7 +24,7 @@ const codeSchema = Type.Object({
 });
 
 /** Tools excluded from Code Mode wrapping (interactive, orchestration, or lifecycle tools) */
-const EXCLUDED_TOOLS = new Set(["ask", "report_finding", "submit_result", "task"]);
+const EXCLUDED_TOOLS = new Set(["ask", "submit_result", "task", "todo_write"]);
 
 export interface CodeToolOptions {
 	/** Additional tool names to exclude from Code Mode */
@@ -87,22 +87,33 @@ export function createCodeTool(
 	// Build the dispatch functions map (sanitized name → executor).
 	// Each fn accepts (toolCallId, args) so the event bridge's ID
 	// is forwarded to tool.execute() — no duplicate ID generation.
-	const buildDispatchFns = (signal?: AbortSignal, ctx?: AgentToolContext) => {
+	const buildDispatchFns = (signal?: AbortSignal, ctx?: AgentToolContext, parentToolCallId?: string) => {
 		const fullResults = new Map<string, AgentToolResult>();
 		const fns: Record<string, DispatchFn> = {};
 
 		for (const tool of wrappedTools) {
 			const safeName = sanitizeToolName(tool.name);
 			fns[safeName] = async (toolCallId: string, args: Record<string, unknown>) => {
-				const result = await tool.execute(toolCallId, args, signal, undefined, ctx);
-				// Stash the full result so the event bridge can forward it to the TUI
+				// Forward onUpdate directly to the agent event stream — no intermediate CodeModeToolEvent
+				const onUpdate: AgentToolUpdateCallback | undefined = ctx?.emit
+					? partialResult => {
+							ctx.emit!({
+								type: "tool_execution_update",
+								toolCallId,
+								toolName: tool.name,
+								args,
+								partialResult: partialResult as AgentToolResult,
+								parentToolCallId,
+							});
+						}
+					: undefined;
+				const result = await tool.execute(toolCallId, args, signal, onUpdate, ctx);
 				fullResults.set(toolCallId, result);
-				// Extract text content for the sandboxed code to consume
 				const textContent = result.content
 					.filter(c => c.type === "text")
 					.map(c => c.text)
 					.join("\n");
-				return textContent || result.details;
+				return textContent ? textContent : result.details;
 			};
 		}
 
@@ -127,9 +138,6 @@ export function createCodeTool(
 		): Promise<AgentToolResult> {
 			const code = (params as { code: string }).code;
 			const events: CodeModeToolEvent[] = [];
-
-			// Build dispatch functions
-			const { fns: rawFns, fullResults } = buildDispatchFns(signal, ctx);
 
 			// Build tool lookup map for sub-tool event emission
 			const toolByName = new Map<string, AgentTool>();
@@ -184,6 +192,7 @@ export function createCodeTool(
 				}
 			};
 
+			const { fns: rawFns, fullResults } = buildDispatchFns(signal, ctx, _toolCallId);
 			const bridgedFns = bridgeToolFunctions(rawFns, nameMap, eventHandler);
 
 			// Normalize and execute

@@ -3,7 +3,7 @@ import { renderTemplate } from "@oh-my-pi/pi-coding-agent/task/template";
 
 describe("renderTemplate", () => {
 	test("returns assignment as task when no context", () => {
-		const result = renderTemplate(undefined, {
+		const result = renderTemplate("", {
 			id: "Test",
 			description: "Short label",
 			assignment: "Do the thing in detail.\nStep 1: read file.\nStep 2: edit it.",
@@ -44,7 +44,7 @@ describe("renderTemplate", () => {
 	});
 
 	test("passes through skills", () => {
-		const result = renderTemplate(undefined, {
+		const result = renderTemplate("", {
 			id: "X",
 			description: "label",
 			assignment: "do stuff",

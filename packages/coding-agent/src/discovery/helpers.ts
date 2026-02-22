@@ -234,8 +234,8 @@ export function parseAgentFields(frontmatter: Record<string, unknown>): ParsedAg
 
 	let tools = parseArrayOrCSV(frontmatter.tools);
 
-	// Subagents with explicit tool lists always need submit_result
-	if (tools && !tools.includes("submit_result")) {
+	// Subagents with output schema need submit_result to return structured data
+	if (tools && frontmatter.output && !tools.includes("submit_result")) {
 		tools = [...tools, "submit_result"];
 	}
 

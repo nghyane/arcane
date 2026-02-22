@@ -250,6 +250,7 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 		toolCount: 0,
 		tokens: 0,
 		durationMs: 0,
+		toolHistory: [],
 	};
 
 	// Check if already aborted
@@ -479,21 +480,36 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 				if (intent) {
 					progress.lastIntent = intent;
 				}
+				// Add running entry to history (capped at 50)
+				if (progress.toolHistory.length < 50) {
+					progress.toolHistory.push({
+						tool: event.toolName,
+						args: progress.currentToolArgs,
+						status: "running",
+					});
+				}
 				break;
 			}
 
 			case "tool_execution_end": {
 				// Skip Code Mode sub-tool events
 				if (event.parentToolCallId) break;
+				const isError = !!(event as { isError?: boolean }).isError;
 				if (progress.currentTool) {
 					progress.recentTools.unshift({
 						tool: progress.currentTool,
 						args: progress.currentToolArgs || "",
 						endMs: now,
 					});
-					// Keep only last 5
 					if (progress.recentTools.length > 5) {
 						progress.recentTools.pop();
+					}
+					// Update the last running entry in history to final status
+					for (let i = progress.toolHistory.length - 1; i >= 0; i--) {
+						if (progress.toolHistory[i].status === "running") {
+							progress.toolHistory[i].status = isError ? "error" : "success";
+							break;
+						}
 					}
 				}
 				progress.currentTool = undefined;
@@ -883,5 +899,10 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 		usage: hasUsage ? accumulatedUsage : undefined,
 		outputPath,
 		outputMeta,
+		toolHistory: progress.toolHistory.map(t => ({
+			tool: t.tool,
+			args: t.args,
+			status: t.status === "running" ? ("error" as const) : t.status,
+		})),
 	};
 }

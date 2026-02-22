@@ -17,10 +17,6 @@ Subagents CAN grep the parent conversation file for supplementary details.
 
 ## Parameters
 
-### `agent` (required)
-
-Agent type for all tasks in this batch. Must match one of the agent names listed in the **Agents** section below. Using an unlisted name will fail.
-
 ### `context` (optional — strongly recommended)
 
 Shared background prepended verbatim to every task `assignment`. Use only for session-specific information subagents lack.
@@ -277,13 +273,3 @@ Before calling tool, verify:
 - [ ] Tasks truly parallel (no hidden dependencies)
 - [ ] Scope small, file paths explicit (no globs)
 - [ ] No task runs project-wide build/test/lint — you do after all tasks complete
----
-
-## Agents
-
-{{#list agents join="\n"}}
-<agent name="{{name}}"{{#if output}} output="structured"{{/if}}>
-<description>{{description}}</description>
-<tools>{{default (join tools ", ") "All tools"}}</tools>
-</agent>
-{{/list}}

@@ -459,10 +459,24 @@ export const SETTINGS_SCHEMA = {
 		default: true,
 		ui: { tab: "tools", label: "Enable Notebook", description: "Enable the notebook tool for notebook editing" },
 	},
+	"oracle.enabled": {
+		type: "boolean",
+		default: true,
+		ui: { tab: "tools", label: "Enable Oracle", description: "Enable the Oracle cross-model reasoning advisor tool" },
+	},
 	"fetch.enabled": {
 		type: "boolean",
 		default: true,
 		ui: { tab: "tools", label: "Enable Fetch", description: "Enable the fetch tool for URL fetching" },
+	},
+	"librarian.enabled": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "tools",
+			label: "Enable Librarian",
+			description: "Enable the Librarian tool for repository exploration via GitHub",
+		},
 	},
 	"web_search.enabled": {
 		type: "boolean",

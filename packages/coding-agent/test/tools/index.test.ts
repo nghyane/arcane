@@ -43,7 +43,6 @@ describe("createTools", () => {
 		expect(names).toContain("todo_write");
 		expect(names).toContain("fetch");
 		expect(names).toContain("web_search");
-		expect(names).toContain("exit_plan_mode");
 	});
 
 	it("includes bash and python when python mode is both", async () => {
@@ -79,7 +78,7 @@ describe("createTools", () => {
 		const tools = await createTools(session, ["read", "lsp", "write"]);
 		const names = tools.map(t => t.name);
 
-		expect(names).toEqual(["read", "write", "exit_plan_mode"]);
+		expect(names).toEqual(["read", "write"]);
 	});
 
 	it("excludes lsp tool when disabled", async () => {
@@ -95,15 +94,7 @@ describe("createTools", () => {
 		const tools = await createTools(session, ["read", "write"]);
 		const names = tools.map(t => t.name);
 
-		expect(names).toEqual(["read", "write", "exit_plan_mode"]);
-	});
-
-	it("includes hidden tools when explicitly requested", async () => {
-		const session = createTestSession();
-		const tools = await createTools(session, ["report_finding"]);
-		const names = tools.map(t => t.name);
-
-		expect(names).toEqual(["report_finding", "exit_plan_mode"]);
+		expect(names).toEqual(["read", "write"]);
 	});
 
 	it("includes submit_result tool when required", async () => {
@@ -130,7 +121,7 @@ describe("createTools", () => {
 		expect(names).toContain("ask");
 	});
 
-	it("HIDDEN_TOOLS contains review tools", () => {
-		expect(Object.keys(HIDDEN_TOOLS).sort()).toEqual(["exit_plan_mode", "report_finding", "submit_result"]);
+	it("HIDDEN_TOOLS contains expected tools", () => {
+		expect(Object.keys(HIDDEN_TOOLS).sort()).toEqual(["submit_result"]);
 	});
 });
