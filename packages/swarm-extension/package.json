@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@nghyane/arcane-swarm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Swarm orchestration extension for arcane",
   "homepage": "https://github.com/nghyane/arcane",
   "author": "Derek Rynd",
