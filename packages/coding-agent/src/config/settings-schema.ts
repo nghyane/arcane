@@ -142,7 +142,7 @@ export const SETTINGS_SCHEMA = {
 	lastChangelogVersion: { type: "string", default: undefined },
 	"theme.dark": {
 		type: "string",
-		default: "titanium",
+		default: "dark-copper",
 		ui: {
 			tab: "display",
 			label: "Dark theme",
