@@ -28,8 +28,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3"
-          registries: |
-            https://registry.npmjs.org/|$NPM_TOKEN
       - name: Cache bun dependencies
         uses: actions/cache@v4
         with:
@@ -58,7 +56,7 @@ jobs:
             PKG_NAME=$(jq -r .name "$pkg/package.json")
             PKG_VERSION=$(jq -r .version "$pkg/package.json")
             echo "Publishing $PKG_NAME@$PKG_VERSION..."
-            (cd "$pkg" && bun publish --access public --tolerate-republish) || FAILED=1
+            (cd "$pkg" && npm publish --access public --token "$NPM_TOKEN") || FAILED=1
           done
           if [ "$FAILED" -eq 1 ]; then exit 1; fi
 
