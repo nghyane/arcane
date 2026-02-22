@@ -191,10 +191,12 @@ async function main(): Promise<void> {
 	console.log(`  Tagged ${releaseTag} (CI trigger)`);
 	console.log();
 
-	// Push commit + only new tags (not all tags — old v* tags may be blocked by push protection)
+	// Push commit first, then tags separately — GitHub won't trigger tag-based workflows
+	// if branch and tags are pushed in the same command.
 	console.log("Pushing to remote...");
 	const allNewTags = [...tags, releaseTag];
-	await $`git push origin main ${allNewTags.map(t => `refs/tags/${t}`)}`.quiet();
+	await $`git push origin main`.quiet();
+	await $`git push origin ${allNewTags.map(t => `refs/tags/${t}`)}`.quiet();
 	console.log();
 
 	console.log(`=== Released: ${tags.join(", ")} ===`);
