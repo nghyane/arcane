@@ -16,6 +16,21 @@ Execute JavaScript code to accomplish tasks. Instead of calling tools individual
 - Do NOT use `console.log()` — tool results are already streamed to the UI as they execute
 - Handle errors with try/catch when needed
 
+## Persistent State
+
+A `state` Map and `memo` helper persist across all code executions in the conversation.
+
+- `state` — raw Map for manual get/set
+- `memo(key, fn)` — cache-on-first-call: returns cached value or calls `fn`, caches, and returns
+
+```javascript
+async () => {
+  const config = await memo("config", () => codemode.read({ path: "config.json" }));
+  const pkg = await memo("pkg", () => codemode.read({ path: "package.json" }));
+  return { config, pkg };
+}
+```
+
 ## Examples
 
 Read a file and search for a pattern:

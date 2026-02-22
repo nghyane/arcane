@@ -1,7 +1,7 @@
 import type { AgentTool } from "@oh-my-pi/pi-agent-core";
 import type { Component, TUI } from "@oh-my-pi/pi-tui";
 import { Text } from "@oh-my-pi/pi-tui";
-import { theme } from "../../modes/theme/theme";
+import { getSymbolTheme, theme } from "../../modes/theme/theme";
 import { shortenPath } from "../../tools/render-utils";
 import { getTreeBranch, getTreeContinuePrefix } from "../../tui";
 import { ToolExecutionComponent, type ToolExecutionHandle, type ToolExecutionOptions } from "./tool-execution";
@@ -138,10 +138,17 @@ export class CodeModeGroupComponent implements Component, ToolExecutionHandle {
 	#expanded = false;
 	#logs: string[] = [];
 	#done = false;
+	#ui: TUI;
+	#spinnerFrames: string[];
+	#spinnerFrame = 0;
+	#spinnerInterval?: NodeJS.Timeout;
 
-	constructor() {
+	constructor(ui: TUI) {
+		this.#ui = ui;
 		this.#header = new Text("", 0, 0);
 		this.#logsText = new Text("", 0, 0);
+		this.#spinnerFrames = getSymbolTheme().spinnerFrames;
+		this.#startSpinner();
 		this.#updateHeader();
 	}
 
@@ -320,15 +327,35 @@ export class CodeModeGroupComponent implements Component, ToolExecutionHandle {
 
 	setDone(): void {
 		this.#done = true;
+		this.#stopSpinner();
 		this.#updateHeader();
 	}
 
 	// --- Rendering ---
 
 	#updateHeader(): void {
-		const icon = this.#done ? theme.fg("success", theme.status.success) : theme.fg("muted", theme.format.bullet);
+		const icon = this.#done
+			? theme.fg("success", theme.status.success)
+			: theme.fg("accent", this.#spinnerFrames[this.#spinnerFrame] ?? theme.format.bullet);
 		const intent = this.#intent || "Running";
 		this.#header.setText(` ${icon} ${theme.fg("muted", intent)}`);
+	}
+
+	#startSpinner(): void {
+		if (this.#spinnerInterval) return;
+		this.#spinnerInterval = setInterval(() => {
+			if (this.#done) return;
+			this.#spinnerFrame = (this.#spinnerFrame + 1) % this.#spinnerFrames.length;
+			this.#updateHeader();
+			this.#ui.requestRender();
+		}, 80);
+	}
+
+	#stopSpinner(): void {
+		if (this.#spinnerInterval) {
+			clearInterval(this.#spinnerInterval);
+			this.#spinnerInterval = undefined;
+		}
 	}
 
 	#updateLogs(): void {

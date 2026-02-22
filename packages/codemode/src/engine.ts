@@ -67,6 +67,9 @@ export function createCodeTool(
 	const { excludeTools = [], timeoutMs = 300_000 } = options;
 	const excludeSet = new Set([...EXCLUDED_TOOLS, ...excludeTools]);
 
+	// Persistent state shared across all code executions in this session
+	const persistentState = new Map<string, unknown>();
+
 	const wrappedTools: AgentTool[] = [];
 	const excludedTools: AgentTool[] = [];
 
@@ -197,7 +200,7 @@ export function createCodeTool(
 
 			// Normalize and execute
 			const normalizedCode = normalizeCode(code);
-			const result = await execute(normalizedCode, bridgedFns, { timeoutMs, signal });
+			const result = await execute(normalizedCode, bridgedFns, { timeoutMs, signal, state: persistentState });
 
 			// Build final result — keep concise since sub-tool results
 			// are already shown individually in the TUI

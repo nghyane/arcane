@@ -222,7 +222,7 @@ export class EventController {
 				// Code Mode: create a group component for the "code" tool
 				if (event.toolName === "code") {
 					this.#resetReadGroup();
-					const group = new CodeModeGroupComponent();
+					const group = new CodeModeGroupComponent(this.ctx.ui);
 					const intent = event.intent ?? (event.args as Record<string, unknown>)?.agent__intent;
 					if (typeof intent === "string" && intent.trim()) {
 						group.setIntent(intent.trim());

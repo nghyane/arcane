@@ -28,6 +28,8 @@ export interface ExecutorOptions {
 	timeoutMs?: number;
 	/** Abort signal for external cancellation */
 	signal?: AbortSignal;
+	/** Persistent state object shared across executions */
+	state?: Map<string, unknown>;
 }
 
 type ToolFn = (args: Record<string, unknown>) => Promise<unknown>;
@@ -85,6 +87,20 @@ export async function execute(
 		},
 	};
 
+	const persistentState = options.state ?? new Map<string, unknown>();
+	const memo = async (key: string, fn: () => Promise<unknown>) => {
+		if (!persistentState.has(key)) {
+			persistentState.set(
+				key,
+				fn().then(v => {
+					persistentState.set(key, v);
+					return v;
+				}),
+			);
+		}
+		return persistentState.get(key);
+	};
+
 	const cleanups: (() => void)[] = [];
 	let resultPromise: Promise<unknown> | undefined;
 	try {
@@ -94,6 +110,8 @@ export async function execute(
 		const fn = new AsyncFunction(
 			"codemode",
 			"console",
+			"state",
+			"memo",
 			"process",
 			"require",
 			"Bun",
@@ -102,7 +120,17 @@ export async function execute(
 			`const __fn = ${code};\nreturn await __fn();`,
 		);
 
-		resultPromise = fn(codemode, sandboxConsole, undefined, undefined, undefined, undefined, undefined);
+		resultPromise = fn(
+			codemode,
+			sandboxConsole,
+			persistentState,
+			memo,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+		);
 
 		// NOTE: This timeout only works for async/awaiting code. Synchronous infinite
 		// loops (e.g. `while(true){}`) block the event loop and prevent the timeout

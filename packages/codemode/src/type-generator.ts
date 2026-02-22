@@ -136,7 +136,19 @@ export function generateTypes(tools: AgentTool[]): GeneratedTypes {
 		methodLines.push(`  ${safeName}: (input: ${inputTypeName}) => Promise<unknown>;`);
 	}
 
-	const declarations = [...interfaceBlocks, "", "declare const codemode: {", ...methodLines, "};"].join("\n");
+	const declarations = [
+		...interfaceBlocks,
+		"",
+		"declare const codemode: {",
+		...methodLines,
+		"};",
+		"",
+		"/** Persistent key-value store shared across all code executions in this conversation. Use to cache results, track state, or pass data between turns. */",
+		"declare const state: Map<string, unknown>;",
+		"",
+		"/** Cache-on-first-call helper. Returns cached value for `key` if it exists, otherwise calls `fn`, caches the result, and returns it. */",
+		"declare const memo: <T = unknown>(key: string, fn: () => Promise<T>) => Promise<T>;",
+	].join("\n");
 
 	return { declarations, nameMap };
 }
