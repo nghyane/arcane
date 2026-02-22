@@ -227,6 +227,21 @@ jobs:
         with:
           files: packages/coding-agent/binaries/*
           generate_release_notes: true
+      - name: Resolve workspace dependencies
+        run: |
+          # Replace workspace:* with actual versions before publishing
+          for pkg in packages/*/; do
+            if jq -e '.private == true' "$pkg/package.json" > /dev/null 2>&1; then
+              continue
+            fi
+            version=$(jq -r .version "$pkg/package.json")
+            # Replace workspace:* references with the resolved version
+            jq --arg v "$version" '
+              (.dependencies // {}) |= with_entries(if .value == "workspace:*" then .value = $v else . end) |
+              (.devDependencies // {}) |= with_entries(if .value == "workspace:*" then .value = $v else . end) |
+              (.peerDependencies // {}) |= with_entries(if .value == "workspace:*" then .value = $v else . end)
+            ' "$pkg/package.json" > "$pkg/package.json.tmp" && mv "$pkg/package.json.tmp" "$pkg/package.json"
+          done
       - name: Publish to npm
         if: ${{ !inputs.skip_npm }}
         env:
