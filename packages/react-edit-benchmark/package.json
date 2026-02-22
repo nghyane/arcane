@@ -25,9 +25,9 @@
 		"@babel/parser": "7.29.0",
 		"@babel/traverse": "7.29.0",
 		"@babel/types": "7.29.0",
-		"@nghyane/pi-agent-core": "^12.18.4",
-		"@nghyane/pi-coding-agent": "^12.18.4",
-		"@nghyane/pi-utils": "^12.18.4",
+		"@nghyane/pi-agent-core": "^12.19.0",
+		"@nghyane/pi-coding-agent": "^12.19.0",
+		"@nghyane/pi-utils": "^12.19.0",
 		"diff": "^8.0.3",
 		"prettier": "^3.8.1",
 		"regexp-tree": "0.1.27"

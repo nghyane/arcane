@@ -6,6 +6,9 @@
 	"homepage": "https://github.com/can1357/oh-my-pi",
 	"author": "Can Bölük",
 	"license": "GPL-3.0-or-later",
+	"publishConfig": {
+		"access": "public"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/can1357/oh-my-pi.git",
@@ -33,22 +36,22 @@
 		"build": "bun run build.ts"
 	},
 	"dependencies": {
-		"@nghyane/pi-ai": "^12.18.4",
-		"@nghyane/pi-utils": "^12.18.4",
-		"@tailwindcss/node": "4",
+		"@nghyane/pi-ai": "^12.19.0",
+		"@nghyane/pi-utils": "^12.19.0",
+		"@tailwindcss/node": "4.2.0",
 		"chart.js": "4.5.1",
-		"date-fns": "^4.1.0",
-		"lucide-react": "^0.564.0",
-		"react": "^19.2.4",
+		"date-fns": "4.1.0",
+		"lucide-react": "0.564.0",
+		"react": "19.2.4",
 		"react-chartjs-2": "5.3.1",
-		"react-dom": "^19.2.4"
+		"react-dom": "19.2.4"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.3.9",
-		"@types/react": "^19.2.14",
-		"@types/react-dom": "^19.2.3",
+		"@types/bun": "1.3.9",
+		"@types/react": "19.2.14",
+		"@types/react-dom": "19.2.3",
 		"postcss": "8.5.6",
-		"tailwindcss": "4"
+		"tailwindcss": "4.2.0"
 	},
 	"engines": {
 		"bun": ">=1.3.7"

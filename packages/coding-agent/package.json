@@ -9,6 +9,9 @@
 		"Mario Zechner"
 	],
 	"license": "GPL-3.0-or-later",
+	"publishConfig": {
+		"access": "public"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/can1357/oh-my-pi.git",
@@ -41,13 +44,13 @@
 	},
 	"dependencies": {
 		"@mozilla/readability": "0.6.0",
-		"@nghyane/omp-stats": "^12.18.4",
-		"@nghyane/pi-agent-core": "^12.18.4",
-		"@nghyane/pi-codemode": "^12.18.4",
-		"@nghyane/pi-ai": "^12.18.4",
-		"@nghyane/pi-natives": "^12.18.4",
-		"@nghyane/pi-tui": "^12.18.4",
-		"@nghyane/pi-utils": "^12.18.4",
+		"@nghyane/omp-stats": "^12.19.0",
+		"@nghyane/pi-agent-core": "^12.19.0",
+		"@nghyane/pi-codemode": "^12.19.0",
+		"@nghyane/pi-ai": "^12.19.0",
+		"@nghyane/pi-natives": "^12.19.0",
+		"@nghyane/pi-tui": "^12.19.0",
+		"@nghyane/pi-utils": "^12.19.0",
 		"@sinclair/typebox": "^0.34.48",
 		"@xterm/headless": "^6.0.0",
 		"ajv": "^8.18.0",

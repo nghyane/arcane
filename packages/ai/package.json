@@ -9,6 +9,9 @@
 		"Mario Zechner"
 	],
 	"license": "GPL-3.0-or-later",
+	"publishConfig": {
+		"access": "public"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/can1357/oh-my-pi.git",
@@ -44,7 +47,7 @@
 		"@connectrpc/connect-node": "^2.1.1",
 		"@google/genai": "^1.41.0",
 		"@mistralai/mistralai": "^1.14.0",
-		"@nghyane/pi-utils": "^12.18.4",
+		"@nghyane/pi-utils": "^12.19.0",
 		"@sinclair/typebox": "^0.34.48",
 		"@smithy/node-http-handler": "^4.4.10",
 		"ajv": "^8.18.0",
