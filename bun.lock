@@ -74,7 +74,7 @@
     },
     "packages/coding-agent": {
       "name": "@nghyane/arcane",
-      "version": "0.1.7",
+      "version": "0.1.8",
       "bin": {
         "arc": "src/cli.ts",
       },
