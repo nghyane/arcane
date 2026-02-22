@@ -9,16 +9,16 @@ let previousSkipCheck: string | undefined;
 let tempDir: TempDir;
 beforeAll(() => {
 	tempDir = TempDir.createSync("@arc-python-test-");
-	previousSkipCheck = Bun.env.PI_PYTHON_SKIP_CHECK;
-	Bun.env.PI_PYTHON_SKIP_CHECK = "1";
+	previousSkipCheck = Bun.env.ARCANE_PYTHON_SKIP_CHECK;
+	Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 });
 
 afterAll(() => {
 	if (previousSkipCheck === undefined) {
-		delete Bun.env.PI_PYTHON_SKIP_CHECK;
+		delete Bun.env.ARCANE_PYTHON_SKIP_CHECK;
 		return;
 	}
-	Bun.env.PI_PYTHON_SKIP_CHECK = previousSkipCheck;
+	Bun.env.ARCANE_PYTHON_SKIP_CHECK = previousSkipCheck;
 	tempDir.removeSync();
 });
 

@@ -347,7 +347,7 @@ export class SelectorController {
 							this.ctx.showStatus(`Default model: ${model.id}`);
 							// Don't call done() - selector stays open for role assignment
 						} else {
-							// Other roles (smol, slow): just update settings, not current model
+							// Other roles (fast, slow): just update settings, not current model
 							const roleInfo = MODEL_ROLES[role];
 							const roleLabel = roleInfo?.name ?? role;
 							this.ctx.showStatus(`${roleLabel} model: ${model.id}`);

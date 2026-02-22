@@ -71,9 +71,9 @@ Memory piggybacks on the model role system.
 | Phase | Role | Purpose |
 |---|---|---|
 | Phase 1 (extraction) | `default` | Per-session knowledge extraction |
-| Phase 2 (consolidation) | `smol` | Cross-session synthesis |
+| Phase 2 (consolidation) | `fast` | Cross-session synthesis |
 
-If `smol` is not configured, Phase 2 falls back to the `default` role.
+If `fast` is not configured, Phase 2 falls back to the `default` role.
 
 ## Configuration
 

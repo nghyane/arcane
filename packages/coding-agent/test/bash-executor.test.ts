@@ -40,10 +40,10 @@ describe("executeBash", () => {
 	});
 
 	it("passes env vars", async () => {
-		const result = await executeBash("echo $PI_TEST_ENV", {
+		const result = await executeBash("echo $ARCANE_TEST_ENV", {
 			cwd: tempDir,
 			timeout: 5000,
-			env: { PI_TEST_ENV: "hello" },
+			env: { ARCANE_TEST_ENV: "hello" },
 		});
 		expect(result.output.trim()).toBe("hello");
 	});
@@ -137,8 +137,8 @@ describe("executeBash", () => {
 		}
 
 		const sessionKey = "reset-on-abort";
-		await executeBash("export PI_RESET_VAR=alive", { cwd: tempDir, timeout: 5000, sessionKey });
-		const beforeAbort = await executeBash("echo $PI_RESET_VAR", { cwd: tempDir, timeout: 5000, sessionKey });
+		await executeBash("export ARCANE_RESET_VAR=alive", { cwd: tempDir, timeout: 5000, sessionKey });
+		const beforeAbort = await executeBash("echo $ARCANE_RESET_VAR", { cwd: tempDir, timeout: 5000, sessionKey });
 		expect(beforeAbort.output.trim()).toBe("alive");
 
 		const controller = new AbortController();
@@ -154,7 +154,7 @@ describe("executeBash", () => {
 		expect(aborted.cancelled).toBe(true);
 
 		// biome-ignore lint/suspicious/noTemplateCurlyInString: this is a bash variable expansion
-		const afterAbort = await executeBash("echo ${PI_RESET_VAR:-unset}", {
+		const afterAbort = await executeBash("echo ${ARCANE_RESET_VAR:-unset}", {
 			cwd: tempDir,
 			timeout: 5000,
 			sessionKey,
@@ -209,7 +209,7 @@ describe("executeBash", () => {
 			return;
 		}
 		const snapshotPath = path.join(tempDir, "snapshot.sh");
-		fs.writeFileSync(snapshotPath, "export PI_SNAPSHOT_TEST=from_snapshot\n");
+		fs.writeFileSync(snapshotPath, "export ARCANE_SNAPSHOT_TEST=from_snapshot\n");
 		vi.spyOn(Settings.prototype, "getShellConfig").mockReturnValue({
 			shell: bashPath,
 			args: ["-l", "-c"],
@@ -222,7 +222,7 @@ describe("executeBash", () => {
 		vi.spyOn(shellSnapshot, "getOrCreateSnapshot").mockResolvedValue(snapshotPath);
 		const sessionKey = "snapshot-test";
 		await executeBash("true", { cwd: tempDir, timeout: 5000, sessionKey });
-		const result = await executeBash("echo $PI_SNAPSHOT_TEST", { cwd: tempDir, timeout: 5000, sessionKey });
+		const result = await executeBash("echo $ARCANE_SNAPSHOT_TEST", { cwd: tempDir, timeout: 5000, sessionKey });
 		expect(result.output.trim()).toBe("from_snapshot");
 	});
 

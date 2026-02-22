@@ -9,7 +9,7 @@ describe("RpcClient.start", () => {
 			cwd: path.join(import.meta.dir, ".."),
 			provider: "__missing_provider__",
 			model: "claude-sonnet-4-5",
-			env: { PI_NO_TITLE: "1" },
+			env: { ARCANE_NO_TITLE: "1" },
 		});
 
 		await expect(client.start()).rejects.toThrow(/Unknown provider.*__missing_provider__/);

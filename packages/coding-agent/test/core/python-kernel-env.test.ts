@@ -6,10 +6,10 @@ describe("Python gateway environment filtering", () => {
 		const env: Record<string, string | undefined> = {
 			PATH: "/bin",
 			HOME: "/home/test",
-			OPENAI_API_KEY: "secret",
-			ANTHROPIC_API_KEY: "also-secret",
+			OPENAI_AARCANE_KEY: "secret",
+			ANTHROPIC_AARCANE_KEY: "also-secret",
 			UNSAFE_TOKEN: "nope",
-			PI_CUSTOM: "1",
+			ARCANE_CUSTOM: "1",
 			LC_ALL: "en_US.UTF-8",
 		};
 
@@ -17,10 +17,10 @@ describe("Python gateway environment filtering", () => {
 
 		expect(filtered.PATH).toBe("/bin");
 		expect(filtered.HOME).toBe("/home/test");
-		expect(filtered.PI_CUSTOM).toBe("1");
+		expect(filtered.ARCANE_CUSTOM).toBe("1");
 		expect(filtered.LC_ALL).toBe("en_US.UTF-8");
-		expect(filtered.OPENAI_API_KEY).toBeUndefined();
-		expect(filtered.ANTHROPIC_API_KEY).toBeUndefined();
+		expect(filtered.OPENAI_AARCANE_KEY).toBeUndefined();
+		expect(filtered.ANTHROPIC_AARCANE_KEY).toBeUndefined();
 		expect(filtered.UNSAFE_TOKEN).toBeUndefined();
 	});
 
@@ -44,13 +44,13 @@ describe("Python gateway environment filtering", () => {
 		const env: Record<string, string | undefined> = {
 			PATH: "/usr/bin",
 			HOME: "/home/test",
-			OPENAI_API_KEY: "secret",
-			PI_DEBUG: "1",
+			OPENAI_AARCANE_KEY: "secret",
+			ARCANE_DEBUG: "1",
 		};
 
 		const filtered = filterEnv(env);
-		expect(filtered.OPENAI_API_KEY).toBeUndefined();
+		expect(filtered.OPENAI_AARCANE_KEY).toBeUndefined();
 		expect(filtered.PATH).toBe("/usr/bin");
-		expect(filtered.PI_DEBUG).toBe("1");
+		expect(filtered.ARCANE_DEBUG).toBe("1");
 	});
 });

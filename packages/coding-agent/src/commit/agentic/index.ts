@@ -7,7 +7,7 @@ import { detectChangelogBoundaries } from "../../commit/changelog/detect";
 import { parseUnreleasedSection } from "../../commit/changelog/parse";
 import { ControlledGit } from "../../commit/git";
 import { formatCommitMessage } from "../../commit/message";
-import { resolvePrimaryModel, resolveSmolModel } from "../../commit/model-selection";
+import { resolvePrimaryModel, resolveFastModel } from "../../commit/model-selection";
 import type { CommitCommandArgs, ConventionalAnalysis } from "../../commit/types";
 import { ModelRegistry } from "../../config/model-registry";
 import { renderPromptTemplate } from "../../config/prompt-templates";
@@ -49,7 +49,7 @@ export async function runAgenticCommit(args: CommitCommandArgs): Promise<void> {
 	const { model: primaryModel, apiKey: primaryApiKey } = primaryModelResult;
 	writeStdout(`  └─ ${primaryModel.name}`);
 
-	const { model: agentModel } = await resolveSmolModel(settings, modelRegistry, primaryModel, primaryApiKey);
+	const { model: agentModel } = await resolveFastModel(settings, modelRegistry, primaryModel, primaryApiKey);
 
 	if (stagedFiles.length === 0) {
 		writeStderr("No changes to commit.");
@@ -85,7 +85,7 @@ export async function runAgenticCommit(args: CommitCommandArgs): Promise<void> {
 	} else {
 		writeStdout("  └─ (none found)");
 	}
-	const forceFallback = $env.PI_COMMIT_TEST_FALLBACK?.toLowerCase() === "true";
+	const forceFallback = $env.ARCANE_COMMIT_TEST_FALLBACK?.toLowerCase() === "true";
 	if (forceFallback) {
 		writeStdout("● Forcing fallback commit generation...");
 		const fallbackProposal = generateFallbackProposal(numstat);
@@ -149,7 +149,7 @@ export async function runAgenticCommit(args: CommitCommandArgs): Promise<void> {
 	}
 
 	if (!usedFallback && !commitState.proposal && !commitState.splitProposal) {
-		if ($env.PI_COMMIT_NO_FALLBACK?.toLowerCase() !== "true") {
+		if ($env.ARCANE_COMMIT_NO_FALLBACK?.toLowerCase() !== "true") {
 			writeStdout("● Agent did not provide proposal, using fallback...");
 			commitState.proposal = generateFallbackProposal(numstat);
 			usedFallback = true;

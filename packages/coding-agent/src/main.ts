@@ -34,8 +34,10 @@ import { resolvePromptInput } from "./system-prompt";
 import { getChangelogPath, getNewEntries, parseChangelog } from "./utils/changelog";
 import { printTimings, time } from "./utils/timings";
 
-/** Conditional startup debug prints (stderr) when PI_DEBUG_STARTUP is set */
-const debugStartup = $env.PI_DEBUG_STARTUP ? (stage: string) => process.stderr.write(`[startup] ${stage}\n`) : () => {};
+/** Conditional startup debug prints (stderr) when ARCANE_DEBUG_STARTUP is set */
+const debugStartup = $env.ARCANE_DEBUG_STARTUP
+	? (stage: string) => process.stderr.write(`[startup] ${stage}\n`)
+	: () => {};
 
 async function checkForNewVersion(currentVersion: string): Promise<string | undefined> {
 	try {
@@ -557,7 +559,7 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 	time("settings:init");
 	if (parsedArgs.noPty) {
 		settings.override("bash.virtualTerminal", "off");
-		Bun.env.PI_NO_PTY = "1";
+		Bun.env.ARCANE_NO_PTY = "1";
 	}
 	const pipedInput = await readPipedInput();
 	let { initialMessage: initMsg, initialImages } = await prepareInitialMessage(
@@ -579,11 +581,11 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 	time("initializeWithSettings");
 
 	// Apply model role overrides from CLI args or env vars (ephemeral, not persisted)
-	const smolModel = parsedArgs.smol ?? $env.PI_SMOL_MODEL;
-	const slowModel = parsedArgs.slow ?? $env.PI_SLOW_MODEL;
-	if (smolModel || slowModel) {
+	const fastModel = parsedArgs.fast ?? $env.ARCANE_FAST_MODEL;
+	const slowModel = parsedArgs.slow ?? $env.ARCANE_SLOW_MODEL;
+	if (fastModel || slowModel) {
 		settings.overrideModelRoles({
-			smol: smolModel,
+			fast: fastModel,
 			slow: slowModel,
 		});
 	}
@@ -700,7 +702,7 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 			writeStderr(chalk.red("No models available."));
 		}
 		writeStderr(chalk.yellow("\nSet an API key environment variable:"));
-		writeStderr("  ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, etc.");
+		writeStderr("  ANTHROPIC_AARCANE_KEY, OPENAI_AARCANE_KEY, GEMINI_AARCANE_KEY, etc.");
 		writeStderr(chalk.yellow(`\nOr create ${ModelsConfigFile.path()}`));
 		process.exit(1);
 	}

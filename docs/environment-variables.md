@@ -215,7 +215,7 @@ Extra conditional behavior:
 
 | Variable | Default / behavior |
 |---|---|
-| `PI_SMOL_MODEL` | Ephemeral model-role override for `smol` (CLI `--smol` takes precedence) |
+| `ARCANE_FAST_MODEL` | Ephemeral model-role override for `fast` (CLI `--fast` takes precedence) |
 | `PI_SLOW_MODEL` | Ephemeral model-role override for `slow` (CLI `--slow` takes precedence) |
 | `PI_PLAN_MODEL` | Ephemeral model-role override for `plan` (CLI `--plan` takes precedence) |
 | `PI_NO_TITLE` | If set (any non-empty value), disables auto session title generation on first user message |

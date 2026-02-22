@@ -150,8 +150,8 @@ describe("PythonKernel (external gateway)", () => {
 	const originalWebSocket = globalThis.WebSocket;
 
 	beforeEach(() => {
-		Bun.env.PI_PYTHON_GATEWAY_URL = "http://gateway.test";
-		Bun.env.PI_PYTHON_SKIP_CHECK = "1";
+		Bun.env.ARCANE_PYTHON_GATEWAY_URL = "http://gateway.test";
+		Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 		globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
 	});
 

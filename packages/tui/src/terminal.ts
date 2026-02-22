@@ -112,7 +112,7 @@ export class ProcessTerminal implements Terminal {
 	#stdinBuffer?: StdinBuffer;
 	#stdinDataHandler?: (data: string) => void;
 	#dead = false;
-	#writeLogPath = $env.PI_TUI_WRITE_LOG || "";
+	#writeLogPath = $env.ARCANE_TUI_WRITE_LOG || "";
 	#windowsVTInputRestore?: () => void;
 
 	get kittyProtocolActive(): boolean {

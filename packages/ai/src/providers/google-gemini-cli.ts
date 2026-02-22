@@ -59,11 +59,11 @@ const DEFAULT_ENDPOINT = "https://cloudcode-pa.googleapis.com";
 const ANTIGRAVITY_DAILY_ENDPOINT = "https://daily-cloudcode-pa.sandbox.googleapis.com";
 const ANTIGRAVITY_ENDPOINT_FALLBACKS = [ANTIGRAVITY_DAILY_ENDPOINT, DEFAULT_ENDPOINT] as const;
 
-const GEMINI_CLI_USER_AGENT = process.env.PI_AI_GEMINI_CLI_USER_AGENT || "google-api-nodejs-client/9.15.1";
+const GEMINI_CLI_USER_AGENT = process.env.ARCANE_AI_GEMINI_CLI_USER_AGENT || "google-api-nodejs-client/9.15.1";
 
 const ANTIGRAVITY_USER_AGENT = (() => {
 	const DEFAULT_ANTIGRAVITY_VERSION = "1.104.0";
-	const version = process.env.PI_AI_ANTIGRAVITY_VERSION || DEFAULT_ANTIGRAVITY_VERSION;
+	const version = process.env.ARCANE_AI_ANTIGRAVITY_VERSION || DEFAULT_ANTIGRAVITY_VERSION;
 	return `antigravity/${version} darwin/arm64`;
 })();
 

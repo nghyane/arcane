@@ -42,7 +42,7 @@ export class TerminalInfo {
 }
 
 export function isNotificationSuppressed(): boolean {
-	const value = $env.PI_NOTIFICATIONS;
+	const value = $env.ARCANE_NOTIFICATIONS;
 	if (!value) return false;
 	return value === "off" || value === "0" || value === "false";
 }

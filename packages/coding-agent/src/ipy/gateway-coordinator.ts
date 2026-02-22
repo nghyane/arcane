@@ -243,7 +243,7 @@ async function startGatewayProcess(
 	const kernelEnv: Record<string, string | undefined> = {
 		...runtime.env,
 		PYTHONUNBUFFERED: "1",
-		PI_SHELL_SNAPSHOT: snapshotPath ?? undefined,
+		ARCANE_SHELL_SNAPSHOT: snapshotPath ?? undefined,
 	};
 
 	const gatewayPort = await allocatePort();

@@ -25,7 +25,7 @@ const priorityList = [
  */
 export function getPackageDir(): string {
 	// Allow override via environment variable (useful for Nix/Guix where store paths tokenize poorly)
-	const envDir = process.env.PI_PACKAGE_DIR;
+	const envDir = process.env.ARCANE_PACKAGE_DIR;
 	if (envDir) {
 		if (envDir === "~") return os.homedir();
 		if (envDir.startsWith("~/")) return os.homedir() + envDir.slice(1);

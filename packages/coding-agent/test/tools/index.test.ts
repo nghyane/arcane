@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { type SettingPath, Settings } from "@nghyane/arcane/config/settings";
 import { createTools, HIDDEN_TOOLS, type ToolSession } from "@nghyane/arcane/tools";
 
-Bun.env.PI_PYTHON_SKIP_CHECK = "1";
+Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 
 function createTestSession(overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

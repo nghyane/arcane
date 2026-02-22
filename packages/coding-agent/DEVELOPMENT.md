@@ -390,13 +390,13 @@ A `ToolFactory` is `(session: ToolSession) => Tool | null | Promise<Tool | null>
 `createTools(session, toolNames?)` is the entry point. It:
 
 1. Normalizes requested tool names (`toolNames`) and always injects `exit_plan_mode`.
-2. Resolves Python mode via `PI_PY` override (`getPythonModeFromEnv()`) or `session.settings.get("python.toolMode")`.
+2. Resolves Python mode via `ARCANE_PY` override (`getPythonModeFromEnv()`) or `session.settings.get("python.toolMode")`.
 3. Performs Python kernel preflight/warmup when applicable (`checkPythonKernelAvailability`, `warmPythonEnvironment`).
 4. Carcutes effective gating (`isToolAllowed`) from settings and runtime state:
    - feature toggles (`find.enabled`, `grep.enabled`, etc.)
    - recursion guard for `task` (`task.maxRecursionDepth` vs `session.taskDepth`)
    - submit-result mode (`requireSubmitResultTool`) and `todo_write` suppression
-5. Instantiates tools in parallel with `Promise.all`, records slow factory timings when `PI_TIMING=1`.
+5. Instantiates tools in parallel with `Promise.all`, records slow factory timings when `ARCANE_TIMING=1`.
 6. Wraps every tool with `wrapToolWithMetaNotice` before returning.
 
 The wrapper step is not cosmetic: it enforces uniform meta-notice behavior and normalized error rendering across all tools.
@@ -892,7 +892,7 @@ Bundled agent definitions are implemented in `packages/coding-agent/src/task/age
 
 `TaskTool` applies additional runtime constraints in `index.ts`:
 
-- `PI_BLOCKED_AGENT` prevents self-recursive spawn of a specific agent.
+- `ARCANE_BLOCKED_AGENT` prevents self-recursive spawn of a specific agent.
 - Parent spawn policy (`session.getSessionSpawns()`) gates whether a child can be launched.
 - In plan mode (`session.getPlanModeState?.().enabled`), effective subagent tools are replaced with a restricted set (`read`, `grep`, `find`, `ls`, `lsp`, `fetch`, `web_search`) and child spawning is disabled for that effective agent (`spawns: undefined`).
 
@@ -1133,7 +1133,7 @@ Notes from current behavior:
 
 - `createTools()` automatically injects `exit_plan_mode` when `toolNames` are specified.
 - `submit_result` is force-added when `session.requireSubmitResultTool === true`.
-- Python/Bash availability is mode-driven (`PI_PY`, `python.toolMode`) and can auto-fallback to bash.
+- Python/Bash availability is mode-driven (`ARCANE_PY`, `python.toolMode`) and can auto-fallback to bash.
 
 ### Playbook: add an RPC command
 

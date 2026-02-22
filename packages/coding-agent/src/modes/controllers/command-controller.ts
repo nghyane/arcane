@@ -391,7 +391,7 @@ export class CommandController {
 | \`Ctrl+D\` | Exit (when editor is empty) |
 | \`Ctrl+Z\` | Suspend to background |
 | \`Shift+Tab\` | Cycle thinking level |
-| \`Ctrl+P\` | Cycle role models (slow/default/smol) |
+| \`Ctrl+P\` | Cycle role models (slow/default/fast) |
 | \`Shift+Ctrl+P\` | Cycle role models (temporary) |
 | \`Alt+P\` | Select model (temporary) |
 | \`Ctrl+L\` | Select model (set roles) |

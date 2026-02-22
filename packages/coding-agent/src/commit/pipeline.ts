@@ -19,7 +19,7 @@ import { runChangelogFlow } from "./changelog";
 import { ControlledGit } from "./git";
 import { runMapReduceAnalysis, shouldUseMapReduce } from "./map-reduce";
 import { formatCommitMessage } from "./message";
-import { resolvePrimaryModel, resolveSmolModel } from "./model-selection";
+import { resolveFastModel, resolvePrimaryModel } from "./model-selection";
 import summaryRetryPrompt from "./prompts/summary-retry.md" with { type: "text" };
 import typesDescriptionPrompt from "./prompts/types-description.md" with { type: "text" };
 import type { CommitCommandArgs, ConventionalAnalysis } from "./types";
@@ -51,7 +51,7 @@ async function runLegacyCommitCommand(args: CommitCommandArgs): Promise<void> {
 		settings,
 		modelRegistry,
 	);
-	const { model: smolModel, apiKey: smolApiKey } = await resolveSmolModel(
+	const { model: fastModel, apiKey: fastApiKey } = await resolveFastModel(
 		settings,
 		modelRegistry,
 		primaryModel,
@@ -102,8 +102,8 @@ async function runLegacyCommitCommand(args: CommitCommandArgs): Promise<void> {
 		userContext: args.context,
 		primaryModel,
 		primaryApiKey,
-		smolModel,
-		smolApiKey,
+		fastModel,
+		fastApiKey,
 		commitSettings,
 	});
 
@@ -145,8 +145,8 @@ async function generateAnalysis(input: {
 	userContext?: string;
 	primaryModel: Model<Api>;
 	primaryApiKey: string;
-	smolModel: Model<Api>;
-	smolApiKey: string;
+	fastModel: Model<Api>;
+	fastApiKey: string;
 	commitSettings: {
 		mapReduceEnabled: boolean;
 		mapReduceMinFiles: number;
@@ -167,8 +167,8 @@ async function generateAnalysis(input: {
 		return runMapReduceAnalysis({
 			model: input.primaryModel,
 			apiKey: input.primaryApiKey,
-			smolModel: input.smolModel,
-			smolApiKey: input.smolApiKey,
+			fastModel: input.fastModel,
+			fastApiKey: input.fastApiKey,
 			diff: input.diff,
 			stat: input.stat,
 			scopeCandidates: input.scopeCandidates,

@@ -10,7 +10,7 @@ import { filterEnv, resolvePythonRuntime } from "./runtime";
 
 const TEXT_ENCODER = new TextEncoder();
 const TEXT_DECODER = new TextDecoder();
-const TRACE_IPC = $env.PI_PYTHON_IPC_TRACE === "1";
+const TRACE_IPC = $env.ARCANE_PYTHON_IPC_TRACE === "1";
 const PRELUDE_INTROSPECTION_SNIPPET = "import json\nprint(json.dumps(__arc_prelude_docs__()))";
 
 class SharedGatewayCreateError extends Error {
@@ -28,11 +28,11 @@ interface ExternalGatewayConfig {
 }
 
 function getExternalGatewayConfig(): ExternalGatewayConfig | null {
-	const url = $env.PI_PYTHON_GATEWAY_URL;
+	const url = $env.ARCANE_PYTHON_GATEWAY_URL;
 	if (!url) return null;
 	return {
 		url: url.replace(/\/$/, ""),
-		token: $env.PI_PYTHON_GATEWAY_TOKEN,
+		token: $env.ARCANE_PYTHON_GATEWAY_TOKEN,
 	};
 }
 
@@ -106,7 +106,7 @@ export interface PythonKernelAvailability {
 }
 
 export async function checkPythonKernelAvailability(cwd: string): Promise<PythonKernelAvailability> {
-	if (Bun.env.BUN_ENV === "test" || Bun.env.NODE_ENV === "test" || $env.PI_PYTHON_SKIP_CHECK === "1") {
+	if (Bun.env.BUN_ENV === "test" || Bun.env.NODE_ENV === "test" || $env.ARCANE_PYTHON_SKIP_CHECK === "1") {
 		return { ok: true };
 	}
 
@@ -158,7 +158,7 @@ async function checkExternalGatewayAvailability(config: ExternalGatewayConfig): 
 		if (response.status === 401 || response.status === 403) {
 			return {
 				ok: false,
-				reason: `External gateway at ${config.url} requires authentication. Set PI_PYTHON_GATEWAY_TOKEN.`,
+				reason: `External gateway at ${config.url} requires authentication. Set ARCANE_PYTHON_GATEWAY_TOKEN.`,
 			};
 		}
 

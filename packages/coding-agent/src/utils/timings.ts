@@ -1,10 +1,10 @@
 /**
  * Central timing instrumentation for startup profiling.
- * Enable with PI_TIMING=1 environment variable.
+ * Enable with ARCANE_TIMING=1 environment variable.
  */
 import { $env } from "@nghyane/arcane-utils";
 
-const ENABLED = $env.PI_TIMING === "1";
+const ENABLED = $env.ARCANE_TIMING === "1";
 const timings: Array<{ label: string; ms: number }> = [];
 let lastTime = Date.now();
 

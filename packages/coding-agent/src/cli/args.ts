@@ -14,7 +14,7 @@ export interface Args {
 	allowHome?: boolean;
 	provider?: string;
 	model?: string;
-	smol?: string;
+	fast?: string;
 	slow?: string;
 	plan?: string;
 	apiKey?: string;
@@ -89,8 +89,8 @@ export function parseArgs(args: string[], extensionFlags?: Map<string, { type: "
 			result.provider = args[++i];
 		} else if (arg === "--model" && i + 1 < args.length) {
 			result.model = args[++i];
-		} else if (arg === "--smol" && i + 1 < args.length) {
-			result.smol = args[++i];
+		} else if (arg === "--fast" && i + 1 < args.length) {
+			result.fast = args[++i];
 		} else if (arg === "--slow" && i + 1 < args.length) {
 			result.slow = args[++i];
 		} else if (arg === "--plan" && i + 1 < args.length) {
@@ -190,24 +190,24 @@ export function parseArgs(args: string[], extensionFlags?: Map<string, { type: "
 export function getExtraHelpText(): string {
 	return `${chalk.bold("Environment Variables:")}
   ${chalk.dim("# Core Providers")}
-  ANTHROPIC_API_KEY          - Anthropic Claude models
+  ANTHROPIC_AARCANE_KEY          - Anthropic Claude models
   ANTHROPIC_OAUTH_TOKEN      - Anthropic OAuth (takes precedence over API key)
-  OPENAI_API_KEY             - OpenAI GPT models
-  GEMINI_API_KEY             - Google Gemini models
+  OPENAI_AARCANE_KEY             - OpenAI GPT models
+  GEMINI_AARCANE_KEY             - Google Gemini models
   GITHUB_TOKEN               - GitHub Copilot (or GH_TOKEN, COPILOT_GITHUB_TOKEN)
 
   ${chalk.dim("# Additional LLM Providers")}
-  AZURE_OPENAI_API_KEY       - Azure OpenAI models
-  GROQ_API_KEY               - Groq models
-  CEREBRAS_API_KEY           - Cerebras models
-  XAI_API_KEY                - xAI Grok models
-  OPENROUTER_API_KEY         - OpenRouter aggregated models
-  MISTRAL_API_KEY            - Mistral models
-  ZAI_API_KEY                - z.ai models (ZhipuAI/GLM)
-  MINIMAX_API_KEY            - MiniMax models
-  OPENCODE_API_KEY           - OpenCode models
+  AZURE_OPENAI_AARCANE_KEY       - Azure OpenAI models
+  GROQ_AARCANE_KEY               - Groq models
+  CEREBRAS_AARCANE_KEY           - Cerebras models
+  XAI_AARCANE_KEY                - xAI Grok models
+  OPENROUTER_AARCANE_KEY         - OpenRouter aggregated models
+  MISTRAL_AARCANE_KEY            - Mistral models
+  ZAI_AARCANE_KEY                - z.ai models (ZhipuAI/GLM)
+  MINIMAX_AARCANE_KEY            - MiniMax models
+  OPENCODE_AARCANE_KEY           - OpenCode models
   CURSOR_ACCESS_TOKEN        - Cursor AI models
-  AI_GATEWAY_API_KEY         - Vercel AI Gateway
+  AI_GATEWAY_AARCANE_KEY         - Vercel AI Gateway
 
   ${chalk.dim("# Cloud Providers")}
   AWS_PROFILE                - AWS Bedrock (or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY)
@@ -215,18 +215,18 @@ export function getExtraHelpText(): string {
   GOOGLE_APPLICATION_CREDENTIALS - Service account for Vertex AI
 
   ${chalk.dim("# Search & Tools")}
-  EXA_API_KEY                - Exa web search
-  BRAVE_API_KEY              - Brave web search
-  PERPLEXITY_API_KEY         - Perplexity web search
-  ANTHROPIC_SEARCH_API_KEY   - Anthropic search provider
+  EXA_AARCANE_KEY                - Exa web search
+  BRAVE_AARCANE_KEY              - Brave web search
+  PERPLEXITY_AARCANE_KEY         - Perplexity web search
+  ANTHROPIC_SEARCH_AARCANE_KEY   - Anthropic search provider
 
   ${chalk.dim("# Configuration")}
-  PI_CODING_AGENT_DIR        - Session storage directory (default: ~/${CONFIG_DIR_NAME}/agent)
-  PI_PACKAGE_DIR             - Override package directory (for Nix/Guix store paths)
-  PI_SMOL_MODEL              - Override smol/fast model (see --smol)
-  PI_SLOW_MODEL              - Override slow/reasoning model (see --slow)
-  PI_PLAN_MODEL              - Override planning model (see --plan)
-  PI_NO_PTY                  - Disable PTY-based interactive bash execution
+  ARCANE_CODING_AGENT_DIR        - Session storage directory (default: ~/${CONFIG_DIR_NAME}/agent)
+  ARCANE_PACKAGE_DIR             - Override package directory (for Nix/Guix store paths)
+  ARCANE_FAST_MODEL              - Override fast model (see --fast)
+  ARCANE_SLOW_MODEL              - Override slow/reasoning model (see --slow)
+  ARCANE_PLAN_MODEL              - Override planning model (see --plan)
+  ARCANE_NO_PTY                  - Disable PTY-based interactive bash execution
 
   For complete environment variable reference, see:
   ${chalk.dim("docs/environment-variables.md")}

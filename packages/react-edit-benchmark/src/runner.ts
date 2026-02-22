@@ -634,15 +634,15 @@ async function runSingleTask(
 			`{"type":"meta","task":"${task.id}","run":${runIndex},"workDir":"${cwd}"}\n`,
 		);
 
-		const env: Record<string, string> = { PI_NO_TITLE: "1" };
+		const env: Record<string, string> = { ARCANE_NO_TITLE: "1" };
 		if (config.editVariant !== undefined) {
-			env.PI_EDIT_VARIANT = config.editVariant;
+			env.ARCANE_EDIT_VARIANT = config.editVariant;
 		}
 		if (config.editFuzzy !== undefined) {
-			env.PI_EDIT_FUZZY = config.editFuzzy === "auto" ? "auto" : config.editFuzzy ? "1" : "0";
+			env.ARCANE_EDIT_FUZZY = config.editFuzzy === "auto" ? "auto" : config.editFuzzy ? "1" : "0";
 		}
 		if (config.editFuzzyThreshold !== undefined) {
-			env.PI_EDIT_FUZZY_THRESHOLD =
+			env.ARCANE_EDIT_FUZZY_THRESHOLD =
 				config.editFuzzyThreshold === "auto" ? "auto" : String(config.editFuzzyThreshold);
 		}
 
@@ -1476,15 +1476,15 @@ async function runBatch(
 	try {
 		await Promise.all(orderedItems.map(item => copyFixtures(item.task, workDir)));
 
-		const env: Record<string, string> = { PI_NO_TITLE: "1" };
+		const env: Record<string, string> = { ARCANE_NO_TITLE: "1" };
 		if (config.editVariant !== undefined) {
-			env.PI_EDIT_VARIANT = config.editVariant;
+			env.ARCANE_EDIT_VARIANT = config.editVariant;
 		}
 		if (config.editFuzzy !== undefined) {
-			env.PI_EDIT_FUZZY = config.editFuzzy === "auto" ? "auto" : config.editFuzzy ? "1" : "0";
+			env.ARCANE_EDIT_FUZZY = config.editFuzzy === "auto" ? "auto" : config.editFuzzy ? "1" : "0";
 		}
 		if (config.editFuzzyThreshold !== undefined) {
-			env.PI_EDIT_FUZZY_THRESHOLD =
+			env.ARCANE_EDIT_FUZZY_THRESHOLD =
 				config.editFuzzyThreshold === "auto" ? "auto" : String(config.editFuzzyThreshold);
 		}
 

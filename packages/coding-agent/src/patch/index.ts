@@ -266,7 +266,7 @@ const hashlineReplaceTextEditSchema = Type.Object(
 	{ additionalProperties: false },
 );
 
-const HL_REPLACE_ENABLED = Bun.env.PI_HL_REPLACETXT === "1";
+const HL_REPLACE_ENABLED = Bun.env.ARCANE_HL_REPLACETXT === "1";
 
 const hashlineEditSpecSchema = Type.Union([
 	hashlineTargetEditSchema,
@@ -418,15 +418,15 @@ export class EditTool implements AgentTool<TInput> {
 
 	constructor(private readonly session: ToolSession) {
 		const {
-			PI_EDIT_FUZZY: editFuzzy = "auto",
-			PI_EDIT_FUZZY_THRESHOLD: editFuzzyThreshold = "auto",
-			PI_EDIT_VARIANT: envEditVariant = "auto",
+			ARCANE_EDIT_FUZZY: editFuzzy = "auto",
+			ARCANE_EDIT_FUZZY_THRESHOLD: editFuzzyThreshold = "auto",
+			ARCANE_EDIT_VARIANT: envEditVariant = "auto",
 		} = Bun.env;
 
 		if (envEditVariant && envEditVariant !== "auto") {
 			const editMode = normalizeEditMode(envEditVariant);
 			if (!editMode) {
-				throw new Error(`Invalid PI_EDIT_VARIANT: ${envEditVariant}`);
+				throw new Error(`Invalid ARCANE_EDIT_VARIANT: ${envEditVariant}`);
 			}
 			this.#editMode = editMode;
 		}
@@ -444,7 +444,7 @@ export class EditTool implements AgentTool<TInput> {
 				this.#allowFuzzy = session.settings.get("edit.fuzzyMatch");
 				break;
 			default:
-				throw new Error(`Invalid PI_EDIT_FUZZY: ${editFuzzy}`);
+				throw new Error(`Invalid ARCANE_EDIT_FUZZY: ${editFuzzy}`);
 		}
 		switch (editFuzzyThreshold) {
 			case "auto":
@@ -453,7 +453,7 @@ export class EditTool implements AgentTool<TInput> {
 			default:
 				this.#fuzzyThreshold = parseFloat(editFuzzyThreshold);
 				if (Number.isNaN(this.#fuzzyThreshold) || this.#fuzzyThreshold < 0 || this.#fuzzyThreshold > 1) {
-					throw new Error(`Invalid PI_EDIT_FUZZY_THRESHOLD: ${editFuzzyThreshold}`);
+					throw new Error(`Invalid ARCANE_EDIT_FUZZY_THRESHOLD: ${editFuzzyThreshold}`);
 				}
 				break;
 		}

@@ -210,8 +210,8 @@ export class TUI extends Container {
 	#hardwareCursorRow = 0; // Actual terminal cursor row (may differ due to IME positioning)
 	#inputBuffer = ""; // Buffer for parsing terminal responses
 	#cellSizeQueryPending = false;
-	#showHardwareCursor = process.env.PI_HARDWARE_CURSOR === "1";
-	#clearOnShrink = process.env.PI_CLEAR_ON_SHRINK === "1"; // Clear empty rows when content shrinks (default: off, enable with PI_CLEAR_ON_SHRINK=1)
+	#showHardwareCursor = process.env.ARCANE_HARDWARE_CURSOR === "1";
+	#clearOnShrink = process.env.ARCANE_CLEAR_ON_SHRINK === "1"; // Clear empty rows when content shrinks (default: off, enable with ARCANE_CLEAR_ON_SHRINK=1)
 	#maxLinesRendered = 0; // Track terminal's working area (max lines ever rendered)
 	#fullRedrawCount = 0;
 	#clearScrollbackOnNextFullRender = false;

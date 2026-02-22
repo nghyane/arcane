@@ -39,13 +39,13 @@ import { transformMessages } from "./transform-messages";
 
 /**
  * Resolve cache retention preference.
- * Defaults to "short" and uses PI_CACHE_RETENTION for backward compatibility.
+ * Defaults to "short" and uses ARCANE_CACHE_RETENTION for backward compatibility.
  */
 function resolveCacheRetention(cacheRetention?: CacheRetention): CacheRetention {
 	if (cacheRetention) {
 		return cacheRetention;
 	}
-	if ($env.PI_CACHE_RETENTION === "long") {
+	if ($env.ARCANE_CACHE_RETENTION === "long") {
 		return "long";
 	}
 	return "short";
@@ -389,12 +389,12 @@ function createClient(
 	extraHeaders?: Record<string, string>,
 ) {
 	if (!apiKey) {
-		if (!$env.OPENAI_API_KEY) {
+		if (!$env.OPENAI_AARCANE_KEY) {
 			throw new Error(
-				"OpenAI API key is required. Set OPENAI_API_KEY environment variable or pass it as an argument.",
+				"OpenAI API key is required. Set OPENAI_AARCANE_KEY environment variable or pass it as an argument.",
 			);
 		}
-		apiKey = $env.OPENAI_API_KEY;
+		apiKey = $env.OPENAI_AARCANE_KEY;
 	}
 
 	const headers = { ...(model.headers ?? {}), ...(extraHeaders ?? {}) };

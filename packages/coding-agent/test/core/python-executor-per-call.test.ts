@@ -11,7 +11,7 @@ interface KernelStub {
 
 describe("executePython (per-call)", () => {
 	it("shuts down kernel on timed-out cancellation", async () => {
-		Bun.env.PI_PYTHON_SKIP_CHECK = "1";
+		Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 		using tempDir = TempDir.createSync("@arc-python-executor-per-call-");
 
 		let shutdownCalls = 0;

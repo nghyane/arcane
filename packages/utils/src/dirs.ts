@@ -2,7 +2,7 @@
  * Centralized path helpers for arcane config directories.
  *
  * Uses ARCANE_CONFIG_DIR (default ".arcane") for the config root and
- * PI_CODING_AGENT_DIR to override the agent directory.
+ * ARCANE_AGENT_DIR to override the agent directory.
  */
 
 import * as fs from "node:fs";
@@ -56,13 +56,13 @@ export function getConfigRootDir(): string {
 	return path.join(os.homedir(), process.env.ARCANE_CONFIG_DIR || CONFIG_DIR_NAME);
 }
 
-let agentDir = process.env.PI_CODING_AGENT_DIR || path.join(getConfigRootDir(), "agent");
+let agentDir = process.env.ARCANE_AGENT_DIR || path.join(getConfigRootDir(), "agent");
 
 /** Set the coding agent directory. */
 export function setAgentDir(dir: string): void {
 	agentDir = dir;
 	agentCache.clear();
-	process.env.PI_CODING_AGENT_DIR = dir;
+	process.env.ARCANE_AGENT_DIR = dir;
 }
 
 /** Get the agent config directory (~/.arcane/agent). */

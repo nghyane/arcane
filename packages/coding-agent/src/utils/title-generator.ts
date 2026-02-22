@@ -1,5 +1,5 @@
 /**
- * Generate session titles using a smol, fast model.
+ * Generate session titles using a fast, fast model.
  */
 import type { Api, Model } from "@nghyane/arcane-ai";
 import { completeSimple } from "@nghyane/arcane-ai";
@@ -14,7 +14,7 @@ const TITLE_SYSTEM_PROMPT = renderPromptTemplate(titleSystemPrompt);
 
 const MAX_INPUT_CHARS = 2000;
 
-function getTitleModelCandidates(registry: ModelRegistry, savedSmolModel?: string): Model<Api>[] {
+function getTitleModelCandidates(registry: ModelRegistry, savedFastModel?: string): Model<Api>[] {
 	const availableModels = registry.getAvailable();
 	if (availableModels.length === 0) return [];
 
@@ -27,8 +27,8 @@ function getTitleModelCandidates(registry: ModelRegistry, savedSmolModel?: strin
 		}
 	};
 
-	if (savedSmolModel) {
-		const parsed = parseModelString(savedSmolModel);
+	if (savedFastModel) {
+		const parsed = parseModelString(savedFastModel);
 		if (parsed) {
 			const match = availableModels.find(model => model.provider === parsed.provider && model.id === parsed.id);
 			addCandidate(match);
@@ -53,13 +53,13 @@ function getTitleModelCandidates(registry: ModelRegistry, savedSmolModel?: strin
 
 /**
  * Find the best available model for title generation.
- * Uses the configured smol model if set, otherwise auto-discovers using priority chain.
+ * Uses the configured fast model if set, otherwise auto-discovers using priority chain.
  *
  * @param registry Model registry
- * @param savedSmolModel Optional saved smol model from settings (provider/modelId format)
+ * @param savedFastModel Optional saved fast model from settings (provider/modelId format)
  */
-export async function findTitleModel(registry: ModelRegistry, savedSmolModel?: string): Promise<Model<Api> | null> {
-	const candidates = getTitleModelCandidates(registry, savedSmolModel);
+export async function findTitleModel(registry: ModelRegistry, savedFastModel?: string): Promise<Model<Api> | null> {
+	const candidates = getTitleModelCandidates(registry, savedFastModel);
 	return candidates[0] ?? null;
 }
 
@@ -68,18 +68,18 @@ export async function findTitleModel(registry: ModelRegistry, savedSmolModel?: s
  *
  * @param firstMessage The first user message
  * @param registry Model registry
- * @param savedSmolModel Optional saved smol model from settings (provider/modelId format)
+ * @param savedFastModel Optional saved fast model from settings (provider/modelId format)
  * @param sessionId Optional session id for sticky API key selection
  */
 export async function generateSessionTitle(
 	firstMessage: string,
 	registry: ModelRegistry,
-	savedSmolModel?: string,
+	savedFastModel?: string,
 	sessionId?: string,
 ): Promise<string | null> {
-	const candidates = getTitleModelCandidates(registry, savedSmolModel);
+	const candidates = getTitleModelCandidates(registry, savedFastModel);
 	if (candidates.length === 0) {
-		logger.debug("title-generator: no smol model found");
+		logger.debug("title-generator: no fast model found");
 		return null;
 	}
 

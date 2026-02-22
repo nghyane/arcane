@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { disposeAllKernelSessions, executePython } from "@nghyane/arcane/ipy/executor";
 import { type KernelExecuteOptions, type KernelExecuteResult, PythonKernel } from "@nghyane/arcane/ipy/kernel";
 
-Bun.env.PI_PYTHON_SKIP_CHECK = "1";
+Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 
 class FakeKernel {
 	private result: KernelExecuteResult;

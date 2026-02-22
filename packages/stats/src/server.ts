@@ -15,7 +15,7 @@ import archiveText from "./embedded-client.generated.txt" with { type: "text" };
 const CLIENT_DIR = path.join(import.meta.dir, "client");
 const STATIC_DIR = path.join(import.meta.dir, "..", "dist", "client");
 const IS_BUN_COMPILED =
-	Bun.env.PI_COMPILED ||
+	Bun.env.ARCANE_COMPILED ||
 	import.meta.url.includes("$bunfs") ||
 	import.meta.url.includes("~BUN") ||
 	import.meta.url.includes("%7EBUN");

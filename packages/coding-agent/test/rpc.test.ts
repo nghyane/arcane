@@ -23,7 +23,7 @@ const isCompactionEntry = (entry: FileEntry): entry is CompactionEntry => entry.
 /**
  * RPC mode tests.
  */
-describe.skipIf(!e2eApiKey("ANTHROPIC_API_KEY"))("RPC mode", () => {
+describe.skipIf(!e2eApiKey("ANTHROPIC_AARCANE_KEY"))("RPC mode", () => {
 	let client: RpcClient;
 	let sessionDir: string;
 
@@ -32,7 +32,7 @@ describe.skipIf(!e2eApiKey("ANTHROPIC_API_KEY"))("RPC mode", () => {
 		client = new RpcClient({
 			cliPath: path.join(import.meta.dir, "..", "dist", "cli.js"),
 			cwd: path.join(import.meta.dir, ".."),
-			env: { PI_CODING_AGENT_DIR: sessionDir },
+			env: { ARCANE_CODING_AGENT_DIR: sessionDir },
 			provider: "anthropic",
 			model: "claude-sonnet-4-5",
 		});

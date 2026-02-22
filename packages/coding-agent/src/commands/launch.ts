@@ -22,14 +22,14 @@ export default class Index extends Command {
 		model: Flags.string({
 			description: 'Model to use (fuzzy match: "opus", "gpt-5.2", or "p-openai/gpt-5.2")',
 		}),
-		smol: Flags.string({
-			description: "Smol/fast model for lightweight tasks (or PI_SMOL_MODEL env)",
+		fast: Flags.string({
+			description: "Fast model for lightweight tasks (or ARCANE_FAST_MODEL env)",
 		}),
 		slow: Flags.string({
-			description: "Slow/reasoning model for thorough analysis (or PI_SLOW_MODEL env)",
+			description: "Slow/reasoning model for thorough analysis (or ARCANE_SLOW_MODEL env)",
 		}),
 		plan: Flags.string({
-			description: "Plan model for architectural planning (or PI_PLAN_MODEL env)",
+			description: "Plan model for architectural planning (or ARCANE_PLAN_MODEL env)",
 		}),
 		provider: Flags.string({
 			description: "Provider to use (legacy; prefer --model)",

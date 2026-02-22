@@ -16,7 +16,7 @@ import { theme } from "../modes/theme/theme";
  * Detect if we're running as a Bun compiled binary.
  */
 const isBunBinary =
-	Bun.env.PI_COMPILED ||
+	Bun.env.ARCANE_COMPILED ||
 	import.meta.url.includes("$bunfs") ||
 	import.meta.url.includes("~BUN") ||
 	import.meta.url.includes("%7EBUN");

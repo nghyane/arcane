@@ -11,10 +11,10 @@ import { getAgentDir, setAgentDir } from "@nghyane/arcane-utils/dirs";
 const originalFetch = global.fetch;
 const originalAgentDir = getAgentDir();
 const originalWebSocket = global.WebSocket;
-const originalCodexWebSocketRetryBudget = Bun.env.PI_CODEX_WEBSOCKET_RETRY_BUDGET;
-const originalCodexWebSocketRetryDelayMs = Bun.env.PI_CODEX_WEBSOCKET_RETRY_DELAY_MS;
-const originalCodexWebSocketIdleTimeoutMs = Bun.env.PI_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS;
-const originalCodexWebSocketV2 = Bun.env.PI_CODEX_WEBSOCKET_V2;
+const originalCodexWebSocketRetryBudget = Bun.env.ARCANE_CODEX_WEBSOCKET_RETRY_BUDGET;
+const originalCodexWebSocketRetryDelayMs = Bun.env.ARCANE_CODEX_WEBSOCKET_RETRY_DELAY_MS;
+const originalCodexWebSocketIdleTimeoutMs = Bun.env.ARCANE_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS;
+const originalCodexWebSocketV2 = Bun.env.ARCANE_CODEX_WEBSOCKET_V2;
 
 function restoreEnv(name: string, value: string | undefined): void {
 	if (value === undefined) {
@@ -28,10 +28,10 @@ afterEach(() => {
 	global.fetch = originalFetch;
 	global.WebSocket = originalWebSocket;
 	setAgentDir(originalAgentDir);
-	restoreEnv("PI_CODEX_WEBSOCKET_RETRY_BUDGET", originalCodexWebSocketRetryBudget);
-	restoreEnv("PI_CODEX_WEBSOCKET_RETRY_DELAY_MS", originalCodexWebSocketRetryDelayMs);
-	restoreEnv("PI_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS", originalCodexWebSocketIdleTimeoutMs);
-	restoreEnv("PI_CODEX_WEBSOCKET_V2", originalCodexWebSocketV2);
+	restoreEnv("ARCANE_CODEX_WEBSOCKET_RETRY_BUDGET", originalCodexWebSocketRetryBudget);
+	restoreEnv("ARCANE_CODEX_WEBSOCKET_RETRY_DELAY_MS", originalCodexWebSocketRetryDelayMs);
+	restoreEnv("ARCANE_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS", originalCodexWebSocketIdleTimeoutMs);
+	restoreEnv("ARCANE_CODEX_WEBSOCKET_V2", originalCodexWebSocketV2);
 	vi.restoreAllMocks();
 });
 
@@ -503,8 +503,8 @@ describe("openai-codex streaming", () => {
 			"utf8",
 		).toBase64();
 		const token = `aaa.${payload}.bbb`;
-		Bun.env.PI_CODEX_WEBSOCKET_RETRY_BUDGET = "0";
-		Bun.env.PI_CODEX_WEBSOCKET_RETRY_DELAY_MS = "1";
+		Bun.env.ARCANE_CODEX_WEBSOCKET_RETRY_BUDGET = "0";
+		Bun.env.ARCANE_CODEX_WEBSOCKET_RETRY_DELAY_MS = "1";
 		const sse = `${[
 			`data: ${JSON.stringify({ type: "response.content_part.added", part: { type: "output_text", text: "" } })}`,
 			`data: ${JSON.stringify({ type: "response.output_text.delta", delta: "Hello" })}`,
@@ -607,8 +607,8 @@ describe("openai-codex streaming", () => {
 	it("retries websocket failures before activating sticky fallback", async () => {
 		const tempDir = TempDir.createSync("@pi-codex-stream-");
 		setAgentDir(tempDir.path());
-		Bun.env.PI_CODEX_WEBSOCKET_RETRY_BUDGET = "1";
-		Bun.env.PI_CODEX_WEBSOCKET_RETRY_DELAY_MS = "1";
+		Bun.env.ARCANE_CODEX_WEBSOCKET_RETRY_BUDGET = "1";
+		Bun.env.ARCANE_CODEX_WEBSOCKET_RETRY_DELAY_MS = "1";
 
 		const payload = Buffer.from(
 			JSON.stringify({ "https://api.openai.com/auth": { chatgpt_account_id: "acc_test" } }),
@@ -906,7 +906,7 @@ describe("openai-codex streaming", () => {
 	it("uses websocket v2 beta header when v2 mode is enabled", async () => {
 		const tempDir = TempDir.createSync("@pi-codex-stream-");
 		setAgentDir(tempDir.path());
-		Bun.env.PI_CODEX_WEBSOCKET_V2 = "1";
+		Bun.env.ARCANE_CODEX_WEBSOCKET_V2 = "1";
 
 		const payload = Buffer.from(
 			JSON.stringify({ "https://api.openai.com/auth": { chatgpt_account_id: "acc_test" } }),
@@ -1037,7 +1037,7 @@ describe("openai-codex streaming", () => {
 	it("fails websocket streams with an idle-timeout transport error", async () => {
 		const tempDir = TempDir.createSync("@pi-codex-stream-");
 		setAgentDir(tempDir.path());
-		Bun.env.PI_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS = "10";
+		Bun.env.ARCANE_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS = "10";
 
 		const payload = Buffer.from(
 			JSON.stringify({ "https://api.openai.com/auth": { chatgpt_account_id: "acc_test" } }),
@@ -1127,8 +1127,8 @@ describe("openai-codex streaming", () => {
 	it("retries websocket stream closes before surfacing transport errors", async () => {
 		const tempDir = TempDir.createSync("@pi-codex-stream-");
 		setAgentDir(tempDir.path());
-		Bun.env.PI_CODEX_WEBSOCKET_RETRY_BUDGET = "1";
-		Bun.env.PI_CODEX_WEBSOCKET_RETRY_DELAY_MS = "1";
+		Bun.env.ARCANE_CODEX_WEBSOCKET_RETRY_BUDGET = "1";
+		Bun.env.ARCANE_CODEX_WEBSOCKET_RETRY_DELAY_MS = "1";
 
 		const payload = Buffer.from(
 			JSON.stringify({ "https://api.openai.com/auth": { chatgpt_account_id: "acc_test" } }),

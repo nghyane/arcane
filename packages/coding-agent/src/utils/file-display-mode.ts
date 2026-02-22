@@ -28,7 +28,7 @@ export function resolveFileDisplayMode(session: FileDisplayModeSession): FileDis
 		hasEditTool &&
 		(settings.get("readHashLines") === true ||
 			settings.get("edit.mode") === "hashline" ||
-			Bun.env.PI_EDIT_VARIANT === "hashline");
+			Bun.env.ARCANE_EDIT_VARIANT === "hashline");
 	return {
 		hashLines,
 		lineNumbers: hashLines || settings.get("readLineNumbers") === true,

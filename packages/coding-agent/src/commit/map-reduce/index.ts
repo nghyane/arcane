@@ -21,8 +21,8 @@ export interface MapReduceSettings {
 export interface MapReduceInput {
 	model: Model<Api>;
 	apiKey: string;
-	smolModel: Model<Api>;
-	smolApiKey: string;
+	fastModel: Model<Api>;
+	fastApiKey: string;
 	diff: string;
 	stat: string;
 	scopeCandidates: string;
@@ -31,7 +31,7 @@ export interface MapReduceInput {
 }
 
 export function shouldUseMapReduce(diff: string, settings?: MapReduceSettings): boolean {
-	if ($env.PI_COMMIT_MAP_REDUCE?.toLowerCase() === "false") return false;
+	if ($env.ARCANE_COMMIT_MAP_REDUCE?.toLowerCase() === "false") return false;
 	if (settings?.enabled === false) return false;
 	const minFiles = settings?.minFiles ?? MIN_FILES_FOR_MAP_REDUCE;
 	const maxFileTokens = settings?.maxFileTokens ?? MAX_FILE_TOKENS;
@@ -42,14 +42,14 @@ export function shouldUseMapReduce(diff: string, settings?: MapReduceSettings): 
 }
 
 /**
- * Run map-reduce analysis for large diffs using smol + primary models.
+ * Run map-reduce analysis for large diffs using fast + primary models.
  */
 
 export async function runMapReduceAnalysis(input: MapReduceInput): Promise<ConventionalAnalysis> {
 	const fileDiffs = parseFileDiffs(input.diff).filter(file => !isExcludedFile(file.filename));
 	const observations = await runMapPhase({
-		model: input.smolModel,
-		apiKey: input.smolApiKey,
+		model: input.fastModel,
+		apiKey: input.fastApiKey,
 		files: fileDiffs,
 		config: input.settings,
 	});

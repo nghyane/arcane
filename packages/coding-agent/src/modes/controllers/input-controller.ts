@@ -295,10 +295,10 @@ export class InputController {
 
 			// Generate session title on first message
 			const hasUserMessages = this.ctx.agent.state.messages.some((m: AgentMessage) => m.role === "user");
-			if (!hasUserMessages && !this.ctx.sessionManager.getSessionName() && !$env.PI_NO_TITLE) {
+			if (!hasUserMessages && !this.ctx.sessionManager.getSessionName() && !$env.ARCANE_NO_TITLE) {
 				const registry = this.ctx.session.modelRegistry;
-				const smolModel = this.ctx.settings.getModelRole("fast");
-				generateSessionTitle(text, registry, smolModel, this.ctx.session.sessionId)
+				const fastModel = this.ctx.settings.getModelRole("fast");
+				generateSessionTitle(text, registry, fastModel, this.ctx.session.sessionId)
 					.then(async title => {
 						if (title) {
 							await this.ctx.sessionManager.setSessionName(title);

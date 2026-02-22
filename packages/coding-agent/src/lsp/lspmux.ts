@@ -127,7 +127,7 @@ async function checkServerRunning(binaryPath: string): Promise<boolean> {
  * Detect lspmux availability and state.
  * Results are cached for STATE_CACHE_TTL_MS.
  *
- * Set PI_DISABLE_LSPMUX=1 to disable.
+ * Set ARCANE_DISABLE_LSPMUX=1 to disable.
  */
 export async function detectLspmux(): Promise<LspmuxState> {
 	const now = Date.now();
@@ -135,7 +135,7 @@ export async function detectLspmux(): Promise<LspmuxState> {
 		return cachedState;
 	}
 
-	if ($env.PI_DISABLE_LSPMUX === "1") {
+	if ($env.ARCANE_DISABLE_LSPMUX === "1") {
 		cachedState = { available: false, running: false, binaryPath: null, config: null };
 		cacheTimestamp = now;
 		return cachedState;

@@ -46,8 +46,8 @@ describe("Coding Agent Tools", () => {
 
 	beforeEach(() => {
 		// Force replace mode for edit tool tests using old_text/new_text
-		originalEditVariant = Bun.env.PI_EDIT_VARIANT;
-		Bun.env.PI_EDIT_VARIANT = "replace";
+		originalEditVariant = Bun.env.ARCANE_EDIT_VARIANT;
+		Bun.env.ARCANE_EDIT_VARIANT = "replace";
 
 		// Create a unique temporary directory for each test
 		testDir = path.join(os.tmpdir(), `coding-agent-test-${Snowflake.next()}`);
@@ -69,9 +69,9 @@ describe("Coding Agent Tools", () => {
 
 		// Restore original edit variant
 		if (originalEditVariant === undefined) {
-			delete Bun.env.PI_EDIT_VARIANT;
+			delete Bun.env.ARCANE_EDIT_VARIANT;
 		} else {
-			Bun.env.PI_EDIT_VARIANT = originalEditVariant;
+			Bun.env.ARCANE_EDIT_VARIANT = originalEditVariant;
 		}
 	});
 
@@ -422,12 +422,12 @@ function b() {
 		});
 
 		it("should persist environment variables between commands", async () => {
-			if (process.platform === "win32" || Bun.env.PI_SHELL_PERSIST !== "1") {
+			if (process.platform === "win32" || Bun.env.ARCANE_SHELL_PERSIST !== "1") {
 				return;
 			}
 
-			await bashTool.execute("test-call-8-env-set", { command: "export PI_TEST_VAR=hello" });
-			const result = await bashTool.execute("test-call-8-env-get", { command: "echo $PI_TEST_VAR" });
+			await bashTool.execute("test-call-8-env-set", { command: "export ARCANE_TEST_VAR=hello" });
+			const result = await bashTool.execute("test-call-8-env-get", { command: "echo $ARCANE_TEST_VAR" });
 			expect(getTextOutput(result)).toContain("hello");
 		});
 
@@ -578,8 +578,8 @@ describe("edit tool CRLF handling", () => {
 
 	beforeEach(() => {
 		// Force replace mode for edit tool tests using old_text/new_text
-		originalEditVariant = Bun.env.PI_EDIT_VARIANT;
-		Bun.env.PI_EDIT_VARIANT = "replace";
+		originalEditVariant = Bun.env.ARCANE_EDIT_VARIANT;
+		Bun.env.ARCANE_EDIT_VARIANT = "replace";
 
 		testDir = path.join(os.tmpdir(), `coding-agent-crlf-test-${Snowflake.next()}`);
 		fs.mkdirSync(testDir, { recursive: true });
@@ -591,9 +591,9 @@ describe("edit tool CRLF handling", () => {
 
 		// Restore original edit variant
 		if (originalEditVariant === undefined) {
-			delete Bun.env.PI_EDIT_VARIANT;
+			delete Bun.env.ARCANE_EDIT_VARIANT;
 		} else {
-			Bun.env.PI_EDIT_VARIANT = originalEditVariant;
+			Bun.env.ARCANE_EDIT_VARIANT = originalEditVariant;
 		}
 	});
 
@@ -654,10 +654,10 @@ describe("edit tool CRLF handling", () => {
 	});
 
 	it("should apply hashline replace (substr-style) when edit variant is hashline", async () => {
-		const originalEditVariant = Bun.env.PI_EDIT_VARIANT;
-		const originalHashlineReplace = Bun.env.PI_HL_REPLACETXT;
-		Bun.env.PI_EDIT_VARIANT = "hashline";
-		Bun.env.PI_HL_REPLACETXT = "1";
+		const originalEditVariant = Bun.env.ARCANE_EDIT_VARIANT;
+		const originalHashlineReplace = Bun.env.ARCANE_HL_REPLACETXT;
+		Bun.env.ARCANE_EDIT_VARIANT = "hashline";
+		Bun.env.ARCANE_HL_REPLACETXT = "1";
 
 		const hashDir = path.join(os.tmpdir(), `coding-agent-hashline-replace-${Snowflake.next()}`);
 		fs.mkdirSync(hashDir, { recursive: true });
@@ -677,16 +677,16 @@ describe("edit tool CRLF handling", () => {
 			expect(content).toBe("x = 99\ny = 10\n");
 		} finally {
 			fs.rmSync(hashDir, { recursive: true, force: true });
-			if (originalEditVariant === undefined) delete Bun.env.PI_EDIT_VARIANT;
-			else Bun.env.PI_EDIT_VARIANT = originalEditVariant;
-			if (originalHashlineReplace === undefined) delete Bun.env.PI_HL_REPLACETXT;
-			else Bun.env.PI_HL_REPLACETXT = originalHashlineReplace;
+			if (originalEditVariant === undefined) delete Bun.env.ARCANE_EDIT_VARIANT;
+			else Bun.env.ARCANE_EDIT_VARIANT = originalEditVariant;
+			if (originalHashlineReplace === undefined) delete Bun.env.ARCANE_HL_REPLACETXT;
+			else Bun.env.ARCANE_HL_REPLACETXT = originalHashlineReplace;
 		}
 	});
 
 	it("should delete file in hashline mode with delete:true", async () => {
-		const originalEditVariant = Bun.env.PI_EDIT_VARIANT;
-		Bun.env.PI_EDIT_VARIANT = "hashline";
+		const originalEditVariant = Bun.env.ARCANE_EDIT_VARIANT;
+		Bun.env.ARCANE_EDIT_VARIANT = "hashline";
 
 		const hashDir = path.join(os.tmpdir(), `coding-agent-hashline-delete-${Snowflake.next()}`);
 		fs.mkdirSync(hashDir, { recursive: true });
@@ -706,14 +706,14 @@ describe("edit tool CRLF handling", () => {
 			expect(fs.existsSync(testFile)).toBe(false);
 		} finally {
 			fs.rmSync(hashDir, { recursive: true, force: true });
-			if (originalEditVariant === undefined) delete Bun.env.PI_EDIT_VARIANT;
-			else Bun.env.PI_EDIT_VARIANT = originalEditVariant;
+			if (originalEditVariant === undefined) delete Bun.env.ARCANE_EDIT_VARIANT;
+			else Bun.env.ARCANE_EDIT_VARIANT = originalEditVariant;
 		}
 	});
 
 	it("should rename file in hashline mode with rename", async () => {
-		const originalEditVariant = Bun.env.PI_EDIT_VARIANT;
-		Bun.env.PI_EDIT_VARIANT = "hashline";
+		const originalEditVariant = Bun.env.ARCANE_EDIT_VARIANT;
+		Bun.env.ARCANE_EDIT_VARIANT = "hashline";
 
 		const hashDir = path.join(os.tmpdir(), `coding-agent-hashline-rename-${Snowflake.next()}`);
 		fs.mkdirSync(hashDir, { recursive: true });
@@ -736,8 +736,8 @@ describe("edit tool CRLF handling", () => {
 			expect(await Bun.file(targetFile).text()).toBe("unchanged content\n");
 		} finally {
 			fs.rmSync(hashDir, { recursive: true, force: true });
-			if (originalEditVariant === undefined) delete Bun.env.PI_EDIT_VARIANT;
-			else Bun.env.PI_EDIT_VARIANT = originalEditVariant;
+			if (originalEditVariant === undefined) delete Bun.env.ARCANE_EDIT_VARIANT;
+			else Bun.env.ARCANE_EDIT_VARIANT = originalEditVariant;
 		}
 	});
 

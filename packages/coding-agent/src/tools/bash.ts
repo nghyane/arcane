@@ -123,7 +123,7 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails> {
 
 		const usePty =
 			this.session.settings.get("bash.virtualTerminal") === "on" &&
-			$env.PI_NO_PTY !== "1" &&
+			$env.ARCANE_NO_PTY !== "1" &&
 			ctx?.hasUI === true &&
 			ctx.ui !== undefined;
 		const result: BashResult | BashInteractiveResult = usePty

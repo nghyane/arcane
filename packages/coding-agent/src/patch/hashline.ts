@@ -597,7 +597,7 @@ export function applyHashlineEdits(
 	let firstChangedLine: number | undefined;
 	const noopEdits: Array<{ editIndex: number; loc: string; currentContent: string }> = [];
 
-	const autocorrect = Bun.env.PI_HL_AUTOCORRECT === "1";
+	const autocorrect = Bun.env.ARCANE_HL_AUTOCORRECT === "1";
 
 	function collectExplicitlyTouchedLines(): Set<number> {
 		const touched = new Set<number>();

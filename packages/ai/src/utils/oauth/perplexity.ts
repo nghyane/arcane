@@ -16,7 +16,7 @@ import { $env } from "@nghyane/arcane-utils";
 import { $ } from "bun";
 import type { OAuthController, OAuthCredentials } from "./types";
 
-const API_VERSION = "2.18";
+const AARCANE_VERSION = "2.18";
 const NATIVE_APP_BUNDLE = "ai.perplexity.mac";
 const APP_USER_AGENT = "Perplexity/641 CFNetwork/1568 Darwin/25.2.0";
 
@@ -95,7 +95,7 @@ async function httpEmailLogin(ctrl: OAuthController): Promise<OAuthCredentials> 
 	const csrfResponse = await fetch("https://www.perplexity.ai/api/auth/csrf", {
 		headers: {
 			"User-Agent": APP_USER_AGENT,
-			"X-App-ApiVersion": API_VERSION,
+			"X-App-ApiVersion": AARCANE_VERSION,
 		},
 		signal: ctrl.signal,
 	});
@@ -114,7 +114,7 @@ async function httpEmailLogin(ctrl: OAuthController): Promise<OAuthCredentials> 
 		headers: {
 			"Content-Type": "application/json",
 			"User-Agent": APP_USER_AGENT,
-			"X-App-ApiVersion": API_VERSION,
+			"X-App-ApiVersion": AARCANE_VERSION,
 		},
 		body: JSON.stringify({
 			email: trimmedEmail,
@@ -140,7 +140,7 @@ async function httpEmailLogin(ctrl: OAuthController): Promise<OAuthCredentials> 
 		headers: {
 			"Content-Type": "application/json",
 			"User-Agent": APP_USER_AGENT,
-			"X-App-ApiVersion": API_VERSION,
+			"X-App-ApiVersion": AARCANE_VERSION,
 		},
 		body: JSON.stringify({
 			email: trimmedEmail,
@@ -185,8 +185,8 @@ export async function loginPerplexity(ctrl: OAuthController): Promise<OAuthCrede
 		throw new Error("Perplexity login requires onPrompt callback");
 	}
 
-	// Path 1: Native macOS app JWT (skip if PI_AUTH_NO_BORROW=1)
-	if (!$env.PI_AUTH_NO_BORROW) {
+	// Path 1: Native macOS app JWT (skip if ARCANE_AUTH_NO_BORROW=1)
+	if (!$env.ARCANE_AUTH_NO_BORROW) {
 		ctrl.onProgress?.("Checking for Perplexity desktop app...");
 		const nativeJwt = await extractFromNativeApp();
 		if (nativeJwt) {

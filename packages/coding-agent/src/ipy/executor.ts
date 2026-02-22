@@ -318,7 +318,7 @@ async function createKernelSession(
 	const env: Record<string, string> | undefined =
 		sessionFile || artifactsDir
 			? {
-					...(sessionFile ? { PI_SESSION_FILE: sessionFile } : {}),
+					...(sessionFile ? { ARCANE_SESSION_FILE: sessionFile } : {}),
 					...(artifactsDir ? { ARTIFACTS: artifactsDir } : {}),
 				}
 			: undefined;
@@ -373,7 +373,7 @@ async function restartKernelSession(
 	const env: Record<string, string> | undefined =
 		sessionFile || artifactsDir
 			? {
-					...(sessionFile ? { PI_SESSION_FILE: sessionFile } : {}),
+					...(sessionFile ? { ARCANE_SESSION_FILE: sessionFile } : {}),
 					...(artifactsDir ? { ARTIFACTS: artifactsDir } : {}),
 				}
 			: undefined;
@@ -526,7 +526,7 @@ export async function executePython(code: string, options?: PythonExecutorOption
 		const env: Record<string, string> | undefined =
 			sessionFile || artifactsDir
 				? {
-						...(sessionFile ? { PI_SESSION_FILE: sessionFile } : {}),
+						...(sessionFile ? { ARCANE_SESSION_FILE: sessionFile } : {}),
 						...(artifactsDir ? { ARTIFACTS: artifactsDir } : {}),
 					}
 				: undefined;

@@ -200,7 +200,7 @@ export type ToolName = keyof typeof BUILTIN_TOOLS;
 export type PythonToolMode = "ipy-only" | "bash-only" | "both";
 
 /**
- * Parse PI_PY environment variable to determine Python tool mode.
+ * Parse ARCANE_PY environment variable to determine Python tool mode.
  * Returns null if not set or invalid.
  *
  * Values:
@@ -209,7 +209,7 @@ export type PythonToolMode = "ipy-only" | "bash-only" | "both";
  * - "mix" or "both" → both
  */
 function getPythonModeFromEnv(): PythonToolMode | null {
-	const value = $env.PI_PY?.toLowerCase();
+	const value = $env.ARCANE_PY?.toLowerCase();
 	if (!value) return null;
 
 	switch (value) {
@@ -243,7 +243,7 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		pythonMode !== "bash-only" &&
 		(requestedTools === undefined || requestedTools.includes("python"));
 	const isTestEnv = Bun.env.BUN_ENV === "test" || Bun.env.NODE_ENV === "test";
-	const skipPythonWarm = isTestEnv || $env.PI_PYTHON_SKIP_CHECK === "1";
+	const skipPythonWarm = isTestEnv || $env.ARCANE_PYTHON_SKIP_CHECK === "1";
 	if (shouldCheckPython) {
 		const availability = await checkPythonKernelAvailability(session.cwd);
 		time("createTools:pythonCheck");

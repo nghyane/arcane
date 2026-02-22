@@ -84,8 +84,10 @@ import { getGeminiImageTools } from "./tools/gemini-image";
 import { EventBus } from "./utils/event-bus";
 import { time } from "./utils/timings";
 
-/** Conditional startup debug prints (stderr) when PI_DEBUG_STARTUP is set */
-const debugStartup = $env.PI_DEBUG_STARTUP ? (stage: string) => process.stderr.write(`[startup] ${stage}\n`) : () => {};
+/** Conditional startup debug prints (stderr) when ARCANE_DEBUG_STARTUP is set */
+const debugStartup = $env.ARCANE_DEBUG_STARTUP
+	? (stage: string) => process.stderr.write(`[startup] ${stage}\n`)
+	: () => {};
 
 // Types
 export interface CreateAgentSessionOptions {
@@ -798,9 +800,9 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		mcpManager = mcpResult.manager;
 		toolSession.mcpManager = mcpManager;
 
-		// If we extracted Exa API keys from MCP configs and EXA_API_KEY isn't set, use the first one
-		if (mcpResult.exaApiKeys.length > 0 && !$env.EXA_API_KEY) {
-			Bun.env.EXA_API_KEY = mcpResult.exaApiKeys[0];
+		// If we extracted Exa API keys from MCP configs and EXA_AARCANE_KEY isn't set, use the first one
+		if (mcpResult.exaApiKeys.length > 0 && !$env.EXA_AARCANE_KEY) {
+			Bun.env.EXA_AARCANE_KEY = mcpResult.exaApiKeys[0];
 		}
 
 		// Log MCP errors
@@ -814,14 +816,14 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		}
 	}
 
-	// Add Gemini image tools if GEMINI_API_KEY (or GOOGLE_API_KEY) is available
+	// Add Gemini image tools if GEMINI_AARCANE_KEY (or GOOGLE_AARCANE_KEY) is available
 	const geminiImageTools = await getGeminiImageTools();
 	time("getGeminiImageTools");
 	if (geminiImageTools.length > 0) {
 		customTools.push(...(geminiImageTools as unknown as CustomTool[]));
 	}
 
-	// Add specialized Exa web search tools if EXA_API_KEY is available
+	// Add specialized Exa web search tools if EXA_AARCANE_KEY is available
 	const exaSettings = settings.getGroup("exa");
 	if (exaSettings.enabled && exaSettings.enableSearch) {
 		const exaSearchTools = await getSearchTools({
@@ -1192,7 +1194,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		},
 		cursorExecHandlers,
 		transformToolCallArguments: obfuscator?.hasSecrets() ? args => obfuscator!.deobfuscateObject(args) : undefined,
-		intentTracing: settings.get("tools.intentTracing") || $env.PI_INTENT_TRACING === "1",
+		intentTracing: settings.get("tools.intentTracing") || $env.ARCANE_INTENT_TRACING === "1",
 	});
 	cursorEventEmitter = event => agent.emitExternalEvent(event);
 

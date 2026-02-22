@@ -79,7 +79,7 @@ export function buildCodexSystemPrompt(args: { userSystemPrompt?: string }): Cod
 	};
 }
 
-const CODEX_DEBUG = $env.PI_CODEX_DEBUG === "1" || $env.PI_CODEX_DEBUG === "true";
+const CODEX_DEBUG = $env.ARCANE_CODEX_DEBUG === "1" || $env.ARCANE_CODEX_DEBUG === "true";
 const CODEX_MAX_RETRIES = 5;
 const CODEX_RETRYABLE_STATUS = new Set([408, 429, 500, 502, 503, 504]);
 const CODEX_RETRY_DELAY_MS = 500;
@@ -103,24 +103,24 @@ function parseCodexPositiveInteger(value: string | undefined, fallback: number):
 }
 
 function isCodexWebSocketEnvEnabled(): boolean {
-	return $env.PI_CODEX_WEBSOCKET === "1" || $env.PI_CODEX_WEBSOCKET === "true";
+	return $env.ARCANE_CODEX_WEBSOCKET === "1" || $env.ARCANE_CODEX_WEBSOCKET === "true";
 }
 
 function isCodexWebSocketV2Enabled(): boolean {
-	return $env.PI_CODEX_WEBSOCKET_V2 === "1" || $env.PI_CODEX_WEBSOCKET_V2 === "true";
+	return $env.ARCANE_CODEX_WEBSOCKET_V2 === "1" || $env.ARCANE_CODEX_WEBSOCKET_V2 === "true";
 }
 
 function getCodexWebSocketRetryBudget(): number {
-	return parseCodexNonNegativeInteger($env.PI_CODEX_WEBSOCKET_RETRY_BUDGET, CODEX_WEBSOCKET_RETRY_BUDGET);
+	return parseCodexNonNegativeInteger($env.ARCANE_CODEX_WEBSOCKET_RETRY_BUDGET, CODEX_WEBSOCKET_RETRY_BUDGET);
 }
 
 function getCodexWebSocketRetryDelayMs(retry: number): number {
-	const baseDelay = parseCodexPositiveInteger($env.PI_CODEX_WEBSOCKET_RETRY_DELAY_MS, CODEX_RETRY_DELAY_MS);
+	const baseDelay = parseCodexPositiveInteger($env.ARCANE_CODEX_WEBSOCKET_RETRY_DELAY_MS, CODEX_RETRY_DELAY_MS);
 	return baseDelay * Math.max(1, retry);
 }
 
 function getCodexWebSocketIdleTimeoutMs(): number {
-	return parseCodexPositiveInteger($env.PI_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS, CODEX_WEBSOCKET_IDLE_TIMEOUT_MS);
+	return parseCodexPositiveInteger($env.ARCANE_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS, CODEX_WEBSOCKET_IDLE_TIMEOUT_MS);
 }
 
 type CodexWebSocketSessionState = {

@@ -359,7 +359,7 @@ async function multiTurn<TApi extends Api>(model: Model<TApi>, options?: Options
 }
 
 describe("Generate E2E Tests", () => {
-	describe.skipIf(!e2eApiKey("GEMINI_API_KEY"))("Gemini Provider (gemini-2.5-flash)", () => {
+	describe.skipIf(!e2eApiKey("GEMINI_AARCANE_KEY"))("Gemini Provider (gemini-2.5-flash)", () => {
 		const llm = getBundledModel("google", "gemini-2.5-flash");
 
 		it(
@@ -473,7 +473,7 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("OPENAI_API_KEY"))("OpenAI Completions Provider (gpt-4o-mini)", () => {
+	describe.skipIf(!e2eApiKey("OPENAI_AARCANE_KEY"))("OpenAI Completions Provider (gpt-4o-mini)", () => {
 		const llm: Model<"openai-completions"> = {
 			...getBundledModel("openai", "gpt-4o-mini"),
 			api: "openai-completions",
@@ -512,7 +512,7 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("OPENAI_API_KEY"))("OpenAI Responses Provider (gpt-5-mini)", () => {
+	describe.skipIf(!e2eApiKey("OPENAI_AARCANE_KEY"))("OpenAI Responses Provider (gpt-5-mini)", () => {
 		const llm = getBundledModel("openai", "gpt-5-mini");
 
 		it(
@@ -564,7 +564,7 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("ANTHROPIC_API_KEY"))("Anthropic Provider (claude-haiku-4-5-20251001)", () => {
+	describe.skipIf(!e2eApiKey("ANTHROPIC_AARCANE_KEY"))("Anthropic Provider (claude-haiku-4-5-20251001)", () => {
 		const model = getBundledModel("anthropic", "claude-haiku-4-5-20251001");
 
 		it(
@@ -600,7 +600,7 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("OPENAI_API_KEY"))("OpenAI Responses Provider (gpt-5-mini)", () => {
+	describe.skipIf(!e2eApiKey("OPENAI_AARCANE_KEY"))("OpenAI Responses Provider (gpt-5-mini)", () => {
 		const model = getBundledModel("openai", "gpt-5-mini");
 
 		it(
@@ -636,7 +636,7 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("XAI_API_KEY"))("xAI Provider (grok-code-fast-1 via OpenAI Completions)", () => {
+	describe.skipIf(!e2eApiKey("XAI_AARCANE_KEY"))("xAI Provider (grok-code-fast-1 via OpenAI Completions)", () => {
 		const llm = getBundledModel("xai", "grok-code-fast-1");
 
 		it(
@@ -680,7 +680,7 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("GROQ_API_KEY"))("Groq Provider (gpt-oss-20b via OpenAI Completions)", () => {
+	describe.skipIf(!e2eApiKey("GROQ_AARCANE_KEY"))("Groq Provider (gpt-oss-20b via OpenAI Completions)", () => {
 		const llm = getBundledModel("groq", "openai/gpt-oss-20b");
 
 		it(
@@ -724,103 +724,109 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("CEREBRAS_API_KEY"))("Cerebras Provider (gpt-oss-120b via OpenAI Completions)", () => {
-		const llm = getBundledModel("cerebras", "gpt-oss-120b");
+	describe.skipIf(!e2eApiKey("CEREBRAS_AARCANE_KEY"))(
+		"Cerebras Provider (gpt-oss-120b via OpenAI Completions)",
+		() => {
+			const llm = getBundledModel("cerebras", "gpt-oss-120b");
 
-		it(
-			"should complete basic text generation",
-			async () => {
-				await basicTextGeneration(llm);
-			},
-			{ retry: 3 },
-		);
+			it(
+				"should complete basic text generation",
+				async () => {
+					await basicTextGeneration(llm);
+				},
+				{ retry: 3 },
+			);
 
-		it(
-			"should handle tool calling",
-			async () => {
-				await handleToolCall(llm);
-			},
-			{ retry: 3 },
-		);
+			it(
+				"should handle tool calling",
+				async () => {
+					await handleToolCall(llm);
+				},
+				{ retry: 3 },
+			);
 
-		it(
-			"should handle streaming",
-			async () => {
-				await handleStreaming(llm);
-			},
-			{ retry: 3 },
-		);
+			it(
+				"should handle streaming",
+				async () => {
+					await handleStreaming(llm);
+				},
+				{ retry: 3 },
+			);
 
-		it(
-			"should handle thinking mode",
-			async () => {
-				await handleThinking(llm, { reasoningEffort: "medium" });
-			},
-			{ retry: 3 },
-		);
+			it(
+				"should handle thinking mode",
+				async () => {
+					await handleThinking(llm, { reasoningEffort: "medium" });
+				},
+				{ retry: 3 },
+			);
 
-		it(
-			"should handle multi-turn with thinking and tools",
-			async () => {
-				await multiTurn(llm, { reasoningEffort: "medium" });
-			},
-			{ retry: 3 },
-		);
-	});
+			it(
+				"should handle multi-turn with thinking and tools",
+				async () => {
+					await multiTurn(llm, { reasoningEffort: "medium" });
+				},
+				{ retry: 3 },
+			);
+		},
+	);
 
-	describe.skipIf(!e2eApiKey("OPENROUTER_API_KEY"))("OpenRouter Provider (glm-4.5v via OpenAI Completions)", () => {
-		const llm = getBundledModel("openrouter", "z-ai/glm-4.5v");
+	describe.skipIf(!e2eApiKey("OPENROUTER_AARCANE_KEY"))(
+		"OpenRouter Provider (glm-4.5v via OpenAI Completions)",
+		() => {
+			const llm = getBundledModel("openrouter", "z-ai/glm-4.5v");
 
-		it(
-			"should complete basic text generation",
-			async () => {
-				await basicTextGeneration(llm);
-			},
-			{ retry: 3 },
-		);
+			it(
+				"should complete basic text generation",
+				async () => {
+					await basicTextGeneration(llm);
+				},
+				{ retry: 3 },
+			);
 
-		it(
-			"should handle tool calling",
-			async () => {
-				await handleToolCall(llm);
-			},
-			{ retry: 3 },
-		);
+			it(
+				"should handle tool calling",
+				async () => {
+					await handleToolCall(llm);
+				},
+				{ retry: 3 },
+			);
 
-		it(
-			"should handle streaming",
-			async () => {
-				await handleStreaming(llm);
-			},
-			{ retry: 3 },
-		);
+			it(
+				"should handle streaming",
+				async () => {
+					await handleStreaming(llm);
+				},
+				{ retry: 3 },
+			);
 
-		it(
-			"should handle thinking mode",
-			async () => {
-				await handleThinking(llm, { reasoningEffort: "medium" });
-			},
-			{ retry: 3 },
-		);
+			it(
+				"should handle thinking mode",
+				async () => {
+					await handleThinking(llm, { reasoningEffort: "medium" });
+				},
+				{ retry: 3 },
+			);
 
-		it(
-			"should handle multi-turn with thinking and tools",
-			async () => {
-				await multiTurn(llm, { reasoningEffort: "medium" });
-			},
-			{ retry: 2 },
-		);
+			it(
+				"should handle multi-turn with thinking and tools",
+				async () => {
+					await multiTurn(llm, { reasoningEffort: "medium" });
+				},
+				{ retry: 2 },
+			);
 
-		it(
-			"should handle image input",
-			async () => {
-				await handleImage(llm);
-			},
-			{ retry: 3 },
-		);
-	});
+			it(
+				"should handle image input",
+				async () => {
+					await handleImage(llm);
+				},
+				{ retry: 3 },
+			);
+		},
+	);
 
-	describe.skipIf(!e2eApiKey("ZAI_API_KEY"))("zAI Provider (glm-4.5-air via OpenAI Completions)", () => {
+	describe.skipIf(!e2eApiKey("ZAI_AARCANE_KEY"))("zAI Provider (glm-4.5-air via OpenAI Completions)", () => {
 		const llm = getBundledModel("zai", "glm-4.5-air");
 
 		it(
@@ -864,7 +870,7 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("ZAI_API_KEY"))("zAI Provider (glm-4.5v via OpenAI Completions)", () => {
+	describe.skipIf(!e2eApiKey("ZAI_AARCANE_KEY"))("zAI Provider (glm-4.5v via OpenAI Completions)", () => {
 		const llm = getBundledModel("zai", "glm-4.5v");
 
 		it(
@@ -916,7 +922,7 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	describe.skipIf(!e2eApiKey("MISTRAL_API_KEY"))(
+	describe.skipIf(!e2eApiKey("MISTRAL_AARCANE_KEY"))(
 		"Mistral Provider (devstral-medium-latest via OpenAI Completions)",
 		() => {
 			const llm = getBundledModel("mistral", "devstral-medium-latest");
@@ -965,7 +971,7 @@ describe("Generate E2E Tests", () => {
 		},
 	);
 
-	describe.skipIf(!e2eApiKey("MISTRAL_API_KEY"))("Mistral Provider (pixtral-12b with image support)", () => {
+	describe.skipIf(!e2eApiKey("MISTRAL_AARCANE_KEY"))("Mistral Provider (pixtral-12b with image support)", () => {
 		const llm = getBundledModel("mistral", "pixtral-12b");
 
 		it(
@@ -1396,8 +1402,8 @@ describe("Generate E2E Tests", () => {
 		);
 	});
 
-	// Ollama tests require PI_LOCAL_LLM=1 and ollama installed
-	const ollamaInstalled = !!Bun.env.PI_LOCAL_LLM && !!Bun.which("ollama");
+	// Ollama tests require ARCANE_LOCAL_LLM=1 and ollama installed
+	const ollamaInstalled = !!Bun.env.ARCANE_LOCAL_LLM && !!Bun.which("ollama");
 
 	describe.skipIf(!ollamaInstalled)("Ollama Provider (gpt-oss-20b via OpenAI Completions)", () => {
 		let llm: Model<"openai-completions"> | undefined;

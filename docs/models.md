@@ -7,7 +7,7 @@ This document describes how the coding-agent currently loads models, applies ove
 Primary implementation files:
 
 - `src/config/model-registry.ts` — loads built-in + custom models, provider overrides, runtime discovery, auth integration
-- `src/config/model-resolver.ts` — parses model patterns and selects initial/smol/slow models
+- `src/config/model-resolver.ts` — parses model patterns and selects initial/fast/reviewer/oracle models
 - `src/config/settings-schema.ts` — model-related settings (`modelRoles`, provider transport preferences)
 - `src/session/auth-storage.ts` — API key + OAuth resolution order
 - `packages/ai/src/models.ts` and `packages/ai/src/types.ts` — built-in providers/models and `Model`/`companeat` types
@@ -232,9 +232,9 @@ So a model can exist in registry but not be selectable until auth is available.
 
 Supported model roles:
 
-- `default`, `smol`, `slow`, `plan`, `commit`
+- `default`, `fast`, `reviewer`, `oracle`, `commit`
 
-Role aliases like `pi/smol` expand through `settings.modelRoles`.
+Role aliases like `arcane/fast` expand through `settings.modelRoles`.
 
 Related settings:
 

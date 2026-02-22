@@ -38,7 +38,7 @@ export async function resolvePrimaryModel(
 	return { model, apiKey };
 }
 
-export async function resolveSmolModel(
+export async function resolveFastModel(
 	settings: Settings,
 	modelRegistry: {
 		getAvailable: () => Model<Api>[];

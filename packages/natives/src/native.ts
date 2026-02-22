@@ -39,7 +39,7 @@ const userDataDir =
 		? path.join(Bun.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "arcane")
 		: path.join(os.homedir(), ".local", "bin");
 const isCompiledBinary =
-	Bun.env.PI_COMPILED ||
+	Bun.env.ARCANE_COMPILED ||
 	import.meta.url.includes("$bunfs") ||
 	import.meta.url.includes("~BUN") ||
 	import.meta.url.includes("%7EBUN");
@@ -63,7 +63,7 @@ const compiledCandidates = addonFilenames.flatMap(filename => [
 	path.join(userDataDir, filename),
 ]);
 const releaseCandidates = isCompiledBinary ? [...compiledCandidates, ...baseReleaseCandidates] : baseReleaseCandidates;
-const candidates = $env.PI_DEV ? [...debugCandidates, ...releaseCandidates] : releaseCandidates;
+const candidates = $env.ARCANE_DEV ? [...debugCandidates, ...releaseCandidates] : releaseCandidates;
 const dedupedCandidates = [...new Set(candidates)];
 
 function runCommand(command: string, args: string[]): string | null {
@@ -77,7 +77,7 @@ function runCommand(command: string, args: string[]): string | null {
 }
 
 function getVariantOverride(): CpuVariant | null {
-	const value = Bun.env.PI_NATIVE_VARIANT;
+	const value = Bun.env.ARCANE_NATIVE_VARIANT;
 	if (!value) return null;
 	if (value === "modern" || value === "baseline") return value;
 	return null;
@@ -187,12 +187,12 @@ function loadNative(): NativeBindings {
 		try {
 			const bindings = require(candidate) as NativeBindings;
 			validateNative(bindings, candidate);
-			if ($env.PI_DEV) {
+			if ($env.ARCANE_DEV) {
 				console.log(`Loaded native addon from ${candidate}`);
 			}
 			return bindings;
 		} catch (err) {
-			if ($env.PI_DEV) {
+			if ($env.ARCANE_DEV) {
 				console.error(`Error loading native addon from ${candidate}:`, err);
 			}
 			const message = err instanceof Error ? err.message : String(err);

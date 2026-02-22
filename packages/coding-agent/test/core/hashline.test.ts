@@ -422,13 +422,13 @@ describe("applyHashlineEdits — insert (before)", () => {
 	});
 
 	it("strips anchor echo from end of inserted text (autocorrect)", () => {
-		Bun.env.PI_HL_AUTOCORRECT = "1";
+		Bun.env.ARCANE_HL_AUTOCORRECT = "1";
 		const content = "aaa\nbbb\nccc";
 		const edits: HashlineEdit[] = [{ op: "prepend", before: makeTag(2, "bbb"), content: ["NEW", "bbb"] }];
 		const result = applyHashlineEdits(content, edits);
 		expect(result.content).toBe("aaa\nNEW\nbbb\nccc");
 	});
-	Bun.env.PI_HL_AUTOCORRECT = undefined;
+	Bun.env.ARCANE_HL_AUTOCORRECT = undefined;
 
 	it("insert before and insert after at same line produce correct order", () => {
 		const content = "aaa\nbbb\nccc";
@@ -481,7 +481,7 @@ describe("applyHashlineEdits — insert (between)", () => {
 	});
 
 	it("strips boundary echo from both sides (autocorrect)", () => {
-		Bun.env.PI_HL_AUTOCORRECT = "1";
+		Bun.env.ARCANE_HL_AUTOCORRECT = "1";
 		const content = "aaa\nbbb\nccc";
 		const edits: HashlineEdit[] = [
 			{
@@ -494,7 +494,7 @@ describe("applyHashlineEdits — insert (between)", () => {
 		const result = applyHashlineEdits(content, edits);
 		expect(result.content).toBe("aaa\nNEW\nbbb\nccc");
 	});
-	Bun.env.PI_HL_AUTOCORRECT = undefined;
+	Bun.env.ARCANE_HL_AUTOCORRECT = undefined;
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -504,11 +504,11 @@ describe("applyHashlineEdits — insert (between)", () => {
 describe("applyHashlineEdits — heuristics", () => {
 	let origEnv: string | undefined;
 	beforeAll(() => {
-		origEnv = Bun.env.PI_HL_AUTOCORRECT;
-		Bun.env.PI_HL_AUTOCORRECT = "1";
+		origEnv = Bun.env.ARCANE_HL_AUTOCORRECT;
+		Bun.env.ARCANE_HL_AUTOCORRECT = "1";
 	});
 	afterAll(() => {
-		Bun.env.PI_HL_AUTOCORRECT = origEnv;
+		Bun.env.ARCANE_HL_AUTOCORRECT = origEnv;
 	});
 
 	it("strips insert-after anchor echo", () => {
