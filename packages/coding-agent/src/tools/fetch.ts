@@ -10,6 +10,7 @@ import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { type Theme, theme } from "../modes/theme/theme";
 import fetchDescription from "../prompts/tools/fetch.md" with { type: "text" };
+import { DEFAULT_MAX_BYTES, truncateHead } from "../session/streaming-output";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
 import { ensureTool } from "../utils/tools-manager";
@@ -24,7 +25,6 @@ import { allocateOutputArtifact } from "./output-utils";
 import { formatExpandHint } from "./render-utils";
 import { ToolAbortError } from "./tool-errors";
 import { toolResult } from "./tool-result";
-import { DEFAULT_MAX_BYTES, truncateHead } from "./truncate";
 
 // =============================================================================
 // Types and Constants

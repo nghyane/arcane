@@ -178,6 +178,7 @@ export function parseAnsiLine(line: string, width: number, style?: Style): Cell[
 	const cells: Cell[] = [];
 	const cur: Style = style ? cloneStyle(style) : cloneStyle(DEFAULT_STYLE);
 	let col = 0;
+	let cachedStyle: Style | null = null;
 	let i = 0;
 	const len = line.length;
 
@@ -213,6 +214,7 @@ export function parseAnsiLine(line: string, width: number, style?: Style): Cell[
 						if (c === 0x6d) {
 							// 'm' = SGR
 							parseSgr(params, cur);
+							cachedStyle = null;
 						}
 						i++;
 						break;
@@ -246,6 +248,7 @@ export function parseAnsiLine(line: string, width: number, style?: Style): Cell[
 					const semiIdx = oscContent.indexOf(";", 2);
 					if (semiIdx !== -1) {
 						cur.link = oscContent.slice(semiIdx + 1);
+						cachedStyle = null;
 					}
 				}
 				continue;
@@ -267,7 +270,8 @@ export function parseAnsiLine(line: string, width: number, style?: Style): Cell[
 		if (ch === 0x09) {
 			const spaces = Math.min(3, width - col);
 			for (let s = 0; s < spaces; s++) {
-				cells.push({ char: " ", width: 1, style: cloneStyle(cur) });
+				if (!cachedStyle) cachedStyle = cloneStyle(cur);
+				cells.push({ char: " ", width: 1, style: cachedStyle });
 				col++;
 			}
 			i++;
@@ -280,9 +284,17 @@ export function parseAnsiLine(line: string, width: number, style?: Style): Cell[
 			continue;
 		}
 
-		// Visible character — use segmenter for grapheme cluster
-		// Find the grapheme cluster starting at position i
-		// We'll use the segmenter on the remaining substring
+		// ASCII fast path: printable ASCII (0x20-0x7E) is always width 1, single char
+		if (ch >= 0x20 && ch <= 0x7e) {
+			if (col >= width) break;
+			if (!cachedStyle) cachedStyle = cloneStyle(cur);
+			cells.push({ char: line[i]!, width: 1, style: cachedStyle });
+			col++;
+			i++;
+			continue;
+		}
+
+		// Non-ASCII: use segmenter for grapheme cluster detection
 		const remaining = line.slice(i);
 		const seg = segmenter.segment(remaining);
 		const first = seg[Symbol.iterator]().next();
@@ -295,21 +307,21 @@ export function parseAnsiLine(line: string, width: number, style?: Style): Cell[
 		const charWidth = Bun.stringWidth(grapheme);
 
 		if (charWidth === 0) {
-			// Zero-width character, skip
 			i += grapheme.length;
 			continue;
 		}
 
 		if (col + charWidth > width) {
-			// Doesn't fit, stop
 			break;
 		}
 
-		cells.push({ char: grapheme, width: charWidth, style: cloneStyle(cur) });
+		if (!cachedStyle) cachedStyle = cloneStyle(cur);
+		cells.push({ char: grapheme, width: charWidth, style: cachedStyle });
 		col++;
 
 		if (charWidth === 2) {
-			cells.push({ char: "", width: 0, style: cloneStyle(cur) });
+			if (!cachedStyle) cachedStyle = cloneStyle(cur);
+			cells.push({ char: "", width: 0, style: cachedStyle });
 			col++;
 		}
 

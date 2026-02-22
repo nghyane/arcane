@@ -1,10 +1,11 @@
 import { linesToBuffer } from "./buffer/ansi-parser.js";
-import type { Buffer as CellBuffer } from "./buffer/buffer.js";
-import { renderDiff } from "./buffer/render.js";
+import type { Buffer as CellBuffer, CellChange } from "./buffer/buffer.js";
+import { Mod } from "./buffer/cell.js";
+import { renderBuffer, renderDiff } from "./buffer/render.js";
 import { isKeyRelease, matchesKey } from "./keys";
 import { type MouseEvent, SCROLL_DOWN, SCROLL_UP, type Terminal } from "./terminal";
 import { setCellDimensions, TERMINAL } from "./terminal-capabilities";
-import { extractSegments, sliceByColumn, sliceWithWidth, visibleWidth } from "./utils";
+import { sliceByColumn, visibleWidth } from "./utils";
 
 const SEGMENT_RESET = "\x1b[0m\x1b]8;;\x07";
 
@@ -657,46 +658,64 @@ export class TUI extends Container {
 		return { startRow: b.row, startCol: b.col, endRow: a.row, endCol: a.col };
 	}
 
-	/** Render or clear selection directly on terminal — no component re-render */
+	/** Render or clear selection by toggling Reverse bit on buffer cells */
 	#renderSelection(highlight: boolean): void {
 		const range = this.#getSelectionRange();
 		if (!range) return;
 		const { startRow, startCol, endRow, endCol } = range;
 		if (startRow === endRow && startCol === endCol) return;
 
+		const buf = this.#previousBuffer;
+		if (!buf) return;
+
 		const cache = this.#fullRenderCache;
 		const height = this.terminal.rows;
 		const width = this.terminal.columns;
 		const viewportTop = Math.max(0, cache.length - height - this.#scrollOffset);
 
-		let buffer = "\x1b[?2026h\x1b7"; // Synchronized output + save cursor
+		// Collect cells that need Reverse toggled
+		const changes: CellChange[] = [];
 
 		for (let row = startRow; row <= endRow && row < cache.length; row++) {
 			const screenRow = row - viewportTop;
 			if (screenRow < 0 || screenRow >= height) continue;
-
-			const line = cache[row];
-			if (TERMINAL.isImageLine(line)) continue;
+			if (TERMINAL.isImageLine(cache[row])) continue;
 
 			const colStart = row === startRow ? startCol : 0;
 			const colEnd = row === endRow ? endCol : width;
-			if (colStart >= colEnd) continue;
 
-			// Restore original line first
-			buffer += `\x1b[${screenRow + 1};1H\x1b[2K${line}`;
+			for (let col = colStart; col < colEnd && col < width; col++) {
+				const cell = buf.get(col, screenRow);
+				if (cell.width === 0) continue; // Skip wide-char placeholders
 
-			if (highlight) {
-				// Strip ANSI to get plain text, then overlay with reverse video
-				const plain = line.replace(/\x1b\[[^m]*m|\x1b\][^\x07]*\x07|\x1b_[^\x07]*\x07/g, "");
-				const selectedPlain = plain.slice(colStart, colEnd);
-				if (selectedPlain.length > 0) {
-					buffer += `\x1b[${screenRow + 1};${colStart + 1}H\x1b[7m${selectedPlain}\x1b[27m`;
+				const hasReverse = (cell.style.mods & Mod.Reverse) !== 0;
+				if (highlight && !hasReverse) {
+					const newCell = {
+						char: cell.char,
+						width: cell.width,
+						style: { ...cell.style, mods: cell.style.mods | Mod.Reverse },
+					};
+					buf.set(col, screenRow, newCell);
+					changes.push({ col, row: screenRow, cell: newCell });
+				} else if (!highlight && hasReverse) {
+					const newCell = {
+						char: cell.char,
+						width: cell.width,
+						style: { ...cell.style, mods: cell.style.mods & ~Mod.Reverse },
+					};
+					buf.set(col, screenRow, newCell);
+					changes.push({ col, row: screenRow, cell: newCell });
 				}
 			}
 		}
 
-		buffer += "\x1b8\x1b[?2026l"; // Restore cursor + end synchronized output
-		this.terminal.write(buffer);
+		if (changes.length === 0) return;
+
+		// Output only the changed cells
+		let out = "\x1b[?2026h"; // Synchronized output
+		out += renderDiff(changes, width);
+		out += "\x1b[?2026l";
+		this.terminal.write(out);
 	}
 
 	#copySelectionToClipboard(): void {
@@ -908,85 +927,26 @@ export class TUI extends Container {
 				return marginLeft + Math.floor((availWidth - width) / 2);
 		}
 	}
-
-	/** Composite all overlays into content lines (in stack order, later = on top). */
-	#compositeOverlays(lines: string[], termWidth: number, termHeight: number): string[] {
-		if (this.overlayStack.length === 0) return lines;
-		const result = [...lines];
-
-		// Pre-render all visible overlays and calculate positions
-		const rendered: { overlayLines: string[]; row: number; col: number; w: number }[] = [];
-		let minLinesNeeded = result.length;
-
+	/** Composite overlays directly onto a cell buffer instead of string splicing. */
+	#compositeOverlaysOnBuffer(buf: CellBuffer, termWidth: number, termHeight: number): void {
 		for (const entry of this.overlayStack) {
-			// Skip invisible overlays (hidden or visible() returns false)
 			if (!this.#isOverlayVisible(entry)) continue;
 
 			const { component, options } = entry;
-
-			// Get layout with height=0 first to determine width and maxHeight
-			// (width and maxHeight don't depend on overlay height)
 			const { width, maxHeight } = this.#resolveOverlayLayout(options, 0, termWidth, termHeight);
 
-			// Render component at calculated width
+			// Render overlay component to string lines (bridge — components still return strings)
 			let overlayLines = component.render(width);
-
-			// Apply maxHeight if specified
 			if (maxHeight !== undefined && overlayLines.length > maxHeight) {
 				overlayLines = overlayLines.slice(0, maxHeight);
 			}
 
-			// Get final row/col with actual overlay height
 			const { row, col } = this.#resolveOverlayLayout(options, overlayLines.length, termWidth, termHeight);
 
-			rendered.push({ overlayLines, row, col, w: width });
-			minLinesNeeded = Math.max(minLinesNeeded, row + overlayLines.length);
+			// Convert overlay to a small buffer and copy onto the main buffer
+			const overlayBuf = linesToBuffer(overlayLines, width, overlayLines.length);
+			buf.copyFrom(overlayBuf, { x: 0, y: 0, width, height: overlayLines.length }, col, row);
 		}
-
-		// Ensure result is tall enough for overlay placement.
-		// NOTE: Do not pad to maxLinesRendered.
-		// maxLinesRendered tracks the terminal "working area" (max lines ever rendered) and can be much larger
-		// than the current content. Padding to it can cause the renderer to output hundreds/thousands of blank
-		// lines, effectively scrolling the terminal when an overlay is shown.
-		const workingHeight = Math.max(result.length, minLinesNeeded);
-
-		// Extend result with empty lines if content is too short for overlay placement
-		while (result.length < workingHeight) {
-			result.push("");
-		}
-
-		const viewportStart = Math.max(0, workingHeight - termHeight);
-
-		// Track which lines were modified for final verification
-		const modifiedLines = new Set<number>();
-
-		// Composite each overlay
-		for (const { overlayLines, row, col, w } of rendered) {
-			for (let i = 0; i < overlayLines.length; i++) {
-				const idx = viewportStart + row + i;
-				if (idx >= 0 && idx < result.length) {
-					// Defensive: truncate overlay line to declared width before compositing
-					// (components should already respect width, but this ensures it)
-					const truncatedOverlayLine =
-						visibleWidth(overlayLines[i]) > w ? sliceByColumn(overlayLines[i], 0, w, true) : overlayLines[i];
-					result[idx] = this.#compositeLineAt(result[idx], truncatedOverlayLine, col, w, termWidth);
-					modifiedLines.add(idx);
-				}
-			}
-		}
-
-		// Final verification: ensure no composited line exceeds terminal width
-		// This is a belt-and-suspenders safeguard - compositeLineAt should already
-		// guarantee this, but we verify here to prevent crashes from any edge cases
-		// Only check lines that were actually modified (optimization)
-		for (const idx of modifiedLines) {
-			const lineWidth = visibleWidth(result[idx]);
-			if (lineWidth > termWidth) {
-				result[idx] = sliceByColumn(result[idx], 0, termWidth, true);
-			}
-		}
-
-		return result;
 	}
 
 	#applyLineResets(lines: string[]): string[] {
@@ -999,58 +959,6 @@ export class TUI extends Container {
 		}
 		return lines;
 	}
-
-	/** Splice overlay content into a base line at a specific column. Single-pass optimized. */
-	#compositeLineAt(
-		baseLine: string,
-		overlayLine: string,
-		startCol: number,
-		overlayWidth: number,
-		totalWidth: number,
-	): string {
-		if (TERMINAL.isImageLine(baseLine)) return baseLine;
-
-		// Single pass through baseLine extracts both before and after segments
-		const afterStart = startCol + overlayWidth;
-		const base = extractSegments(baseLine, startCol, afterStart, totalWidth - afterStart, true);
-
-		// Extract overlay with width tracking (strict=true to exclude wide chars at boundary)
-		const overlay = sliceWithWidth(overlayLine, 0, overlayWidth, true);
-
-		// Pad segments to target widths
-		const beforePad = Math.max(0, startCol - base.beforeWidth);
-		const overlayPad = Math.max(0, overlayWidth - overlay.width);
-		const actualBeforeWidth = Math.max(startCol, base.beforeWidth);
-		const actualOverlayWidth = Math.max(overlayWidth, overlay.width);
-		const afterTarget = Math.max(0, totalWidth - actualBeforeWidth - actualOverlayWidth);
-		const afterPad = Math.max(0, afterTarget - base.afterWidth);
-
-		// Compose result
-		const r = SEGMENT_RESET;
-		const result =
-			base.before +
-			" ".repeat(beforePad) +
-			r +
-			overlay.text +
-			" ".repeat(overlayPad) +
-			r +
-			base.after +
-			" ".repeat(afterPad);
-
-		// CRITICAL: Always verify and truncate to terminal width.
-		// This is the final safeguard against width overflow which would crash the TUI.
-		// Width tracking can drift from actual visible width due to:
-		// - Complex ANSI/OSC sequences (hyperlinks, colors)
-		// - Wide characters at segment boundaries
-		// - Edge cases in segment extraction
-		const resultWidth = visibleWidth(result);
-		if (resultWidth <= totalWidth) {
-			return result;
-		}
-		// Truncate with strict=true to ensure we don't exceed totalWidth
-		return sliceByColumn(result, 0, totalWidth, true);
-	}
-
 	/**
 	 * Find and extract cursor position from rendered lines.
 	 * Searches for CURSOR_MARKER, calculates its position, and strips it from the output.
@@ -1087,17 +995,12 @@ export class TUI extends Container {
 		// Render all components to get new lines
 		let newLines = this.render(width);
 
-		// Composite overlays into the rendered lines (before differential compare)
-		if (this.overlayStack.length > 0) {
-			newLines = this.#compositeOverlays(newLines, width, height);
-		}
-
 		// Extract cursor position before applying line resets (marker must be found first)
 		const cursorPos = this.#extractCursorPosition(newLines, height);
 
 		newLines = this.#applyLineResets(newLines);
 
-		// Cache full render output for native scroll and selection
+		// Cache base render output for native scroll and selection (without overlays)
 		const prevCacheLength = this.#fullRenderCache.length;
 		this.#fullRenderCache = newLines.slice();
 
@@ -1117,13 +1020,17 @@ export class TUI extends Container {
 			const viewportStart = newLines.length - height - this.#scrollOffset;
 			viewportLines = newLines.slice(Math.max(0, viewportStart), Math.max(0, viewportStart) + height);
 		} else {
-			// Live mode: viewport is the last 'height' lines (or all lines if fewer)
 			const start = Math.max(0, newLines.length - height);
 			viewportLines = newLines.slice(start);
 		}
 
 		// Convert viewport to cell buffer
 		const currentBuffer = linesToBuffer(viewportLines, width, height);
+
+		// Composite overlays directly onto the buffer
+		if (this.overlayStack.length > 0) {
+			this.#compositeOverlaysOnBuffer(currentBuffer, width, height);
+		}
 
 		// Width changed — invalidate previous buffer (cell positions shift)
 		const widthChanged = this.#previousWidth !== 0 && this.#previousWidth !== width;
@@ -1136,9 +1043,10 @@ export class TUI extends Container {
 			this.#fullRedrawCount += 1;
 			let out = "\x1b[?2026h"; // Begin synchronized output
 			out += this.#clearScrollbackOnNextFullRender ? "\x1b[3J\x1b[2J\x1b[H" : "\x1b[2J\x1b[H";
-			for (let i = 0; i < viewportLines.length; i++) {
+			const renderedLines = renderBuffer(currentBuffer);
+			for (let i = 0; i < renderedLines.length; i++) {
 				if (i > 0) out += "\r\n";
-				out += viewportLines[i];
+				out += renderedLines[i];
 			}
 			const renderCursorRow = Math.max(0, viewportLines.length - 1);
 			const cursorUpdate = this.#buildHardwareCursorSequence(

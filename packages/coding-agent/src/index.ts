@@ -241,7 +241,13 @@ export {
 	type ThinkingLevelChangeEntry,
 } from "./session/session-manager";
 export { runAgent } from "./task/executor";
-export type { AgentDefinition, AgentProgress, AgentSource, SingleResult, TaskParams } from "./task/types";
+export type {
+	AgentDefinition,
+	AgentProgress,
+	AgentSource,
+	SingleResult,
+	TaskParams,
+} from "./task/types";
 // Tools (detail types and utilities)
 export {
 	type BashToolDetails,
@@ -253,7 +259,7 @@ export {
 	type FindToolDetails,
 	type FindToolInput,
 	type FindToolOptions,
-	formatSize,
+	formatBytes,
 	type GrepToolDetails,
 	type GrepToolInput,
 	type PythonToolDetails,

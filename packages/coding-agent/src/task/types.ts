@@ -45,19 +45,32 @@ export const taskItemSchema = Type.Object({
 });
 export type TaskItem = Static<typeof taskItemSchema>;
 
+/** Task schema — single task with optional context */
 export const taskSchema = Type.Object({
-	context: Type.String({
-		description:
-			"Shared background prepended to every task's assignment. Put goal, non-goals, constraints, conventions, reference paths, API contracts, and global acceptance commands here once \u2014 instead of duplicating across assignments.",
+	id: Type.String({
+		description: "CamelCase identifier, max 32 chars",
+		maxLength: 32,
 	}),
-	tasks: Type.Array(taskItemSchema, {
-		description:
-			"Tasks to execute in parallel. Each must be small-scoped (3-5 files max) and self-contained given context + assignment.",
+	description: Type.String({
+		description: "Short one-liner for UI display only \u2014 not seen by the subagent",
 	}),
+	assignment: Type.String({
+		description:
+			"Complete instructions the subagent executes. Include target files, change description, edge cases, and acceptance criteria.",
+	}),
+	context: Type.Optional(
+		Type.String({
+			description: "Optional shared background prepended to the assignment.",
+		}),
+	),
+	skills: Type.Optional(
+		Type.Array(Type.String(), {
+			description: "Skill names to preload into the subagent.",
+		}),
+	),
 });
 
 export type TaskSchema = typeof taskSchema;
-
 export type TaskParams = Static<TaskSchema>;
 
 /** Agent definition (bundled or discovered) */

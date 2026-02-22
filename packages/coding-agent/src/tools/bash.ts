@@ -12,6 +12,7 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import type { Theme } from "../modes/theme/theme";
 import bashDescription from "../prompts/tools/bash.md" with { type: "text" };
+import { DEFAULT_MAX_BYTES } from "../session/streaming-output";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
 import type { ToolSession } from ".";
@@ -25,7 +26,6 @@ import { resolveToCwd } from "./path-utils";
 import { formatBytes, replaceTabs, wrapBrackets } from "./render-utils";
 import { ToolAbortError, ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
-import { DEFAULT_MAX_BYTES } from "./truncate";
 
 export const BASH_DEFAULT_PREVIEW_LINES = 10;
 

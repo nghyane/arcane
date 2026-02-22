@@ -52,6 +52,16 @@ export {
 	warmupLspServers,
 } from "../lsp";
 export { EditTool, type EditToolDetails } from "../patch";
+export {
+	DEFAULT_MAX_BYTES,
+	DEFAULT_MAX_LINES,
+	formatBytes,
+	type TruncationOptions,
+	type TruncationResult,
+	truncateHead,
+	truncateLine,
+	truncateTail,
+} from "../session/streaming-output";
 export { BUNDLED_AGENTS, TaskTool } from "../task";
 export {
 	companySearchTools,
@@ -86,16 +96,6 @@ export { ReadTool, type ReadToolDetails, type ReadToolInput } from "./read";
 export { loadSshTool, type SSHToolDetails, SshTool } from "./ssh";
 export { SubmitResultTool } from "./submit-result";
 export { type TodoItem, TodoWriteTool, type TodoWriteToolDetails } from "./todo-write";
-export {
-	DEFAULT_MAX_BYTES,
-	DEFAULT_MAX_LINES,
-	formatSize,
-	type TruncationOptions,
-	type TruncationResult,
-	truncateHead,
-	truncateLine,
-	truncateTail,
-} from "./truncate";
 export { UndoEditTool, type UndoEditToolDetails } from "./undo-edit";
 export { WriteTool, type WriteToolDetails, type WriteToolInput } from "./write";
 

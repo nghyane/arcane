@@ -12,10 +12,9 @@ import type {
 	AgentToolUpdateCallback,
 } from "@nghyane/pi-agent-core";
 import type { ImageContent, TextContent } from "@nghyane/pi-ai";
-import type { OutputSummary } from "../session/streaming-output";
+import type { OutputSummary, TruncationResult } from "../session/streaming-output";
+import { formatBytes } from "../session/streaming-output";
 import { renderError } from "./tool-errors";
-import type { TruncationResult } from "./truncate";
-import { formatSize } from "./truncate";
 
 /**
  * Truncation metadata for the output notice.
@@ -336,7 +335,7 @@ export function formatOutputNotice(meta: OutputMeta | undefined): string {
 
 		if (t.truncatedBy === "bytes") {
 			const maxBytes = t.maxBytes ?? t.outputBytes;
-			notice += ` (${formatSize(maxBytes)} limit)`;
+			notice += ` (${formatBytes(maxBytes)} limit)`;
 		}
 
 		if (t.nextOffset != null) {

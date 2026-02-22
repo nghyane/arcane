@@ -24,7 +24,7 @@ const codeSchema = Type.Object({
 });
 
 /** Tools excluded from Code Mode wrapping (interactive, orchestration, or lifecycle tools) */
-const EXCLUDED_TOOLS = new Set(["ask", "submit_result", "task", "todo_write"]);
+const EXCLUDED_TOOLS = new Set(["ask", "submit_result", "todo_write"]);
 
 /** Max characters to include from code execution result in the tool response */
 const MAX_RESULT_LENGTH = 4000;

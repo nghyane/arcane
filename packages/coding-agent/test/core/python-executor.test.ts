@@ -14,7 +14,7 @@ import {
 	type PreludeHelper,
 	PythonKernel,
 } from "@nghyane/pi-coding-agent/ipy/kernel";
-import { DEFAULT_MAX_BYTES } from "@nghyane/pi-coding-agent/tools/truncate";
+import { DEFAULT_MAX_BYTES } from "@nghyane/pi-coding-agent/session/streaming-output";
 import { TempDir } from "@nghyane/pi-utils";
 
 class FakeKernel implements PythonKernelExecutor {

@@ -9,6 +9,7 @@ import { loadCapability } from "../discovery";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import sshDescriptionBase from "../prompts/tools/ssh.md" with { type: "text" };
+import { DEFAULT_MAX_BYTES } from "../session/streaming-output";
 import type { SSHHostInfo } from "../ssh/connection-manager";
 import { ensureHostInfo, getHostInfoForHost } from "../ssh/connection-manager";
 import { executeSSH } from "../ssh/ssh-executor";
@@ -20,7 +21,6 @@ import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { formatBytes, wrapBrackets } from "./render-utils";
 import { ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
-import { DEFAULT_MAX_BYTES } from "./truncate";
 
 const sshSchema = Type.Object({
 	host: Type.String({ description: "Host name from managed SSH config or discovered ssh.json files" }),

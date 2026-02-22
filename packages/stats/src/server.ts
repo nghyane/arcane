@@ -10,7 +10,7 @@ import {
 	getTotalMessageCount,
 	syncAllSessions,
 } from "./aggregator";
-import { EMBEDDED_CLIENT_ARCHIVE_TAR_GZ_BASE64 } from "./embedded-client.generated";
+import archiveText from "./embedded-client.generated.txt" with { type: "text" };
 
 const CLIENT_DIR = path.join(import.meta.dir, "client");
 const STATIC_DIR = path.join(import.meta.dir, "..", "dist", "client");
@@ -31,7 +31,7 @@ function sanitizeArchivePath(archivePath: string): string | null {
 }
 
 async function extractEmbeddedClientArchive(outputDir: string): Promise<void> {
-	const archiveBytes = Buffer.from(EMBEDDED_CLIENT_ARCHIVE_TAR_GZ_BASE64, "base64");
+	const archiveBytes = Buffer.from(archiveText, "base64");
 	const archive = new Bun.Archive(archiveBytes);
 	const files = await archive.files();
 	const extractRoot = path.resolve(outputDir);
@@ -49,13 +49,13 @@ async function extractEmbeddedClientArchive(outputDir: string): Promise<void> {
 
 async function getCompiledClientDir(): Promise<string> {
 	if (!IS_BUN_COMPILED) return STATIC_DIR;
-	if (!EMBEDDED_CLIENT_ARCHIVE_TAR_GZ_BASE64) {
+	if (!archiveText) {
 		throw new Error("Compiled stats client bundle missing. Rebuild binary with embedded stats assets.");
 	}
 	if (compiledClientDirPromise) return compiledClientDirPromise;
 
 	compiledClientDirPromise = (async () => {
-		const bundleHash = Bun.hash(EMBEDDED_CLIENT_ARCHIVE_TAR_GZ_BASE64).toString(16);
+		const bundleHash = Bun.hash(archiveText).toString(16);
 		const outputDir = path.join(COMPILED_CLIENT_DIR_ROOT, bundleHash);
 		const markerPath = path.join(outputDir, "index.html");
 		try {
@@ -73,19 +73,24 @@ async function getCompiledClientDir(): Promise<string> {
 }
 
 async function getLatestMtime(dir: string): Promise<number> {
-	let latest = 0;
 	const entries = await fs.readdir(dir, { withFileTypes: true });
 
-	for (const entry of entries) {
-		const fullPath = path.join(dir, entry.name);
-		if (entry.isDirectory()) {
-			latest = Math.max(latest, await getLatestMtime(fullPath));
-		} else if (entry.isFile()) {
-			const stats = await fs.stat(fullPath);
-			latest = Math.max(latest, stats.mtimeMs);
-		}
-	}
+	const results = await Promise.allSettled(
+		entries.map(async entry => {
+			const fullPath = path.join(dir, entry.name);
+			if (entry.isDirectory()) return getLatestMtime(fullPath);
+			if (entry.isFile()) {
+				const stats = await fs.stat(fullPath);
+				return stats.mtimeMs;
+			}
+			return 0;
+		}),
+	);
 
+	let latest = 0;
+	for (const r of results) {
+		if (r.status === "fulfilled" && r.value > latest) latest = r.value;
+	}
 	return latest;
 }
 

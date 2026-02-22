@@ -13,7 +13,7 @@ import type { PreludeHelper, PythonStatusEvent } from "../ipy/kernel";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import type { Theme } from "../modes/theme/theme";
 import pythonDescription from "../prompts/tools/python.md" with { type: "text" };
-import { OutputSink, type OutputSummary } from "../session/streaming-output";
+import { DEFAULT_MAX_BYTES, OutputSink, type OutputSummary } from "../session/streaming-output";
 import { getTreeBranch, getTreeContinuePrefix, renderCodeCell } from "../tui";
 import type { ToolSession } from ".";
 import type { OutputMeta } from "./output-meta";
@@ -22,7 +22,6 @@ import { resolveToCwd } from "./path-utils";
 import { replaceTabs, shortenPath, ToolUIKit, truncateToWidth } from "./render-utils";
 import { ToolAbortError, ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
-import { DEFAULT_MAX_BYTES } from "./truncate";
 
 export const PYTHON_DEFAULT_PREVIEW_LINES = 10;
 

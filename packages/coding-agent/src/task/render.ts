@@ -56,9 +56,7 @@ function renderToolLine(entry: ToolEntry, continuePrefix: string, theme: Theme):
 
 export function renderCall(args: TaskParams, _options: RenderResultOptions, theme: Theme): Component {
 	const lines: string[] = [];
-	lines.push(
-		renderStatusLine({ icon: "pending", title: "Task", description: `${args.tasks?.length ?? 0} subtasks` }, theme),
-	);
+	lines.push(renderStatusLine({ icon: "pending", title: "Task", description: args.id }, theme));
 
 	const context = (args.context ?? "").trim();
 	if (context) {
@@ -69,11 +67,13 @@ export function renderCall(args: TaskParams, _options: RenderResultOptions, them
 		for (const line of context.split("\n")) {
 			lines.push(` ${vertical}  ${line ? theme.fg("muted", replaceTabs(line)) : ""}`);
 		}
-		lines.push(` ${last} ${theme.fg("dim", "Tasks")}: ${theme.fg("muted", `${args.tasks.length} subtasks`)}`);
+		const assignmentPreview = truncateToWidth(replaceTabs(args.assignment.split("\n")[0] ?? ""), 60);
+		lines.push(` ${last} ${theme.fg("dim", "Assignment")}: ${theme.fg("muted", assignmentPreview)}`);
 		return new Text(lines.join("\n"), 0, 0);
 	}
 
-	lines.push(`${theme.fg("dim", "Tasks")}: ${theme.fg("muted", `${args.tasks.length} subtasks`)}`);
+	const assignmentPreview = truncateToWidth(replaceTabs(args.assignment.split("\n")[0] ?? ""), 60);
+	lines.push(` ${theme.fg("dim", "Assignment")}: ${theme.fg("muted", assignmentPreview)}`);
 	return new Text(lines.join("\n"), 0, 0);
 }
 

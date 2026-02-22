@@ -43,9 +43,9 @@ export function emptyCell(): Cell {
 }
 
 export function cellsEqual(a: Cell, b: Cell): boolean {
+	if (a.char !== b.char || a.width !== b.width) return false;
+	if (a.style === b.style) return true;
 	return (
-		a.char === b.char &&
-		a.width === b.width &&
 		a.style.fg === b.style.fg &&
 		a.style.bg === b.style.bg &&
 		a.style.mods === b.style.mods &&

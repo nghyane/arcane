@@ -4,7 +4,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { _resetSettingsForTest, Settings } from "@nghyane/pi-coding-agent/config/settings";
 import { executeBash } from "@nghyane/pi-coding-agent/exec/bash-executor";
-import { DEFAULT_MAX_BYTES } from "@nghyane/pi-coding-agent/tools/truncate";
+import { DEFAULT_MAX_BYTES } from "@nghyane/pi-coding-agent/session/streaming-output";
 import * as shellSnapshot from "@nghyane/pi-coding-agent/utils/shell-snapshot";
 
 function makeTempDir(): string {
