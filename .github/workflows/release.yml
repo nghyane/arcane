@@ -21,6 +21,7 @@ concurrency:
 jobs:
   publish:
     if: ${{ !inputs.skip_npm }}
+    needs: [native]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +34,12 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
       - run: bun install --frozen-lockfile
+      - name: Download native addons
+        uses: actions/download-artifact@v4
+        with:
+          pattern: arcane-natives-*
+          path: packages/natives/native
+          merge-multiple: true
       - name: Publish to npm
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -50,7 +57,7 @@ jobs:
           if [ "$FAILED" -eq 1 ]; then exit 1; fi
 
   native:
-    if: ${{ !inputs.skip_binaries }}
+    if: ${{ !inputs.skip_npm || !inputs.skip_binaries }}
     strategy:
       fail-fast: false
       matrix:
