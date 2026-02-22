@@ -1,6 +1,6 @@
 # Natives Binding Contract (TypeScript Side)
 
-This document defines the TypeScript-side contract that sits between `@nghyane/pi-natives` callers and the loaded N-API addon.
+This document defines the TypeScript-side contract that sits between `@nghyane/arcane-natives` callers and the loaded N-API addon.
 
 It focuses on three pieces:
 
@@ -63,7 +63,7 @@ This keeps one aggregate binding interface without a monolithic central type fil
 
 ## Declaration-merging lifecycle and state transitions
 
-### 1) Compile-time type assembly
+### 1) Carcaneile-time type assembly
 
 - `bindings.ts` provides the base `NativeBindings` symbol.
 - Every `src/<module>/types.ts` augments `NativeBindings`.
@@ -177,7 +177,7 @@ Callers see named enum members; the binding boundary passes numbers.
 
 Mismatch detection happens at two layers:
 
-1. **Compile-time TypeScript contract checks**
+1. **Carcaneile-time TypeScript contract checks**
    - Wrappers call `native.<name>` against merged `NativeBindings`.
    - Missing/renamed binding keys break TS type-checking in wrappers.
 

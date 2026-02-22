@@ -5,12 +5,12 @@
  * Tool selection persists across session reloads and respects branch navigation.
  *
  * Usage:
- * 1. Copy this file to ~/.omp/agent/extensions/ (legacy: ~/.pi/agent/extensions/) or your project's .omp/extensions/
+ * 1. Copy this file to ~/.arcane/agent/extensions/ or your project's .arcane/extensions/
  * 2. Use /tools to open the tool selector
  */
-import type { ExtensionAPI, ExtensionContext } from "@nghyane/pi-coding-agent";
-import { getSettingsListTheme } from "@nghyane/pi-coding-agent";
-import { Container, type SettingItem, SettingsList } from "@nghyane/pi-tui";
+import type { ExtensionAPI, ExtensionContext } from "@nghyane/arcane";
+import { getSettingsListTheme } from "@nghyane/arcane";
+import { Container, type SettingItem, SettingsList } from "@nghyane/arcane-tui";
 
 // State persisted to session
 interface ToolsState {

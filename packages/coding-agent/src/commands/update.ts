@@ -1,7 +1,7 @@
 /**
  * Check for and install updates.
  */
-import { Command, Flags } from "@nghyane/pi-utils/cli";
+import { Command, Flags } from "@nghyane/arcane-utils/cli";
 import { runUpdateCommand } from "../cli/update-cli";
 import { initTheme } from "../modes/theme/theme";
 

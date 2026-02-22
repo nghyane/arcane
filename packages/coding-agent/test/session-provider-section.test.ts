@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { getProviderDetails, type Model } from "@nghyane/pi-ai";
-import { renderProviderSection } from "@nghyane/pi-coding-agent/modes/controllers/command-controller";
+import { renderProviderSection } from "@nghyane/arcane/modes/controllers/command-controller";
+import { getProviderDetails, type Model } from "@nghyane/arcane-ai";
 
 describe("session provider section", () => {
 	it("renders codex provider details with transport fields", () => {

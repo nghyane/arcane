@@ -10,10 +10,10 @@ import {
 	discoverModels,
 	ModelRegistry,
 	SessionManager,
-} from "@nghyane/pi-coding-agent";
+} from "@nghyane/arcane";
 
-// Default: discoverAuthStorage() uses ~/.omp/agent/agent.db
-// discoverModels() loads built-in + custom models from ~/.omp/agent/models.json
+// Default: discoverAuthStorage() uses ~/.arcane/agent/agent.db
+// discoverModels() loads built-in + custom models from ~/.arcane/agent/models.json
 const authStorage = await discoverAuthStorage();
 const modelRegistry = await discoverModels(authStorage);
 

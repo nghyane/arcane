@@ -3,8 +3,8 @@
  * CLI entry point — registers all commands explicitly and delegates to the
  * lightweight CLI runner from pi-utils.
  */
-import { type CommandEntry, run } from "@nghyane/pi-utils/cli";
-import { APP_NAME, VERSION } from "@nghyane/pi-utils/dirs";
+import { type CommandEntry, run } from "@nghyane/arcane-utils/cli";
+import { APP_NAME, VERSION } from "@nghyane/arcane-utils/dirs";
 
 // Detect known Bun errata that cause TUI crashes (e.g. Bun.stringWidth mishandling OSC sequences).
 if (Bun.stringWidth("\x1b[0m\x1b]8;;\x07") !== 0) {
@@ -29,8 +29,8 @@ const commands: CommandEntry[] = [
 	{ name: "search", load: () => import("./commands/web-search").then(m => m.default), aliases: ["q"] },
 ];
 
-async function showHelp(config: import("@nghyane/pi-utils/cli").CliConfig): Promise<void> {
-	const { renderRootHelp } = await import("@nghyane/pi-utils/cli");
+async function showHelp(config: import("@nghyane/arcane-utils/cli").CliConfig): Promise<void> {
+	const { renderRootHelp } = await import("@nghyane/arcane-utils/cli");
 	const { getExtraHelpText } = await import("./cli/args");
 	renderRootHelp(config);
 	const extra = getExtraHelpText();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
+import { Settings } from "@nghyane/arcane/config/settings";
 
 describe("Settings python settings", () => {
 	it("defaults to both and session", () => {

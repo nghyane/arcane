@@ -1,12 +1,12 @@
 /**
  * Shell CLI command handlers.
  *
- * Handles `omp shell` subcommand for testing the native brush-core shell.
+ * Handles \`arc shell` subcommand for testing the native brush-core shell.
  */
 import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
-import { Shell } from "@nghyane/pi-natives";
-import { APP_NAME, getProjectDir } from "@nghyane/pi-utils/dirs";
+import { Shell } from "@nghyane/arcane-natives";
+import { APP_NAME, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { Settings } from "../config/settings";
 import { getOrCreateSnapshot } from "../utils/shell-snapshot";

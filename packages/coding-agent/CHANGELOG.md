@@ -120,7 +120,7 @@
 
 ### Fixed
 
-- Fixed `omp stats` failing on npm/bun installs by including required stats build files in published `@nghyane/omp-stats` package ([#113](https://github.com/can1357/oh-my-pi/pull/113) by [@masonc15](https://github.com/masonc15))
+- Fixed \`arc stats` failing on npm/bun installs by including required stats build files in published `@nghyane/arcane-stats` package ([#113](https://github.com/nghyane/arcane/pull/113) by [@masonc15](https://github.com/masonc15))
 
 ## [12.14.0] - 2026-02-19
 
@@ -138,7 +138,7 @@
 
 ### Changed
 
-- System prompt now identifies agent as operating inside Oh My Pi harness and instructs reading docs:// URLs for omp/pi topics
+- System prompt now identifies agent as operating inside Arcane harness and instructs reading docs:// URLs for arc/pi topics
 - Tool discovery now accepts executable script extensions (.ts, .js, .sh, .bash, .py) in addition to .json and .md files
 - Updated bash and read tool documentation to reference `docs://` URL support
 - Hashline format separator changed from pipe (`|`) to colon (`:`) for improved readability (e.g., `LINE#ID:content` instead of `LINE#ID|content`)
@@ -169,10 +169,10 @@
 
 - Added `ssh` command for managing SSH host configurations (add, list, remove)
 - Added `/ssh` slash command in interactive mode to manage SSH hosts with subcommands
-- Added support for SSH host configuration at project and user scopes (.omp/ssh.json and ~/.omp/agent/ssh.json)
+- Added support for SSH host configuration at project and user scopes (.arcane/ssh.json and ~/.arcane/agent/ssh.json)
 - Added `--host`, `--user`, `--port`, `--key`, `--desc`, `--compat`, and `--scope` flags for SSH host configuration
 - Added discovery of SSH hosts from project configuration files alongside manually configured hosts
-- Added NanoGPT as a login provider (`/login nanogpt`) with API key prompt flow linking to `https://nano-gpt.com/api` ([#111](https://github.com/can1357/oh-my-pi/issues/111))
+- Added NanoGPT as a login provider (`/login nanogpt`) with API key prompt flow linking to `https://nano-gpt.com/api` ([#111](https://github.com/nghyane/arcane/issues/111))
 
 ### Changed
 
@@ -182,7 +182,7 @@
 - Updated handlebars helpers: renamed `hashline` to `hlineref` and added `hlinefull` for formatted line output
 - Improved insert operation to support `before`, `after`, and `between` (both anchors) positioning modes
 - Made autocorrect heuristics (boundary echo stripping, indent restoration) conditional on `PI_HL_AUTOCORRECT` environment variable
-- Updated SSH host discovery to load from managed omp config paths (.omp/ssh.json and ~/.omp/agent/ssh.json) in addition to legacy root-level ssh.json and .ssh.json files
+- Updated SSH host discovery to load from managed arcane config paths (.arcane/ssh.json and ~/.arcane/agent/ssh.json) in addition to legacy root-level ssh.json and .ssh.json files
 - Improved terminal output handling in interactive bash sessions to ensure all queued writes complete before returning results
 
 ### Fixed
@@ -194,7 +194,7 @@
 
 ### Added
 
-- Added Kimi (Moonshot) as a web search provider with OAuth and API key support ([#110](https://github.com/can1357/oh-my-pi/pull/110) by [@oglassdev](https://github.com/oglassdev))
+- Added Kimi (Moonshot) as a web search provider with OAuth and API key support ([#110](https://github.com/nghyane/arcane/pull/110) by [@oglassdev](https://github.com/oglassdev))
 
 ### Changed
 
@@ -202,7 +202,7 @@
 
 ### Fixed
 
-- Fixed Mermaid pre-render failures from repeatedly re-triggering background renders (freeze loop) and restored resilient rendering when diagram conversion/callbacks fail ([#109](https://github.com/can1357/oh-my-pi/issues/109)).
+- Fixed Mermaid pre-render failures from repeatedly re-triggering background renders (freeze loop) and restored resilient rendering when diagram conversion/callbacks fail ([#109](https://github.com/nghyane/arcane/issues/109)).
 
 ## [12.12.0] - 2026-02-19
 
@@ -225,7 +225,7 @@
 
 ### Fixed
 
-- Fixed interactive-mode editor height to stay bounded and resize-aware, preventing off-screen cursor drift during long prompt/history navigation ([#99](https://github.com/can1357/oh-my-pi/issues/99)).
+- Fixed interactive-mode editor height to stay bounded and resize-aware, preventing off-screen cursor drift during long prompt/history navigation ([#99](https://github.com/nghyane/arcane/issues/99)).
 
 ## [12.11.3] - 2026-02-19
 
@@ -284,7 +284,7 @@
 - Added `rules` option to CreateAgentSessionOptions for explicit rule configuration
 - Added `sessionDir` option to RpcClientOptions for specifying agent session directory
 - Added `Symbol.dispose` method to RpcClient for resource cleanup support
-- Added `autocompleteMaxVisible` setting to configure the number of items shown in the autocomplete dropdown (3-20, default 5) ([#98](https://github.com/can1357/oh-my-pi/pull/98) by [@masonc15](https://github.com/masonc15))
+- Added `autocompleteMaxVisible` setting to configure the number of items shown in the autocomplete dropdown (3-20, default 5) ([#98](https://github.com/nghyane/arcane/pull/98) by [@masonc15](https://github.com/masonc15))
 - Added `condition` and `scope` fields to rule frontmatter for advanced TTSR matching and stream filtering
 - Added `ttsr.interruptMode` setting to control when TTSR rules interrupt mid-stream vs inject warnings after completion
 - Added support for loading rules, prompts, commands, context files (AGENTS.md), and system prompts (SYSTEM.md) from ~/.agent/ directory (with fallback to ~/.agents/)
@@ -343,7 +343,7 @@
 
 ### Changed
 
-- Improved `/changelog` performance by displaying only the most recent 3 versions by default, with a `--full` flag for the complete history ([#85](https://github.com/can1357/oh-my-pi/pull/85) by [@tctev](https://github.com/tctev))
+- Improved `/changelog` performance by displaying only the most recent 3 versions by default, with a `--full` flag for the complete history ([#85](https://github.com/nghyane/arcane/pull/85) by [@tctev](https://github.com/tctev))
 - Centralized builtin slash command definitions and handlers into a shared registry, replacing the large input-controller if-chain dispatch
 
 ## [12.7.0] - 2026-02-16
@@ -390,7 +390,7 @@
 
 - Fixed LSP operations to properly respect abort signals and throw `ToolAbortError` when cancelled
 - Fixed workspace diagnostics process cleanup to remove abort event listeners in finally block
-- Fixed PTY-backed bash execution to enforce timeout completion when detached child processes keep the PTY stream open ([#88](https://github.com/can1357/oh-my-pi/issues/88))
+- Fixed PTY-backed bash execution to enforce timeout completion when detached child processes keep the PTY stream open ([#88](https://github.com/nghyane/arcane/issues/88))
 
 ## [12.5.1] - 2026-02-15
 
@@ -409,8 +409,8 @@
 - Added `previewTheme()` function for non-destructive theme preview during settings browsing
 - Added animated microphone icon with color cycling during voice recording
 - Added support for discovering skills via symbolic links in skill directories
-- Added `abort_and_prompt` RPC command for atomic abort-and-reprompt without race conditions ([#357](https://github.com/can1357/oh-my-pi/pull/357))
-- Added automatic dark/light theme switching via SIGWINCH with separate `theme.dark`/`theme.light` settings, replacing the single `theme` setting ([#65](https://github.com/can1357/oh-my-pi/issues/65))
+- Added `abort_and_prompt` RPC command for atomic abort-and-reprompt without race conditions ([#357](https://github.com/nghyane/arcane/pull/357))
+- Added automatic dark/light theme switching via SIGWINCH with separate `theme.dark`/`theme.light` settings, replacing the single `theme` setting ([#65](https://github.com/nghyane/arcane/issues/65))
 - Added speech-to-text (STT) feature with `Alt+H` keybinding and `/stt` slash command
 - Added cross-platform audio recording: SoX, FFmpeg, arecord (Linux), PowerShell mciSendString (Windows fallback)
 - Added recording tool fallback chain — automatically tries each available tool in order
@@ -453,7 +453,7 @@
 
 ### Changed
 
-- Moved `sanitizeText` function from `@nghyane/pi-utils` to `@nghyane/pi-natives` for better code organization
+- Moved `sanitizeText` function from `@nghyane/arcane-utils` to `@nghyane/arcane-natives` for better code organization
 - Replaced internal `#normalizeOutput` methods with `sanitizeText` utility function in bash and Python execution components
 - Added line length clamping (4000 characters) to bash and Python execution output to prevent display of excessively long lines
 - Modified memory storage to isolate memories by project working directory, preventing cross-project memory contamination
@@ -519,16 +519,16 @@
 
 - Filesystem scan cache invalidation helpers (`invalidateFsScanAfterWrite`, `invalidateFsScanAfterDelete`, `invalidateFsScanAfterRename`) to properly invalidate shared caches after file mutations
 - Named discovery profile for file mention candidates to standardize cache visibility and ignore semantics across callers
-- Comprehensive `models.yml` provider integration guide documenting custom model registration, provider overrides, API adapters, merge behavior, and practical integration patterns for Ollama, vLLM, LM Studio, and proxy endpoints
-- Claude Code marketplace plugin discovery: automatically loads skills, commands, hooks, tools, and agents from `~/.claude/plugins/cache/` based on `installed_plugins.json` registry ([#48](https://github.com/can1357/oh-my-pi/issues/48))
+- Carcrehensive `models.yml` provider integration guide documenting custom model registration, provider overrides, API adapters, merge behavior, and practical integration patterns for Ollama, vLLM, LM Studio, and proxy endpoints
+- Claude Code marketplace plugin discovery: automatically loads skills, commands, hooks, tools, and agents from `~/.claude/plugins/cache/` based on `installed_plugins.json` registry ([#48](https://github.com/nghyane/arcane/issues/48))
 
 ### Changed
 
-- Moved directory path utilities from `src/config.ts` to `@nghyane/pi-utils/dirs` for shared use across packages
-- Updated imports throughout codebase to use centralized directory path functions from `@nghyane/pi-utils/dirs`
+- Moved directory path utilities from `src/config.ts` to `@nghyane/arcane-utils/dirs` for shared use across packages
+- Updated imports throughout codebase to use centralized directory path functions from `@nghyane/arcane-utils/dirs`
 - Updated interactive bash terminal UI label from 'InteractiveTerm' to 'Console' for clarity
 - Enhanced bash execution environment with comprehensive non-interactive defaults for pagers, editors, and package managers to prevent command blocking and interactive prompts
-- Updated custom models configuration to use `~/.omp/agent/models.yml` (YAML format) while maintaining backward compatibility with legacy `models.json`
+- Updated custom models configuration to use `~/.arcane/agent/models.yml` (YAML format) while maintaining backward compatibility with legacy `models.json`
 
 ## [12.0.0] - 2026-02-12
 
@@ -543,9 +543,9 @@
 
 ### Fixed
 
-- Fixed `omp setup` crashing with uncaught exception when no component argument provided; now shows help ([#35](https://github.com/can1357/oh-my-pi/issues/35))
-- Fixed `/mcp list` showing "No MCP servers configured" when servers are loaded from discovery sources like `.claude.json`, `.cursor/mcp.json`, `.vscode/mcp.json` ([#34](https://github.com/can1357/oh-my-pi/issues/34))
-- Fixed model selector sorting to show newest models first within each provider instead of alphabetical; `-latest` aliases now appear before dated versions ([#37](https://github.com/can1357/oh-my-pi/issues/37))
+- Fixed \`arc setup` crashing with uncaught exception when no component argument provided; now shows help ([#35](https://github.com/nghyane/arcane/issues/35))
+- Fixed `/mcp list` showing "No MCP servers configured" when servers are loaded from discovery sources like `.claude.json`, `.cursor/mcp.json`, `.vscode/mcp.json` ([#34](https://github.com/nghyane/arcane/issues/34))
+- Fixed model selector sorting to show newest models first within each provider instead of alphabetical; `-latest` aliases now appear before dated versions ([#37](https://github.com/nghyane/arcane/issues/37))
 
 ## [11.14.4] - 2026-02-12
 
@@ -618,7 +618,7 @@
 
 ### Breaking Changes
 
-- Removed support for `.pi` configuration directory alias; use `.omp` instead
+- Removed support for `.pi` configuration directory alias; use `.arcane` instead
 
 ### Added
 
@@ -750,7 +750,7 @@
 - Migrated CLI framework from oclif to lightweight pi-utils CLI runner
 - Replaced oclif command registration with explicit command entries in cli.ts
 - Changed default root command name from 'index' to 'launch'
-- Updated all command imports to use @nghyane/pi-utils/cli instead of @oclif/core
+- Updated all command imports to use @nghyane/arcane-utils/cli instead of @oclif/core
 
 ### Removed
 
@@ -861,7 +861,7 @@
 - Improved error handling in worktree baseline application to use `isEnoent()` utility instead of file existence checks
 - Updated bash tool to use standard Node.js `fs.promises.stat()` with `isEnoent()` error handling
 - Replaced `tmpdir()` named import with `os` namespace import for consistency
-- Migrated logging from `chalk` and `console.error` to structured logger from `@nghyane/pi-utils`
+- Migrated logging from `chalk` and `console.error` to structured logger from `@nghyane/arcane-utils`
 
 ### Fixed
 
@@ -1123,18 +1123,18 @@
 
 ### Added
 
-- Added `omp commit` command to generate commit messages and update changelogs with `--push`, `--dry-run`, `--no-changelog`, and model override flags
-- Added `omp config` command to manage configuration settings with actions: list, get, set, reset, path
-- Added `omp grep` command to test grep tool with pattern matching, glob filtering, context lines, and output modes
-- Added `omp jupyter` command to manage the shared Jupyter gateway with status and kill actions
-- Added `omp plugin` command to manage plugins with install, uninstall, list, link, doctor, features, config, enable, and disable actions
-- Added `omp setup` command to install dependencies for optional features like Python
-- Added `omp shell` command for interactive shell console with working directory and timeout configuration
-- Added `omp stats` command to view usage statistics with dashboard server, JSON output, and summary options
-- Added `omp update` command to check for and install updates with force and check-only modes
-- Added `omp web-search` command (alias `omp q`) to test web search providers with provider selection, recency filtering, and result limits
+- Added \`arc commit` command to generate commit messages and update changelogs with `--push`, `--dry-run`, `--no-changelog`, and model override flags
+- Added \`arc config` command to manage configuration settings with actions: list, get, set, reset, path
+- Added \`arc grep` command to test grep tool with pattern matching, glob filtering, context lines, and output modes
+- Added \`arc jupyter` command to manage the shared Jupyter gateway with status and kill actions
+- Added \`arc plugin` command to manage plugins with install, uninstall, list, link, doctor, features, config, enable, and disable actions
+- Added \`arc setup` command to install dependencies for optional features like Python
+- Added \`arc shell` command for interactive shell console with working directory and timeout configuration
+- Added \`arc stats` command to view usage statistics with dashboard server, JSON output, and summary options
+- Added \`arc update` command to check for and install updates with force and check-only modes
+- Added \`arc web-search` command (alias \`arc q`) to test web search providers with provider selection, recency filtering, and result limits
 - Migrated CLI from custom argument parser to oclif framework for improved command structure and help system
-- Added `omp q` CLI subcommand for testing web search providers with query, provider, recency, and limit options
+- Added \`arc q` CLI subcommand for testing web search providers with query, provider, recency, and limit options
 - Added web search provider information API with authentication requirements and provider metadata
 - Added support for `hour` recency filter option in Perplexity web search
 - Support for image file mentions—images are now automatically detected, resized, and attached when referenced with @filepath syntax
@@ -1313,7 +1313,7 @@
 
 ### Removed
 
-- Removed support for `omp/` model role prefix; use `pi/` prefix instead
+- Removed support for `arc/` model role prefix; use `pi/` prefix instead
 
 ## [10.6.0] - 2026-02-04
 
@@ -1498,7 +1498,7 @@
 - Migrated bash command execution from ptree-based persistent sessions to native shell bindings with streaming support
 - Simplified bash executor to use brush-core native API instead of managing long-lived shell processes
 - Routed clipboard copy and image paste through native arboard bindings instead of shell commands
-- Embedded native addon payload for compiled binaries and extract to `~/.omp/natives/<version>` on first run
+- Embedded native addon payload for compiled binaries and extract to `~/.arcane/natives/<version>` on first run
 
 ### Removed
 
@@ -1544,7 +1544,7 @@
 - Added `Settings.init()` for initializing global settings instance
 - Added `settings` global export for convenient access to settings singleton
 - New `settings-schema.ts` providing unified, type-safe settings definitions with UI metadata
-- Added "none" option to `doubleEscapeAction` setting to disable double-escape behavior entirely ([#973](https://github.com/badlogic/pi-mono/issues/973) by [@juanibiapina](https://github.com/juanibiapina))
+- Added "none" option to `doubleEscapeAction` setting to disable double-escape behavior entirely ([#973](https://github.com/badlogic/arcane/issues/973) by [@juanibiapina](https://github.com/juanibiapina))
 
 ### Changed
 
@@ -1688,7 +1688,7 @@
 
 ### Added
 
-- Added grep CLI subcommand (`omp grep`) for testing pattern matching
+- Added grep CLI subcommand (\`arc grep`) for testing pattern matching
 - Added fuzzy matching for model resolution with scoring and ranking fallback
 - Added 'Open: artifact folder' menu option to debug selector for quick access to session artifacts
 - Added Kimi API format setting for selecting between OpenAI and Anthropic formats
@@ -1733,7 +1733,7 @@
 - Enhanced error reporting with debug stack trace when DEBUG env is set
 - Improved OAuth token refresh error handling to distinguish transient vs definitive failures
 - Added windowsHide option to child process spawn calls to prevent console windows on Windows
-- External edits to config.yml are now preserved when omp reloads or saves settings
+- External edits to config.yml are now preserved when arcane reloads or saves settings
 - Exposed LSP server startup errors in session display and logs
 - Improved error handling and security in agent storage initialization with restrictive file permissions
 - Fixed LSP server display showing unknown when server warmup fails
@@ -1745,7 +1745,7 @@
 
 ### Fixed
 
-- External edits to `config.yml` are now preserved when omp reloads or saves unrelated settings. Previously, editing config.yml directly (e.g., removing a package from `packages` array) would be silently reverted on next omp startup when automatic setters like `setLastChangelogVersion()` triggered a save. ([#1046](https://github.com/badlogic/pi-mono/pull/1046) by [@nicobailonMD](https://github.com/nicobailonMD))
+- External edits to `config.yml` are now preserved when arcane reloads or saves unrelated settings. Previously, editing config.yml directly (e.g., removing a package from `packages` array) would be silently reverted on next arcane startup when automatic setters like `setLastChangelogVersion()` triggered a save. ([#1046](https://github.com/badlogic/arcane/pull/1046) by [@nicobailonMD](https://github.com/nicobailonMD))
 
 ## [8.13.0] - 2026-01-29
 
@@ -1912,7 +1912,7 @@
 
 ### Added
 
-- Added `omp commit` command to generate conventional commits with changelog updates
+- Added \`arc commit` command to generate conventional commits with changelog updates
 - Added agentic commit mode with commit-specific tools and `--legacy` fallback
 - Added configurable settings for map-reduce analysis including concurrency, timeout, file thresholds, and token limits
 - Added support for excluding YAML lock files (`.lock.yml`, `.lock.yaml`, `-lock.yml`, `-lock.yaml`) from commit analysis
@@ -1923,7 +1923,7 @@
 - Added renderStatusLine component for standardized tool status headers with icons, descriptions, and metadata
 - Added renderOutputBlock component for bordered output containers with structured sections
 - Added renderOutputBlock to Bash tool for improved output formatting with status indicators
-- Added `--legacy` flag to `omp commit` for using the deterministic pipeline instead of agentic mode
+- Added `--legacy` flag to \`arc commit` for using the deterministic pipeline instead of agentic mode
 - Added split commit support to automatically create multiple atomic commits for unrelated changes
 - Added git hunk inspection tools for fine-grained diff analysis in commit generation
 - Added commit message validation with filler word and meta phrase detection
@@ -1979,7 +1979,7 @@
 - Changed tool result rendering to merge call and result displays, showing tool arguments (command, pattern, query, path) in result headers for Bash, Calculator, Fetch, Find, Grep, Ls, LSP, Notebook, Read, SSH, TodoWrite, Web Search, and Write tools
 - Changed Read tool title to display line range when offset or limit arguments are provided
 - Changed worker instantiation to use direct URL import instead of pre-bundled worker files
-- Changed `omp commit` to use agentic mode by default with tool-based git inspection
+- Changed \`arc commit` to use agentic mode by default with tool-based git inspection
 - Changed agentic commit progress output to show real-time thinking previews and structured tool argument details
 - Changed agentic commit progress output to display full multi-line assistant messages and render tool arguments with tree-style formatting for improved readability
 - Changed agentic commit progress output to render assistant messages as formatted Markdown with proper word wrapping
@@ -2196,7 +2196,7 @@
 - Added extension system support for user Python execution events
 - Added Python mode border color theming across all themes
 - Added Python execution indicator to welcome screen help text
-- Added `omp stats` command for viewing AI usage statistics dashboard
+- Added \`arc stats` command for viewing AI usage statistics dashboard
 - Added support for JSON output and console summary of usage statistics
 - Added configurable port option for stats dashboard server
 - Added multi-cell Python execution with sequential processing in persistent kernel
@@ -2233,7 +2233,7 @@
 - Removed worktree management system
 - Removed bundled wt custom command
 - Removed voice-related settings and configuration options
-- Removed @nghyane/pi-git-tool dependency
+- Removed @nghyane/arcane-git-tool dependency
 
 ## [6.8.5] - 2026-01-21
 
@@ -2309,7 +2309,7 @@
 
 ### Changed
 
-- Replaced internal logger with @nghyane/pi-utils logger across all modules
+- Replaced internal logger with @nghyane/arcane-utils logger across all modules
 - Updated process spawning to use cspawn and ptree utilities from pi-utils
 - Migrated file operations to use async fs/promises and Bun file APIs
 - Refactored promise handling to use Promise.withResolvers and utility functions
@@ -2457,7 +2457,7 @@
 ### Added
 
 - Added support for loading Python prelude extension modules from user and project directories
-- Added automatic discovery of Python modules from `.omp/modules` and `.pi/modules` directories
+- Added automatic discovery of Python modules from `.arcane/modules` and `.pi/modules` directories
 - Added prioritized module loading with project-level modules overriding user-level modules
 
 ## [5.6.7] - 2026-01-18
@@ -2653,7 +2653,7 @@
 
 ### Added
 
-- Add `omp config` subcommand for managing settings (`list`, `get`, `set`, `reset`, `path`)
+- Add \`arc config` subcommand for managing settings (`list`, `get`, `set`, `reset`, `path`)
 - Add `todoCompletion` setting to warn agent when it stops with incomplete todos (up to 3 reminders)
 - Add multi-part questions support to `ask` tool via `questions` array parameter
 
@@ -2831,7 +2831,7 @@
 - Added automatic Nerd Fonts detection for terminals like iTerm, WezTerm, Kitty, Ghostty, and Alacritty to set appropriate symbol preset
 - Added `NERD_FONTS` environment variable override (`1` or `0`) to manually control Nerd Fonts symbol preset
 - Added Handlebars templating engine for prompt template rendering with `{{arg}}` helper for positional arguments
-- Added support for custom share scripts at ~/.omp/agent/share.ts to replace default GitHub Gist sharing
+- Added support for custom share scripts at ~/.arcane/agent/share.ts to replace default GitHub Gist sharing
 
 ### Changed
 
@@ -2915,7 +2915,7 @@
 - `dequeue` keybinding (`Alt+Up`) to restore queued steering/follow-up messages back into the editor
 - Pluggable operations for built-in tools enabling remote execution via SSH or other transports (`ReadOperations`, `WriteOperations`, `EditOperations`, `BashOperations`, `LsOperations`, `GrepOperations`, `FindOperations`)
 - `/model <search>` pre-filters the model selector or auto-selects on exact match; use `provider/model` syntax to disambiguate
-- Managed binaries directory (`~/.omp/bin/`) for fd and rg tools
+- Managed binaries directory (`~/.arcane/bin/`) for fd and rg tools
 - `FooterDataProvider` for custom footers with `getGitBranch()`, `getExtensionStatuses()`, and `onBranchChange()`
 - `ctx.ui.custom()` accepts `{ overlay: true }` option for floating modal components
 - `ctx.ui.getAllThemes()`, `ctx.ui.getTheme(name)`, `ctx.ui.setTheme(name | Theme)` for theme management
@@ -3197,7 +3197,7 @@
 
 ### Changed
 
-- Changed subagent execution from spawning separate `omp` processes to running in Bun Workers with direct event streaming
+- Changed subagent execution from spawning separate \`arc\` processes to running in Bun Workers with direct event streaming
 - Changed tool factories to accept `ToolSession` parameter instead of separate cwd and options arguments
 - Changed `createTools` to return tools as a Map and support conditional tool creation based on session context
 - Changed system prompt builder to dynamically generate tool descriptions from the tool registry
@@ -3229,7 +3229,7 @@
 
 ### Changed
 
-- Switched from local `@nghyane/pi-ai` to upstream `@nghyane/pi-ai` package
+- Switched from local `@nghyane/arcane-ai` to upstream `@nghyane/arcane-ai` package
 
 ### Added
 
@@ -3291,8 +3291,8 @@
 
 ### Added
 
-- Added extensions API with auto-discovery (`.omp/extensions`) and `--extension`/`-e` loading for custom tools, commands, and lifecycle hooks
-- Added prompt templates loaded from global and project `.omp/prompts` directories with `/template` expansion in the input box
+- Added extensions API with auto-discovery (`.arcane/extensions`) and `--extension`/`-e` loading for custom tools, commands, and lifecycle hooks
+- Added prompt templates loaded from global and project `.arcane/prompts` directories with `/template` expansion in the input box
 - Built-in provider overrides in `models.json`: override just `baseUrl` to route a built-in provider through a proxy while keeping all its models, or define `models` to fully replace the provider
 - Shell commands without context contribution: use `!!command` to execute a bash command that is shown in the TUI and saved to session history but excluded from LLM context. Useful for running commands you don't want the AI to see
 - Added VoiceSupervisor class for realtime voice mode using OpenAI Realtime API with continuous mic streaming and semantic VAD turn detection
@@ -3516,7 +3516,7 @@
 ### Changed
 
 - Improved `/status` command output formatting to use consistent column alignment across all sections
-- Updated version update notification to suggest `omp update` instead of manual npm install command
+- Updated version update notification to suggest \`arc update` instead of manual npm install command
 
 ## [3.1.1337] - 2026-01-03
 
@@ -3544,7 +3544,7 @@
 - Added support for Gemini extensions and system.md customization files
 - Added support for Codex AGENTS.md and config.toml settings
 - Added automatic migration of `PI_*` environment variables to `OMP_*` equivalents for backwards compatibility
-- Added multi-path config discovery supporting `.omp`, `.pi`, and `.claude` directories with priority ordering
+- Added multi-path config discovery supporting `.arcane`, `.pi`, and `.claude` directories with priority ordering
 - Added `getConfigDirPaths()`, `findConfigFile()`, and `readConfigFile()` functions for unified config resolution
 - Added documentation for config module usage patterns
 
@@ -3552,16 +3552,16 @@
 
 - Changed MCP tool name parsing to use last underscore separator for better server name handling
 - Changed /config output to show provider attribution for discovered items
-- Renamed CLI binary from `pi` to `omp` and updated all command references
-- Changed config directory from `.pi` to `.omp` with fallback support for legacy paths
+- Renamed CLI binary from `pi` to \`arc\` and updated all command references
+- Changed config directory from `.pi` to `.arcane` with fallback support for legacy paths
 - Renamed environment variables from `PI_*` to `OMP_*` prefix (e.g., `OMP_SMOL_MODEL`, `OMP_SLOW_MODEL`)
-- Changed model role alias prefix from `pi/` to `omp/` (e.g., `omp/slow` instead of `pi/slow`)
+- Changed model role alias prefix from `pi/` to `arc/` (e.g., `arc/slow` instead of `pi/slow`)
 
 ## [2.1.1337] - 2026-01-03
 
 ### Added
 
-- Added `omp update` command to check for and install updates from GitHub releases or via bun
+- Added \`arc update` command to check for and install updates from GitHub releases or via bun
 
 ### Changed
 
@@ -3590,7 +3590,7 @@
 - Added provider tabs to model selector with Tab/Arrow navigation for filtering models by provider
 - Added context menu to model selector for choosing model role (Default, Smol, Slow) instead of keyboard shortcuts
 - Added LSP diagnostics display in tool execution output showing errors and warnings after file edits
-- Added centralized file logger with daily rotation to `~/.omp/logs/` for debugging production issues
+- Added centralized file logger with daily rotation to `~/.arcane/logs/` for debugging production issues
 - Added `logger` property to hook and custom tool APIs for error/warning/debug logging
 - Added `output` tool to read full agent/task outputs by ID when truncated previews are insufficient
 - Added `task` tool to reviewer agent, enabling parallel exploration of large codebases during reviews
@@ -3601,8 +3601,8 @@
 - Added `explicitTools` option to `createAgentSession` for enabling hidden tools by name
 - Added example review tools (`report_finding`, `submit_review`) with structured findings accumulation and verdict rendering
 - Added `/review` example command for interactive code review with branch comparison, uncommitted changes, and commit review modes
-- Custom TypeScript slash commands: Create programmable commands at `~/.omp/agent/commands/[name]/index.ts` or `.omp/commands/[name]/index.ts`. Commands export a factory returning `{ name, description, execute(args, ctx) }`. Return a string to send as LLM prompt, or void for fire-and-forget actions. Full access to `HookCommandContext` for UI dialogs, session control, and shell execution.
-- Claude command directories: Markdown slash commands now also load from `~/.claude/commands/` and `.claude/commands/` (parallel to existing `.omp/commands/` support)
+- Custom TypeScript slash commands: Create programmable commands at `~/.arcane/agent/commands/[name]/index.ts` or `.arcane/commands/[name]/index.ts`. Commands export a factory returning `{ name, description, execute(args, ctx) }`. Return a string to send as LLM prompt, or void for fire-and-forget actions. Full access to `HookCommandContext` for UI dialogs, session control, and shell execution.
+- Claude command directories: Markdown slash commands now also load from `~/.claude/commands/` and `.claude/commands/` (parallel to existing `.arcane/commands/` support)
 - `commands.enableClaudeUser` and `commands.enableClaudeProject` settings to disable Claude command directory loading
 - `/export --copy` option to copy entire session as formatted text to clipboard
 
@@ -3671,8 +3671,8 @@
 - LSP server status in welcome banner: Shows which language servers are active and ready.
 - Edit fuzzy match setting: Added `edit.fuzzyMatch` setting (enabled by default) to control whether the edit tool accepts high-confidence fuzzy matches for whitespace/indentation differences. Toggle via `/settings`.
 - Multi-server LSP diagnostics: Diagnostics now query all applicable language servers for a file type. For TypeScript/JavaScript projects with Biome, this means both type errors (from tsserver) and lint errors (from Biome) are reported together.
-- Comprehensive LSP server configurations for 40+ languages including Rust, Go, Python, Java, Kotlin, Scala, Haskell, OCaml, Elixir, Ruby, PHP, C#, Lua, Nix, and many more. Each server includes sensible defaults for args, settings, and init options.
-- Extended LSP config file search paths: Now searches for `lsp.json`, `.lsp.json` in project root and `.omp/` subdirectory, plus user-level configs in `~/.omp/` and home directory.
+- Carcrehensive LSP server configurations for 40+ languages including Rust, Go, Python, Java, Kotlin, Scala, Haskell, OCaml, Elixir, Ruby, PHP, C#, Lua, Nix, and many more. Each server includes sensible defaults for args, settings, and init options.
+- Extended LSP config file search paths: Now searches for `lsp.json`, `.lsp.json` in project root and `.arcane/` subdirectory, plus user-level configs in `~/.arcane/` and home directory.
 
 ### Changed
 
@@ -3733,7 +3733,7 @@
 
 ### Changed
 
-- Renamed package scope to @oh-my-pi for consistent branding
+- Renamed package scope to @arcane for consistent branding
 - Simplified toolset and enhanced navigation
 - Improved process cleanup with tree kill
 - Updated CI/CD workflows for GitHub Actions with provenance-signed npm publishing
@@ -3746,14 +3746,14 @@
 
 ## [1.337.0] - 2026-01-02
 
-Initial release under @oh-my-pi scope. See previous releases at [badlogic/pi-mono](https://github.com/badlogic/pi-mono).
+Initial release under @arcane scope. See previous releases at [badlogic/arcane](https://github.com/badlogic/arcane).
 
 ## [0.31.1] - 2026-01-02
 
 ### Fixed
 
-- Model selector no longer allows negative index when pressing arrow keys before models finish loading ([#398](https://github.com/badlogic/pi-mono/pull/398) by [@mitsuhiko](https://github.com/mitsuhiko))
-- Type guard functions (`isBashToolResult`, etc.) now exported at runtime, not just in type declarations ([#397](https://github.com/badlogic/pi-mono/issues/397))
+- Model selector no longer allows negative index when pressing arrow keys before models finish loading ([#398](https://github.com/badlogic/arcane/pull/398) by [@mitsuhiko](https://github.com/mitsuhiko))
+- Type guard functions (`isBashToolResult`, etc.) now exported at runtime, not just in type declarations ([#397](https://github.com/badlogic/arcane/issues/397))
 
 ## [0.31.0] - 2026-01-02
 
@@ -3862,7 +3862,7 @@ See [docs/custom-tools.md](docs/custom-tools.md) and [examples/custom-tools/](ex
 - `AppMessage` → `AgentMessage`
 - `sessionFile` returns `string | undefined` (was `string | null`)
 - `model` returns `Model | undefined` (was `Model | null`)
-- `Attachment` type removed. Use `ImageContent` from `@nghyane/pi-ai` instead. Add images directly to message content arrays.
+- `Attachment` type removed. Use `ImageContent` from `@nghyane/arcane-ai` instead. Add images directly to message content arrays.
 
 **AgentSession API:**
 
@@ -3895,10 +3895,10 @@ See [docs/custom-tools.md](docs/custom-tools.md) and [examples/custom-tools/](ex
 `ModelRegistry` is a new class that manages model discovery and API key resolution. It combines built-in models with custom models from `models.json` and resolves API keys via `AuthStorage`.
 
 ```typescript
-import { discoverAuthStorage, discoverModels } from "@nghyane/pi-coding-agent";
+import { discoverAuthStorage, discoverModels } from "@nghyane/arcane";
 
-const authStorage = discoverAuthStorage(); // ~/.omp/agent/auth.json
-const modelRegistry = discoverModels(authStorage); // + ~/.omp/agent/models.json
+const authStorage = discoverAuthStorage(); // ~/.arcane/agent/auth.json
+const modelRegistry = discoverModels(authStorage); // + ~/.arcane/agent/models.json
 
 // Get all models (built-in + custom)
 const allModels = modelRegistry.getAll();
@@ -3988,15 +3988,15 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Added
 
-- `ctx.ui.setStatus(key, text)` for hooks to display persistent status text in the footer ([#385](https://github.com/badlogic/pi-mono/pull/385) by [@prateekmedia](https://github.com/prateekmedia))
+- `ctx.ui.setStatus(key, text)` for hooks to display persistent status text in the footer ([#385](https://github.com/badlogic/arcane/pull/385) by [@prateekmedia](https://github.com/prateekmedia))
 - `ctx.ui.theme` getter for styling status text and other output with theme colors
-- `/share` command to upload session as a secret GitHub gist and get a shareable URL via shittycodingagent.ai ([#380](https://github.com/badlogic/pi-mono/issues/380))
-- HTML export now includes a tree visualization sidebar for navigating session branches ([#375](https://github.com/badlogic/pi-mono/issues/375))
+- `/share` command to upload session as a secret GitHub gist and get a shareable URL via shittycodingagent.ai ([#380](https://github.com/badlogic/arcane/issues/380))
+- HTML export now includes a tree visualization sidebar for navigating session branches ([#375](https://github.com/badlogic/arcane/issues/375))
 - HTML export supports keyboard shortcuts: Ctrl+T to toggle thinking blocks, Ctrl+O to toggle tool outputs
-- HTML export supports theme-configurable background colors via optional `export` section in theme JSON ([#387](https://github.com/badlogic/pi-mono/pull/387) by [@mitsuhiko](https://github.com/mitsuhiko))
+- HTML export supports theme-configurable background colors via optional `export` section in theme JSON ([#387](https://github.com/badlogic/arcane/pull/387) by [@mitsuhiko](https://github.com/mitsuhiko))
 - HTML export syntax highlighting now uses theme colors and matches TUI rendering
 - **Snake game example hook**: Demonstrates `ui.custom()`, `registerCommand()`, and session persistence. See [examples/hooks/snake.ts](examples/hooks/snake.ts).
-- **`thinkingText` theme token**: Configurable color for thinking block text. ([#366](https://github.com/badlogic/pi-mono/pull/366) by [@paulbettner](https://github.com/paulbettner))
+- **`thinkingText` theme token**: Configurable color for thinking block text. ([#366](https://github.com/badlogic/arcane/pull/366) by [@paulbettner](https://github.com/paulbettner))
 
 ### Changed
 
@@ -4007,21 +4007,21 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 ### Fixed
 
 - HTML export now properly sanitizes user messages containing HTML tags like `<style>` that could break DOM rendering
-- Crash when displaying bash output containing Unicode format characters like U+0600-U+0604 ([#372](https://github.com/badlogic/pi-mono/pull/372) by [@HACKE-RC](https://github.com/HACKE-RC))
-- **Footer shows full session stats**: Token usage and cost now include all messages, not just those after compaction. ([#322](https://github.com/badlogic/pi-mono/issues/322))
-- **Status messages spam chat log**: Rapidly changing settings (e.g., thinking level via Shift+Tab) would add multiple status lines. Sequential status updates now coalesce into a single line. ([#365](https://github.com/badlogic/pi-mono/pull/365) by [@paulbettner](https://github.com/paulbettner))
+- Crash when displaying bash output containing Unicode format characters like U+0600-U+0604 ([#372](https://github.com/badlogic/arcane/pull/372) by [@HACKE-RC](https://github.com/HACKE-RC))
+- **Footer shows full session stats**: Token usage and cost now include all messages, not just those after compaction. ([#322](https://github.com/badlogic/arcane/issues/322))
+- **Status messages spam chat log**: Rapidly changing settings (e.g., thinking level via Shift+Tab) would add multiple status lines. Sequential status updates now coalesce into a single line. ([#365](https://github.com/badlogic/arcane/pull/365) by [@paulbettner](https://github.com/paulbettner))
 - **Toggling thinking blocks during streaming shows nothing**: Pressing Ctrl+T while streaming would hide the current message until streaming completed.
-- **Resuming session resets thinking level to off**: Initial model and thinking level were not saved to session file, causing `--resume`/`--continue` to default to `off`. ([#342](https://github.com/badlogic/pi-mono/issues/342) by [@aliou](https://github.com/aliou))
-- **Hook `tool_result` event ignores errors from custom tools**: The `tool_result` hook event was never emitted when tools threw errors, and always had `isError: false` for successful executions. Now emits the event with correct `isError` value in both success and error cases. ([#374](https://github.com/badlogic/pi-mono/issues/374) by [@nicobailon](https://github.com/nicobailon))
-- **Edit tool fails on Windows due to CRLF line endings**: Files with CRLF line endings now match correctly when LLMs send LF-only text. Line endings are normalized before matching and restored to original style on write. ([#355](https://github.com/badlogic/pi-mono/issues/355) by [@Pratham-Dubey](https://github.com/Pratham-Dubey))
-- **Edit tool fails on files with UTF-8 BOM**: Files with UTF-8 BOM marker could cause "text not found" errors since the LLM doesn't include the invisible BOM character. BOM is now stripped before matching and restored on write. ([#394](https://github.com/badlogic/pi-mono/pull/394) by [@prathamdby](https://github.com/prathamdby))
-- **Use bash instead of sh on Unix**: Fixed shell commands using `/bin/sh` instead of `/bin/bash` on Unix systems. ([#328](https://github.com/badlogic/pi-mono/pull/328) by [@dnouri](https://github.com/dnouri))
-- **OAuth login URL clickable**: Made OAuth login URLs clickable in terminal. ([#349](https://github.com/badlogic/pi-mono/pull/349) by [@Cursivez](https://github.com/Cursivez))
-- **Improved error messages**: Better error messages when `apiKey` or `model` are missing. ([#346](https://github.com/badlogic/pi-mono/pull/346) by [@ronyrus](https://github.com/ronyrus))
+- **Resuming session resets thinking level to off**: Initial model and thinking level were not saved to session file, causing `--resume`/`--continue` to default to `off`. ([#342](https://github.com/badlogic/arcane/issues/342) by [@aliou](https://github.com/aliou))
+- **Hook `tool_result` event ignores errors from custom tools**: The `tool_result` hook event was never emitted when tools threw errors, and always had `isError: false` for successful executions. Now emits the event with correct `isError` value in both success and error cases. ([#374](https://github.com/badlogic/arcane/issues/374) by [@nicobailon](https://github.com/nicobailon))
+- **Edit tool fails on Windows due to CRLF line endings**: Files with CRLF line endings now match correctly when LLMs send LF-only text. Line endings are normalized before matching and restored to original style on write. ([#355](https://github.com/badlogic/arcane/issues/355) by [@Pratham-Dubey](https://github.com/Pratham-Dubey))
+- **Edit tool fails on files with UTF-8 BOM**: Files with UTF-8 BOM marker could cause "text not found" errors since the LLM doesn't include the invisible BOM character. BOM is now stripped before matching and restored on write. ([#394](https://github.com/badlogic/arcane/pull/394) by [@prathamdby](https://github.com/prathamdby))
+- **Use bash instead of sh on Unix**: Fixed shell commands using `/bin/sh` instead of `/bin/bash` on Unix systems. ([#328](https://github.com/badlogic/arcane/pull/328) by [@dnouri](https://github.com/dnouri))
+- **OAuth login URL clickable**: Made OAuth login URLs clickable in terminal. ([#349](https://github.com/badlogic/arcane/pull/349) by [@Cursivez](https://github.com/Cursivez))
+- **Improved error messages**: Better error messages when `apiKey` or `model` are missing. ([#346](https://github.com/badlogic/arcane/pull/346) by [@ronyrus](https://github.com/ronyrus))
 - **Session file validation**: `findMostRecentSession()` now validates session headers before returning, preventing non-session JSONL files from being loaded
 - **Compaction error handling**: `generateSummary()` and `generateTurnPrefixSummary()` now throw on LLM errors instead of returning empty strings
 - **Compaction with branched sessions**: Fixed compaction incorrectly including entries from abandoned branches, causing token overflow errors. Compaction now uses `sessionManager.getPath()` to work only on the current branch path, eliminating 80+ lines of duplicate entry collection logic between `prepareCompaction()` and `compact()`
-- **enabledModels glob patterns**: `--models` and `enabledModels` now support glob patterns like `github-copilot/*` or `*sonnet*`. Previously, patterns were only matched literally or via substring search. ([#337](https://github.com/badlogic/pi-mono/issues/337))
+- **enabledModels glob patterns**: `--models` and `enabledModels` now support glob patterns like `github-copilot/*` or `*sonnet*`. Previously, patterns were only matched literally or via substring search. ([#337](https://github.com/badlogic/arcane/issues/337))
 
 ## [0.30.2] - 2025-12-26
 
@@ -4033,74 +4033,74 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Fixed
 
-- **Sessions saved to wrong directory**: In v0.30.0, sessions were being saved to `~/.omp/agent/` instead of `~/.omp/agent/sessions/<encoded-cwd>/`, breaking `--resume` and `/resume`. Misplaced sessions are automatically migrated on startup. ([#320](https://github.com/badlogic/pi-mono/issues/320) by [@aliou](https://github.com/aliou))
-- **Custom system prompts missing context**: When using a custom system prompt string, project context files (AGENTS.md), skills, date/time, and working directory were not appended. ([#321](https://github.com/badlogic/pi-mono/issues/321))
+- **Sessions saved to wrong directory**: In v0.30.0, sessions were being saved to `~/.arcane/agent/` instead of `~/.arcane/agent/sessions/<encoded-cwd>/`, breaking `--resume` and `/resume`. Misplaced sessions are automatically migrated on startup. ([#320](https://github.com/badlogic/arcane/issues/320) by [@aliou](https://github.com/aliou))
+- **Custom system prompts missing context**: When using a custom system prompt string, project context files (AGENTS.md), skills, date/time, and working directory were not appended. ([#321](https://github.com/badlogic/arcane/issues/321))
 
 ## [0.30.0] - 2025-12-25
 
 ### Breaking Changes
 
-- **SessionManager API**: The second parameter of `create()`, `continueRecent()`, and `list()` changed from `agentDir` to `sessionDir`. When provided, it specifies the session directory directly (no cwd encoding). When omitted, uses default (`~/.omp/agent/sessions/<encoded-cwd>/`). `open()` no longer takes `agentDir`. ([#313](https://github.com/badlogic/pi-mono/pull/313))
+- **SessionManager API**: The second parameter of `create()`, `continueRecent()`, and `list()` changed from `agentDir` to `sessionDir`. When provided, it specifies the session directory directly (no cwd encoding). When omitted, uses default (`~/.arcane/agent/sessions/<encoded-cwd>/`). `open()` no longer takes `agentDir`. ([#313](https://github.com/badlogic/arcane/pull/313))
 
 ### Added
 
-- **`--session-dir` flag**: Use a custom directory for sessions instead of the default `~/.omp/agent/sessions/<encoded-cwd>/`. Works with `-c` (continue) and `-r` (resume) flags. ([#313](https://github.com/badlogic/pi-mono/pull/313) by [@scutifer](https://github.com/scutifer))
-- **Reverse model cycling and model selector**: Shift+Ctrl+P cycles models backward, Ctrl+L opens model selector (retaining text in editor). ([#315](https://github.com/badlogic/pi-mono/pull/315) by [@mitsuhiko](https://github.com/mitsuhiko))
+- **`--session-dir` flag**: Use a custom directory for sessions instead of the default `~/.arcane/agent/sessions/<encoded-cwd>/`. Works with `-c` (continue) and `-r` (resume) flags. ([#313](https://github.com/badlogic/arcane/pull/313) by [@scutifer](https://github.com/scutifer))
+- **Reverse model cycling and model selector**: Shift+Ctrl+P cycles models backward, Ctrl+L opens model selector (retaining text in editor). ([#315](https://github.com/badlogic/arcane/pull/315) by [@mitsuhiko](https://github.com/mitsuhiko))
 
 ## [0.29.1] - 2025-12-25
 
 ### Added
 
-- **Automatic custom system prompt loading**: OMP now auto-loads `SYSTEM.md` files to replace the default system prompt. Project-local `.omp/SYSTEM.md` takes precedence over global `~/.omp/agent/SYSTEM.md`. CLI `--system-prompt` flag overrides both. ([#309](https://github.com/badlogic/pi-mono/issues/309))
-- **Unified `/settings` command**: New settings menu consolidating thinking level, theme, queue mode, auto-compact, show images, hide thinking, and collapse changelog. Replaces individual `/thinking`, `/queue`, `/theme`, `/autocompact`, and `/show-images` commands. ([#310](https://github.com/badlogic/pi-mono/issues/310))
+- **Automatic custom system prompt loading**: OMP now auto-loads `SYSTEM.md` files to replace the default system prompt. Project-local `.arcane/SYSTEM.md` takes precedence over global `~/.arcane/agent/SYSTEM.md`. CLI `--system-prompt` flag overrides both. ([#309](https://github.com/badlogic/arcane/issues/309))
+- **Unified `/settings` command**: New settings menu consolidating thinking level, theme, queue mode, auto-compact, show images, hide thinking, and collapse changelog. Replaces individual `/thinking`, `/queue`, `/theme`, `/autocompact`, and `/show-images` commands. ([#310](https://github.com/badlogic/arcane/issues/310))
 
 ### Fixed
 
-- **Custom tools/hooks with typebox subpath imports**: Fixed jiti alias for `@sinclair/typebox` to point to package root instead of entry file, allowing imports like `@sinclair/typebox/compiler` to resolve correctly. ([#311](https://github.com/badlogic/pi-mono/issues/311) by [@kim0](https://github.com/kim0))
+- **Custom tools/hooks with typebox subpath imports**: Fixed jiti alias for `@sinclair/typebox` to point to package root instead of entry file, allowing imports like `@sinclair/typebox/compiler` to resolve correctly. ([#311](https://github.com/badlogic/arcane/issues/311) by [@kim0](https://github.com/kim0))
 
 ## [0.29.0] - 2025-12-25
 
 ### Breaking Changes
 
-- **Renamed `/clear` to `/new`**: The command to start a fresh session is now `/new`. Hook event reasons `before_clear`/`clear` are now `before_new`/`new`. Merry Christmas [@mitsuhiko](https://github.com/mitsuhiko)! ([#305](https://github.com/badlogic/pi-mono/pull/305))
+- **Renamed `/clear` to `/new`**: The command to start a fresh session is now `/new`. Hook event reasons `before_clear`/`clear` are now `before_new`/`new`. Merry Christmas [@mitsuhiko](https://github.com/mitsuhiko)! ([#305](https://github.com/badlogic/arcane/pull/305))
 
 ### Added
 
-- **Auto-space before pasted file paths**: When pasting a file path (starting with `/`, `~`, or `.`) after a word character, a space is automatically prepended. ([#307](https://github.com/badlogic/pi-mono/pull/307) by [@mitsuhiko](https://github.com/mitsuhiko))
-- **Word navigation in input fields**: Added Ctrl+Left/Right and Alt+Left/Right for word-by-word cursor movement. ([#306](https://github.com/badlogic/pi-mono/pull/306) by [@kim0](https://github.com/kim0))
-- **Full Unicode input**: Input fields now accept Unicode characters beyond ASCII. ([#306](https://github.com/badlogic/pi-mono/pull/306) by [@kim0](https://github.com/kim0))
+- **Auto-space before pasted file paths**: When pasting a file path (starting with `/`, `~`, or `.`) after a word character, a space is automatically prepended. ([#307](https://github.com/badlogic/arcane/pull/307) by [@mitsuhiko](https://github.com/mitsuhiko))
+- **Word navigation in input fields**: Added Ctrl+Left/Right and Alt+Left/Right for word-by-word cursor movement. ([#306](https://github.com/badlogic/arcane/pull/306) by [@kim0](https://github.com/kim0))
+- **Full Unicode input**: Input fields now accept Unicode characters beyond ASCII. ([#306](https://github.com/badlogic/arcane/pull/306) by [@kim0](https://github.com/kim0))
 
 ### Fixed
 
-- **Readline-style Ctrl+W**: Now skips trailing whitespace before deleting the preceding word, matching standard readline behavior. ([#306](https://github.com/badlogic/pi-mono/pull/306) by [@kim0](https://github.com/kim0))
+- **Readline-style Ctrl+W**: Now skips trailing whitespace before deleting the preceding word, matching standard readline behavior. ([#306](https://github.com/badlogic/arcane/pull/306) by [@kim0](https://github.com/kim0))
 
 ## [0.28.0] - 2025-12-25
 
 ### Changed
 
-- **Credential storage refactored**: API keys and OAuth tokens are now stored in `~/.omp/agent/auth.json` instead of `oauth.json` and `settings.json`. Existing credentials are automatically migrated on first run. ([#296](https://github.com/badlogic/pi-mono/issues/296))
+- **Credential storage refactored**: API keys and OAuth tokens are now stored in `~/.arcane/agent/auth.json` instead of `oauth.json` and `settings.json`. Existing credentials are automatically migrated on first run. ([#296](https://github.com/badlogic/arcane/issues/296))
 
-- **SDK API changes** ([#296](https://github.com/badlogic/pi-mono/issues/296)):
+- **SDK API changes** ([#296](https://github.com/badlogic/arcane/issues/296)):
   - Added `AuthStorage` class for credential management (API keys and OAuth tokens)
   - Added `ModelRegistry` class for model discovery and API key resolution
   - Added `discoverAuthStorage()` and `discoverModels()` discovery functions
   - `createAgentSession()` now accepts `authStorage` and `modelRegistry` options
   - Removed `configureOAuthStorage()`, `defaultGetApiKey()`, `findModel()`, `discoverAvailableModels()`
   - Removed `getApiKey` callback option (use `AuthStorage.setRuntimeApiKey()` for runtime overrides)
-  - Use `getModel()` from `@nghyane/pi-ai` for built-in models, `modelRegistry.find()` for custom models + built-in models
+  - Use `getModel()` from `@nghyane/arcane-ai` for built-in models, `modelRegistry.find()` for custom models + built-in models
   - See updated [SDK documentation](docs/sdk.md) and [README](README.md)
 
-- **Settings changes**: Removed `apiKeys` from `settings.json`. Use `auth.json` instead. ([#296](https://github.com/badlogic/pi-mono/issues/296))
+- **Settings changes**: Removed `apiKeys` from `settings.json`. Use `auth.json` instead. ([#296](https://github.com/badlogic/arcane/issues/296))
 
 ### Fixed
 
-- **Duplicate skill warnings for symlinks**: Skills loaded via symlinks pointing to the same file are now silently deduplicated instead of showing name collision warnings. ([#304](https://github.com/badlogic/pi-mono/pull/304) by [@mitsuhiko](https://github.com/mitsuhiko))
+- **Duplicate skill warnings for symlinks**: Skills loaded via symlinks pointing to the same file are now silently deduplicated instead of showing name collision warnings. ([#304](https://github.com/badlogic/arcane/pull/304) by [@mitsuhiko](https://github.com/mitsuhiko))
 
 ## [0.27.9] - 2025-12-24
 
 ### Fixed
 
-- **Model selector and --list-models with settings.json API keys**: Models with API keys configured in settings.json (but not in environment variables) now properly appear in the /model selector and `--list-models` output. ([#295](https://github.com/badlogic/pi-mono/issues/295))
+- **Model selector and --list-models with settings.json API keys**: Models with API keys configured in settings.json (but not in environment variables) now properly appear in the /model selector and `--list-models` output. ([#295](https://github.com/badlogic/arcane/issues/295))
 
 ## [0.27.8] - 2025-12-24
 
@@ -4112,7 +4112,7 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Fixed
 
-- **Thinking tag leakage**: Fixed Claude mimicking literal `</thinking>` tags in responses. Unsigned thinking blocks (from aborted streams) are now converted to plain text without `<thinking>` tags. The TUI still displays them as thinking blocks. ([#302](https://github.com/badlogic/pi-mono/pull/302) by [@nicobailon](https://github.com/nicobailon))
+- **Thinking tag leakage**: Fixed Claude mimicking literal `</thinking>` tags in responses. Unsigned thinking blocks (from aborted streams) are now converted to plain text without `<thinking>` tags. The TUI still displays them as thinking blocks. ([#302](https://github.com/badlogic/arcane/pull/302) by [@nicobailon](https://github.com/nicobailon))
 
 ## [0.27.6] - 2025-12-24
 
@@ -4138,30 +4138,30 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Fixed
 
-- **Ghostty inline images in tmux**: Fixed terminal detection for Ghostty when running inside tmux by checking `GHOSTTY_RESOURCES_DIR` env var. ([#299](https://github.com/badlogic/pi-mono/pull/299) by [@nicobailon](https://github.com/nicobailon))
+- **Ghostty inline images in tmux**: Fixed terminal detection for Ghostty when running inside tmux by checking `GHOSTTY_RESOURCES_DIR` env var. ([#299](https://github.com/badlogic/arcane/pull/299) by [@nicobailon](https://github.com/nicobailon))
 
 ## [0.27.4] - 2025-12-24
 
 ### Fixed
 
-- **Symlinked skill directories**: Skills in symlinked directories (e.g., `~/.omp/agent/skills/my-skills -> /path/to/skills`) are now correctly discovered and loaded.
+- **Symlinked skill directories**: Skills in symlinked directories (e.g., `~/.arcane/agent/skills/my-skills -> /path/to/skills`) are now correctly discovered and loaded.
 
 ## [0.27.3] - 2025-12-24
 
 ### Added
 
-- **API keys in settings.json**: Store API keys in `~/.omp/agent/settings.json` under the `apiKeys` field (e.g., `{ "apiKeys": { "anthropic": "sk-..." } }`). Settings keys take priority over environment variables. ([#295](https://github.com/badlogic/pi-mono/issues/295))
+- **API keys in settings.json**: Store API keys in `~/.arcane/agent/settings.json` under the `apiKeys` field (e.g., `{ "apiKeys": { "anthropic": "sk-..." } }`). Settings keys take priority over environment variables. ([#295](https://github.com/badlogic/arcane/issues/295))
 
 ### Fixed
 
-- **Allow startup without API keys**: Interactive mode no longer throws when no API keys are configured. Users can now start the agent and use `/login` to authenticate. ([#288](https://github.com/badlogic/pi-mono/issues/288))
-- **`--system-prompt` file path support**: The `--system-prompt` argument now correctly resolves file paths (like `--append-system-prompt` already did). ([#287](https://github.com/badlogic/pi-mono/pull/287) by [@scutifer](https://github.com/scutifer))
+- **Allow startup without API keys**: Interactive mode no longer throws when no API keys are configured. Users can now start the agent and use `/login` to authenticate. ([#288](https://github.com/badlogic/arcane/issues/288))
+- **`--system-prompt` file path support**: The `--system-prompt` argument now correctly resolves file paths (like `--append-system-prompt` already did). ([#287](https://github.com/badlogic/arcane/pull/287) by [@scutifer](https://github.com/scutifer))
 
 ## [0.27.2] - 2025-12-23
 
 ### Added
 
-- **Skip conversation restore on branch**: Hooks can return `{ skipConversationRestore: true }` from `before_branch` to create the branched session file without restoring conversation messages. Useful for checkpoint hooks that restore files separately. ([#286](https://github.com/badlogic/pi-mono/pull/286) by [@nicobarray](https://github.com/nicobarray))
+- **Skip conversation restore on branch**: Hooks can return `{ skipConversationRestore: true }` from `before_branch` to create the branched session file without restoring conversation messages. Useful for checkpoint hooks that restore files separately. ([#286](https://github.com/badlogic/arcane/pull/286) by [@nicobarray](https://github.com/nicobarray))
 
 ## [0.27.1] - 2025-12-22
 
@@ -4177,31 +4177,31 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Breaking
 
-- **Session hooks API redesign**: Merged `branch` event into `session` event. `BranchEvent`, `BranchEventResult` types and `pi.on("branch", ...)` removed. Use `pi.on("session", ...)` with `reason: "before_branch" | "branch"` instead. `AgentSession.branch()` returns `{ cancelled }` instead of `{ skipped }`. `AgentSession.reset()` and `switchSession()` now return `boolean` (false if cancelled by hook). RPC commands `reset`, `switch_session`, and `branch` now include `cancelled` in response data. ([#278](https://github.com/badlogic/pi-mono/issues/278))
+- **Session hooks API redesign**: Merged `branch` event into `session` event. `BranchEvent`, `BranchEventResult` types and `pi.on("branch", ...)` removed. Use `pi.on("session", ...)` with `reason: "before_branch" | "branch"` instead. `AgentSession.branch()` returns `{ cancelled }` instead of `{ skipped }`. `AgentSession.reset()` and `switchSession()` now return `boolean` (false if cancelled by hook). RPC commands `reset`, `switch_session`, and `branch` now include `cancelled` in response data. ([#278](https://github.com/badlogic/arcane/issues/278))
 
 ### Added
 
-- **Session lifecycle hooks**: Added `before_*` variants (`before_switch`, `before_clear`, `before_branch`) that fire before actions and can be cancelled with `{ cancel: true }`. Added `shutdown` reason for graceful exit handling. ([#278](https://github.com/badlogic/pi-mono/issues/278))
+- **Session lifecycle hooks**: Added `before_*` variants (`before_switch`, `before_clear`, `before_branch`) that fire before actions and can be cancelled with `{ cancel: true }`. Added `shutdown` reason for graceful exit handling. ([#278](https://github.com/badlogic/arcane/issues/278))
 
 ### Fixed
 
-- **File tab completion display**: File paths no longer get cut off early. Folders now show trailing `/` and removed redundant "directory"/"file" labels to maximize horizontal space. ([#280](https://github.com/badlogic/pi-mono/issues/280))
+- **File tab completion display**: File paths no longer get cut off early. Folders now show trailing `/` and removed redundant "directory"/"file" labels to maximize horizontal space. ([#280](https://github.com/badlogic/arcane/issues/280))
 
-- **Bash tool visual line truncation**: Fixed bash tool output in collapsed mode to use visual line counting (accounting for line wrapping) instead of logical line counting. Now consistent with bash-execution.ts behavior. Extracted shared `truncateToVisualLines` utility. ([#275](https://github.com/badlogic/pi-mono/issues/275))
+- **Bash tool visual line truncation**: Fixed bash tool output in collapsed mode to use visual line counting (accounting for line wrapping) instead of logical line counting. Now consistent with bash-execution.ts behavior. Extracted shared `truncateToVisualLines` utility. ([#275](https://github.com/badlogic/arcane/issues/275))
 
 ## [0.26.1] - 2025-12-22
 
 ### Fixed
 
-- **SDK tools respect cwd**: Core tools (bash, read, edit, write, grep, find, ls) now properly use the `cwd` option from `createAgentSession()`. Added tool factory functions (`createBashTool`, `createReadTool`, etc.) for SDK users who specify custom `cwd` with explicit tools. ([#279](https://github.com/badlogic/pi-mono/issues/279))
+- **SDK tools respect cwd**: Core tools (bash, read, edit, write, grep, find, ls) now properly use the `cwd` option from `createAgentSession()`. Added tool factory functions (`createBashTool`, `createReadTool`, etc.) for SDK users who specify custom `cwd` with explicit tools. ([#279](https://github.com/badlogic/arcane/issues/279))
 
 ## [0.26.0] - 2025-12-22
 
 ### Added
 
-- **SDK for programmatic usage**: New `createAgentSession()` factory with full control over model, tools, hooks, skills, session persistence, and settings. Philosophy: "omit to discover, provide to override". Includes 12 examples and comprehensive documentation. ([#272](https://github.com/badlogic/pi-mono/issues/272))
+- **SDK for programmatic usage**: New `createAgentSession()` factory with full control over model, tools, hooks, skills, session persistence, and settings. Philosophy: "omit to discover, provide to override". Includes 12 examples and comprehensive documentation. ([#272](https://github.com/badlogic/arcane/issues/272))
 
-- **Project-specific settings**: Settings now load from both `~/.omp/agent/settings.json` (global) and `<cwd>/.omp/settings.json` (project). Project settings override global with deep merge for nested objects. Project settings are read-only (for version control). ([#276](https://github.com/badlogic/pi-mono/pull/276))
+- **Project-specific settings**: Settings now load from both `~/.arcane/agent/settings.json` (global) and `<cwd>/.arcane/settings.json` (project). Project settings override global with deep merge for nested objects. Project settings are read-only (for version control). ([#276](https://github.com/badlogic/arcane/pull/276))
 
 - **SettingsManager static factories**: `SettingsManager.create(cwd?, agentDir?)` for file-based settings, `SettingsManager.inMemory(settings?)` for testing. Added `applyOverrides()` for programmatic overrides.
 
@@ -4211,21 +4211,21 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Fixed
 
-- **Syntax highlighting stderr spam**: Fixed cli-highlight logging errors to stderr when markdown contains malformed code fences (e.g., missing newlines around closing backticks). Now validates language identifiers before highlighting and falls back silently to plain text. ([#274](https://github.com/badlogic/pi-mono/issues/274))
+- **Syntax highlighting stderr spam**: Fixed cli-highlight logging errors to stderr when markdown contains malformed code fences (e.g., missing newlines around closing backticks). Now validates language identifiers before highlighting and falls back silently to plain text. ([#274](https://github.com/badlogic/arcane/issues/274))
 
 ## [0.25.3] - 2025-12-21
 
 ### Added
 
-- **Gemini 3 preview models**: Added `gemini-3-pro-preview` and `gemini-3-flash-preview` to the google-gemini-cli provider. ([#264](https://github.com/badlogic/pi-mono/pull/264) by [@LukeFost](https://github.com/LukeFost))
+- **Gemini 3 preview models**: Added `gemini-3-pro-preview` and `gemini-3-flash-preview` to the google-gemini-cli provider. ([#264](https://github.com/badlogic/arcane/pull/264) by [@LukeFost](https://github.com/LukeFost))
 
-- **External editor support**: Press `Ctrl+G` to edit your message in an external editor. Uses `$VISUAL` or `$EDITOR` environment variable. On successful save, the message is replaced; on cancel, the original is kept. ([#266](https://github.com/badlogic/pi-mono/pull/266) by [@aliou](https://github.com/aliou))
+- **External editor support**: Press `Ctrl+G` to edit your message in an external editor. Uses `$VISUAL` or `$EDITOR` environment variable. On successful save, the message is replaced; on cancel, the original is kept. ([#266](https://github.com/badlogic/arcane/pull/266) by [@aliou](https://github.com/aliou))
 
-- **Process suspension**: Press `Ctrl+Z` to suspend omp and return to the shell. Resume with `fg` as usual. ([#267](https://github.com/badlogic/pi-mono/pull/267) by [@aliou](https://github.com/aliou))
+- **Process suspension**: Press `Ctrl+Z` to suspend arcane and return to the shell. Resume with `fg` as usual. ([#267](https://github.com/badlogic/arcane/pull/267) by [@aliou](https://github.com/aliou))
 
-- **Configurable skills directories**: Added granular control over skill sources with `enableCodexUser`, `enableClaudeUser`, `enableClaudeProject`, `enablePiUser`, `enablePiProject` toggles, plus `customDirectories` and `ignoredSkills` settings. ([#269](https://github.com/badlogic/pi-mono/pull/269) by [@nicobailon](https://github.com/nicobailon))
+- **Configurable skills directories**: Added granular control over skill sources with `enableCodexUser`, `enableClaudeUser`, `enableClaudeProject`, `enablePiUser`, `enablePiProject` toggles, plus `customDirectories` and `ignoredSkills` settings. ([#269](https://github.com/badlogic/arcane/pull/269) by [@nicobailon](https://github.com/nicobailon))
 
-- **Skills CLI filtering**: Added `--skills <patterns>` flag for filtering skills with glob patterns. Also added `includeSkills` setting and glob pattern support for `ignoredSkills`. ([#268](https://github.com/badlogic/pi-mono/issues/268))
+- **Skills CLI filtering**: Added `--skills <patterns>` flag for filtering skills with glob patterns. Also added `includeSkills` setting and glob pattern support for `ignoredSkills`. ([#268](https://github.com/badlogic/arcane/issues/268))
 
 ## [0.25.2] - 2025-12-21
 
@@ -4245,7 +4245,7 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Added
 
-- **Interruptible tool execution**: Queuing a message while tools are executing now interrupts the current tool batch. Remaining tools are skipped with an error result, and your queued message is processed immediately. Useful for redirecting the agent mid-task. ([#259](https://github.com/badlogic/pi-mono/pull/259) by [@steipete](https://github.com/steipete))
+- **Interruptible tool execution**: Queuing a message while tools are executing now interrupts the current tool batch. Remaining tools are skipped with an error result, and your queued message is processed immediately. Useful for redirecting the agent mid-task. ([#259](https://github.com/badlogic/arcane/pull/259) by [@steipete](https://github.com/steipete))
 
 - **Google Gemini CLI OAuth provider**: Access Gemini 2.0/2.5 models for free via Google Cloud Code Assist. Login with `/login` and select "Google Gemini CLI". Uses your Google account with rate limits.
 
@@ -4253,13 +4253,13 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Changed
 
-- **Model selector respects --models scope**: The `/model` command now only shows models specified via `--models` flag when that flag is used, instead of showing all available models. This prevents accidentally selecting models from unintended providers. ([#255](https://github.com/badlogic/pi-mono/issues/255))
+- **Model selector respects --models scope**: The `/model` command now only shows models specified via `--models` flag when that flag is used, instead of showing all available models. This prevents accidentally selecting models from unintended providers. ([#255](https://github.com/badlogic/arcane/issues/255))
 
 ### Fixed
 
-- **Connection errors not retried**: Added "connection error" to the list of retryable errors so Anthropic connection drops trigger auto-retry instead of silently failing. ([#252](https://github.com/badlogic/pi-mono/issues/252))
+- **Connection errors not retried**: Added "connection error" to the list of retryable errors so Anthropic connection drops trigger auto-retry instead of silently failing. ([#252](https://github.com/badlogic/arcane/issues/252))
 
-- **Thinking level not clamped on model switch**: Fixed TUI showing xhigh thinking level after switching to a model that doesn't support it. Thinking level is now automatically clamped to model capabilities. ([#253](https://github.com/badlogic/pi-mono/issues/253))
+- **Thinking level not clamped on model switch**: Fixed TUI showing xhigh thinking level after switching to a model that doesn't support it. Thinking level is now automatically clamped to model capabilities. ([#253](https://github.com/badlogic/arcane/issues/253))
 
 - **Cross-model thinking handoff**: Fixed error when switching between models with different thinking signature formats (e.g., GPT-OSS to Claude thinking models via Antigravity). Thinking blocks without signatures are now converted to text with `<thinking>` delimiters.
 
@@ -4273,7 +4273,7 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Fixed
 
-- **Arrow keys and Enter in selector components**: Fixed arrow keys and Enter not working in model selector, session selector, OAuth selector, and other selector components when Caps Lock or Num Lock is enabled. ([#243](https://github.com/badlogic/pi-mono/issues/243))
+- **Arrow keys and Enter in selector components**: Fixed arrow keys and Enter not working in model selector, session selector, OAuth selector, and other selector components when Caps Lock or Num Lock is enabled. ([#243](https://github.com/badlogic/arcane/issues/243))
 
 ## [0.24.3] - 2025-12-19
 
@@ -4285,45 +4285,45 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Fixed
 
-- **More Kitty keyboard protocol fixes**: Fixed Backspace, Enter, Home, End, and Delete keys not working with Caps Lock enabled. The initial fix in 0.24.1 missed several key handlers that were still using raw byte detection. Now all key handlers use the helper functions that properly mask out lock key bits. ([#243](https://github.com/badlogic/pi-mono/issues/243))
+- **More Kitty keyboard protocol fixes**: Fixed Backspace, Enter, Home, End, and Delete keys not working with Caps Lock enabled. The initial fix in 0.24.1 missed several key handlers that were still using raw byte detection. Now all key handlers use the helper functions that properly mask out lock key bits. ([#243](https://github.com/badlogic/arcane/issues/243))
 
 ## [0.24.1] - 2025-12-19
 
 ### Added
 
-- **OAuth and model config exports**: Scripts using `AgentSession` directly can now import `getAvailableModels`, `getApiKeyForModel`, `findModel`, `login`, `logout`, and `getOAuthProviders` from `@nghyane/pi-coding-agent` to reuse OAuth token storage and model resolution. ([#245](https://github.com/badlogic/pi-mono/issues/245))
+- **OAuth and model config exports**: Scripts using `AgentSession` directly can now import `getAvailableModels`, `getApiKeyForModel`, `findModel`, `login`, `logout`, and `getOAuthProviders` from `@nghyane/arcane` to reuse OAuth token storage and model resolution. ([#245](https://github.com/badlogic/arcane/issues/245))
 
-- **xhigh thinking level for gpt-5.2 models**: The thinking level selector and shift+tab cycling now show xhigh option for gpt-5.2 and gpt-5.2-codex models (in addition to gpt-5.1-codex-max). ([#236](https://github.com/badlogic/pi-mono/pull/236) by [@theBucky](https://github.com/theBucky))
+- **xhigh thinking level for gpt-5.2 models**: The thinking level selector and shift+tab cycling now show xhigh option for gpt-5.2 and gpt-5.2-codex models (in addition to gpt-5.1-codex-max). ([#236](https://github.com/badlogic/arcane/pull/236) by [@theBucky](https://github.com/theBucky))
 
 ### Fixed
 
-- **Hooks wrap custom tools**: Custom tools are now executed through the hook wrapper, so `tool_call`/`tool_result` hooks can observe, block, and modify custom tool executions (consistent with hook type docs). ([#248](https://github.com/badlogic/pi-mono/pull/248) by [@nicobailon](https://github.com/nicobailon))
+- **Hooks wrap custom tools**: Custom tools are now executed through the hook wrapper, so `tool_call`/`tool_result` hooks can observe, block, and modify custom tool executions (consistent with hook type docs). ([#248](https://github.com/badlogic/arcane/pull/248) by [@nicobailon](https://github.com/nicobailon))
 
-- **Hook onUpdate callback forwarding**: The `onUpdate` callback is now correctly forwarded through the hook wrapper, fixing custom tool progress updates. ([#238](https://github.com/badlogic/pi-mono/pull/238) by [@nicobailon](https://github.com/nicobailon))
+- **Hook onUpdate callback forwarding**: The `onUpdate` callback is now correctly forwarded through the hook wrapper, fixing custom tool progress updates. ([#238](https://github.com/badlogic/arcane/pull/238) by [@nicobailon](https://github.com/nicobailon))
 
-- **Terminal cleanup on Ctrl+C in session selector**: Fixed terminal not being properly restored when pressing Ctrl+C in the session selector. ([#247](https://github.com/badlogic/pi-mono/pull/247) by [@aliou](https://github.com/aliou))
+- **Terminal cleanup on Ctrl+C in session selector**: Fixed terminal not being properly restored when pressing Ctrl+C in the session selector. ([#247](https://github.com/badlogic/arcane/pull/247) by [@aliou](https://github.com/aliou))
 
-- **OpenRouter models with colons in IDs**: Fixed parsing of OpenRouter model IDs that contain colons (e.g., `openrouter:meta-llama/llama-4-scout:free`). ([#242](https://github.com/badlogic/pi-mono/pull/242) by [@aliou](https://github.com/aliou))
+- **OpenRouter models with colons in IDs**: Fixed parsing of OpenRouter model IDs that contain colons (e.g., `openrouter:meta-llama/llama-4-scout:free`). ([#242](https://github.com/badlogic/arcane/pull/242) by [@aliou](https://github.com/aliou))
 
-- **Global AGENTS.md loaded twice**: Fixed global AGENTS.md being loaded twice when present in both `~/.omp/agent/` and the current directory. ([#239](https://github.com/badlogic/pi-mono/pull/239) by [@aliou](https://github.com/aliou))
+- **Global AGENTS.md loaded twice**: Fixed global AGENTS.md being loaded twice when present in both `~/.arcane/agent/` and the current directory. ([#239](https://github.com/badlogic/arcane/pull/239) by [@aliou](https://github.com/aliou))
 
-- **Kitty keyboard protocol on Linux**: Fixed keyboard input not working in Ghostty on Linux when Num Lock is enabled. The Kitty protocol includes Caps Lock and Num Lock state in modifier values, which broke key detection. Now correctly masks out lock key bits when matching keyboard shortcuts. ([#243](https://github.com/badlogic/pi-mono/issues/243))
+- **Kitty keyboard protocol on Linux**: Fixed keyboard input not working in Ghostty on Linux when Num Lock is enabled. The Kitty protocol includes Caps Lock and Num Lock state in modifier values, which broke key detection. Now correctly masks out lock key bits when matching keyboard shortcuts. ([#243](https://github.com/badlogic/arcane/issues/243))
 
-- **Emoji deletion and cursor movement**: Backspace, Delete, and arrow keys now correctly handle multi-codepoint characters like emojis. Previously, deleting an emoji would leave partial bytes, corrupting the editor state. ([#240](https://github.com/badlogic/pi-mono/issues/240))
+- **Emoji deletion and cursor movement**: Backspace, Delete, and arrow keys now correctly handle multi-codepoint characters like emojis. Previously, deleting an emoji would leave partial bytes, corrupting the editor state. ([#240](https://github.com/badlogic/arcane/issues/240))
 
 ## [0.24.0] - 2025-12-19
 
 ### Added
 
-- **Subagent orchestration example**: Added comprehensive custom tool example for spawning and orchestrating sub-agents with isolated context windows. Includes scout/planner/reviewer/worker agents and workflow commands for multi-agent pipelines. ([#215](https://github.com/badlogic/pi-mono/pull/215) by [@nicobailon](https://github.com/nicobailon))
+- **Subagent orchestration example**: Added comprehensive custom tool example for spawning and orchestrating sub-agents with isolated context windows. Includes scout/planner/reviewer/worker agents and workflow commands for multi-agent pipelines. ([#215](https://github.com/badlogic/arcane/pull/215) by [@nicobailon](https://github.com/nicobailon))
 
-- **`getMarkdownTheme()` export**: Custom tools can now import `getMarkdownTheme()` from `@nghyane/pi-coding-agent` to use the same markdown styling as the main UI.
+- **`getMarkdownTheme()` export**: Custom tools can now import `getMarkdownTheme()` from `@nghyane/arcane` to use the same markdown styling as the main UI.
 
 - **`pi.exec()` signal and timeout support**: Custom tools and hooks can now pass `{ signal, timeout }` options to `pi.exec()` for cancellation and timeout handling. The result includes a `killed` flag when the process was terminated.
 
-- **Kitty keyboard protocol support**: Shift+Enter, Alt+Enter, Shift+Tab, Ctrl+D, and all Ctrl+key combinations now work in Ghostty, Kitty, WezTerm, and other modern terminals. ([#225](https://github.com/badlogic/pi-mono/pull/225) by [@kim0](https://github.com/kim0))
+- **Kitty keyboard protocol support**: Shift+Enter, Alt+Enter, Shift+Tab, Ctrl+D, and all Ctrl+key combinations now work in Ghostty, Kitty, WezTerm, and other modern terminals. ([#225](https://github.com/badlogic/arcane/pull/225) by [@kim0](https://github.com/kim0))
 
-- **Dynamic API key refresh**: OAuth tokens (GitHub Copilot, Anthropic OAuth) are now refreshed before each LLM call, preventing failures in long-running agent loops where tokens expire mid-session. ([#223](https://github.com/badlogic/pi-mono/pull/223) by [@kim0](https://github.com/kim0))
+- **Dynamic API key refresh**: OAuth tokens (GitHub Copilot, Anthropic OAuth) are now refreshed before each LLM call, preventing failures in long-running agent loops where tokens expire mid-session. ([#223](https://github.com/badlogic/arcane/pull/223) by [@kim0](https://github.com/kim0))
 
 - **`/hotkeys` command**: Shows all keyboard shortcuts in a formatted table.
 
@@ -4333,19 +4333,19 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 - **Subagent example improvements**: Parallel mode now streams updates from all tasks. Chain mode shows all completed steps during streaming. Expanded view uses proper markdown rendering with syntax highlighting. Usage footer shows turn count.
 
-- **Skills standard compliance**: Skills now adhere to the [Agent Skills standard](https://agentskills.io/specification). Validates name (must match parent directory, lowercase, max 64 chars), description (required, max 1024 chars), and frontmatter fields. Warns on violations but remains lenient. Prompt format changed to XML structure. Removed `{baseDir}` placeholder in favor of relative paths. ([#231](https://github.com/badlogic/pi-mono/issues/231))
+- **Skills standard compliance**: Skills now adhere to the [Agent Skills standard](https://agentskills.io/specification). Validates name (must match parent directory, lowercase, max 64 chars), description (required, max 1024 chars), and frontmatter fields. Warns on violations but remains lenient. Prompt format changed to XML structure. Removed `{baseDir}` placeholder in favor of relative paths. ([#231](https://github.com/badlogic/arcane/issues/231))
 
 ### Fixed
 
-- **JSON mode stdout flush**: Fixed race condition where `omp --mode json` could exit before all output was written to stdout, causing consumers to miss final events.
+- **JSON mode stdout flush**: Fixed race condition where \`arc --mode json` could exit before all output was written to stdout, causing consumers to miss final events.
 
-- **Symlinked tools, hooks, and slash commands**: Discovery now correctly follows symlinks when scanning for custom tools, hooks, and slash commands. ([#219](https://github.com/badlogic/pi-mono/pull/219), [#232](https://github.com/badlogic/pi-mono/pull/232) by [@aliou](https://github.com/aliou))
+- **Symlinked tools, hooks, and slash commands**: Discovery now correctly follows symlinks when scanning for custom tools, hooks, and slash commands. ([#219](https://github.com/badlogic/arcane/pull/219), [#232](https://github.com/badlogic/arcane/pull/232) by [@aliou](https://github.com/aliou))
 
 ### Breaking Changes
 
-- **Custom tools now require `index.ts` entry point**: Auto-discovered custom tools must be in a subdirectory with an `index.ts` file. The old pattern `~/.omp/agent/tools/mytool.ts` must become `~/.omp/agent/tools/mytool/index.ts`. This allows multi-file tools to import helper modules. Explicit paths via `--tool` or `settings.json` still work with any `.ts` file.
+- **Custom tools now require `index.ts` entry point**: Auto-discovered custom tools must be in a subdirectory with an `index.ts` file. The old pattern `~/.arcane/agent/tools/mytool.ts` must become `~/.arcane/agent/tools/mytool/index.ts`. This allows multi-file tools to import helper modules. Explicit paths via `--tool` or `settings.json` still work with any `.ts` file.
 
-- **Hook `tool_result` event restructured**: The `ToolResultEvent` now exposes full tool result data instead of just text. ([#233](https://github.com/badlogic/pi-mono/pull/233))
+- **Hook `tool_result` event restructured**: The `ToolResultEvent` now exposes full tool result data instead of just text. ([#233](https://github.com/badlogic/arcane/pull/233))
   - Removed: `result: string` field
   - Added: `content: (TextContent | ImageContent)[]` - full content array
   - Added: `details: unknown` - tool-specific details (typed per tool via discriminated union on `toolName`)
@@ -4358,15 +4358,15 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Added
 
-- **Syntax highlighting**: Added syntax highlighting for markdown code blocks, read tool output, and write tool content. Uses cli-highlight with theme-aware color mapping and VS Code-style syntax colors. ([#214](https://github.com/badlogic/pi-mono/pull/214) by [@svkozak](https://github.com/svkozak))
+- **Syntax highlighting**: Added syntax highlighting for markdown code blocks, read tool output, and write tool content. Uses cli-highlight with theme-aware color mapping and VS Code-style syntax colors. ([#214](https://github.com/badlogic/arcane/pull/214) by [@svkozak](https://github.com/svkozak))
 
 - **Intra-line diff highlighting**: Edit tool now shows word-level changes with inverse highlighting when a single line is modified. Multi-line changes show all removed lines first, then all added lines.
 
 ### Fixed
 
-- **Gemini tool result format**: Fixed tool result format for Gemini 3 Flash Preview which strictly requires `{ output: value }` for success and `{ error: value }` for errors. Previous format using `{ result, isError }` was rejected by newer Gemini models. ([#213](https://github.com/badlogic/pi-mono/issues/213), [#220](https://github.com/badlogic/pi-mono/pull/220))
+- **Gemini tool result format**: Fixed tool result format for Gemini 3 Flash Preview which strictly requires `{ output: value }` for success and `{ error: value }` for errors. Previous format using `{ result, isError }` was rejected by newer Gemini models. ([#213](https://github.com/badlogic/arcane/issues/213), [#220](https://github.com/badlogic/arcane/pull/220))
 
-- **Google baseUrl configuration**: Google provider now respects `baseUrl` configuration for custom endpoints or API proxies. ([#216](https://github.com/badlogic/pi-mono/issues/216), [#221](https://github.com/badlogic/pi-mono/pull/221) by [@theBucky](https://github.com/theBucky))
+- **Google baseUrl configuration**: Google provider now respects `baseUrl` configuration for custom endpoints or API proxies. ([#216](https://github.com/badlogic/arcane/issues/216), [#221](https://github.com/badlogic/arcane/pull/221) by [@theBucky](https://github.com/theBucky))
 
 - **Google provider FinishReason**: Added handling for new `IMAGE_RECITATION` and `IMAGE_OTHER` finish reasons. Upgraded @google/genai to 1.34.0.
 
@@ -4388,7 +4388,7 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
   - `rpc.md`: Added missing `hook_error` event documentation
   - `README.md`: Complete settings table, condensed philosophy section, standardized OAuth docs
 
-- Hooks loader now supports same import aliases as custom tools (`@sinclair/typebox`, `@nghyane/pi-ai`, `@nghyane/pi-tui`, `@nghyane/pi-coding-agent`).
+- Hooks loader now supports same import aliases as custom tools (`@sinclair/typebox`, `@nghyane/arcane-ai`, `@nghyane/arcane-tui`, `@nghyane/arcane`).
 
 ### Breaking Changes
 
@@ -4398,11 +4398,11 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Fixed
 
-- Fixed Claude models via GitHub Copilot re-answering all previous prompts in multi-turn conversations. The issue was that assistant message content was sent as an array instead of a string, which Copilot's Claude adapter misinterpreted. Also added missing `Openai-Intent: conversation-edits` header and fixed `X-Initiator` logic to check for any assistant/tool message in history. ([#209](https://github.com/badlogic/pi-mono/issues/209))
+- Fixed Claude models via GitHub Copilot re-answering all previous prompts in multi-turn conversations. The issue was that assistant message content was sent as an array instead of a string, which Copilot's Claude adapter misinterpreted. Also added missing `Openai-Intent: conversation-edits` header and fixed `X-Initiator` logic to check for any assistant/tool message in history. ([#209](https://github.com/badlogic/arcane/issues/209))
 
 - Detect image MIME type via file magic (read tool and `@file` attachments), not filename extension.
 
-- Fixed markdown tables overflowing terminal width. Tables now wrap cell contents to fit available width instead of breaking borders mid-row. ([#206](https://github.com/badlogic/pi-mono/pull/206) by [@kim0](https://github.com/kim0))
+- Fixed markdown tables overflowing terminal width. Tables now wrap cell contents to fit available width instead of breaking borders mid-row. ([#206](https://github.com/badlogic/arcane/pull/206) by [@kim0](https://github.com/kim0))
 
 ## [0.23.1] - 2025-12-17
 
@@ -4410,13 +4410,13 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 - Fixed TUI performance regression caused by Box component lacking render caching. Built-in tools now use Text directly (like v0.22.5), and Box has proper caching for custom tool rendering.
 
-- Fixed custom tools failing to load from `~/.omp/agent/tools/` when omp is installed globally. Module imports (`@sinclair/typebox`, `@nghyane/pi-tui`, `@nghyane/pi-ai`) are now resolved via aliases.
+- Fixed custom tools failing to load from `~/.arcane/agent/tools/` when arcane is installed globally. Module imports (`@sinclair/typebox`, `@nghyane/arcane-tui`, `@nghyane/arcane-ai`) are now resolved via aliases.
 
 ## [0.23.0] - 2025-12-17
 
 ### Added
 
-- **Custom tools**: Extend omp with custom tools written in TypeScript. Tools can provide custom TUI rendering, interact with users via `omp.ui` (select, confirm, input, notify), and maintain state across sessions via `onSession` callback. See [docs/custom-tools.md](docs/custom-tools.md) and [examples/custom-tools/](examples/custom-tools/). ([#190](https://github.com/badlogic/pi-mono/issues/190))
+- **Custom tools**: Extend arcane with custom tools written in TypeScript. Tools can provide custom TUI rendering, interact with users via `arc.ui` (select, confirm, input, notify), and maintain state across sessions via `onSession` callback. See [docs/custom-tools.md](docs/custom-tools.md) and [examples/custom-tools/](examples/custom-tools/). ([#190](https://github.com/badlogic/arcane/issues/190))
 
 - **Hook and tool examples**: Added `examples/hooks/` and `examples/custom-tools/` with working examples. Examples are now bundled in npm and binary releases.
 
@@ -4434,7 +4434,7 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Added
 
-- `--list-models [search]` CLI flag to list available models with optional fuzzy search. Shows provider, model ID, context window, max output, thinking support, and image support. Only lists models with configured API keys. ([#203](https://github.com/badlogic/pi-mono/issues/203))
+- `--list-models [search]` CLI flag to list available models with optional fuzzy search. Shows provider, model ID, context window, max output, thinking support, and image support. Only lists models with configured API keys. ([#203](https://github.com/badlogic/arcane/issues/203))
 
 ### Fixed
 
@@ -4444,25 +4444,25 @@ Total color count increased from 46 to 50. See [docs/theme.md](docs/theme.md) fo
 
 ### Added
 
-- **Streaming bash output**: Bash tool now streams output in real-time during execution. The TUI displays live progress with the last 5 lines visible (expandable with ctrl+o). ([#44](https://github.com/badlogic/pi-mono/issues/44))
+- **Streaming bash output**: Bash tool now streams output in real-time during execution. The TUI displays live progress with the last 5 lines visible (expandable with ctrl+o). ([#44](https://github.com/badlogic/arcane/issues/44))
 
 ### Changed
 
 - **Tool output display**: When collapsed, tool output now shows the last N lines instead of the first N lines, making streaming output more useful.
 
-- Updated `@nghyane/pi-ai` with X-Initiator header support for GitHub Copilot, ensuring agent calls are not deducted from quota. ([#200](https://github.com/badlogic/pi-mono/pull/200) by [@kim0](https://github.com/kim0))
+- Updated `@nghyane/arcane-ai` with X-Initiator header support for GitHub Copilot, ensuring agent calls are not deducted from quota. ([#200](https://github.com/badlogic/arcane/pull/200) by [@kim0](https://github.com/kim0))
 
 ### Fixed
 
-- Fixed editor text being cleared during compaction. Text typed while compaction is running is now preserved. ([#179](https://github.com/badlogic/pi-mono/issues/179))
+- Fixed editor text being cleared during compaction. Text typed while compaction is running is now preserved. ([#179](https://github.com/badlogic/arcane/issues/179))
 - Improved RGB to 256-color mapping for terminals without truecolor support. Now correctly uses grayscale ramp for neutral colors and preserves semantic tints (green for success, red for error, blue for pending) instead of mapping everything to wrong cube colors.
-- `/think off` now actually disables thinking for all providers. Previously, providers like Gemini with "dynamic thinking" enabled by default would still use thinking even when turned off. ([#180](https://github.com/badlogic/pi-mono/pull/180) by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- `/think off` now actually disables thinking for all providers. Previously, providers like Gemini with "dynamic thinking" enabled by default would still use thinking even when turned off. ([#180](https://github.com/badlogic/arcane/pull/180) by [@markusylisiurunen](https://github.com/markusylisiurunen))
 
 ## [0.22.2] - 2025-12-15
 
 ### Changed
 
-- Updated `@nghyane/pi-ai` with interleaved thinking enabled by default for Anthropic Claude 4 models.
+- Updated `@nghyane/arcane-ai` with interleaved thinking enabled by default for Anthropic Claude 4 models.
 
 ## [0.22.1] - 2025-12-15
 
@@ -4470,13 +4470,13 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Changed
 
-- Updated `@nghyane/pi-ai` with interleaved thinking support for Anthropic models.
+- Updated `@nghyane/arcane-ai` with interleaved thinking support for Anthropic models.
 
 ## [0.22.0] - 2025-12-15
 
 ### Added
 
-- **GitHub Copilot support**: Use GitHub Copilot models via OAuth login (`/login` -> "GitHub Copilot"). Supports both github.com and GitHub Enterprise. Models are sourced from models.dev and include Claude, GPT, Gemini, Grok, and more. All models are automatically enabled after login. ([#191](https://github.com/badlogic/pi-mono/pull/191) by [@cau1k](https://github.com/cau1k))
+- **GitHub Copilot support**: Use GitHub Copilot models via OAuth login (`/login` -> "GitHub Copilot"). Supports both github.com and GitHub Enterprise. Models are sourced from models.dev and include Claude, GPT, Gemini, Grok, and more. All models are automatically enabled after login. ([#191](https://github.com/badlogic/arcane/pull/191) by [@cau1k](https://github.com/cau1k))
 
 ### Fixed
 
@@ -4486,15 +4486,15 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **Inline image rendering**: Terminals supporting Kitty graphics protocol (Kitty, Ghostty, WezTerm) or iTerm2 inline images now render images inline in tool output. Aspect ratio is preserved by querying terminal cell dimensions on startup. Toggle with `/show-images` command or `terminal.showImages` setting. Falls back to text placeholder on unsupported terminals or when disabled. ([#177](https://github.com/badlogic/pi-mono/pull/177) by [@nicobailon](https://github.com/nicobailon))
+- **Inline image rendering**: Terminals supporting Kitty graphics protocol (Kitty, Ghostty, WezTerm) or iTerm2 inline images now render images inline in tool output. Aspect ratio is preserved by querying terminal cell dimensions on startup. Toggle with `/show-images` command or `terminal.showImages` setting. Falls back to text placeholder on unsupported terminals or when disabled. ([#177](https://github.com/badlogic/arcane/pull/177) by [@nicobailon](https://github.com/nicobailon))
 
-- **Gemini 3 Pro thinking levels**: Thinking level selector now works with Gemini 3 Pro models. Minimal/low map to Google's LOW, medium/high map to Google's HIGH. ([#176](https://github.com/badlogic/pi-mono/pull/176) by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- **Gemini 3 Pro thinking levels**: Thinking level selector now works with Gemini 3 Pro models. Minimal/low map to Google's LOW, medium/high map to Google's HIGH. ([#176](https://github.com/badlogic/arcane/pull/176) by [@markusylisiurunen](https://github.com/markusylisiurunen))
 
 ### Fixed
 
-- Fixed read tool failing on macOS screenshot filenames due to Unicode Narrow No-Break Space (U+202F) in timestamp. Added fallback to try macOS variant paths and consolidated duplicate expandPath functions into shared path-utils.ts. ([#181](https://github.com/badlogic/pi-mono/pull/181) by [@nicobailon](https://github.com/nicobailon))
+- Fixed read tool failing on macOS screenshot filenames due to Unicode Narrow No-Break Space (U+202F) in timestamp. Added fallback to try macOS variant paths and consolidated duplicate expandPath functions into shared path-utils.ts. ([#181](https://github.com/badlogic/arcane/pull/181) by [@nicobailon](https://github.com/nicobailon))
 
-- Fixed double blank lines rendering after markdown code blocks ([#173](https://github.com/badlogic/pi-mono/pull/173) by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- Fixed double blank lines rendering after markdown code blocks ([#173](https://github.com/badlogic/arcane/pull/173) by [@markusylisiurunen](https://github.com/markusylisiurunen))
 
 ## [0.20.1] - 2025-12-13
 
@@ -4506,7 +4506,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Breaking Changes
 
-- **OMP skills now use `SKILL.md` convention**: OMP skills must now be named `SKILL.md` inside a directory, matching Codex CLI format. Previously any `*.md` file was treated as a skill. Migrate by renaming `~/.omp/agent/skills/foo.md` to `~/.omp/agent/skills/foo/SKILL.md`.
+- **OMP skills now use `SKILL.md` convention**: OMP skills must now be named `SKILL.md` inside a directory, matching Codex CLI format. Previously any `*.md` file was treated as a skill. Migrate by renaming `~/.arcane/agent/skills/foo.md` to `~/.arcane/agent/skills/foo/SKILL.md`.
 
 ### Added
 
@@ -4522,25 +4522,25 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **Skills system**: Auto-discover and load instruction files on-demand. Supports Claude Code (`~/.claude/skills/*/SKILL.md`), Codex CLI (`~/.codex/skills/`), and OMP-native formats (`~/.omp/agent/skills/`, `.omp/skills/`). Skills are listed in system prompt with descriptions, agent loads them via read tool when needed. Supports `{baseDir}` placeholder. Disable with `--no-skills` or `skills.enabled: false` in settings. ([#169](https://github.com/badlogic/pi-mono/issues/169))
+- **Skills system**: Auto-discover and load instruction files on-demand. Supports Claude Code (`~/.claude/skills/*/SKILL.md`), Codex CLI (`~/.codex/skills/`), and OMP-native formats (`~/.arcane/agent/skills/`, `.arcane/skills/`). Skills are listed in system prompt with descriptions, agent loads them via read tool when needed. Supports `{baseDir}` placeholder. Disable with `--no-skills` or `skills.enabled: false` in settings. ([#169](https://github.com/badlogic/arcane/issues/169))
 
-- **Version flag**: Added `--version` / `-v` flag to display the current version and exit. ([#170](https://github.com/badlogic/pi-mono/pull/170))
+- **Version flag**: Added `--version` / `-v` flag to display the current version and exit. ([#170](https://github.com/badlogic/arcane/pull/170))
 
 ## [0.18.2] - 2025-12-11
 
 ### Added
 
-- **Auto-retry on transient errors**: Automatically retries requests when providers return overloaded, rate limit, or server errors (429, 500, 502, 503, 504). Uses exponential backoff (2s, 4s, 8s). Shows retry status in TUI with option to cancel via Escape. Configurable in `settings.json` via `retry.enabled`, `retry.maxRetries`, `retry.baseDelayMs`. RPC mode emits `auto_retry_start` and `auto_retry_end` events. ([#157](https://github.com/badlogic/pi-mono/issues/157))
+- **Auto-retry on transient errors**: Automatically retries requests when providers return overloaded, rate limit, or server errors (429, 500, 502, 503, 504). Uses exponential backoff (2s, 4s, 8s). Shows retry status in TUI with option to cancel via Escape. Configurable in `settings.json` via `retry.enabled`, `retry.maxRetries`, `retry.baseDelayMs`. RPC mode emits `auto_retry_start` and `auto_retry_end` events. ([#157](https://github.com/badlogic/arcane/issues/157))
 
-- **HTML export line numbers**: Read tool calls in HTML exports now display line number ranges (e.g., `file.txt:10-20`) when offset/limit parameters are used, matching the TUI display format. Line numbers appear in yellow color for better visibility. ([#166](https://github.com/badlogic/pi-mono/issues/166))
+- **HTML export line numbers**: Read tool calls in HTML exports now display line number ranges (e.g., `file.txt:10-20`) when offset/limit parameters are used, matching the TUI display format. Line numbers appear in yellow color for better visibility. ([#166](https://github.com/badlogic/arcane/issues/166))
 
 ### Fixed
 
-- **Branch selector now works with single message**: Previously the branch selector would not open when there was only one user message. Now it correctly allows branching from any message, including the first one. This is needed for checkpoint hooks to restore state from before the first message. ([#163](https://github.com/badlogic/pi-mono/issues/163))
+- **Branch selector now works with single message**: Previously the branch selector would not open when there was only one user message. Now it correctly allows branching from any message, including the first one. This is needed for checkpoint hooks to restore state from before the first message. ([#163](https://github.com/badlogic/arcane/issues/163))
 
 - **In-memory branching for `--no-session` mode**: Branching now works correctly in `--no-session` mode without creating any session files. The conversation is truncated in memory.
 
-- **Git branch indicator now works in subdirectories**: The footer's git branch detection now walks up the directory hierarchy to find the git root, so it works when running omp from a subdirectory of a repository. ([#156](https://github.com/badlogic/pi-mono/issues/156))
+- **Git branch indicator now works in subdirectories**: The footer's git branch detection now walks up the directory hierarchy to find the git root, so it works when running arcane from a subdirectory of a repository. ([#156](https://github.com/badlogic/arcane/issues/156))
 
 ## [0.18.1] - 2025-12-10
 
@@ -4550,13 +4550,13 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Fixed
 
-- Fixed print mode (`-p`) not exiting after output when custom themes are present (theme watcher now properly stops in print mode) ([#161](https://github.com/badlogic/pi-mono/issues/161))
+- Fixed print mode (`-p`) not exiting after output when custom themes are present (theme watcher now properly stops in print mode) ([#161](https://github.com/badlogic/arcane/issues/161))
 
 ## [0.18.0] - 2025-12-10
 
 ### Added
 
-- **Hooks system**: TypeScript modules that extend agent behavior by subscribing to lifecycle events. Hooks can intercept tool calls, prompt for confirmation, modify results, and inject messages from external sources. Auto-discovered from `~/.omp/agent/hooks/*.ts` and `.omp/hooks/*.ts`. Thanks to [@nicobailon](https://github.com/nicobailon) for the collaboration on the design and implementation. ([#145](https://github.com/badlogic/pi-mono/issues/145), supersedes [#158](https://github.com/badlogic/pi-mono/pull/158))
+- **Hooks system**: TypeScript modules that extend agent behavior by subscribing to lifecycle events. Hooks can intercept tool calls, prompt for confirmation, modify results, and inject messages from external sources. Auto-discovered from `~/.arcane/agent/hooks/*.ts` and `.arcane/hooks/*.ts`. Thanks to [@nicobailon](https://github.com/nicobailon) for the collaboration on the design and implementation. ([#145](https://github.com/badlogic/arcane/issues/145), supersedes [#158](https://github.com/badlogic/arcane/pull/158))
 
 - **`pi.send()` API**: Hooks can inject messages into the agent session from external sources (file watchers, webhooks, CI systems). If streaming, messages are queued; otherwise a new agent loop starts immediately.
 
@@ -4594,7 +4594,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Breaking Changes
 
-- **New RPC protocol**: The RPC mode (`--mode rpc`) has been completely redesigned with a new JSON protocol. The old protocol is no longer supported. See [`docs/rpc.md`](docs/rpc.md) for the new protocol documentation and [`test/rpc-example.ts`](test/rpc-example.ts) for a working example. Includes `RpcClient` TypeScript class for easy integration. ([#91](https://github.com/badlogic/pi-mono/issues/91))
+- **New RPC protocol**: The RPC mode (`--mode rpc`) has been completely redesigned with a new JSON protocol. The old protocol is no longer supported. See [`docs/rpc.md`](docs/rpc.md) for the new protocol documentation and [`test/rpc-example.ts`](test/rpc-example.ts) for a working example. Includes `RpcClient` TypeScript class for easy integration. ([#91](https://github.com/badlogic/arcane/issues/91))
 
 ### Changed
 
@@ -4604,7 +4604,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Changed
 
-- **Major code refactoring**: Restructured codebase for better maintainability and separation of concerns. Moved files into organized directories (`core/`, `modes/`, `utils/`, `cli/`). Extracted `AgentSession` class as central session management abstraction. Split `main.ts` and `tui-renderer.ts` into focused modules. See `DEVELOPMENT.md` for the new code map. ([#153](https://github.com/badlogic/pi-mono/issues/153))
+- **Major code refactoring**: Restructured codebase for better maintainability and separation of concerns. Moved files into organized directories (`core/`, `modes/`, `utils/`, `cli/`). Extracted `AgentSession` class as central session management abstraction. Split `main.ts` and `tui-renderer.ts` into focused modules. See `DEVELOPMENT.md` for the new code map. ([#153](https://github.com/badlogic/arcane/issues/153))
 
 ## [0.14.2] - 2025-12-08
 
@@ -4630,19 +4630,19 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **OpenAI compatibility overrides in models.json**: Custom models using `openai-completions` API can now specify a `compat` object to override provider quirks (`supportsStore`, `supportsDeveloperRole`, `supportsReasoningEffort`, `maxTokensField`). Useful for LiteLLM, custom proxies, and other non-standard endpoints. ([#133](https://github.com/badlogic/pi-mono/issues/133), thanks @fink-andreas for the initial idea and PR)
+- **OpenAI compatibility overrides in models.json**: Custom models using `openai-completions` API can now specify a `compat` object to override provider quirks (`supportsStore`, `supportsDeveloperRole`, `supportsReasoningEffort`, `maxTokensField`). Useful for LiteLLM, custom proxies, and other non-standard endpoints. ([#133](https://github.com/badlogic/arcane/issues/133), thanks @fink-andreas for the initial idea and PR)
 
-- **xhigh thinking level**: Added `xhigh` thinking level for OpenAI codex-max models. Cycle through thinking levels with Shift+Tab; `xhigh` appears only when using a codex-max model. ([#143](https://github.com/badlogic/pi-mono/issues/143))
+- **xhigh thinking level**: Added `xhigh` thinking level for OpenAI codex-max models. Cycle through thinking levels with Shift+Tab; `xhigh` appears only when using a codex-max model. ([#143](https://github.com/badlogic/arcane/issues/143))
 
-- **Collapse changelog setting**: Add `"collapseChangelog": true` to `~/.omp/agent/settings.json` to show a condensed "Updated to vX.Y.Z" message instead of the full changelog after updates. Use `/changelog` to view the full changelog. ([#148](https://github.com/badlogic/pi-mono/issues/148))
+- **Collapse changelog setting**: Add `"collapseChangelog": true` to `~/.arcane/agent/settings.json` to show a condensed "Updated to vX.Y.Z" message instead of the full changelog after updates. Use `/changelog` to view the full changelog. ([#148](https://github.com/badlogic/arcane/issues/148))
 
-- **Bash mode**: Execute shell commands directly from the editor by prefixing with `!` (e.g., `!ls -la`). Output streams in real-time, is added to the LLM context, and persists in session history. Supports multiline commands, cancellation (Escape), truncation for large outputs, and preview/expand toggle (Ctrl+O). Also available in RPC mode via `{"type":"bash","command":"..."}`. ([#112](https://github.com/badlogic/pi-mono/pull/112), original implementation by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- **Bash mode**: Execute shell commands directly from the editor by prefixing with `!` (e.g., `!ls -la`). Output streams in real-time, is added to the LLM context, and persists in session history. Supports multiline commands, cancellation (Escape), truncation for large outputs, and preview/expand toggle (Ctrl+O). Also available in RPC mode via `{"type":"bash","command":"..."}`. ([#112](https://github.com/badlogic/arcane/pull/112), original implementation by [@markusylisiurunen](https://github.com/markusylisiurunen))
 
 ## [0.13.2] - 2025-12-07
 
 ### Changed
 
-- **Tool output truncation**: All tools now enforce consistent truncation limits with actionable notices for the LLM. ([#134](https://github.com/badlogic/pi-mono/issues/134))
+- **Tool output truncation**: All tools now enforce consistent truncation limits with actionable notices for the LLM. ([#134](https://github.com/badlogic/arcane/issues/134))
   - **Limits**: 2000 lines OR 50KB (whichever hits first), never partial lines
   - **read**: Shows `[Showing lines X-Y of Z. Use offset=N to continue]`. If first line exceeds 50KB, suggests bash command
   - **bash**: Tail truncation with temp file. Shows `[Showing lines X-Y of Z. Full output: /tmp/...]`
@@ -4654,7 +4654,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **Flexible Windows shell configuration**: The bash tool now supports multiple shell sources beyond Git Bash. Resolution order: (1) custom `shellPath` in settings.json, (2) Git Bash in standard locations, (3) any bash.exe on PATH. This enables Cygwin, MSYS2, and other bash environments. Configure with `~/.omp/agent/settings.json`: `{"shellPath": "C:\\cygwin64\\bin\\bash.exe"}`.
+- **Flexible Windows shell configuration**: The bash tool now supports multiple shell sources beyond Git Bash. Resolution order: (1) custom `shellPath` in settings.json, (2) Git Bash in standard locations, (3) any bash.exe on PATH. This enables Cygwin, MSYS2, and other bash environments. Configure with `~/.arcane/agent/settings.json`: `{"shellPath": "C:\\cygwin64\\bin\\bash.exe"}`.
 
 ### Fixed
 
@@ -4686,20 +4686,20 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Fixed
 
-- **Multi-key sequences in inputs**: Inputs like model search now handle multi-key sequences identically to the main prompt editor. ([#122](https://github.com/badlogic/pi-mono/pull/122) by [@markusylisiurunen](https://github.com/markusylisiurunen))
-- **Line wrapping escape codes**: Fixed underline style bleeding into padding when wrapping long URLs. ANSI codes now attach to the correct content, and line-end resets only turn off underline (preserving background colors). ([#109](https://github.com/badlogic/pi-mono/issues/109))
+- **Multi-key sequences in inputs**: Inputs like model search now handle multi-key sequences identically to the main prompt editor. ([#122](https://github.com/badlogic/arcane/pull/122) by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- **Line wrapping escape codes**: Fixed underline style bleeding into padding when wrapping long URLs. ANSI codes now attach to the correct content, and line-end resets only turn off underline (preserving background colors). ([#109](https://github.com/badlogic/arcane/issues/109))
 
 ### Added
 
-- **Fuzzy search models and sessions**: Implemented a simple fuzzy search for models and sessions (e.g., `codexmax` now finds `gpt-5.1-codex-max`). ([#122](https://github.com/badlogic/pi-mono/pull/122) by [@markusylisiurunen](https://github.com/markusylisiurunen))
-- **Prompt History Navigation**: Browse previously submitted prompts using Up/Down arrow keys when the editor is empty. Press Up to cycle through older prompts, Down to return to newer ones or clear the editor. Similar to shell history and Claude Code's prompt history feature. History is session-scoped and stores up to 100 entries. ([#121](https://github.com/badlogic/pi-mono/pull/121) by [@nicobailon](https://github.com/nicobailon))
-- **`/resume` Command**: Switch to a different session mid-conversation. Opens an interactive selector showing all available sessions. Equivalent to the `--resume` CLI flag but can be used without restarting the agent. ([#117](https://github.com/badlogic/pi-mono/pull/117) by [@hewliyang](https://github.com/hewliyang))
+- **Fuzzy search models and sessions**: Implemented a simple fuzzy search for models and sessions (e.g., `codexmax` now finds `gpt-5.1-codex-max`). ([#122](https://github.com/badlogic/arcane/pull/122) by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- **Prompt History Navigation**: Browse previously submitted prompts using Up/Down arrow keys when the editor is empty. Press Up to cycle through older prompts, Down to return to newer ones or clear the editor. Similar to shell history and Claude Code's prompt history feature. History is session-scoped and stores up to 100 entries. ([#121](https://github.com/badlogic/arcane/pull/121) by [@nicobailon](https://github.com/nicobailon))
+- **`/resume` Command**: Switch to a different session mid-conversation. Opens an interactive selector showing all available sessions. Equivalent to the `--resume` CLI flag but can be used without restarting the agent. ([#117](https://github.com/badlogic/arcane/pull/117) by [@hewliyang](https://github.com/hewliyang))
 
 ## [0.12.11] - 2025-12-05
 
 ### Changed
 
-- **Compaction UI**: Simplified collapsed compaction indicator to show warning-colored text with token count instead of styled banner. Removed redundant success message after compaction. ([#108](https://github.com/badlogic/pi-mono/issues/108))
+- **Compaction UI**: Simplified collapsed compaction indicator to show warning-colored text with token count instead of styled banner. Removed redundant success message after compaction. ([#108](https://github.com/badlogic/arcane/issues/108))
 
 ### Fixed
 
@@ -4710,9 +4710,9 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **`authHeader` option in models.json**: Custom providers can set `"authHeader": true` to automatically add `Authorization: Bearer <apiKey>` header. Useful for providers that require explicit auth headers. ([#81](https://github.com/badlogic/pi-mono/issues/81))
-- **`--append-system-prompt` Flag**: Append additional text or file contents to the system prompt. Supports both inline text and file paths. Complements `--system-prompt` for layering custom instructions without replacing the base system prompt. ([#114](https://github.com/badlogic/pi-mono/pull/114) by [@markusylisiurunen](https://github.com/markusylisiurunen))
-- **Thinking Block Toggle**: Added `Ctrl+T` shortcut to toggle visibility of LLM thinking blocks. When toggled off, shows a static "Thinking..." label instead of full content. Useful for reducing visual clutter during long conversations. ([#113](https://github.com/badlogic/pi-mono/pull/113) by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- **`authHeader` option in models.json**: Custom providers can set `"authHeader": true` to automatically add `Authorization: Bearer <apiKey>` header. Useful for providers that require explicit auth headers. ([#81](https://github.com/badlogic/arcane/issues/81))
+- **`--append-system-prompt` Flag**: Append additional text or file contents to the system prompt. Supports both inline text and file paths. Complements `--system-prompt` for layering custom instructions without replacing the base system prompt. ([#114](https://github.com/badlogic/arcane/pull/114) by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- **Thinking Block Toggle**: Added `Ctrl+T` shortcut to toggle visibility of LLM thinking blocks. When toggled off, shows a static "Thinking..." label instead of full content. Useful for reducing visual clutter during long conversations. ([#113](https://github.com/badlogic/arcane/pull/113) by [@markusylisiurunen](https://github.com/markusylisiurunen))
 
 ## [0.12.10] - 2025-12-04
 
@@ -4724,7 +4724,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **`/copy` Command**: Copy the last agent message to clipboard. Works cross-platform (macOS, Windows, Linux). Useful for extracting text from rendered Markdown output. ([#105](https://github.com/badlogic/pi-mono/pull/105) by [@markusylisiurunen](https://github.com/markusylisiurunen))
+- **`/copy` Command**: Copy the last agent message to clipboard. Works cross-platform (macOS, Windows, Linux). Useful for extracting text from rendered Markdown output. ([#105](https://github.com/badlogic/arcane/pull/105) by [@markusylisiurunen](https://github.com/markusylisiurunen))
 
 ## [0.12.8] - 2025-12-04
 
@@ -4734,7 +4734,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **Context Compaction**: Long sessions can now be compacted to reduce context usage while preserving recent conversation history. ([#92](https://github.com/badlogic/pi-mono/issues/92), [docs](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/README.md#context-compaction))
+- **Context Compaction**: Long sessions can now be compacted to reduce context usage while preserving recent conversation history. ([#92](https://github.com/badlogic/arcane/issues/92), [docs](https://github.com/badlogic/arcane/blob/main/packages/coding-agent/README.md#context-compaction))
   - `/compact [instructions]`: Manually compact context with optional custom instructions for the summary
   - `/autocompact`: Toggle automatic compaction when context exceeds threshold
   - Compaction summarizes older messages while keeping recent messages (default 20k tokens) verbatim
@@ -4748,11 +4748,11 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **Forking/Rebranding Support**: All branding (app name, config directory, environment variable names) is now configurable via `ompConfig` in `package.json`. Forks can change `ompConfig.name` and `ompConfig.configDir` to rebrand the CLI without code changes. Affects CLI banner, help text, config paths, and error messages. ([#95](https://github.com/badlogic/pi-mono/pull/95))
+- **Forking/Rebranding Support**: All branding (app name, config directory, environment variable names) is now configurable via `arcConfig` in `package.json`. Forks can change `arcConfig.name` and `arcConfig.configDir` to rebrand the CLI without code changes. Affects CLI banner, help text, config paths, and error messages. ([#95](https://github.com/badlogic/arcane/pull/95))
 
 ### Fixed
 
-- **Bun Binary Detection**: Fixed Bun compiled binary failing to start after Bun updated its virtual filesystem path format from `%7EBUN` to `$bunfs`. ([#95](https://github.com/badlogic/pi-mono/pull/95))
+- **Bun Binary Detection**: Fixed Bun compiled binary failing to start after Bun updated its virtual filesystem path format from `%7EBUN` to `$bunfs`. ([#95](https://github.com/badlogic/arcane/pull/95))
 
 ## [0.12.4] - 2025-12-02
 
@@ -4867,7 +4867,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- **File-based Slash Commands**: Create custom reusable prompts as `.txt` files in `~/.omp/slash-commands/`. Files become `/filename` commands with first-line descriptions. Supports `{{selection}}` placeholder for referencing selected/attached content.
+- **File-based Slash Commands**: Create custom reusable prompts as `.txt` files in `~/.arcane/slash-commands/`. Files become `/filename` commands with first-line descriptions. Supports `{{selection}}` placeholder for referencing selected/attached content.
 - **`/branch` Command**: Create conversation branches from any previous user message. Opens a selector to pick a message, then creates a new session file starting from that point. Original message text is placed in the editor for modification.
 - **Unified Content References**: Both `@path` in messages and `--file path` CLI arguments now use the same attachment system with consistent MIME type detection.
 - **Drag & Drop Files**: Drop files onto the terminal to attach them to your message. Supports multiple files and both text and image content.
@@ -4919,7 +4919,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- Added RPC mode (`--rpc`) for programmatic integration. Accepts JSON commands on stdin, emits JSON events on stdout. See [RPC mode documentation](https://github.com/nicobailon/pi-mono/blob/main/packages/coding-agent/README.md#rpc-mode) for protocol details.
+- Added RPC mode (`--rpc`) for programmatic integration. Accepts JSON commands on stdin, emits JSON events on stdout. See [RPC mode documentation](https://github.com/nicobailon/arcane/blob/main/packages/coding-agent/README.md#rpc-mode) for protocol details.
 
 ### Changed
 
@@ -4929,7 +4929,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- Added thinking level persistence. Default level stored in `~/.omp/settings.json`, restored on startup. Per-session overrides saved in session files.
+- Added thinking level persistence. Default level stored in `~/.arcane/settings.json`, restored on startup. Per-session overrides saved in session files.
 - Added model cycling shortcut: `Ctrl+I` cycles through available models (or scoped models with `-m` flag).
 - Added automatic retry with exponential backoff for transient API errors (network issues, 500s, overload).
 - Cumulative token usage now shown in footer (total tokens used across all messages in session).
@@ -4946,7 +4946,7 @@ _Dedicated to Peter's shoulder ([@steipete](https://twitter.com/steipete))_
 
 ### Added
 
-- Add custom model configuration via `~/.omp/models.json`
+- Add custom model configuration via `~/.arcane/models.json`
 
 ## [0.10.0] - 2025-11-25
 

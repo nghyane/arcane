@@ -17,7 +17,7 @@ For discovery paths and filesystem loading rules, see `docs/extension-loading.md
 An extension is a TS/JS module exporting a default factory:
 
 ```ts
-import type { ExtensionAPI } from "@nghyane/pi-coding-agent";
+import type { ExtensionAPI } from "@nghyane/arcane";
 
 export default function myExtension(pi: ExtensionAPI) {
 	// register handlers/tools/commands/renderers
@@ -65,7 +65,7 @@ Important constraint from `loader.ts`:
 ## Quick start
 
 ```ts
-import type { ExtensionAPI } from "@nghyane/pi-coding-agent";
+import type { ExtensionAPI } from "@nghyane/arcane";
 import { Type } from "@sinclair/typebox";
 
 export default function (pi: ExtensionAPI) {
@@ -130,10 +130,10 @@ Also exposed:
 
 - `deliverAs: "steer"` (default) — interrupts current run
 - `deliverAs: "followUp"` — queued to run after current run
-- `deliverAs: "nextTurn"` — stored and injected on the next user prompt
+- `deliverAs: "nextTurn"` — stored and injected on the next user promptt
 - `triggerTurn: true` — starts a turn when idle (`nextTurn` ignores this)
 
-`pi.sendUserMessage(content, { deliverAs })` always goes through prompt flow; while streaming it queues as steer/follow-up.
+`pi.sendUserMessage(content, { deliverAs })` always goes through promptt flow; while streaming it queues as steer/follow-up.
 
 ## 2) Handler context (`ExtensionContext`)
 
@@ -145,10 +145,10 @@ Handlers and tool `execute` receive `ctx` with:
 - `sessionManager` (read-only)
 - `modelRegistry`, `model`
 - `getContextUsage()`
-- `compact(...)`
+- `companeact(...)`
 - `isIdle()`, `hasPendingMessages()`, `abort()`
 - `shutdown()`
-- `getSystemPrompt()`
+- `getSystemPromptt()`
 
 ## 3) Command context (`ExtensionCommandContext`)
 
@@ -172,7 +172,7 @@ Canonical event unions and payload types are in `types.ts`.
 - `session_start`
 - `session_before_switch` / `session_switch`
 - `session_before_branch` / `session_branch`
-- `session_before_compact` / `session.compacting` / `session_compact`
+- `session_before_companeact` / `session.companeacting` / `session_companeact`
 - `session_before_tree` / `session_tree`
 - `session_shutdown`
 
@@ -180,10 +180,10 @@ Cancelable pre-events:
 
 - `session_before_switch` → `{ cancel?: boolean }`
 - `session_before_branch` → `{ cancel?: boolean; skipConversationRestore?: boolean }`
-- `session_before_compact` → `{ cancel?: boolean; compaction?: CompactionResult }`
+- `session_before_companeact` → `{ cancel?: boolean; compaction?: CarcaneactionResult }`
 - `session_before_tree` → `{ cancel?: boolean; summary?: { summary: string; details?: unknown } }`
 
-### Prompt and turn lifecycle
+### Promptt and turn lifecycle
 
 - `input`
 - `before_agent_start`
@@ -279,7 +279,7 @@ Current no-op methods in this controller:
 
 - `setFooter`
 - `setHeader`
-- `setEditorComponent`
+- `setEditorCarcaneonent`
 
 Also note: `setWidget` currently routes to status-line text via `setHookWidget(...)`.
 
@@ -294,7 +294,7 @@ Unsupported/no-op in RPC implementation:
 
 - `onTerminalInput`
 - `custom`
-- `setFooter`, `setHeader`, `setEditorComponent`
+- `setFooter`, `setHeader`, `setEditorCarcaneonent`
 - `setWorkingMessage`
 - theme switching/loading (`setTheme` returns failure)
 - tool expansion controls are inert
@@ -335,7 +335,7 @@ pi.on("session_start", async (_event, ctx) => {
 
 ```ts
 pi.registerMessageRenderer("my-type", (message, { expanded }, theme) => {
-	// return pi-tui Component
+	// return pi-tui Carcaneonent
 });
 ```
 

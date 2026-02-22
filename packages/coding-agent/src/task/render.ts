@@ -1,5 +1,5 @@
-import type { Component } from "@nghyane/pi-tui";
-import { Text } from "@nghyane/pi-tui";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme, ThemeColor } from "../modes/theme/theme";
 import { formatBadge, formatDuration, formatStatusIcon, replaceTabs, truncateToWidth } from "../tools/render-utils";

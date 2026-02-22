@@ -1,6 +1,6 @@
 # Autonomous Memory
 
-When enabled, the agent automatically extracts durable knowledge from past sessions and injects a compact summary into each new session. Over time it builds a project-scoped memory store — technical decisions, recurring workflows, pitfalls — that carries forward without manual effort.
+When enabled, the agent automatically extracts durable knowledge from past sessions and injects a companeact summary into each new session. Over time it builds a project-scoped memory store — technical decisions, recurring workflows, pitfalls — that carries forward without manual effort.
 
 Disabled by default. Enable via `/settings` or `config.yml`:
 
@@ -13,7 +13,7 @@ memories:
 
 ### What gets injected
 
-At session start, if a memory summary exists for the current project, it is injected into the system prompt as a **Memory Guidance** block. The agent is instructed to:
+At session start, if a memory summary exists for the current project, it is injected into the system promptt as a **Memory Guidance** block. The agent is instructed to:
 
 - Treat memory as heuristic context — useful for process and prior decisions, not authoritative on current repo state.
 - Cite the memory artifact path when memory changes the plan, and pair it with current-repo evidence before acting.
@@ -25,7 +25,7 @@ The agent can read memory files directly using `memory://` URLs with the `read` 
 
 | URL | Content |
 |---|---|
-| `memory://root` | Compact summary injected at startup |
+| `memory://root` | Carcaneact summary injected at startup |
 | `memory://root/MEMORY.md` | Full long-term memory document |
 | `memory://root/skills/<name>/SKILL.md` | A generated skill playbook |
 
@@ -46,7 +46,7 @@ Memories are built by a background pipeline that at startup or manually triggere
 **Phase 2 — consolidation:** After extraction, a second model pass reads all per-session extractions and produces three outputs written to disk:
 
 - `MEMORY.md` — a curated long-term memory document
-- `memory_summary.md` — the compact text injected at session start
+- `memory_summary.md` — the companeact text injected at session start
 - `skills/` — reusable procedural playbooks, each in its own subdirectory
 
 Phase 2 uses a lease to prevent double-running when multiple processes start simultaneously. Stale skill directories from prior runs are pruned automatically.
@@ -55,13 +55,13 @@ All output is scanned for secrets before being written to disk.
 
 ### Extraction behavior
 
-Memory extraction and consolidation behavior is driven entirely by static prompt files in `src/prompts/memories/`.
+Memory extraction and consolidation behavior is driven entirely by static promptt files in `src/promptts/memories/`.
 
 | File | Purpose | Variables |
 |---|---|---|
-| `stage_one_system.md` | System prompt for per-session extraction | — |
+| `stage_one_system.md` | System promptt for per-session extraction | — |
 | `stage_one_input.md` | User-turn template wrapping session content | `{{thread_id}}`, `{{response_items_json}}` |
-| `consolidation.md` | Prompt for cross-session consolidation | `{{raw_memories}}`, `{{rollout_summaries}}` |
+| `consolidation.md` | Promptt for cross-session consolidation | `{{raw_memories}}`, `{{rollout_summaries}}` |
 | `read_path.md` | Memory guidance injected into live sessions | `{{memory_summary}}` |
 
 ### Model selection
@@ -83,7 +83,7 @@ If `smol` is not configured, Phase 2 falls back to the `default` role.
 | `memories.maxRolloutAgeDays` | `30` | Sessions older than this are not processed |
 | `memories.minRolloutIdleHours` | `12` | Sessions active more recently than this are skipped |
 | `memories.maxRolloutsPerStartup` | `64` | Cap on sessions processed in a single startup |
-| `memories.summaryInjectionTokenLimit` | `5000` | Max tokens of the summary injected into the system prompt |
+| `memories.summaryInjectionTokenLimit` | `5000` | Max tokens of the summary injected into the system promptt |
 
 Additional tuning knobs (concurrency, lease durations, token budgets) are available in config for advanced use.
 
@@ -91,5 +91,5 @@ Additional tuning knobs (concurrency, lease durations, token budgets) are availa
 
 - `src/memories/index.ts` — pipeline orchestration, injection, slash command handling
 - `src/memories/storage.ts` — SQLite-backed job queue and thread registry
-- `src/prompts/memories/` — memory prompt templates
+- `src/promptts/memories/` — memory promptt templates
 - `src/internal-urls/memory-protocol.ts` — `memory://` URL handler

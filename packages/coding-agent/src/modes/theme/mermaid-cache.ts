@@ -3,8 +3,8 @@ import {
 	type MermaidImage,
 	type MermaidRenderOptions,
 	renderMermaidToPng,
-} from "@nghyane/pi-tui";
-import { logger } from "@nghyane/pi-utils";
+} from "@nghyane/arcane-tui";
+import { logger } from "@nghyane/arcane-utils";
 
 const cache = new Map<string, MermaidImage>();
 const pending = new Map<string, Promise<MermaidImage | null>>();

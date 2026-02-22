@@ -1,4 +1,4 @@
-import { Box, Markdown, Spacer, Text } from "@nghyane/pi-tui";
+import { Box, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import type { BranchSummaryMessage } from "../../session/messages";
 

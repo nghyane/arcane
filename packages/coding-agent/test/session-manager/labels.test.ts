@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { type LabelEntry, SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
+import { type LabelEntry, SessionManager } from "@nghyane/arcane/session/session-manager";
 
 describe("SessionManager labels", () => {
 	it("sets and gets labels", () => {

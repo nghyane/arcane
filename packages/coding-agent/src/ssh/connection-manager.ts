@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isEnoent, logger } from "@nghyane/pi-utils";
-import { getRemoteHostDir, getSshControlDir } from "@nghyane/pi-utils/dirs";
+import { isEnoent, logger } from "@nghyane/arcane-utils";
+import { getRemoteHostDir, getSshControlDir } from "@nghyane/arcane-utils/dirs";
 import { $ } from "bun";
 
 export interface SSHConnectionTarget {

@@ -1,10 +1,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import type { Component } from "@nghyane/pi-tui";
-import { Text } from "@nghyane/pi-tui";
-import { $env, isEnoent } from "@nghyane/pi-utils";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
+import { $env, isEnoent } from "@nghyane/arcane-utils";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import { type BashResult, executeBash } from "../exec/bash-executor";

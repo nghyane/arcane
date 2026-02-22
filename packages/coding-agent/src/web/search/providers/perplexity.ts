@@ -6,9 +6,9 @@
  * - OAuth JWT (stored in `agent.db`) via `www.perplexity.ai/rest/sse/perplexity_ask`
  */
 
-import { getEnvApiKey } from "@nghyane/pi-ai";
-import { readSseJson } from "@nghyane/pi-utils";
-import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
+import { getEnvApiKey } from "@nghyane/arcane-ai";
+import { readSseJson } from "@nghyane/arcane-utils";
+import { getAgentDbPath } from "@nghyane/arcane-utils/dirs";
 import { AgentStorage } from "../../../session/agent-storage";
 import type {
 	PerplexityMessageOutput,

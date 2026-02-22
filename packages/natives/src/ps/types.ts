@@ -5,7 +5,7 @@
 export {};
 
 declare module "../bindings" {
-	/** Native process-management bindings implemented in pi-natives. */
+	/** Native process-management bindings implemented in arcane-natives. */
 	interface NativeBindings {
 		/**
 		 * Kill a process and all its descendants using platform-native APIs.

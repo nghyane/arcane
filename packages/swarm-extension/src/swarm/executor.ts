@@ -1,5 +1,5 @@
 /**
- * Swarm agent execution via oh-my-pi's subagent infrastructure.
+ * Swarm agent execution via arcane's subagent infrastructure.
  *
  * Wraps `runAgent` to spawn individual swarm agents with full tool access.
  * Each agent runs in the swarm workspace with its task instructions as the user prompt.
@@ -13,8 +13,8 @@ import type {
 	ModelRegistry,
 	Settings,
 	SingleResult,
-} from "@nghyane/pi-coding-agent";
-import { runAgent } from "@nghyane/pi-coding-agent";
+} from "@nghyane/arcane";
+import { runAgent } from "@nghyane/arcane";
 import type { SwarmAgent } from "./schema";
 import type { StateTracker } from "./state";
 
@@ -32,7 +32,7 @@ export interface SwarmExecutorOptions {
 }
 
 /**
- * Execute a single swarm agent as an oh-my-pi subagent.
+ * Execute a single swarm agent as an arcane subagent.
  *
  * The agent receives:
  * - System prompt: built from role + extra_context

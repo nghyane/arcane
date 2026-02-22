@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { logger } from "@nghyane/pi-utils";
-import { getProjectDir, getProjectPromptsDir, getPromptsDir } from "@nghyane/pi-utils/dirs";
+import { logger } from "@nghyane/arcane-utils";
+import { getProjectDir, getProjectPromptsDir, getPromptsDir } from "@nghyane/arcane-utils/dirs";
 import Handlebars from "handlebars";
 import { computeLineHash } from "../patch/hashline";
 import { jtdToTypeScript } from "../tools/jtd-to-typescript";
@@ -483,7 +483,7 @@ export interface LoadPromptTemplatesOptions {
 /**
  * Load all prompt templates from:
  * 1. Global: agentDir/prompts/
- * 2. Project: cwd/.omp/prompts/
+ * 2. Project: cwd/.arcane/prompts/
  */
 export async function loadPromptTemplates(options: LoadPromptTemplatesOptions = {}): Promise<PromptTemplate[]> {
 	const resolvedCwd = options.cwd ?? getProjectDir();
@@ -496,7 +496,7 @@ export async function loadPromptTemplates(options: LoadPromptTemplatesOptions = 
 	const globalPromptsDir = options.agentDir ? path.join(options.agentDir, "prompts") : resolvedAgentDir;
 	templates.push(...(await loadTemplatesFromDir(globalPromptsDir, "user")));
 
-	// 2. Load project templates from cwd/.omp/prompts/
+	// 2. Load project templates from cwd/.arcane/prompts/
 	const projectPromptsDir = getProjectPromptsDir(resolvedCwd);
 	templates.push(...(await loadTemplatesFromDir(projectPromptsDir, "project")));
 

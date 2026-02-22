@@ -1,7 +1,7 @@
 /**
  * Generate and optionally push a commit with changelog updates.
  */
-import { Command, Flags } from "@nghyane/pi-utils/cli";
+import { Command, Flags } from "@nghyane/arcane-utils/cli";
 import { runCommitCommand } from "../commit";
 import type { CommitCommandArgs } from "../commit/types";
 import { initTheme } from "../modes/theme/theme";

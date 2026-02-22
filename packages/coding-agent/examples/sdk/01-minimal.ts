@@ -2,9 +2,9 @@
  * Minimal SDK Usage
  *
  * Uses all defaults: discovers skills, hooks, tools, context files
- * from cwd and ~/.omp/agent. Model chosen from settings or first available.
+ * from cwd and ~/.arcane/agent. Model chosen from settings or first available.
  */
-import { createAgentSession } from "@nghyane/pi-coding-agent";
+import { createAgentSession } from "@nghyane/arcane";
 
 const { session } = await createAgentSession();
 

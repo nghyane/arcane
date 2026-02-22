@@ -4,7 +4,7 @@
  * Implements JSON-RPC 2.0 over HTTP POST with optional SSE streaming.
  * Based on MCP spec 2025-03-26.
  */
-import { readSseJson } from "@nghyane/pi-utils";
+import { readSseJson } from "@nghyane/arcane-utils";
 import type {
 	JsonRpcMessage,
 	JsonRpcResponse,

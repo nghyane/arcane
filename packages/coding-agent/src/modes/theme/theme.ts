@@ -4,10 +4,10 @@ import {
 	type HighlightColors as NativeHighlightColors,
 	highlightCode as nativeHighlightCode,
 	supportsLanguage as nativeSupportsLanguage,
-} from "@nghyane/pi-natives";
-import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@nghyane/pi-tui";
-import { adjustHsv, isEnoent, logger } from "@nghyane/pi-utils";
-import { getCustomThemesDir } from "@nghyane/pi-utils/dirs";
+} from "@nghyane/arcane-natives";
+import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@nghyane/arcane-tui";
+import { adjustHsv, isEnoent, logger } from "@nghyane/arcane-utils";
+import { getCustomThemesDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import chalk from "chalk";
@@ -94,7 +94,7 @@ export type SymbolKey =
 	| "icon.context"
 	| "icon.cost"
 	| "icon.time"
-	| "icon.pi"
+	| "icon.arcane"
 	| "icon.agents"
 	| "icon.cache"
 	| "icon.input"
@@ -253,7 +253,7 @@ const UNICODE_SYMBOLS: SymbolMap = {
 	"icon.context": "◫",
 	"icon.cost": "💲",
 	"icon.time": "⏱",
-	"icon.pi": "π",
+	"icon.arcane": "π",
 	"icon.agents": "👥",
 	"icon.cache": "💾",
 	"icon.input": "⤵",
@@ -472,7 +472,7 @@ const NERD_SYMBOLS: SymbolMap = {
 	// pick:  | alt: ◷ ◴
 	"icon.time": "\uf017",
 	// pick:  | alt: π ∏ ∑
-	"icon.pi": "\ue22c",
+	"icon.arcane": "\ue22c",
 	// pick:  | alt: 
 	"icon.agents": "\uf0c0",
 	// pick:  | alt:  
@@ -662,7 +662,7 @@ const ASCII_SYMBOLS: SymbolMap = {
 	"icon.context": "ctx:",
 	"icon.cost": "$",
 	"icon.time": "t:",
-	"icon.pi": "pi",
+	"icon.arcane": "pi",
 	"icon.agents": "AG",
 	"icon.cache": "cache",
 	"icon.input": "in:",
@@ -1362,7 +1362,7 @@ export class Theme {
 			context: this.#symbols["icon.context"],
 			cost: this.#symbols["icon.cost"],
 			time: this.#symbols["icon.time"],
-			pi: this.#symbols["icon.pi"],
+			pi: this.#symbols["icon.arcane"],
 			agents: this.#symbols["icon.agents"],
 			cache: this.#symbols["icon.cache"],
 			input: this.#symbols["icon.input"],
@@ -2322,7 +2322,7 @@ export function getEditorTheme(): EditorTheme {
 	};
 }
 
-export function getSettingsListTheme(): import("@nghyane/pi-tui").SettingsListTheme {
+export function getSettingsListTheme(): import("@nghyane/arcane-tui").SettingsListTheme {
 	return {
 		label: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : text),
 		value: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : theme.fg("muted", text)),

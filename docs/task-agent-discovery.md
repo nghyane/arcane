@@ -11,8 +11,8 @@ It covers runtime behavior as implemented today, including precedence, invalid-d
 - [`src/task/types.ts`](../packages/coding-agent/src/task/types.ts)
 - [`src/task/index.ts`](../packages/coding-agent/src/task/index.ts)
 - [`src/task/commands.ts`](../packages/coding-agent/src/task/commands.ts)
-- [`src/prompts/agents/task.md`](../packages/coding-agent/src/prompts/agents/task.md)
-- [`src/prompts/tools/task.md`](../packages/coding-agent/src/prompts/tools/task.md)
+- [`src/promptts/agents/task.md`](../packages/coding-agent/src/promptts/agents/task.md)
+- [`src/promptts/tools/task.md`](../packages/coding-agent/src/promptts/tools/task.md)
 - [`src/discovery/helpers.ts`](../packages/coding-agent/src/discovery/helpers.ts)
 - [`src/config.ts`](../packages/coding-agent/src/config.ts)
 - [`src/task/executor.ts`](../packages/coding-agent/src/task/executor.ts)
@@ -23,7 +23,7 @@ It covers runtime behavior as implemented today, including precedence, invalid-d
 
 Task agents normalize into `AgentDefinition` (`src/task/types.ts`):
 
-- `name`, `description`, `systemPrompt` (required for a valid loaded agent)
+- `name`, `description`, `systemPromptt` (required for a valid loaded agent)
 - optional `tools`, `spawns`, `model`, `thinkingLevel`, `output`
 - `source`: `"bundled" | "user" | "project"`
 - optional `filePath`
@@ -33,7 +33,7 @@ Parsing comes from frontmatter via `parseAgentFields()` (`src/discovery/helpers.
 - missing `name` or `description` => invalid (`null`), caller treats as parse failure
 - `tools` accepts CSV or array; if provided, `submit_result` is auto-added
 - `spawns` accepts `*`, CSV, or array
-- backward-compat behavior: if `spawns` missing but `tools` includes `task`, `spawns` becomes `*`
+- backward-companeat behavior: if `spawns` missing but `tools` includes `task`, `spawns` becomes `*`
 - `output` is passed through as opaque schema data
 
 ## Bundled agents
@@ -42,7 +42,7 @@ Bundled agents are embedded at build time (`src/task/agents.ts`) using text impo
 
 `EMBEDDED_AGENT_DEFS` defines:
 
-- `explore`, `plan`, `designer`, `reviewer` from prompt files
+- `explore`, `plan`, `designer`, `reviewer` from promptt files
 - `task` and `quick_task` from shared `task.md` body plus injected frontmatter
 
 Loading path:
@@ -68,7 +68,7 @@ Because bundled parsing uses `level: "fatal"`, malformed bundled frontmatter thr
 
 Source-family order comes from `getConfigDirs("", { project: false })`, which is derived from `priorityList` in `src/config.ts`:
 
-1. `.omp`
+1. `.arcane`
 2. `.claude`
 3. `.codex`
 4. `.gemini`
@@ -84,7 +84,7 @@ Bundled agents are appended last.
 
 ### Important caveat: stale comments vs current code
 
-`discovery.ts` header comments still mention `.pi` and do not mention `.codex`/`.gemini`. Actual runtime order is driven by `src/config.ts` and currently uses `.omp`, `.claude`, `.codex`, `.gemini`.
+`discovery.ts` header comments still mention `.pi` and do not mention `.codex`/`.gemini`. Actual runtime order is driven by `src/config.ts` and currently uses `.arcane`, `.claude`, `.codex`, `.gemini`.
 
 ## Merge and collision rules
 
@@ -97,7 +97,7 @@ Discovery uses first-wins dedup by exact `agent.name`:
 Implications:
 
 - Project overrides user for same source family.
-- Higher-priority source family overrides lower (`.omp` before `.claude`, etc.).
+- Higher-priority source family overrides lower (`.arcane` before `.claude`, etc.).
 - Non-bundled agents override bundled agents with the same name.
 - Name matching is case-sensitive (`Task` and `task` are distinct).
 - Within one directory, markdown files are read in lexicographic filename order before dedup.
@@ -148,7 +148,7 @@ Runtime output schema precedence in `TaskTool.execute`:
 
 (`effectiveOutputSchema = effectiveAgent.output ?? outputSchema ?? this.session.outputSchema`)
 
-Prompt-time guardrail text in `src/prompts/tools/task.md` warns about mismatch behavior for structured-output agents (`explore`, `reviewer`): output-format instructions in prose can conflict with built-in schema and produce `null` outputs.
+Promptt-time guardrail text in `src/promptts/tools/task.md` warns about mismatch behavior for structured-output agents (`explore`, `reviewer`): output-format instructions in prose can conflict with built-in schema and produce `null` outputs.
 
 This is guidance, not hard runtime validation logic in `discoverAgents`.
 
@@ -195,11 +195,11 @@ So deeper levels cannot spawn further tasks even if the agent definition include
 
 ## Plan mode caveat (current implementation)
 
-`TaskTool.execute` computes an `effectiveAgent` for plan mode (prepends plan-mode prompt, forces read-only tool subset, clears spawns), but `runSubprocess` is called with `agent` rather than `effectiveAgent`.
+`TaskTool.execute` computes an `effectiveAgent` for plan mode (prepends plan-mode promptt, forces read-only tool subset, clears spawns), but `runSubprocess` is called with `agent` rather than `effectiveAgent`.
 
 Current effect:
 
 - model override / thinking level / output schema are derived from `effectiveAgent`
-- system prompt and tool/spawn restrictions from `effectiveAgent` are not passed through in this call path
+- system promptt and tool/spawn restrictions from `effectiveAgent` are not passed through in this call path
 
 This is an implementation caveat worth knowing when reading plan-mode behavior expectations.

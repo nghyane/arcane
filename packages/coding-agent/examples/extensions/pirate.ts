@@ -5,11 +5,11 @@
  * modify the system prompt based on extension state.
  *
  * Usage:
- * 1. Copy this file to ~/.omp/agent/extensions/ (legacy: ~/.pi/agent/extensions/) or your project's .omp/extensions/
+ * 1. Copy this file to ~/.arcane/agent/extensions/ or your project's .arcane/extensions/
  * 2. Use /pirate to toggle pirate mode
  * 3. When enabled, the agent will respond like a pirate
  */
-import type { ExtensionAPI } from "@nghyane/pi-coding-agent";
+import type { ExtensionAPI } from "@nghyane/arcane";
 
 export default function pirateExtension(pi: ExtensionAPI) {
 	let pirateMode = false;

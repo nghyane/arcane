@@ -7,8 +7,8 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import { Snowflake } from "@nghyane/pi-utils";
+import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import { Snowflake } from "@nghyane/arcane-utils";
 import type { ToolSession } from "..";
 import type { Theme } from "../modes/theme/theme";
 import { getBundledAgent } from "./agents";
@@ -75,7 +75,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 		const modelOverride = this.session.getActiveModelString?.() ?? this.session.getModelString?.();
 		const sessionFile = this.session.getSessionFile();
 		const artifactsDir = sessionFile ? sessionFile.slice(0, -6) : null;
-		const tempArtifactsDir = artifactsDir ? null : path.join(os.tmpdir(), `omp-task-${Snowflake.next()}`);
+		const tempArtifactsDir = artifactsDir ? null : path.join(os.tmpdir(), `arcane-task-${Snowflake.next()}`);
 		const effectiveArtifactsDir = artifactsDir || tempArtifactsDir!;
 
 		const progressMap = new Map<number, AgentProgress>();

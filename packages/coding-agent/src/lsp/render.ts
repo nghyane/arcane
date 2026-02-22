@@ -7,9 +7,9 @@
  * - Grouped references and symbols
  * - Collapsible/expandable views
  */
-import type { RenderResultOptions } from "@nghyane/pi-agent-core";
-import { type HighlightColors, highlightCode as nativeHighlightCode, supportsLanguage } from "@nghyane/pi-natives";
-import { type Component, Text } from "@nghyane/pi-tui";
+import type { RenderResultOptions } from "@nghyane/arcane-agent";
+import { type HighlightColors, highlightCode as nativeHighlightCode, supportsLanguage } from "@nghyane/arcane-natives";
+import { type Component, Text } from "@nghyane/arcane-tui";
 import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
 import {
 	formatExpandHint,

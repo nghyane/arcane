@@ -3,8 +3,8 @@
  * Shares the same kernel session as the agent's Python tool.
  */
 
-import { sanitizeText } from "@nghyane/pi-natives";
-import { Container, Loader, Spacer, Text, type TUI } from "@nghyane/pi-tui";
+import { sanitizeText } from "@nghyane/arcane-natives";
+import { Container, Loader, Spacer, Text, type TUI } from "@nghyane/arcane-tui";
 import { getSymbolTheme, highlightCode, theme } from "../../modes/theme/theme";
 import { formatBytes } from "../../session/streaming-output";
 import type { TruncationMeta } from "../../tools/output-meta";

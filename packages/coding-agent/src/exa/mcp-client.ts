@@ -1,4 +1,4 @@
-import { $env, logger } from "@nghyane/pi-utils";
+import { $env, logger } from "@nghyane/arcane-utils";
 import type { TSchema } from "@sinclair/typebox";
 import type { CustomTool, CustomToolResult } from "../extensibility/custom-tools/types";
 import { callMCP } from "../mcp/json-rpc";

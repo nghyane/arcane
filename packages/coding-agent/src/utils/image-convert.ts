@@ -1,4 +1,4 @@
-import { ImageFormat, PhotonImage } from "@nghyane/pi-natives";
+import { ImageFormat, PhotonImage } from "@nghyane/arcane-natives";
 
 /**
  * Convert image to PNG format for terminal display.

@@ -1,5 +1,5 @@
 import * as os from "node:os";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { theme } from "../../../modes/theme/theme";
 import { shortenPath } from "../../../tools/render-utils";
 import type { RenderedSegment, SegmentContext, StatusLineSegment, StatusLineSegmentId } from "./types";
@@ -37,7 +37,7 @@ function formatDuration(ms: number): string {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const piSegment: StatusLineSegment = {
-	id: "pi",
+	id: "arcane",
 	render(_ctx) {
 		const content = theme.icon.pi ? `${theme.icon.pi} ` : "";
 		return { content: theme.fg("accent", content), visible: true };
@@ -322,7 +322,7 @@ const cacheWriteSegment: StatusLineSegment = {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
-	pi: piSegment,
+	arcane: piSegment,
 	model: modelSegment,
 	path: pathSegment,
 	git: gitSegment,

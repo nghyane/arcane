@@ -2,7 +2,7 @@
 
 This document describes how coding-agent discovers rules from supported config formats, normalizes them into a single `Rule` shape, resolves precedence conflicts, and splits the result into:
 
-- **Rulebook rules** (available to the model via system prompt + `rule://` URLs)
+- **Rulebook rules** (available to the model via system promptt + `rule://` URLs)
 - **TTSR rules** (time-travel stream interruption rules)
 
 It reflects the current implementation, including partial semantics and metadata that is parsed but not enforced.
@@ -18,7 +18,7 @@ It reflects the current implementation, including partial semantics and metadata
 - [`../src/discovery/windsurf.ts`](../packages/coding-agent/src/discovery/windsurf.ts)
 - [`../src/discovery/cline.ts`](../packages/coding-agent/src/discovery/cline.ts)
 - [`../src/sdk.ts`](../packages/coding-agent/src/sdk.ts)
-- [`../src/system-prompt.ts`](../packages/coding-agent/src/system-prompt.ts)
+- [`../src/system-promptt.ts`](../packages/coding-agent/src/system-promptt.ts)
 - [`../src/internal-urls/rule-protocol.ts`](../packages/coding-agent/src/internal-urls/rule-protocol.ts)
 - [`../src/utils/frontmatter.ts`](../packages/coding-agent/src/utils/frontmatter.ts)
 
@@ -54,10 +54,10 @@ Consequence: precedence and deduplication are **name-based only**. Two different
 
 ### Native provider (`builtin.ts`)
 
-Loads `.omp` rules from:
+Loads `.arcane` rules from:
 
-- project: `<cwd>/.omp/rules/*.{md,mdc}`
-- user: `~/.omp/agent/rules/*.{md,mdc}`
+- project: `<cwd>/.arcane/rules/*.{md,mdc}`
+- user: `~/.arcane/agent/rules/*.{md,mdc}`
 
 Normalization:
 
@@ -180,13 +180,13 @@ After rule discovery in `createAgentSession` (`sdk.ts`):
 ### `description`
 
 - Required for inclusion in rulebook.
-- Rendered in system prompt `<rules>` block.
-- Missing description means rule is not available via `rule://` and not listed in system prompt rules.
+- Rendered in system promptt `<rules>` block.
+- Missing description means rule is not available via `rule://` and not listed in system promptt rules.
 
 ### `globs`
 
 - Carried through on `Rule`.
-- Rendered as `<glob>...</glob>` entries in the system prompt rules block.
+- Rendered as `<glob>...</glob>` entries in the system promptt rules block.
 - Exposed in rules UI state (`extensions` mode list).
 - **Not enforced for automatic matching in this pipeline.** There is no runtime glob matcher selecting rules by current file/tool target.
 
@@ -195,23 +195,23 @@ After rule discovery in `createAgentSession` (`sdk.ts`):
 - Parsed and preserved by providers.
 - Used in UI display (`"always"` trigger label in extensions state manager).
 - Used as an exclusion condition from `rulebookRules`.
-- **Not used to auto-inject content into system prompt in current implementation.**
+- **Not used to auto-inject content into system promptt in current implementation.**
 
 ### `ttsr_trigger`
 
 - Mapped to `rule.ttsrTrigger`.
 - If present, rule is routed to TTSR manager, not rulebook.
 
-## 7. System prompt inclusion path
+## 7. System promptt inclusion path
 
-`buildSystemPromptInternal(..., { rules: rulebookRules })` injects rulebook rules into system prompt templates.
+`buildSystemPrompttInternal(..., { rules: rulebookRules })` injects rulebook rules into system promptt templates.
 
 Templates include:
 
 - `Read rule://<name> when working in matching domain`
 - A `<rules>` block with each rule's `name`, `description`, and optional `<glob>` list
 
-This is advisory/contextual: prompt text asks the model to read applicable rules, but code does not enforce glob applicability.
+This is advisory/contextual: promptt text asks the model to read applicable rules, but code does not enforce glob applicability.
 
 ## 8. `rule://` internal URL behavior
 
@@ -232,7 +232,7 @@ Implications:
 ## 9. Known partial / non-enforced semantics
 
 1. Provider descriptions mention legacy files (`.cursorrules`, `.windsurfrules`), but current loader code paths do not actually read those files.
-2. `globs` metadata is surfaced to prompt/UI but not enforced by rule selection logic.
-3. `alwaysApply` does not force inclusion into system prompt; current behavior excludes such rules from `rulebookRules`.
+2. `globs` metadata is surfaced to promptt/UI but not enforced by rule selection logic.
+3. `alwaysApply` does not force inclusion into system promptt; current behavior excludes such rules from `rulebookRules`.
 4. Rule selection for `rule://` is constrained to prefiltered rulebook rules, not the full discovered set.
 5. Discovery warnings (`loadCapability("rules").warnings`) are produced but `createAgentSession` does not currently surface/log them in this path.

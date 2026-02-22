@@ -6,9 +6,9 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as piCodingAgent from "@nghyane/pi-coding-agent";
-import { isEnoent, logger } from "@nghyane/pi-utils";
-import { getAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
+import * as piCodingAgent from "@nghyane/arcane";
+import { isEnoent, logger } from "@nghyane/arcane-utils";
+import { getAgentDir, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import * as typebox from "@sinclair/typebox";
 import { getConfigDirs } from "../../config";
 import { execCommand } from "../../exec/exec";

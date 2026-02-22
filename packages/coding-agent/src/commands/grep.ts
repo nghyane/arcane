@@ -1,7 +1,7 @@
 /**
  * Test grep tool.
  */
-import { Args, Command, Flags } from "@nghyane/pi-utils/cli";
+import { Args, Command, Flags } from "@nghyane/arcane-utils/cli";
 import { type GrepCommandArgs, runGrepCommand } from "../cli/grep-cli";
 import { initTheme } from "../modes/theme/theme";
 

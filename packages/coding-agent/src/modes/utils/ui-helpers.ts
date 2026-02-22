@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@nghyane/pi-agent-core";
-import type { AssistantMessage, Message } from "@nghyane/pi-ai";
-import { Spacer, Text, TruncatedText } from "@nghyane/pi-tui";
+import type { AgentMessage } from "@nghyane/arcane-agent";
+import type { AssistantMessage, Message } from "@nghyane/arcane-ai";
+import { Spacer, Text, TruncatedText } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
 import { BashExecutionComponent } from "../../modes/components/bash-execution";
@@ -343,7 +343,7 @@ export class UiHelpers {
 				theme.bold(theme.fg("warning", "Update Available")) +
 					"\n" +
 					theme.fg("muted", `New version ${newVersion} is available. Run: `) +
-					theme.fg("accent", "omp update"),
+					theme.fg("accent", "arc update"),
 				1,
 				0,
 			),

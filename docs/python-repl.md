@@ -41,7 +41,7 @@ There are two gateway paths:
    - No local gateway process is spawned or managed.
 
 2. **Local shared gateway** (default path)
-   - Uses a single shared process coordinated under `~/.omp/agent/python-gateway`.
+   - Uses a single shared process coordinated under `~/.arcane/agent/python-gateway`.
    - Metadata file: `gateway.json`
    - Lock file: `gateway.lock`
    - Spawn command:
@@ -81,8 +81,8 @@ Kernel startup sequence:
 4. Initialize kernel env (`cwd`, env vars, `sys.path`)
 5. Execute `PYTHON_PRELUDE`
 6. Load extension modules from:
-   - user: `~/.omp/agent/modules/*.py`
-   - project: `<cwd>/.omp/modules/*.py` (overrides same-name user module)
+   - user: `~/.arcane/agent/modules/*.py`
+   - project: `<cwd>/.arcane/modules/*.py` (overrides same-name user module)
 
 Kernel shutdown:
 
@@ -130,7 +130,7 @@ Environment is filtered before launching gateway/kernel runtime:
 Runtime selection order:
 
 1. Active/located venv (`VIRTUAL_ENV`, then `<cwd>/.venv`, `<cwd>/venv`)
-2. Managed venv at `~/.omp/python-env`
+2. Managed venv at `~/.arcane/python-env`
 3. `python` or `python3` on PATH
 
 When a venv is selected, its bin/Scripts path is prepended to `PATH`.
@@ -199,7 +199,7 @@ From kernel messages:
 - `stream` -> plain text chunks
 - `display_data`/`execute_result` -> rich display handling
 - `error` -> traceback text
-- custom MIME `application/x-omp-status` -> structured status events
+- custom MIME `application/x-arcane-status` -> structured status events
 
 Display MIME precedence:
 
@@ -211,7 +211,7 @@ Additionally captured as structured outputs:
 
 - `application/json` -> JSON tree data
 - `image/png` -> image payloads
-- `application/x-omp-status` -> status events
+- `application/x-arcane-status` -> status events
 
 ### Storage and truncation
 
@@ -272,7 +272,7 @@ Behavior differences from local shared gateway:
   - Increase tool `timeout` (max 600s) if workload is legitimate.
   - For stuck code, cancellation triggers kernel interrupt but user code may still need refactor.
 
-- **stdin/input prompts in Python code**
+- **stdin/input promptts in Python code**
   - `input()` is not supported interactively in this runtime path; pass data programmatically.
 
 - **Resource exhaustion (`EMFILE` / too many open files)**

@@ -1,11 +1,11 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentMessage } from "@nghyane/pi-agent-core";
-import type { ImageContent, Message, TextContent, Usage } from "@nghyane/pi-ai";
-import { getTerminalId } from "@nghyane/pi-tui";
-import { isEnoent, logger, parseJsonlLenient, Snowflake } from "@nghyane/pi-utils";
-import { getBlobsDir, getAgentDir as getDefaultAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
+import type { AgentMessage } from "@nghyane/arcane-agent";
+import type { ImageContent, Message, TextContent, Usage } from "@nghyane/arcane-ai";
+import { getTerminalId } from "@nghyane/arcane-tui";
+import { isEnoent, logger, parseJsonlLenient, Snowflake } from "@nghyane/arcane-utils";
+import { getBlobsDir, getAgentDir as getDefaultAgentDir, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { type BlobPutResult, BlobStore, externalizeImageData, isBlobRef, resolveImageData } from "./blob-store";
 import {
 	type BashExecutionMessage,
@@ -537,7 +537,7 @@ function encodeSessionDirName(cwd: string): string {
 }
 /**
  * Compute the default session directory for a cwd.
- * Encodes cwd into a safe directory name under ~/.omp/agent/sessions/.
+ * Encodes cwd into a safe directory name under ~/.arcane/agent/sessions/.
  */
 function getDefaultSessionDir(cwd: string, storage: SessionStorage): string {
 	migrateHomeSessionDirs();
@@ -2150,7 +2150,7 @@ export class SessionManager {
 	/**
 	 * Create a new session.
 	 * @param cwd Working directory (stored in session header)
-	 * @param sessionDir Optional session directory. If omitted, uses default (~/.omp/agent/sessions/<encoded-cwd>/).
+	 * @param sessionDir Optional session directory. If omitted, uses default (~/.arcane/agent/sessions/<encoded-cwd>/).
 	 */
 	static create(cwd: string, sessionDir?: string, storage: SessionStorage = new FileSessionStorage()): SessionManager {
 		const dir = sessionDir ?? getDefaultSessionDir(cwd, storage);
@@ -2210,7 +2210,7 @@ export class SessionManager {
 	/**
 	 * Continue the most recent session, or create new if none.
 	 * @param cwd Working directory
-	 * @param sessionDir Optional session directory. If omitted, uses default (~/.omp/agent/sessions/<encoded-cwd>/).
+	 * @param sessionDir Optional session directory. If omitted, uses default (~/.arcane/agent/sessions/<encoded-cwd>/).
 	 */
 	static async continueRecent(
 		cwd: string,
@@ -2243,7 +2243,7 @@ export class SessionManager {
 	/**
 	 * List all sessions.
 	 * @param cwd Working directory (used to compute default session directory)
-	 * @param sessionDir Optional session directory. If omitted, uses default (~/.omp/agent/sessions/<encoded-cwd>/).
+	 * @param sessionDir Optional session directory. If omitted, uses default (~/.arcane/agent/sessions/<encoded-cwd>/).
 	 */
 	static async list(
 		cwd: string,

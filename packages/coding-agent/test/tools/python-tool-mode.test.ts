@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
-import { createTools, type ToolSession } from "@nghyane/pi-coding-agent/tools";
+import { Settings } from "@nghyane/arcane/config/settings";
+import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 
 function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

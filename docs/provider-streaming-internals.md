@@ -1,6 +1,6 @@
 # Provider streaming internals
 
-This document explains how token/tool streaming is normalized in `@nghyane/pi-ai`, then propagated through `@nghyane/pi-agent-core` and `coding-agent` session events.
+This document explains how token/tool streaming is normalized in `@nghyane/arcane-ai`, then propagated through `@nghyane/arcane-agent` and `coding-agent` session events.
 
 ## End-to-end flow
 
@@ -12,7 +12,7 @@ This document explains how token/tool streaming is normalized in `@nghyane/pi-ai
 4. `agentLoop` (`packages/agent/src/agent-loop.ts`) consumes those events, mutates in-flight assistant state, and emits `message_update` events carrying the raw `assistantMessageEvent`.
 5. `AgentSession` (`packages/coding-agent/src/session/agent-session.ts`) subscribes to agent events, persists messages, drives extension hooks, and applies session behaviors (retry, compaction, TTSR, streaming-edit abort checks).
 
-## Unified stream contract in `@nghyane/pi-ai`
+## Unified stream contract in `@nghyane/arcane-ai`
 
 All providers emit the same shape (`AssistantMessageEvent` in `packages/ai/src/types.ts`):
 

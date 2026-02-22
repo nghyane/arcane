@@ -4,7 +4,7 @@
  * Blocks write and edit operations to protected paths.
  * Useful for preventing accidental modifications to sensitive files.
  */
-import type { HookAPI } from "@nghyane/pi-coding-agent";
+import type { HookAPI } from "@nghyane/arcane";
 
 export default function (pi: HookAPI) {
 	const protectedPaths = [".env", ".git/", "node_modules/"];

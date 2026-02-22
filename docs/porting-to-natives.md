@@ -1,6 +1,6 @@
-# Porting to pi-natives (N-API) — Field Notes
+# Porting to arcane-natives (N-API) — Field Notes
 
-This is a practical guide for moving hot paths into `crates/pi-natives` and wiring them through the JS bindings. It exists to avoid the same failures happening twice.
+This is a practical guide for moving hot paths into `crates/arcane-natives` and wiring them through the JS bindings. It exists to avoid the same failures happening twice.
 
 ## When to port
 
@@ -18,9 +18,9 @@ Avoid ports that depend on JS-only state or dynamic imports. N-API exports shoul
 
 **Rust side:**
 
-- Implementation lives in `crates/pi-natives/src/<module>.rs`. If you add a new module, register it in `crates/pi-natives/src/lib.rs`.
+- Implementation lives in `crates/arcane-natives/src/<module>.rs`. If you add a new module, register it in `crates/arcane-natives/src/lib.rs`.
 - Export with `#[napi]` and `#[napi(js_name = "...")]` to keep JS-facing camelCase names. Use `#[napi(object)]` for structs.
-- Use `task::blocking(tag, cancel_token, work)` (see `crates/pi-natives/src/task.rs`) for CPU-bound or blocking work. Use `task::future(env, tag, work)` for async work that needs Tokio (e.g., shell sessions). Pass a `CancelToken` when you expose `timeoutMs` or `AbortSignal`.
+- Use `task::blocking(tag, cancel_token, work)` (see `crates/arcane-natives/src/task.rs`) for CPU-bound or blocking work. Use `task::future(env, tag, work)` for async work that needs Tokio (e.g., shell sessions). Pass a `CancelToken` when you expose `timeoutMs` or `AbortSignal`.
 
 **JS side:**
 
@@ -36,7 +36,7 @@ Avoid ports that depend on JS-only state or dynamic imports. N-API exports shoul
 1. **Add the Rust implementation**
 
 - Put the core logic in a plain Rust function.
-- If it’s a new module, add it to `crates/pi-natives/src/lib.rs`.
+- If it’s a new module, add it to `crates/arcane-natives/src/lib.rs`.
 - Expose it with `#[napi(js_name = "...")]` to keep camelCase names stable.
 - Keep signatures owned and simple: `String`, `Vec<String>`, `Uint8Array`, or `Either<JsString, Uint8Array>` for large string/byte inputs.
 - For CPU-bound or blocking work, use `task::blocking`; for async work, use `task::future`. Pass a `CancelToken` and call `heartbeat()` inside long loops.
@@ -62,7 +62,7 @@ Avoid ports that depend on JS-only state or dynamic imports. N-API exports shoul
 5. **Build the native binary**
 
 - `bun --cwd=packages/natives run build:native`
-- Use `bun --cwd=packages/natives run dev:native` for debug builds (`pi_natives.dev.node`) and set `PI_DEV=1` when loading it.
+- Use `bun --cwd=packages/natives run dev:native` for debug builds (`arcane_natives.dev.node`) and set `PI_DEV=1` when loading it.
 
 6. **Run the benchmark**
 
@@ -75,28 +75,28 @@ Avoid ports that depend on JS-only state or dynamic imports. N-API exports shoul
 
 ## Pain points and how to avoid them
 
-### 1) Stale `pi_natives.node` prevents new exports
+### 1) Stale `arcane_natives.node` prevents new exports
 
-The loader prefers the platform-tagged binary in `packages/natives/native` (`pi_natives.<platform>-<arch>.node`). When `PI_DEV=1`, it will load `pi_natives.dev.node` instead. There is also a fallback `pi_natives.node`. Compiled binaries extract to `~/.omp/natives/<version>/pi_natives.<platform>-<arch>.node`. If any of these are stale, exports won’t update.
+The loader prefers the platform-tagged binary in `packages/natives/native` (`arcane_natives.<platform>-<arch>.node`). When `PI_DEV=1`, it will load `arcane_natives.dev.node` instead. There is also a fallback `arcane_natives.node`. Carcaneiled binaries extract to `~/.arcane/natives/<version>/arcane_natives.<platform>-<arch>.node`. If any of these are stale, exports won’t update.
 
 **Fix:** remove the stale file before rebuilding.
 
 ```bash
-rm packages/natives/native/pi_natives.linux-x64.node
-rm packages/natives/native/pi_natives.node
+rm packages/natives/native/arcane_natives.linux-x64.node
+rm packages/natives/native/arcane_natives.node
 bun --cwd=packages/natives run build:native
 ```
 
 If you’re running a compiled binary, delete the cached addon directory:
 
 ```bash
-rm -rf ~/.omp/natives/<version>
+rm -rf ~/.arcane/natives/<version>
 ```
 
 Then verify the export exists in the binary:
 
 ```bash
-bun -e 'const tag = `${process.platform}-${process.arch}`; const mod = require(`./packages/natives/native/pi_natives.${tag}.node`); console.log(Object.keys(mod).includes("newExport"));'
+bun -e 'const tag = `${process.platform}-${process.arch}`; const mod = require(`./packages/natives/native/arcane_natives.${tag}.node`); console.log(Object.keys(mod).includes("newExport"));'
 ```
 
 ### 2) “Missing exports” errors from `validateNative`

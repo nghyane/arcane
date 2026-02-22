@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/hero.png?raw=true" alt="Oh My Pi">
+  <img src="https://github.com/nghyane/arcane/blob/main/assets/hero.png?raw=true" alt="Arcane">
 </p>
 
 <p align="center">
@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/can1357/oh-my-pi"><img src="https://img.shields.io/badge/upstream-can1357%2Foh--my--pi-58A6FF?style=flat&colorA=222222" alt="Upstream"></a>
+  <a href="https://github.com/nghyane/arcane"><img src="https://img.shields.io/badge/upstream-nghyane%2Foh--my--pi-58A6FF?style=flat&colorA=222222" alt="Upstream"></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&colorA=222222&logo=typescript&logoColor=white" alt="TypeScript"></a>
   <a href="https://www.rust-lang.org"><img src="https://img.shields.io/badge/Rust-DEA584?style=flat&colorA=222222&logo=rust&logoColor=white" alt="Rust"></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/runtime-Bun-f472b6?style=flat&colorA=222222" alt="Bun"></a>
@@ -15,7 +15,7 @@
 
 ## Why This Fork
 
-This is an opinionated fork of [can1357/oh-my-pi](https://github.com/can1357/oh-my-pi) with structural changes that diverge too far from upstream for a PR:
+This is an opinionated fork of [nghyane/arcane](https://github.com/nghyane/arcane) with structural changes that diverge too far from upstream for a PR:
 
 - **Removed plan mode** entirely -- the feature added complexity without proportional value in practice
 - **Removed worktree isolation** in task/subagent execution -- simplified the executor significantly (-2700 lines)
@@ -71,7 +71,7 @@ Upstream bug fixes are merged regularly via merge commits.
 
 ## Highlights
 
-Everything from [upstream](https://github.com/can1357/oh-my-pi), plus:
+Everything from [upstream](https://github.com/nghyane/arcane), plus:
 
 - **Code Mode** -- LLM writes JS to orchestrate tools in parallel (`Promise.all`) instead of sequential round-trips. Typed API auto-generated from tool schemas.
 - **Undo Edit** -- agent can revert its own file edits
@@ -102,7 +102,7 @@ Inherited from upstream:
 Requires [Bun](https://bun.sh) **>= 1.3.7**:
 
 ```bash
-bun install -g @nghyane/pi-coding-agent
+bun install -g @nghyane/arcane
 ```
 
 ### Via installer script
@@ -110,13 +110,13 @@ bun install -g @nghyane/pi-coding-agent
 **Linux / macOS:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/nghyane/arcane/main/scripts/install.sh | sh
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-irm https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/nghyane/arcane/main/scripts/install.ps1 | iex
 ```
 
 By default, the installer uses Bun when available (and compatible), otherwise installs the prebuilt binary.
@@ -133,31 +133,31 @@ Examples:
 
 ```bash
 # Source install (Bun)
-curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh -s -- --source
+curl -fsSL https://raw.githubusercontent.com/nghyane/arcane/main/scripts/install.sh | sh -s -- --source
 
 # Install release tag via binary
-curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh -s -- --binary --ref v3.20.1
+curl -fsSL https://raw.githubusercontent.com/nghyane/arcane/main/scripts/install.sh | sh -s -- --binary --ref v3.20.1
 
 # Install branch/commit via source
-curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh -s -- --source --ref main
+curl -fsSL https://raw.githubusercontent.com/nghyane/arcane/main/scripts/install.sh | sh -s -- --source --ref main
 ```
 
 ```powershell
 # Install release tag via binary
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.ps1))) -Binary -Ref v3.20.1
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/nghyane/arcane/main/scripts/install.ps1))) -Binary -Ref v3.20.1
 # Install branch/commit via source
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.ps1))) -Source -Ref main
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/nghyane/arcane/main/scripts/install.ps1))) -Source -Ref main
 ```
 
 ### Via [mise](https://mise.jdx.dev)
 
 ```bash
-mise use -g github:can1357/oh-my-pi
+mise use -g github:nghyane/arcane
 ```
 
 ### Manual download
 
-Download binaries directly from [GitHub Releases](https://github.com/can1357/oh-my-pi/releases/latest).
+Download binaries directly from [GitHub Releases](https://github.com/nghyane/arcane/releases/latest).
 
 ---
 
@@ -254,9 +254,9 @@ For `vllm`, paste your key in `/login` (or use `VLLM_API_KEY`). For local no-aut
 For `nanogpt`, `/login nanogpt` opens `https://nano-gpt.com/api` and prompts for your `sk-...` key (or set `NANO_GPT_API_KEY`). Login validates the key via NanoGPT's models endpoint (not a fixed model entitlement).
 For `cloudflare-ai-gateway`, set provider base URL to
 `https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_id>/anthropic`
-(for example in `~/.omp/agent/models.yml`).
+(for example in `~/.arcane/agent/models.yml`).
 ```bash
-omp
+arc
 /login
 ```
 
@@ -264,7 +264,7 @@ omp
 
 - `/login` appends credentials for the provider (it does not wipe existing entries)
 - `/logout` clears saved credentials for the selected provider
-- Credentials are stored in `~/.omp/agent/agent.db`
+- Credentials are stored in `~/.arcane/agent/agent.db`
 - For the same provider, saved API key credentials are selected before OAuth credentials
 
 ### First 15 Minutes (Recommended)
@@ -428,19 +428,19 @@ See [docs/session.md](docs/session.md) for the file format and API.
 
 ### Session Management
 
-Sessions auto-save to `~/.omp/agent/sessions/` (grouped by working directory).
+Sessions auto-save to `~/.arcane/agent/sessions/` (grouped by working directory).
 
 ```bash
-omp --continue             # Continue most recent session
-omp -c
+arc --continue             # Continue most recent session
+arc -c
 
-omp --resume               # Open session picker
-omp -r
+arc --resume               # Open session picker
+arc -r
 
-omp --resume <id-prefix>   # Resume by session ID prefix
-omp --resume <path>        # Resume by explicit .jsonl path
-omp --session <value>      # Alias of --resume
-omp --no-session    # Ephemeral mode (don't save)
+arc --resume <id-prefix>   # Resume by session ID prefix
+arc --resume <path>        # Resume by explicit .jsonl path
+arc --session <value>      # Alias of --resume
+arc --no-session    # Ephemeral mode (don't save)
 ```
 
 Session IDs are Snowflake-style hex IDs (not UUIDs).
@@ -456,7 +456,7 @@ Long sessions can exhaust context windows. Compaction summarizes older messages 
 - **Overflow recovery**: model returns context overflow; compact and retry.
 - **Threshold maintenance**: context exceeds configured headroom after a successful turn.
 
-**Configuration** (`~/.omp/agent/config.yml`):
+**Configuration** (`~/.arcane/agent/config.yml`):
 
 ```yaml
 compaction:
@@ -482,7 +482,7 @@ See [docs/compaction.md](docs/compaction.md) for internals and hook integration.
 
 When enabled, the agent extracts durable knowledge from past sessions and injects it at startup. The pipeline runs in the background and never blocks the active session.
 
-Memory is isolated per project (working directory) and stored under `~/.omp/agent/memories/`. At session start, a compact summary is injected into the system prompt. The agent can read deeper context via `memory://root/MEMORY.md` and `memory://root/skills/<name>/SKILL.md`.
+Memory is isolated per project (working directory) and stored under `~/.arcane/agent/memories/`. At session start, a compact summary is injected into the system prompt. The agent can read deeper context via `memory://root/MEMORY.md` and `memory://root/skills/<name>/SKILL.md`.
 
 Manage via the `/memory` slash command:
 
@@ -498,7 +498,7 @@ Manage via the `/memory` slash command:
 
 ### Project Context Files
 
-omp discovers project context from supported config directories (for example `.omp`, `.claude`, `.codex`, `.gemini`).
+arc discovers project context from supported config directories (for example `.arcane`, `.claude`, `.codex`, `.gemini`).
 
 Common files:
 
@@ -516,13 +516,13 @@ Use these for:
 
 Replace the default system prompt by creating `SYSTEM.md`:
 
-1. **Project-local:** `.omp/SYSTEM.md` (takes precedence)
-2. **Global:** `~/.omp/agent/SYSTEM.md` (fallback)
+1. **Project-local:** `.arcane/SYSTEM.md` (takes precedence)
+2. **Global:** `~/.arcane/agent/SYSTEM.md` (fallback)
    `--system-prompt` overrides both files. Use `--append-system-prompt` to append additional instructions.
 
 ### Custom Models and Providers
 
-Add custom providers/models via `~/.omp/agent/models.yml`.
+Add custom providers/models via `~/.arcane/agent/models.yml`.
 
 `models.json` is still supported for legacy configs, but `models.yml` is the modern format.
 
@@ -554,9 +554,9 @@ providers:
 
 Global settings are stored in:
 
-- `~/.omp/agent/config.yml`
+- `~/.arcane/agent/config.yml`
 
-Project overrides are loaded from discovered project settings files (commonly `.omp/settings.json`).
+Project overrides are loaded from discovered project settings files (commonly `.arcane/settings.json`).
 
 Global `config.yml` example:
 
@@ -616,7 +616,7 @@ Legacy migration notes:
 
 Built-in themes include `dark`, `light`, and many bundled variants.
 
-Select theme via `/settings` or set in `~/.omp/agent/config.yml`:
+Select theme via `/settings` or set in `~/.arcane/agent/config.yml`:
 
 ```yaml
 theme:
@@ -624,7 +624,7 @@ theme:
   light: light
 ```
 
-**Custom themes:** create `~/.omp/agent/themes/*.json`.
+**Custom themes:** create `~/.arcane/agent/themes/*.json`.
 
 > See [Theme Documentation](docs/theme.md).
 
@@ -632,8 +632,8 @@ theme:
 
 Define reusable prompt commands as Markdown files:
 
-- Global: `~/.omp/agent/commands/*.md`
-- Project: `.omp/commands/*.md`
+- Global: `~/.arcane/agent/commands/*.md`
+- Project: `.arcane/commands/*.md`
 
 ```markdown
 ---
@@ -656,8 +656,8 @@ Argument placeholders:
 
 TypeScript custom commands are also supported:
 
-- `~/.omp/agent/commands/<name>/index.ts`
-- `.omp/commands/<name>/index.ts`
+- `~/.arcane/agent/commands/<name>/index.ts`
+- `.arcane/commands/<name>/index.ts`
 
 Bundled TypeScript command: `/review`.
 
@@ -667,8 +667,8 @@ Skills are capability packages loaded on-demand.
 
 Common locations:
 
-- `~/.omp/agent/skills/*/SKILL.md`
-- `.omp/skills/*/SKILL.md`
+- `~/.arcane/agent/skills/*/SKILL.md`
+- `.arcane/skills/*/SKILL.md`
 - `~/.claude/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`
 - `~/.codex/skills/*/SKILL.md`, `.codex/skills/*/SKILL.md`
 
@@ -683,7 +683,7 @@ description: Web search via Brave Search API.
 
 `description` drives matching; `name` defaults to the folder name when omitted.
 
-Disable skills with `omp --no-skills` or `skills.enabled: false`.
+Disable skills with `arc --no-skills` or `skills.enabled: false`.
 
 > See [Skills Documentation](docs/skills.md).
 
@@ -693,15 +693,15 @@ Hooks are TypeScript modules that subscribe to lifecycle events.
 
 Hook locations:
 
-- Global: `~/.omp/agent/hooks/pre/*.ts`, `~/.omp/agent/hooks/post/*.ts`
-- Project: `.omp/hooks/pre/*.ts`, `.omp/hooks/post/*.ts`
+- Global: `~/.arcane/agent/hooks/pre/*.ts`, `~/.arcane/agent/hooks/post/*.ts`
+- Project: `.arcane/hooks/pre/*.ts`, `.arcane/hooks/post/*.ts`
 - CLI: `--hook <path>`
 
 ```typescript
-import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/arcane/hooks";
 
-export default function (omp: HookAPI) {
-	omp.on("tool_call", async (event, ctx) => {
+export default function (arcane: HookAPI) {
+	arcane.on("tool_call", async (event, ctx) => {
 		if (event.toolName === "bash" && /sudo/.test(event.input.command as string)) {
 			const ok = await ctx.ui.confirm("Allow sudo?", event.input.command as string);
 			if (!ok) return { block: true, reason: "Blocked by user" };
@@ -714,7 +714,7 @@ export default function (omp: HookAPI) {
 Inject messages from hooks with:
 
 ```ts
-omp.sendMessage(message, { triggerTurn: true });
+arcane.sendMessage(message, { triggerTurn: true });
 ```
 
 > See [Hooks Documentation](docs/hooks.md) and [examples/hooks/](packages/coding-agent/examples/hooks/).
@@ -725,12 +725,12 @@ Custom tools extend the built-in toolset and are callable by the model.
 
 Auto-discovered locations:
 
-- Global: `~/.omp/agent/tools/*/index.ts`
-- Project: `.omp/tools/*/index.ts`
+- Global: `~/.arcane/agent/tools/*/index.ts`
+- Project: `.arcane/tools/*/index.ts`
 
 ```typescript
 import { Type } from "@sinclair/typebox";
-import type { CustomToolFactory } from "@nghyane/pi-coding-agent";
+import type { CustomToolFactory } from "@nghyane/arcane";
 const factory: CustomToolFactory = () => ({
 	name: "greet",
 	label: "Greeting",
@@ -753,8 +753,8 @@ export default factory;
 ## CLI Reference
 
 ```bash
-omp [options] [@files...] [messages...]
-omp <command> [args] [flags]
+arc [options] [@files...] [messages...]
+arc <command> [args] [flags]
 ```
 
 ### Options
@@ -796,7 +796,7 @@ omp <command> [args] [flags]
 
 ### Subcommands
 
-`omp` also ships dedicated subcommands:
+\`arc\` also ships dedicated subcommands:
 
 - `commit`
 - `config`
@@ -814,9 +814,9 @@ omp <command> [args] [flags]
 Include files with `@` prefix:
 
 ```bash
-omp @prompt.md "Answer this"
-omp @screenshot.png "What's in this image?"
-omp @requirements.md @design.png "Implement this"
+arc @prompt.md "Answer this"
+arc @screenshot.png "What's in this image?"
+arc @requirements.md @design.png "Implement this"
 ```
 
 Text files are wrapped in `<file ...>` blocks. Images are attached.
@@ -825,20 +825,20 @@ Text files are wrapped in `<file ...>` blocks. Images are attached.
 
 ```bash
 # Interactive mode
-omp
+arc
 # Non-interactive
-omp -p "List all .ts files in src/"
-omp -c "What did we discuss?"
+arc -p "List all .ts files in src/"
+arc -c "What did we discuss?"
 # Resume by ID prefix
-omp -r abc123
+arc -r abc123
 
 # Model cycling with patterns
-omp --models "sonnet:high,haiku:low"
+arc --models "sonnet:high,haiku:low"
 
 # Restrict toolset for read-only review
-omp --tools read,grep,find -p "Review the architecture"
+arc --tools read,grep,find -p "Review the architecture"
 # Export session
-omp --export session.jsonl output.html
+arc --export session.jsonl output.html
 ```
 
 ### Environment Variables
@@ -846,7 +846,7 @@ omp --export session.jsonl output.html
 | Variable                                          | Description                                             |
 | ------------------------------------------------- | ------------------------------------------------------- |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc.       | Provider credentials                                    |
-| `PI_CODING_AGENT_DIR`                             | Override agent data directory (default: `~/.omp/agent`) |
+| `PI_CODING_AGENT_DIR`                             | Override agent data directory (default: `~/.arcane/agent`) |
 | `PI_PACKAGE_DIR`                                  | Override package directory resolution                   |
 | `PI_SMOL_MODEL`, `PI_SLOW_MODEL` | Role-model overrides                                    |
 | `PI_NO_PTY`                                       | Disable PTY-based bash execution                        |
@@ -890,7 +890,7 @@ Notes:
 
 Example:
 
-`omp --tools read,grep,find -p "Review this codebase"`
+`arc --tools read,grep,find -p "Review this codebase"`
 
 For adding new tools, see [Custom Tools](#custom-tools).
 
@@ -900,10 +900,10 @@ For adding new tools, see [Custom Tools](#custom-tools).
 
 ### SDK
 
-For embedding omp in Node.js/TypeScript applications, use the SDK:
+For embedding arcane in Node.js/TypeScript applications, use the SDK:
 
 ```typescript
-import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@nghyane/pi-coding-agent";
+import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@nghyane/arcane";
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);
 await modelRegistry.refresh();
@@ -937,7 +937,7 @@ The SDK provides control over:
 For embedding from other languages or process isolation:
 
 ```bash
-omp --mode rpc --no-session
+arc --mode rpc --no-session
 ```
 
 Send JSON commands on stdin:
@@ -954,8 +954,8 @@ Responses are emitted as `type: "response"`; session events stream on stdout as 
 ### HTML Export
 
 ```bash
-omp --export session.jsonl              # Auto-generated filename
-omp --export session.jsonl output.html  # Custom filename
+arc --export session.jsonl              # Auto-generated filename
+arc --export session.jsonl output.html  # Custom filename
 ```
 
 Works with session files and JSON event logs from `--mode json`.
@@ -964,7 +964,7 @@ Works with session files and JSON event logs from `--mode json`.
 
 ## Philosophy
 
-omp originates from [pi-mono](https://github.com/badlogic/pi-mono) by [Mario Zechner](https://github.com/mariozechner), extended by [can1357](https://github.com/can1357) into a batteries-included coding agent. This fork strips out features that added complexity without clear payoff and adds opinionated improvements.
+arc originates from [arcane](https://github.com/badlogic/arcane) by [Mario Zechner](https://github.com/mariozechner), extended by [nghyane](https://github.com/nghyane) into a batteries-included coding agent. This fork strips out features that added complexity without clear payoff and adds opinionated improvements.
 
 Key ideas:
 
@@ -988,21 +988,21 @@ For architecture and contribution guidelines, see [packages/coding-agent/DEVELOP
 
 | Package                                                   | Description                                                                |
 | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **[@nghyane/pi-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
-| **[@nghyane/pi-agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
-| **[@nghyane/pi-codemode](packages/codemode)**            | Code Mode: LLM writes JS to orchestrate tools in a single round-trip      |
-| **[@nghyane/pi-coding-agent](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
-| **[@nghyane/pi-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
-| **[@nghyane/pi-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
-| **[@nghyane/omp-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
-| **[@nghyane/pi-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
-| **[@nghyane/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
+| **[@nghyane/arcane-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
+| **[@nghyane/arcane-agent](packages/agent)**             | Agent runtime with tool calling and state management                       |
+| **[@nghyane/arcane-codemode](packages/codemode)**            | Code Mode: LLM writes JS to orchestrate tools in a single round-trip      |
+| **[@nghyane/arcane](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
+| **[@nghyane/arcane-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
+| **[@nghyane/arcane-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
+| **[@nghyane/arcane-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
+| **[@nghyane/arcane-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
+| **[@nghyane/arcane-swarm](packages/swarm-extension)** | Swarm orchestration extension package                                      |
 
 ### Rust Crates
 
 | Crate                                                         | Description                                                                                  |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@nghyane/pi-natives`                                        |
+| **[arcane-natives](crates/arcane-natives)**                           | Core Rust native addon used by `@nghyane/arcane-natives`                                        |
 | **[brush-core-vendored](crates/brush-core-vendored)**         | Vendored fork of [brush-shell](https://github.com/reubeno/brush) for embedded bash execution |
 | **[brush-builtins-vendored](crates/brush-builtins-vendored)** | Vendored bash builtins (cd, echo, test, printf, read, export, etc.)                          |
 
@@ -1012,4 +1012,4 @@ For architecture and contribution guidelines, see [packages/coding-agent/DEVELOP
 
 MIT. See [LICENSE](LICENSE).
 
-Original work copyright (c) [Mario Zechner](https://github.com/mariozechner) and [Can Boluk](https://github.com/can1357).
+Original work copyright (c) [Mario Zechner](https://github.com/mariozechner) and [Can Boluk](https://github.com/nghyane).

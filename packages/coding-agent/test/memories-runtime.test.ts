@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { Model } from "@nghyane/pi-ai";
-import * as ai from "@nghyane/pi-ai";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
-import { buildMemoryToolDeveloperInstructions, startMemoryStartupTask } from "@nghyane/pi-coding-agent/memories";
-import * as memoryStorage from "@nghyane/pi-coding-agent/memories/storage";
-import { Snowflake } from "@nghyane/pi-utils";
-import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
+import { Settings } from "@nghyane/arcane/config/settings";
+import { buildMemoryToolDeveloperInstructions, startMemoryStartupTask } from "@nghyane/arcane/memories";
+import * as memoryStorage from "@nghyane/arcane/memories/storage";
+import type { Model } from "@nghyane/arcane-ai";
+import * as ai from "@nghyane/arcane-ai";
+import { Snowflake } from "@nghyane/arcane-utils";
+import { getAgentDbPath } from "@nghyane/arcane-utils/dirs";
 
 interface SessionFixture {
 	agentDir: string;

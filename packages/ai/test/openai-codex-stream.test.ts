@@ -3,10 +3,10 @@ import {
 	getOpenAICodexTransportDetails,
 	prewarmOpenAICodexResponses,
 	streamOpenAICodexResponses,
-} from "@nghyane/pi-ai/providers/openai-codex-responses";
-import type { Context, Model, ProviderSessionState } from "@nghyane/pi-ai/types";
-import { TempDir } from "@nghyane/pi-utils";
-import { getAgentDir, setAgentDir } from "@nghyane/pi-utils/dirs";
+} from "@nghyane/arcane-ai/providers/openai-codex-responses";
+import type { Context, Model, ProviderSessionState } from "@nghyane/arcane-ai/types";
+import { TempDir } from "@nghyane/arcane-utils";
+import { getAgentDir, setAgentDir } from "@nghyane/arcane-utils/dirs";
 
 const originalFetch = global.fetch;
 const originalAgentDir = getAgentDir();
@@ -98,7 +98,7 @@ describe("openai-codex streaming", () => {
 				expect(headers?.get("Authorization")).toBe(`Bearer ${token}`);
 				expect(headers?.get("chatgpt-account-id")).toBe("acc_test");
 				expect(headers?.get("OpenAI-Beta")).toBe("responses=experimental");
-				expect(headers?.get("originator")).toBe("pi");
+				expect(headers?.get("originator")).toBe("arcane");
 				expect(headers?.get("accept")).toBe("text/event-stream");
 				expect(headers?.has("x-api-key")).toBe(false);
 				return new Response(stream, {

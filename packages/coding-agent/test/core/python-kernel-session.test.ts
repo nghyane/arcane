@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { disposeAllKernelSessions, executePython } from "@nghyane/pi-coding-agent/ipy/executor";
-import type { KernelExecuteOptions, KernelExecuteResult } from "@nghyane/pi-coding-agent/ipy/kernel";
-import { PythonKernel } from "@nghyane/pi-coding-agent/ipy/kernel";
-import { TempDir } from "@nghyane/pi-utils";
+import { disposeAllKernelSessions, executePython } from "@nghyane/arcane/ipy/executor";
+import type { KernelExecuteOptions, KernelExecuteResult } from "@nghyane/arcane/ipy/kernel";
+import { PythonKernel } from "@nghyane/arcane/ipy/kernel";
+import { TempDir } from "@nghyane/arcane-utils";
 
 class FakeKernel {
 	executeCalls = 0;

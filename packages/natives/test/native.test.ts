@@ -52,7 +52,7 @@ async function cleanupFixtures() {
 	await fs.rm(testDir, { recursive: true, force: true });
 }
 
-describe("pi-natives", () => {
+describe("arcane-natives", () => {
 	beforeAll(async () => {
 		await setupFixtures();
 		return async () => {

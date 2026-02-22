@@ -5,8 +5,8 @@
  * Endpoint: POST https://api.synthetic.new/v2/search
  */
 
-import { getEnvApiKey } from "@nghyane/pi-ai";
-import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
+import { getEnvApiKey } from "@nghyane/arcane-ai";
+import { getAgentDbPath } from "@nghyane/arcane-utils/dirs";
 import { AgentStorage } from "../../../session/agent-storage";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";
@@ -89,7 +89,7 @@ export async function searchSynthetic(params: {
 }): Promise<SearchResponse> {
 	const apiKey = await findApiKey();
 	if (!apiKey) {
-		throw new Error("Synthetic credentials not found. Set SYNTHETIC_API_KEY or login with 'omp /login synthetic'.");
+		throw new Error("Synthetic credentials not found. Set SYNTHETIC_API_KEY or login with 'arc /login synthetic'.");
 	}
 
 	const data = await callSyntheticSearch(apiKey, params.query, params.signal);

@@ -1,5 +1,5 @@
 [package]
-name = "pi-natives"
+name = "arcane-natives"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

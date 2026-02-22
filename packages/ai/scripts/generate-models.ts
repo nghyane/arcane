@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import * as path from "node:path";
-import { $env } from "@nghyane/pi-utils";
+import { $env } from "@nghyane/arcane-utils";
 import { createModelManager } from "../src/model-manager";
 import {
 	type CatalogDiscoveryConfig,

@@ -11,7 +11,7 @@
 //!
 //! # Example
 //! ```ignore
-//! use pi_natives::ps::kill_tree;
+//! use arcane_natives::ps::kill_tree;
 //!
 //! // Kill process 1234 and all its descendants
 //! let killed = kill_tree(1234, 9); // SIGKILL

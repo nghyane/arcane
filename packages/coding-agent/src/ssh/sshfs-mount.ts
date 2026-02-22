@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getRemoteDir } from "@nghyane/pi-utils/dirs";
+import { getRemoteDir } from "@nghyane/arcane-utils/dirs";
 import { $ } from "bun";
 import { getControlDir, getControlPathTemplate, type SSHConnectionTarget } from "./connection-manager";
 

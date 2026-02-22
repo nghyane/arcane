@@ -7,9 +7,9 @@ import {
 	type KeyId,
 	matchesKey,
 	setEditorKeybindings,
-} from "@nghyane/pi-tui";
-import { isEnoent, logger } from "@nghyane/pi-utils";
-import { getAgentDir } from "@nghyane/pi-utils/dirs";
+} from "@nghyane/arcane-tui";
+import { isEnoent, logger } from "@nghyane/arcane-utils";
+import { getAgentDir } from "@nghyane/arcane-utils/dirs";
 
 /**
  * Application-level actions (coding agent specific).

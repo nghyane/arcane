@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { convertAnthropicMessages } from "@nghyane/pi-ai/providers/anthropic";
-import type { AssistantMessage, Model, UserMessage } from "@nghyane/pi-ai/types";
+import { convertAnthropicMessages } from "@nghyane/arcane-ai/providers/anthropic";
+import type { AssistantMessage, Model, UserMessage } from "@nghyane/arcane-ai/types";
 
 /**
  * Regression: some Anthropic-routed models reject "assistant prefill" requests

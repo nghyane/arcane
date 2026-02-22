@@ -4,15 +4,15 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Agent } from "@nghyane/pi-agent-core";
-import { getBundledModel } from "@nghyane/pi-ai";
-import { ModelRegistry } from "@nghyane/pi-coding-agent/config/model-registry";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
-import { AgentSession } from "@nghyane/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@nghyane/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
-import { createTools, type ToolSession } from "@nghyane/pi-coding-agent/tools";
-import { Snowflake } from "@nghyane/pi-utils";
+import { ModelRegistry } from "@nghyane/arcane/config/model-registry";
+import { Settings } from "@nghyane/arcane/config/settings";
+import { AgentSession } from "@nghyane/arcane/session/agent-session";
+import { AuthStorage } from "@nghyane/arcane/session/auth-storage";
+import { SessionManager } from "@nghyane/arcane/session/session-manager";
+import { createTools, type ToolSession } from "@nghyane/arcane/tools";
+import { Agent } from "@nghyane/arcane-agent";
+import { getBundledModel } from "@nghyane/arcane-ai";
+import { Snowflake } from "@nghyane/arcane-utils";
 import { e2eApiKey } from "../../ai/test/oauth";
 
 export { e2eApiKey };
@@ -74,7 +74,7 @@ export interface TestSessionContext {
  * Use this for e2e tests that need real LLM calls.
  */
 export async function createTestSession(options: TestSessionOptions = {}): Promise<TestSessionContext> {
-	const tempDir = path.join(os.tmpdir(), `omp-test-${Snowflake.next()}`);
+	const tempDir = path.join(os.tmpdir(), `arc-test-${Snowflake.next()}`);
 	fs.mkdirSync(tempDir, { recursive: true });
 
 	const toolSession: ToolSession = {

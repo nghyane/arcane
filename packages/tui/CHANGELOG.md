@@ -29,7 +29,7 @@
 
 ### Fixed
 
-- Fixed history-entry navigation anchoring (Up opens at top, Down opens at bottom) and preserved editor scroll context when max-height changes to keep cursor movement visible in long prompts ([#99](https://github.com/can1357/oh-my-pi/issues/99)).
+- Fixed history-entry navigation anchoring (Up opens at top, Down opens at bottom) and preserved editor scroll context when max-height changes to keep cursor movement visible in long prompts ([#99](https://github.com/nghyane/arcane/issues/99)).
 
 ## [12.11.3] - 2026-02-19
 
@@ -144,7 +144,7 @@
 - Changed notification suppression environment variable from `OMP_NOTIFICATIONS` to `PI_NOTIFICATIONS`
 - Changed TUI write log environment variable from `OMP_TUI_WRITE_LOG` to `PI_TUI_WRITE_LOG`
 - Changed hardware cursor environment variable from `OMP_HARDWARE_CURSOR` to `PI_HARDWARE_CURSOR`
-- Updated environment variable access to use `getEnv()` utility function from `@nghyane/pi-utils` for consistent handling
+- Updated environment variable access to use `getEnv()` utility function from `@nghyane/arcane-utils` for consistent handling
 - Renamed `TERMINAL_INFO` export to `TERMINAL` for clearer API semantics
 - Reorganized terminal image exports from `terminal-image` to `terminal-capabilities` module
 - Updated all internal references to use `TERMINAL` instead of `TERMINAL_INFO`
@@ -163,7 +163,7 @@
 
 ### Changed
 
-- Moved `wrapTextWithAnsi` export to `@nghyane/pi-natives` package
+- Moved `wrapTextWithAnsi` export to `@nghyane/arcane-natives` package
 
 ### Fixed
 
@@ -190,7 +190,7 @@
 
 ### Removed
 
-- Removed `truncateToWidth`, `sliceWithWidth`, and `extractSegments` functions from public API (now re-exported directly from @nghyane/pi-natives)
+- Removed `truncateToWidth`, `sliceWithWidth`, and `extractSegments` functions from public API (now re-exported directly from @nghyane/arcane-natives)
 - Removed `ellipsis` property from `SymbolTheme` interface
 - Removed `extractAnsiCode` function from public API
 
@@ -484,7 +484,7 @@
 
 ### Changed
 
-- Forked to @oh-my-pi scope with unified versioning across all packages
+- Forked to @arcane scope with unified versioning across all packages
 
 ### Fixed
 
@@ -494,13 +494,13 @@
 
 ## [1.337.0] - 2026-01-02
 
-Initial release under @oh-my-pi scope. See previous releases at [badlogic/pi-mono](https://github.com/badlogic/pi-mono).
+Initial release under @arcane scope. See previous releases at [badlogic/arcane](https://github.com/badlogic/arcane).
 
 ## [0.31.1] - 2026-01-02
 
 ### Fixed
 
-- `visibleWidth()` now strips OSC 8 hyperlink sequences, fixing text wrapping for clickable links ([#396](https://github.com/badlogic/pi-mono/pull/396) by [@Cursivez](https://github.com/Cursivez))
+- `visibleWidth()` now strips OSC 8 hyperlink sequences, fixing text wrapping for clickable links ([#396](https://github.com/badlogic/arcane/pull/396) by [@Cursivez](https://github.com/Cursivez))
 
 ## [0.31.0] - 2026-01-02
 
@@ -514,22 +514,22 @@ Initial release under @oh-my-pi scope. See previous releases at [badlogic/pi-mon
 ### Changed
 
 - README.md completely rewritten with accurate component documentation, theme interfaces, and examples
-- `visibleWidth()` reimplemented with grapheme-based width calculation, 10x faster on Bun and ~15% faster on Node ([#369](https://github.com/badlogic/pi-mono/pull/369) by [@nathyong](https://github.com/nathyong))
+- `visibleWidth()` reimplemented with grapheme-based width calculation, 10x faster on Bun and ~15% faster on Node ([#369](https://github.com/badlogic/arcane/pull/369) by [@nathyong](https://github.com/nathyong))
 
 ### Fixed
 
-- Markdown component now renders HTML tags as plain text instead of silently dropping them ([#359](https://github.com/badlogic/pi-mono/issues/359))
-- Crash in `visibleWidth()` and grapheme iteration when encountering undefined code points ([#372](https://github.com/badlogic/pi-mono/pull/372) by [@HACKE-RC](https://github.com/HACKE-RC))
-- ZWJ emoji sequences (rainbow flag, family, etc.) now render with correct width instead of being split into multiple characters ([#369](https://github.com/badlogic/pi-mono/pull/369) by [@nathyong](https://github.com/nathyong))
+- Markdown component now renders HTML tags as plain text instead of silently dropping them ([#359](https://github.com/badlogic/arcane/issues/359))
+- Crash in `visibleWidth()` and grapheme iteration when encountering undefined code points ([#372](https://github.com/badlogic/arcane/pull/372) by [@HACKE-RC](https://github.com/HACKE-RC))
+- ZWJ emoji sequences (rainbow flag, family, etc.) now render with correct width instead of being split into multiple characters ([#369](https://github.com/badlogic/arcane/pull/369) by [@nathyong](https://github.com/nathyong))
 
 ## [0.29.0] - 2025-12-25
 
 ### Added
 
-- **Auto-space before pasted file paths**: When pasting a file path (starting with `/`, `~`, or `.`) and the cursor is after a word character, a space is automatically prepended for better readability. Useful when dragging screenshots from macOS. ([#307](https://github.com/badlogic/pi-mono/pull/307) by [@mitsuhiko](https://github.com/mitsuhiko))
-- **Word navigation for Input component**: Added Ctrl+Left/Right and Alt+Left/Right support for word-by-word cursor movement. ([#306](https://github.com/badlogic/pi-mono/pull/306) by [@kim0](https://github.com/kim0))
-- **Full Unicode input**: Input component now accepts Unicode characters beyond ASCII. ([#306](https://github.com/badlogic/pi-mono/pull/306) by [@kim0](https://github.com/kim0))
+- **Auto-space before pasted file paths**: When pasting a file path (starting with `/`, `~`, or `.`) and the cursor is after a word character, a space is automatically prepended for better readability. Useful when dragging screenshots from macOS. ([#307](https://github.com/badlogic/arcane/pull/307) by [@mitsuhiko](https://github.com/mitsuhiko))
+- **Word navigation for Input component**: Added Ctrl+Left/Right and Alt+Left/Right support for word-by-word cursor movement. ([#306](https://github.com/badlogic/arcane/pull/306) by [@kim0](https://github.com/kim0))
+- **Full Unicode input**: Input component now accepts Unicode characters beyond ASCII. ([#306](https://github.com/badlogic/arcane/pull/306) by [@kim0](https://github.com/kim0))
 
 ### Fixed
 
-- **Readline-style Ctrl+W**: Now skips trailing whitespace before deleting the preceding word, matching standard readline behavior. ([#306](https://github.com/badlogic/pi-mono/pull/306) by [@kim0](https://github.com/kim0))
+- **Readline-style Ctrl+W**: Now skips trailing whitespace before deleting the preceding word, matching standard readline behavior. ([#306](https://github.com/badlogic/arcane/pull/306) by [@kim0](https://github.com/kim0))

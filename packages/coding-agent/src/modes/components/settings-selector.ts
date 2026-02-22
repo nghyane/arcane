@@ -1,4 +1,4 @@
-import type { ThinkingLevel } from "@nghyane/pi-agent-core";
+import type { ThinkingLevel } from "@nghyane/arcane-agent";
 import {
 	Container,
 	matchesKey,
@@ -11,7 +11,7 @@ import {
 	TabBar,
 	type TabBarTheme,
 	Text,
-} from "@nghyane/pi-tui";
+} from "@nghyane/arcane-tui";
 import { type SettingPath, settings } from "../../config/settings";
 import type {
 	SettingTab,

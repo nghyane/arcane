@@ -1,11 +1,11 @@
 /**
  * Shared helpers for tool-rendered UI components.
  */
-import { padding, visibleWidth } from "@nghyane/pi-tui";
+import { padding, visibleWidth } from "@nghyane/arcane-tui";
 import type { Theme, ThemeBg } from "../modes/theme/theme";
 import type { IconType, State } from "./types";
 
-export { Ellipsis, truncateToWidth } from "@nghyane/pi-tui";
+export { Ellipsis, truncateToWidth } from "@nghyane/arcane-tui";
 
 /** Cached typed-array scratch space for hashing non-string primitives. */
 const hashBuf = new ArrayBuffer(8);

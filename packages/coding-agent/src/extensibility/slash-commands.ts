@@ -1,4 +1,4 @@
-import type { AutocompleteItem } from "@nghyane/pi-tui";
+import type { AutocompleteItem } from "@nghyane/arcane-tui";
 import { slashCommandCapability } from "../capability/slash-command";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { SlashCommand } from "../discovery";

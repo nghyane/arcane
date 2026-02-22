@@ -1,6 +1,6 @@
 # Natives Architecture
 
-`@nghyane/pi-natives` is a three-layer stack:
+`@nghyane/arcane-natives` is a three-layer stack:
 
 1. **TypeScript wrapper/API layer** exposes stable JS/TS entrypoints.
 2. **Addon loading/validation layer** resolves and validates the `.node` binary for the current runtime.
@@ -17,7 +17,7 @@ This document is the foundation for deeper module-level docs.
 - `packages/natives/scripts/build-native.ts`
 - `packages/natives/scripts/embed-native.ts`
 - `packages/natives/package.json`
-- `crates/pi-natives/src/lib.rs`
+- `crates/arcane-natives/src/lib.rs`
 
 ## Layer 1: TypeScript wrapper/API layer
 
@@ -35,7 +35,7 @@ Current top-level groups:
 - module-specific bindings are added by declaration merging from each module’s `types.ts`
 - `Cancellable` standardizes timeout and abort-signal options for wrappers that expose cancellation
 
-**Guaranteed contract (API-facing):** consumers import from `@nghyane/pi-natives` and use typed wrappers.
+**Guaranteed contract (API-facing):** consumers import from `@nghyane/arcane-natives` and use typed wrappers.
 
 **Implementation detail (may change):** declaration merging and internal wrapper layout (`src/<module>/index.ts`, `src/<module>/types.ts`).
 
@@ -59,9 +59,9 @@ Current top-level groups:
 
 Filename strategy:
 
-- Release: `pi_natives.<platform>-<arch>.node`
-- x64 variant release: `pi_natives.<platform>-<arch>-modern.node` and/or `...-baseline.node`
-- Dev: `pi_natives.dev.node` (preferred when `PI_DEV` is set)
+- Release: `arcane_natives.<platform>-<arch>.node`
+- x64 variant release: `arcane_natives.<platform>-<arch>-modern.node` and/or `...-baseline.node`
+- Dev: `arcane_natives.dev.node` (preferred when `PI_DEV` is set)
 
 ### Platform-specific variant detection
 
@@ -81,7 +81,7 @@ For compiled binaries (`PI_COMPILED` or Bun embedded runtime markers), loader be
 
 1. Check versioned user cache path: `<getNativesDir()>/<packageVersion>/...`
 2. Check legacy compiled-binary location:
-   - Windows: `%LOCALAPPDATA%/omp` (fallback `%USERPROFILE%/AppData/Local/omp`)
+   - Windows: `%LOCALAPPDATA%/arcane` (fallback `%USERPROFILE%/AppData/Local/arcane`)
    - non-Windows: `~/.local/bin`
 3. Fall back to packaged `native/` and executable directory candidates
 
@@ -104,7 +104,7 @@ Failure paths are explicit:
 
 ## Layer 3: Rust N-API module layer
 
-`crates/pi-natives/src/lib.rs` is the Rust entry module that declares exported module ownership:
+`crates/arcane-natives/src/lib.rs` is the Rust entry module that declares exported module ownership:
 
 - `clipboard`
 - `fd`
@@ -128,7 +128,7 @@ These modules implement the N-API symbols consumed and validated by `native.ts`.
 
 **Guaranteed contract (API-facing):** Rust module exports must match the binding names expected by `validateNative` and wrapper modules.
 
-**Implementation detail (may change):** internal Rust module decomposition and helper module boundaries (`glob_util`, `task`, etc.).
+**Implementation detail (may change):** internal Rust module decompaneosition and helper module boundaries (`glob_util`, `task`, etc.).
 
 ## Ownership boundaries
 
@@ -142,14 +142,14 @@ At architecture level, ownership is split as follows:
   - CPU variant selection and override handling
   - compiled-binary extraction and candidate probing
   - hard validation of required native exports
-- **Rust ownership (`crates/pi-natives/src`)**
+- **Rust ownership (`crates/arcane-natives/src`)**
   - algorithmic and system-level implementation
   - platform-native behavior and performance-sensitive logic
   - N-API symbol implementation that TS wrappers consume
 
 ## Runtime flow (high level)
 
-1. Consumer imports from `@nghyane/pi-natives`.
+1. Consumer imports from `@nghyane/arcane-natives`.
 2. Wrapper module calls into singleton `native` binding.
 3. `native.ts` selects candidate binary for platform/arch/variant.
 4. Optional embedded binary extraction occurs for compiled distributions.
@@ -163,6 +163,6 @@ At architecture level, ownership is split as follows:
 - **Variant**: x64 CPU-specific build flavor (`modern` AVX2, `baseline` fallback).
 - **Wrapper**: TS function/class that provides typed API over raw native exports.
 - **Declaration merging**: TS technique used by module `types.ts` files to extend `NativeBindings`.
-- **Compiled binary mode**: Runtime mode where the CLI is bundled and native addons are resolved from extracted/cache paths instead of only package-local paths.
+- **Carcaneiled binary mode**: Runtime mode where the CLI is bundled and native addons are resolved from extracted/cache paths instead of only package-local paths.
 - **Embedded addon**: Build artifact metadata and file references generated into `embedded-addon.ts` so compiled binaries can extract matching `.node` payloads.
 - **Validation gate**: `validateNative(...)` check that rejects stale/mismatched binaries missing required exports.

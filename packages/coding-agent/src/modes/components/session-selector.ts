@@ -8,7 +8,7 @@ import {
 	Text,
 	truncateToWidth,
 	visibleWidth,
-} from "@nghyane/pi-tui";
+} from "@nghyane/arcane-tui";
 import { theme } from "../../modes/theme/theme";
 import type { SessionInfo } from "../../session/session-manager";
 import { fuzzyFilter } from "../../utils/fuzzy";

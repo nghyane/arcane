@@ -124,6 +124,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "arcane-natives"
+version = "12.19.0"
+dependencies = [
+ "arboard",
+ "brush-builtins",
+ "brush-core",
+ "bstr",
+ "clap",
+ "dashmap",
+ "globset",
+ "grep-matcher",
+ "grep-regex",
+ "grep-searcher",
+ "heapless",
+ "html-to-markdown-rs",
+ "ignore",
+ "image",
+ "inferno",
+ "libc",
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "os_pipe",
+ "parking_lot",
+ "phf 0.13.1",
+ "portable-pty",
+ "rayon",
+ "smallvec",
+ "syntect",
+ "sysinfo",
+ "tokio",
+ "tokio-util",
+ "unicode-segmentation",
+ "unicode-width",
+ "winreg 0.55.0",
+]
+
+[[package]]
 name = "archery"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2054,44 +2092,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e57fef6bc5981e38c2ce2d63bfa546861309f875b8a75f092d1d54ae2d64f266"
 dependencies = [
  "siphasher",
-]
-
-[[package]]
-name = "pi-natives"
-version = "12.19.0"
-dependencies = [
- "arboard",
- "brush-builtins",
- "brush-core",
- "bstr",
- "clap",
- "dashmap",
- "globset",
- "grep-matcher",
- "grep-regex",
- "grep-searcher",
- "heapless",
- "html-to-markdown-rs",
- "ignore",
- "image",
- "inferno",
- "libc",
- "napi",
- "napi-build",
- "napi-derive",
- "os_pipe",
- "parking_lot",
- "phf 0.13.1",
- "portable-pty",
- "rayon",
- "smallvec",
- "syntect",
- "sysinfo",
- "tokio",
- "tokio-util",
- "unicode-segmentation",
- "unicode-width",
- "winreg 0.55.0",
 ]
 
 [[package]]

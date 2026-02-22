@@ -3,9 +3,9 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { ImageContent } from "@nghyane/pi-ai";
-import { isEnoent } from "@nghyane/pi-utils";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import type { ImageContent } from "@nghyane/arcane-ai";
+import { isEnoent } from "@nghyane/arcane-utils";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { formatBytes } from "../session/streaming-output";
 import { resolveReadPath } from "../tools/path-utils";

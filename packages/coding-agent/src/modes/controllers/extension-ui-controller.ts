@@ -1,6 +1,6 @@
-import type { Component, OverlayHandle, TUI } from "@nghyane/pi-tui";
-import { Spacer, Text } from "@nghyane/pi-tui";
-import { logger } from "@nghyane/pi-utils";
+import type { Component, OverlayHandle, TUI } from "@nghyane/arcane-tui";
+import { Spacer, Text } from "@nghyane/arcane-tui";
+import { logger } from "@nghyane/arcane-utils";
 import { KeybindingsManager } from "../../config/keybindings";
 import type {
 	ExtensionActions,

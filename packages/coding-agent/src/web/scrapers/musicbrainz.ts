@@ -62,7 +62,7 @@ interface MusicBrainzRelease {
 }
 
 const MUSICBRAINZ_HOSTS = new Set(["musicbrainz.org", "www.musicbrainz.org"]);
-const USER_AGENT = "omp-web-fetch/1.0 (https://github.com/anthropics)";
+const USER_AGENT = "arc-web-fetch/1.0 (https://github.com/anthropics)";
 const MAX_TRACKS = 50;
 
 function parseEntity(url: URL): { entity: MusicBrainzEntity; mbid: string } | null {

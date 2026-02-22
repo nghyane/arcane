@@ -1,7 +1,14 @@
 import { describe, expect, it } from "bun:test";
-import { getBundledModel } from "@nghyane/pi-ai/models";
-import { convertMessages } from "@nghyane/pi-ai/providers/openai-completions";
-import type { AssistantMessage, Context, Model, OpenAICompat, ToolResultMessage, Usage } from "@nghyane/pi-ai/types";
+import { getBundledModel } from "@nghyane/arcane-ai/models";
+import { convertMessages } from "@nghyane/arcane-ai/providers/openai-completions";
+import type {
+	AssistantMessage,
+	Context,
+	Model,
+	OpenAICompat,
+	ToolResultMessage,
+	Usage,
+} from "@nghyane/arcane-ai/types";
 
 const emptyUsage: Usage = {
 	input: 0,

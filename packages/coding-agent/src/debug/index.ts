@@ -5,9 +5,9 @@
  */
 import * as fs from "node:fs/promises";
 import * as url from "node:url";
-import { getWorkProfile } from "@nghyane/pi-natives";
-import { Container, Loader, type SelectItem, SelectList, Spacer, Text } from "@nghyane/pi-tui";
-import { getSessionsDir } from "@nghyane/pi-utils/dirs";
+import { getWorkProfile } from "@nghyane/arcane-natives";
+import { Container, Loader, type SelectItem, SelectList, Spacer, Text } from "@nghyane/arcane-tui";
+import { getSessionsDir } from "@nghyane/arcane-utils/dirs";
 import { DynamicBorder } from "../modes/components/dynamic-border";
 import { getSelectListTheme, getSymbolTheme, theme } from "../modes/theme/theme";
 import type { InteractiveModeContext } from "../modes/types";

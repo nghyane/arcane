@@ -1,4 +1,4 @@
-import { $env } from "@nghyane/pi-utils";
+import { $env } from "@nghyane/arcane-utils";
 
 export enum ImageProtocol {
 	Kitty = "\x1b_G",

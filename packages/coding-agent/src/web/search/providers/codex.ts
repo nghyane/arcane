@@ -6,8 +6,8 @@
  * Returns synthesized answers with web search sources.
  */
 import * as os from "node:os";
-import { readSseJson } from "@nghyane/pi-utils";
-import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
+import { readSseJson } from "@nghyane/arcane-utils";
+import { getAgentDbPath } from "@nghyane/arcane-utils/dirs";
 import packageJson from "../../../../package.json" with { type: "json" };
 import { AgentStorage } from "../../../session/agent-storage";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";
@@ -159,7 +159,7 @@ function buildCodexHeaders(accessToken: string, accountId: string): Record<strin
 		Authorization: `Bearer ${accessToken}`,
 		"chatgpt-account-id": accountId,
 		"OpenAI-Beta": "responses=experimental",
-		originator: "pi",
+		originator: "arcane",
 		"User-Agent": `pi/${packageJson.version} (${os.platform()} ${os.release()}; ${os.arch()})`,
 		Accept: "text/event-stream",
 		"Content-Type": "application/json",
@@ -316,7 +316,7 @@ export async function searchCodex(params: CodexSearchParams): Promise<SearchResp
 	const auth = await findCodexAuth();
 	if (!auth) {
 		throw new Error(
-			"No Codex OAuth credentials found. Login with 'omp /login openai-codex' to enable Codex web search.",
+			"No Codex OAuth credentials found. Login with 'arc /login openai-codex' to enable Codex web search.",
 		);
 	}
 

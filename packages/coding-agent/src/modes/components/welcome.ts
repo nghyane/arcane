@@ -1,5 +1,5 @@
-import { type Component, padding, truncateToWidth, visibleWidth } from "@nghyane/pi-tui";
-import { APP_NAME } from "@nghyane/pi-utils/dirs";
+import { type Component, padding, truncateToWidth, visibleWidth } from "@nghyane/arcane-tui";
+import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import { theme } from "../../modes/theme/theme";
 
 export interface RecentSession {

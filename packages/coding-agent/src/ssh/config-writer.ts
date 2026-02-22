@@ -5,7 +5,7 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isEnoent } from "@nghyane/pi-utils";
+import { isEnoent } from "@nghyane/arcane-utils";
 
 export interface SSHHostConfig {
 	host: string;

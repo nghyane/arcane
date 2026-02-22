@@ -1,4 +1,4 @@
-import { UNK_CONTEXT_WINDOW, UNK_MAX_TOKENS } from "@nghyane/pi-ai";
+import { UNK_CONTEXT_WINDOW, UNK_MAX_TOKENS } from "@nghyane/arcane-ai";
 import { z } from "zod";
 import type { Api, Model, Provider } from "../../types";
 

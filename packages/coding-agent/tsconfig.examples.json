@@ -3,10 +3,10 @@
 	"compilerOptions": {
 		"noEmit": true,
 		"paths": {
-			"@nghyane/pi-coding-agent": ["./src/index.ts"],
-			"@nghyane/pi-coding-agent/hooks": ["./src/extensibility/hooks/index.ts"],
-			"@nghyane/pi-tui": ["../tui/src/index.ts"],
-			"@nghyane/pi-ai": ["../ai/src/index.ts"],
+			"@nghyane/arcane": ["./src/index.ts"],
+			"@nghyane/arcane/hooks": ["./src/extensibility/hooks/index.ts"],
+			"@nghyane/arcane-tui": ["../tui/src/index.ts"],
+			"@nghyane/arcane-ai": ["../ai/src/index.ts"],
 			"@sinclair/typebox": ["../../node_modules/@sinclair/typebox"]
 		},
 		"skipLibCheck": true

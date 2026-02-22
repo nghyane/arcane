@@ -5,13 +5,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { ModelRegistry } from "@nghyane/pi-coding-agent/config/model-registry";
-import { discoverAndLoadExtensions } from "@nghyane/pi-coding-agent/extensibility/extensions/loader";
-import { ExtensionRunner } from "@nghyane/pi-coding-agent/extensibility/extensions/runner";
-import { AuthStorage } from "@nghyane/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
-import { logger, TempDir } from "@nghyane/pi-utils";
-import { getProjectAgentDir } from "@nghyane/pi-utils/dirs";
+import { ModelRegistry } from "@nghyane/arcane/config/model-registry";
+import { discoverAndLoadExtensions } from "@nghyane/arcane/extensibility/extensions/loader";
+import { ExtensionRunner } from "@nghyane/arcane/extensibility/extensions/runner";
+import { AuthStorage } from "@nghyane/arcane/session/auth-storage";
+import { SessionManager } from "@nghyane/arcane/session/session-manager";
+import { logger, TempDir } from "@nghyane/arcane-utils";
+import { getProjectAgentDir } from "@nghyane/arcane-utils/dirs";
 import { filterUserExtensionErrors, filterUserExtensions } from "./utils/filter-user-extensions";
 
 describe("ExtensionRunner", () => {

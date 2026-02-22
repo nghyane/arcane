@@ -5,7 +5,7 @@
  */
 import { createHash } from "node:crypto";
 import type { Content, FunctionCallingConfigMode, ThinkingConfig } from "@google/genai";
-import { abortableSleep, readSseJson } from "@nghyane/pi-utils";
+import { abortableSleep, readSseJson } from "@nghyane/arcane-utils";
 import { calculateCost } from "../models";
 import type {
 	Api,
@@ -892,7 +892,7 @@ export function buildRequest(
 		model: model.id,
 		request,
 		...(isAntigravity ? { requestType: "agent" } : {}),
-		userAgent: isAntigravity ? "antigravity" : "pi-coding-agent",
-		requestId: `${isAntigravity ? "agent" : "pi"}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+		userAgent: isAntigravity ? "antigravity" : "arcane",
+		requestId: `${isAntigravity ? "agent" : "arcane"}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
 	};
 }

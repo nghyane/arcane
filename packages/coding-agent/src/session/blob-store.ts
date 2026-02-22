@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { isEnoent, logger } from "@nghyane/pi-utils";
+import { isEnoent, logger } from "@nghyane/arcane-utils";
 
 const BLOB_PREFIX = "blob:sha256:";
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { getThemeByName } from "@nghyane/pi-coding-agent/modes/theme/theme";
-import { pythonToolRenderer } from "@nghyane/pi-coding-agent/tools/python";
-import { sanitizeText } from "@nghyane/pi-natives";
+import { getThemeByName } from "@nghyane/arcane/modes/theme/theme";
+import { pythonToolRenderer } from "@nghyane/arcane/tools/python";
+import { sanitizeText } from "@nghyane/arcane-natives";
 
 describe("pythonToolRenderer", () => {
 	it("renders truncated output when collapsed and full output when expanded", async () => {

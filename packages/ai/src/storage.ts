@@ -6,7 +6,7 @@
 import { Database, type Statement } from "bun:sqlite";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { getAgentDir } from "@nghyane/pi-utils/dirs";
+import { getAgentDir } from "@nghyane/arcane-utils/dirs";
 import type { OAuthCredentials } from "./utils/oauth/types";
 
 type AuthCredential = { type: "api_key"; key: string } | ({ type: "oauth" } & OAuthCredentials);

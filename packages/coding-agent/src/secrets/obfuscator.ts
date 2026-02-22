@@ -1,4 +1,4 @@
-import type { Message, TextContent } from "@nghyane/pi-ai";
+import type { Message, TextContent } from "@nghyane/arcane-ai";
 import { compileSecretRegex } from "./regex";
 
 // ═══════════════════════════════════════════════════════════════════════════

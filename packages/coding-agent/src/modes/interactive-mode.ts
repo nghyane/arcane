@@ -3,12 +3,20 @@
  * Handles TUI rendering and user interaction, delegating business logic to AgentSession.
  */
 import * as path from "node:path";
-import type { Agent, AgentMessage } from "@nghyane/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message, UsageReport } from "@nghyane/pi-ai";
-import type { Component, Loader, SlashCommand } from "@nghyane/pi-tui";
-import { CombinedAutocompleteProvider, Container, Markdown, ProcessTerminal, Spacer, Text, TUI } from "@nghyane/pi-tui";
-import { hsvToRgb, isEnoent, logger, postmortem } from "@nghyane/pi-utils";
-import { APP_NAME, getProjectDir } from "@nghyane/pi-utils/dirs";
+import type { Agent, AgentMessage } from "@nghyane/arcane-agent";
+import type { AssistantMessage, ImageContent, Message, UsageReport } from "@nghyane/arcane-ai";
+import type { Component, Loader, SlashCommand } from "@nghyane/arcane-tui";
+import {
+	CombinedAutocompleteProvider,
+	Container,
+	Markdown,
+	ProcessTerminal,
+	Spacer,
+	Text,
+	TUI,
+} from "@nghyane/arcane-tui";
+import { hsvToRgb, isEnoent, logger, postmortem } from "@nghyane/arcane-utils";
+import { APP_NAME, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { KeybindingsManager } from "../config/keybindings";
 import { type Settings, settings } from "../config/settings";

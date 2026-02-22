@@ -2,7 +2,7 @@
 
 Skills are file-backed capability packs discovered at startup and exposed to the model as:
 
-- lightweight metadata in the system prompt (name + description)
+- lightweight metadata in the system promptt (name + description)
 - on-demand content via `read skill://...`
 - optional interactive `/skill:<name>` commands
 
@@ -62,7 +62,7 @@ Current runtime behavior:
 
 - `name` defaults to the skill directory name
 - `description` is required for:
-  - native `.omp` provider skill discovery (`requireDescription: true`)
+  - native `.arcane` provider skill discovery (`requireDescription: true`)
   - `skills.customDirectories` scan in `extensibility/skills.ts`
 - non-native providers can load skills without description
 
@@ -81,7 +81,7 @@ Provider ordering is priority-first (higher wins), then registration order for t
 
 Current registered skill providers:
 
-1. `native` (priority 100) — `.omp` user/project skills via `src/discovery/builtin.ts`
+1. `native` (priority 100) — `.arcane` user/project skills via `src/discovery/builtin.ts`
 2. `claude` (priority 80)
 3. priority 70 group (in registration order):
    - `claude-plugins`
@@ -117,12 +117,12 @@ For providers other than codex/claude/native (for example `agents`, `claude-plug
 
 ## Runtime usage behavior
 
-### System prompt exposure
+### System promptt exposure
 
-System prompt construction (`src/system-prompt.ts`) uses discovered skills as follows:
+System promptt construction (`src/system-promptt.ts`) uses discovered skills as follows:
 
 - if `read` tool is available **and** no explicit preloaded skills are supplied:
-  - include discovered skills list in prompt
+  - include discovered skills list in promptt
 - otherwise:
   - omit discovered list
 - if preloaded skills are provided (for example from Task tool skill pinning):
@@ -201,7 +201,7 @@ No fallback search is performed for missing assets.
 
 ### Skills vs custom tools
 
-- **Skills**: documentation/workflow content loaded through prompt context and `read`
+- **Skills**: documentation/workflow content loaded through promptt context and `read`
 - **Custom tools**: executable tool APIs callable by the model with schemas and runtime side effects
 
 ### Skills vs hooks

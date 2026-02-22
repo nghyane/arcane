@@ -16,7 +16,7 @@ import {
 	type ThinkingBudgets,
 	type ToolChoice,
 	type ToolResultMessage,
-} from "@nghyane/pi-ai";
+} from "@nghyane/arcane-ai";
 import { agentLoop, agentLoopContinue } from "./agent-loop";
 import type {
 	AgentContext,

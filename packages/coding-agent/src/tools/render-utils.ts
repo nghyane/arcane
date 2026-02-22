@@ -5,10 +5,10 @@
  * tool renderers to ensure a unified TUI experience.
  */
 import * as os from "node:os";
-import { type Ellipsis, truncateToWidth } from "@nghyane/pi-tui";
+import { type Ellipsis, truncateToWidth } from "@nghyane/arcane-tui";
 import type { Theme } from "../modes/theme/theme";
 
-export { Ellipsis, replaceTabs, truncateToWidth } from "@nghyane/pi-tui";
+export { Ellipsis, replaceTabs, truncateToWidth } from "@nghyane/arcane-tui";
 
 // =============================================================================
 // Standardized Display Constants

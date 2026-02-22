@@ -16,7 +16,7 @@ export const ExploreTool = createSubagentTool({
 	schema,
 	descriptionTemplate: exploreDescription,
 	progressText: "Searching codebase...",
-	tmpPrefix: "omp-explore-",
+	tmpPrefix: "arc-explore-",
 	buildTask: p => p.query as string,
 	buildDescription: p => `Explore: ${(p.query as string).slice(0, 60)}`,
 	passContext: false,

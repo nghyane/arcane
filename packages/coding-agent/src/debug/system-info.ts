@@ -2,7 +2,7 @@
  * System information collection for debug reports.
  */
 import * as os from "node:os";
-import { getProjectDir, VERSION } from "@nghyane/pi-utils/dirs";
+import { getProjectDir, VERSION } from "@nghyane/arcane-utils/dirs";
 
 export interface SystemInfo {
 	os: string;
@@ -87,7 +87,7 @@ export function formatSystemInfo(info: SystemInfo): string {
 		`CPU:     ${info.cpu}`,
 		`Memory:  ${formatBytes(info.memory.total)} (${formatBytes(info.memory.free)} free)`,
 		`Bun:     ${info.versions.bun}`,
-		`App:     omp ${info.versions.app}`,
+		`App:     arcane ${info.versions.app}`,
 		`Node:    ${info.versions.node} (compat)`,
 		`CWD:     ${info.cwd}`,
 		`Shell:   ${info.shell}`,

@@ -1,15 +1,15 @@
 # Natives Shell, PTY, Process, and Key Internals
 
-This document covers the **execution/process/terminal primitives** in `@nghyane/pi-natives`: `shell`, `pty`, `ps`, and `keys`, using the architecture terms from `docs/natives-architecture.md`.
+This document covers the **execution/process/terminal primitives** in `@nghyane/arcane-natives`: `shell`, `pty`, `ps`, and `keys`, using the architecture terms from `docs/natives-architecture.md`.
 
 ## Implementation files
 
-- `crates/pi-natives/src/shell.rs`
-- `crates/pi-natives/src/shell/windows.rs` (Windows only)
-- `crates/pi-natives/src/pty.rs`
-- `crates/pi-natives/src/ps.rs`
-- `crates/pi-natives/src/keys.rs`
-- `crates/pi-natives/src/task.rs` (shared cancellation behavior used by shell/pty)
+- `crates/arcane-natives/src/shell.rs`
+- `crates/arcane-natives/src/shell/windows.rs` (Windows only)
+- `crates/arcane-natives/src/pty.rs`
+- `crates/arcane-natives/src/ps.rs`
+- `crates/arcane-natives/src/keys.rs`
+- `crates/arcane-natives/src/task.rs` (shared cancellation behavior used by shell/pty)
 - `packages/natives/src/shell/index.ts`
 - `packages/natives/src/shell/types.ts`
 - `packages/natives/src/pty/index.ts`
@@ -23,7 +23,7 @@ This document covers the **execution/process/terminal primitives** in `@nghyane/
 ## Layer ownership
 
 - **TS wrapper/API layer** (`packages/natives/src/*`): typed entrypoints, cancellation surface (`timeoutMs`, `AbortSignal`), and JS ergonomics.
-- **Rust N-API module layer** (`crates/pi-natives/src/*`): shell/PTY process execution, process-tree traversal/termination, and key-sequence parsing.
+- **Rust N-API module layer** (`crates/arcane-natives/src/*`): shell/PTY process execution, process-tree traversal/termination, and key-sequence parsing.
 - **Validation gate** (`native.ts`, architecture-level): ensures required exports (`Shell`, `executeShell`, `PtySession`, `killTree`, `listDescendants`, key helpers) exist before wrappers are used.
 
 ## Shell subsystem (`shell`)
@@ -60,8 +60,8 @@ Persistent shell (`Shell.run`) uses this state machine:
 
 - **Idle/Uninitialized**: `session: None`.
 - **Running**: first `run()` lazily creates session, stores `current_abort` token, executes command.
-- **Completed + keepalive**: if execution control flow is `Normal`, `current_abort` is cleared and session is reused.
-- **Completed + teardown**: if control flow is loop/script/shell-exit related (`BreakLoop`, `ContinueLoop`, `ReturnFromFunctionOrScript`, `ExitShell`), session is dropped (`session: None`).
+- **Carcaneleted + keepalive**: if execution control flow is `Normal`, `current_abort` is cleared and session is reused.
+- **Carcaneleted + teardown**: if control flow is loop/script/shell-exit related (`BreakLoop`, `ContinueLoop`, `ReturnFromFunctionOrScript`, `ExitShell`), session is dropped (`session: None`).
 - **Cancelled/Timed out**: run task is cancelled, grace wait (2s), then force-abort; session is dropped.
 - **Error**: session is dropped.
 
@@ -221,7 +221,7 @@ The parser combines:
 Modifier handling:
 
 - only shift/alt/ctrl bits are compared for key matching,
-- lock bits are masked out before comparisons.
+- lock bits are masked out before companearisons.
 
 Layout behavior:
 

@@ -4,11 +4,11 @@
 import type * as fs1 from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { ThinkingLevel } from "@nghyane/pi-agent-core";
-import type { ImageContent, Model, TextContent } from "@nghyane/pi-ai";
-import * as piCodingAgent from "@nghyane/pi-coding-agent";
-import type { KeyId } from "@nghyane/pi-tui";
-import { hasFsCode, isEacces, isEnoent, logger } from "@nghyane/pi-utils";
+import * as piCodingAgent from "@nghyane/arcane";
+import type { ThinkingLevel } from "@nghyane/arcane-agent";
+import type { ImageContent, Model, TextContent } from "@nghyane/arcane-ai";
+import type { KeyId } from "@nghyane/arcane-tui";
+import { hasFsCode, isEacces, isEnoent, logger } from "@nghyane/arcane-utils";
 import type { TSchema } from "@sinclair/typebox";
 import * as TypeBox from "@sinclair/typebox";
 import { type ExtensionModule, extensionModuleCapability } from "../../capability/extension-module";
@@ -334,8 +334,8 @@ interface ExtensionManifest {
 
 async function readExtensionManifest(packageJsonPath: string): Promise<ExtensionManifest | null> {
 	try {
-		const pkg = (await Bun.file(packageJsonPath).json()) as { omp?: ExtensionManifest; pi?: ExtensionManifest };
-		const manifest = pkg.omp ?? pkg.pi;
+		const pkg = (await Bun.file(packageJsonPath).json()) as { arcane?: ExtensionManifest };
+		const manifest = pkg.arcane;
 		if (manifest && typeof manifest === "object") {
 			return manifest;
 		}
@@ -408,7 +408,7 @@ async function resolveExtensionEntries(dir: string): Promise<string[] | null> {
  * Discovery rules:
  * 1. Direct files: `extensions/*.ts` or `*.js` → load
  * 2. Subdirectory with index: `extensions/<ext>/index.ts` or `index.js` → load
- * 3. Subdirectory with package.json: `extensions/<ext>/package.json` with "omp"/"pi" field → load declared paths
+ * 3. Subdirectory with package.json: `extensions/<ext>/package.json` with "arcane"" field → load declared paths
  *
  * No recursion beyond one level. Complex packages must use package.json manifest.
  */
@@ -480,7 +480,7 @@ export async function discoverAndLoadExtensions(
 		}
 	};
 
-	// 1. Discover extension modules via capability API (native .omp/.pi only)
+	// 1. Discover extension modules via capability API (native .arcane only)
 	const discovered = await loadCapability<ExtensionModule>(extensionModuleCapability.id, { cwd });
 	for (const ext of discovered.items) {
 		if (ext._source.provider !== "native") continue;

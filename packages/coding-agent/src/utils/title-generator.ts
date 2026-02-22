@@ -1,9 +1,9 @@
 /**
  * Generate session titles using a smol, fast model.
  */
-import type { Api, Model } from "@nghyane/pi-ai";
-import { completeSimple } from "@nghyane/pi-ai";
-import { logger } from "@nghyane/pi-utils";
+import type { Api, Model } from "@nghyane/arcane-ai";
+import { completeSimple } from "@nghyane/arcane-ai";
+import { logger } from "@nghyane/arcane-utils";
 import type { ModelRegistry } from "../config/model-registry";
 import { parseModelString } from "../config/model-resolver";
 import { renderPromptTemplate } from "../config/prompt-templates";

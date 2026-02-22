@@ -1,5 +1,5 @@
 // =============================================================================
-// Plugin Manifest Types (from package.json omp/pi field)
+// Plugin Manifest Types (from package.json arc/pi field)
 // =============================================================================
 
 /**
@@ -20,7 +20,7 @@ export interface PluginFeature {
 }
 
 /**
- * Plugin manifest from package.json omp or pi field.
+ * Plugin manifest from package.json arcane or pi field.
  */
 export interface PluginManifest {
 	/** Plugin display name (defaults to package name) */
@@ -102,7 +102,7 @@ export interface InstalledPlugin {
 	version: string;
 	/** Absolute path to package directory */
 	path: string;
-	/** Parsed omp/pi manifest */
+	/** Parsed arc/pi manifest */
 	manifest: PluginManifest;
 	/**
 	 * Enabled features:
@@ -115,7 +115,7 @@ export interface InstalledPlugin {
 }
 
 // =============================================================================
-// Runtime Config Types (stored in omp-plugins.lock.json)
+// Runtime Config Types (stored in arcane-plugins.lock.json)
 // =============================================================================
 
 /**
@@ -131,7 +131,7 @@ export interface PluginRuntimeState {
 }
 
 /**
- * Runtime configuration persisted to omp-plugins.lock.json.
+ * Runtime configuration persisted to arcane-plugins.lock.json.
  * Tracks plugin states and settings across sessions.
  */
 export interface PluginRuntimeConfig {
@@ -146,7 +146,7 @@ export interface PluginRuntimeConfig {
 // =============================================================================
 
 /**
- * Project-local plugin overrides (stored in .omp/plugin-overrides.json).
+ * Project-local plugin overrides (stored in .arcane/plugin-overrides.json).
  * Allows per-project plugin configuration without modifying global state.
  */
 export interface ProjectPluginOverrides {

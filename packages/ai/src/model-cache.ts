@@ -4,7 +4,7 @@
  */
 import { Database } from "bun:sqlite";
 import * as path from "node:path";
-import { getAgentDir } from "@nghyane/pi-utils/dirs";
+import { getAgentDir } from "@nghyane/arcane-utils/dirs";
 import type { Api, Model } from "./types";
 
 const CACHE_SCHEMA_VERSION = 2;

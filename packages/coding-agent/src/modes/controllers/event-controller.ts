@@ -1,5 +1,5 @@
-import { INTENT_FIELD } from "@nghyane/pi-agent-core";
-import { Loader, TERMINAL, Text } from "@nghyane/pi-tui";
+import { INTENT_FIELD } from "@nghyane/arcane-agent";
+import { Loader, TERMINAL, Text } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
 import { CodeModeGroupComponent } from "../../modes/components/codemode-group";

@@ -5,8 +5,8 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $env, hasFsCode, isEnoent, logger, untilAborted } from "@nghyane/pi-utils";
-import { getGpuCachePath, getProjectDir } from "@nghyane/pi-utils/dirs";
+import { $env, hasFsCode, isEnoent, logger, untilAborted } from "@nghyane/arcane-utils";
+import { getGpuCachePath, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { $ } from "bun";
 import { contextFileCapability } from "./capability/context-file";
 import { systemPromptCapability } from "./capability/system-prompt";

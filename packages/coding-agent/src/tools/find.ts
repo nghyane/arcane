@@ -1,10 +1,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import { FileType, type GlobMatch, glob } from "@nghyane/pi-natives";
-import type { Component } from "@nghyane/pi-tui";
-import { Text } from "@nghyane/pi-tui";
-import { isEnoent, untilAborted } from "@nghyane/pi-utils";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import { FileType, type GlobMatch, glob } from "@nghyane/arcane-natives";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
+import { isEnoent, untilAborted } from "@nghyane/arcane-utils";
 import type { Static } from "@sinclair/typebox";
 import { Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../config/prompt-templates";

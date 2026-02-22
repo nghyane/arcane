@@ -37,7 +37,7 @@ async function buildArchiveBase64(dir: string): Promise<string> {
 
 	const tempArchivePath = path.join(
 		os.tmpdir(),
-		`omp-stats-client-${Bun.hash(Date.now().toString() + Math.random().toString(16)).toString(16)}.tar.gz`,
+		`arcane-stats-client-${Bun.hash(Date.now().toString() + Math.random().toString(16)).toString(16)}.tar.gz`,
 	);
 	try {
 		await Bun.Archive.write(tempArchivePath, entries, { compress: "gzip" });

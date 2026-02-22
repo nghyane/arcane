@@ -1,10 +1,10 @@
 /**
  * Undo edit tool — reverts the last edit/write to a file.
  */
-import type { AgentTool, AgentToolResult } from "@nghyane/pi-agent-core";
-import type { Component } from "@nghyane/pi-tui";
-import { Text } from "@nghyane/pi-tui";
-import { isEnoent, untilAborted } from "@nghyane/pi-utils";
+import type { AgentTool, AgentToolResult } from "@nghyane/arcane-agent";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
+import { isEnoent, untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";

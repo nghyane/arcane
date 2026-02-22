@@ -8,8 +8,8 @@ import {
 	streamHashLinesFromLines,
 	streamHashLinesFromUtf8,
 	validateLineRef,
-} from "@nghyane/pi-coding-agent/patch";
-import { formatLineTag, type HashlineEdit, type LineTag } from "@nghyane/pi-coding-agent/patch/hashline";
+} from "@nghyane/arcane/patch";
+import { formatLineTag, type HashlineEdit, type LineTag } from "@nghyane/arcane/patch/hashline";
 
 function makeTag(line: number, content: string): LineTag {
 	return parseTag(formatLineTag(line, content));

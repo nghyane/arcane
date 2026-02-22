@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import * as gatewayCoordinator from "@nghyane/pi-coding-agent/ipy/gateway-coordinator";
-import { PythonKernel } from "@nghyane/pi-coding-agent/ipy/kernel";
-import { TempDir } from "@nghyane/pi-utils";
+import * as gatewayCoordinator from "@nghyane/arcane/ipy/gateway-coordinator";
+import { PythonKernel } from "@nghyane/arcane/ipy/kernel";
+import { TempDir } from "@nghyane/arcane-utils";
 import type { Subprocess } from "bun";
 
 type SpawnOptions = Parameters<typeof Bun.spawn>[1];
@@ -88,7 +88,7 @@ describe("PythonKernel gateway lifecycle", () => {
 	let env: MockEnvironment;
 
 	beforeEach(() => {
-		tempDir = TempDir.createSync("@omp-python-kernel-");
+		tempDir = TempDir.createSync("@arc-python-kernel-");
 		env = { fetchCalls: [], spawnCalls: [] };
 
 		Bun.env.BUN_ENV = "test";

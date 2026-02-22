@@ -10,9 +10,9 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
-import { type ImageContent, supportsXhigh } from "@nghyane/pi-ai";
-import { $env, postmortem } from "@nghyane/pi-utils";
-import { getProjectDir, setProjectDir, VERSION } from "@nghyane/pi-utils/dirs";
+import { type ImageContent, supportsXhigh } from "@nghyane/arcane-ai";
+import { $env, postmortem } from "@nghyane/arcane-utils";
+import { getProjectDir, setProjectDir, VERSION } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import type { Args } from "./cli/args";
 import { processFileArguments } from "./cli/file-processor";
@@ -39,7 +39,7 @@ const debugStartup = $env.PI_DEBUG_STARTUP ? (stage: string) => process.stderr.w
 
 async function checkForNewVersion(currentVersion: string): Promise<string | undefined> {
 	try {
-		const response = await fetch("https://registry.npmjs.org/@nghyane/pi-coding-agent/latest");
+		const response = await fetch("https://registry.npmjs.org/@nghyane/arcane/latest");
 		if (!response.ok) return undefined;
 
 		const data = (await response.json()) as { version?: string };
@@ -324,7 +324,7 @@ async function maybeAutoChdir(parsed: Args): Promise<void> {
 
 /** Discover SYSTEM.md file if no CLI system prompt was provided */
 function discoverSystemPromptFile(): string | undefined {
-	// Check project-local first (.omp/SYSTEM.md, .pi/SYSTEM.md legacy)
+	// Check project-local first (.arcane/SYSTEM.md)
 	const projectPath = findConfigFile("SYSTEM.md", { user: false });
 	if (projectPath) {
 		return projectPath;

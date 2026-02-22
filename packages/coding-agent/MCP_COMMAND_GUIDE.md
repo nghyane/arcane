@@ -1,6 +1,6 @@
 # MCP Server Management Command Guide
 
-Complete guide for the `/mcp` command in oh-my-pi.
+Complete guide for the `/mcp` command in arcane.
 
 ## Overview
 
@@ -31,7 +31,7 @@ Launch interactive wizard to add a new MCP server.
    - None (for local/trusted servers)
    - OAuth (web-based authentication)
    - Manual API key/token
-5. **Scope** - User-level (`~/.omp/mcp.json`) or project-level (`.omp/mcp.json`)
+5. **Scope** - User-level (`~/.arcane/mcp.json`) or project-level (`.arcane/mcp.json`)
 6. **Confirmation** - Review and save
 
 ### `/mcp list`
@@ -127,7 +127,7 @@ For local or trusted MCP servers that don't require credentials.
 - **Scopes**: Space-separated permissions (optional)
 
 **Token Storage:**
-Tokens are stored securely in `~/.omp/agent.db` and referenced by credential ID:
+Tokens are stored securely in `~/.arcane/agent.db` and referenced by credential ID:
 
 ```json
 {
@@ -146,10 +146,10 @@ Tokens are stored securely in `~/.omp/agent.db` and referenced by credential ID:
 
 ## Configuration Files
 
-### User-level: `~/.omp/mcp.json`
+### User-level: `~/.arcane/mcp.json`
 Global configuration available to all projects.
 
-### Project-level: `.omp/mcp.json`
+### Project-level: `.arcane/mcp.json`
 Project-specific configuration (usually in project root).
 
 ### Example Configuration
@@ -301,7 +301,7 @@ Project-specific configuration (usually in project root).
 3. **Secure sensitive data**
    - Use OAuth when available
    - Use shell commands for API keys: `!op read op://vault/key`
-   - Never commit `.omp/mcp.json` files with plain API keys to version control
+   - Never commit `.arcane/mcp.json` files with plain API keys to version control
 
 4. **Name servers descriptively**
    - Use purpose-based names: "github-tools", "docs-search"

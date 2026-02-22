@@ -10,8 +10,8 @@ import type {
 	AgentToolExecFn,
 	AgentToolResult,
 	AgentToolUpdateCallback,
-} from "@nghyane/pi-agent-core";
-import type { ImageContent, TextContent } from "@nghyane/pi-ai";
+} from "@nghyane/arcane-agent";
+import type { ImageContent, TextContent } from "@nghyane/arcane-ai";
 import type { OutputSummary, TruncationResult } from "../session/streaming-output";
 import { formatBytes } from "../session/streaming-output";
 import { renderError } from "./tool-errors";

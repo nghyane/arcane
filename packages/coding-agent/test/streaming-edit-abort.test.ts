@@ -6,15 +6,15 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Agent, type AgentTool } from "@nghyane/pi-agent-core";
-import { type AssistantMessage, getBundledModel, type StopReason, type ToolCall } from "@nghyane/pi-ai";
-import { AssistantMessageEventStream } from "@nghyane/pi-ai/utils/event-stream";
-import { ModelRegistry } from "@nghyane/pi-coding-agent/config/model-registry";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
-import { AgentSession } from "@nghyane/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@nghyane/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
-import { Snowflake } from "@nghyane/pi-utils";
+import { ModelRegistry } from "@nghyane/arcane/config/model-registry";
+import { Settings } from "@nghyane/arcane/config/settings";
+import { AgentSession } from "@nghyane/arcane/session/agent-session";
+import { AuthStorage } from "@nghyane/arcane/session/auth-storage";
+import { SessionManager } from "@nghyane/arcane/session/session-manager";
+import { Agent, type AgentTool } from "@nghyane/arcane-agent";
+import { type AssistantMessage, getBundledModel, type StopReason, type ToolCall } from "@nghyane/arcane-ai";
+import { AssistantMessageEventStream } from "@nghyane/arcane-ai/utils/event-stream";
+import { Snowflake } from "@nghyane/arcane-utils";
 import { Type } from "@sinclair/typebox";
 
 class MockAssistantStream extends AssistantMessageEventStream {}

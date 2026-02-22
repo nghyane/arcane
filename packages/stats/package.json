@@ -1,9 +1,9 @@
 {
 	"type": "module",
-	"name": "@nghyane/omp-stats",
+	"name": "@nghyane/arcane-stats",
 	"version": "12.19.0",
 	"description": "Local observability dashboard for pi AI usage statistics",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
 	"license": "GPL-3.0-or-later",
 	"publishConfig": {
@@ -11,11 +11,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/nghyane/arcane.git",
 		"directory": "packages/stats"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/nghyane/arcane/issues"
 	},
 	"keywords": [
 		"ai",
@@ -28,7 +28,7 @@
 	"main": "./src/index.ts",
 	"types": "./src/index.ts",
 	"bin": {
-		"omp-stats": "./src/index.ts"
+		"arc-stats": "./src/index.ts"
 	},
 	"scripts": {
 		"dev": "bun run src/index.ts",
@@ -36,8 +36,8 @@
 		"build": "bun run build.ts"
 	},
 	"dependencies": {
-		"@nghyane/pi-ai": "^12.19.0",
-		"@nghyane/pi-utils": "^12.19.0",
+		"@nghyane/arcane-ai": "workspace:*",
+		"@nghyane/arcane-utils": "workspace:*",
 		"@tailwindcss/node": "4.2.0",
 		"chart.js": "4.5.1",
 		"date-fns": "4.1.0",

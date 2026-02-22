@@ -4,7 +4,7 @@
  * High-quality neural search via Exa Search API.
  * Returns structured search results with optional content extraction.
  */
-import { getEnvApiKey } from "@nghyane/pi-ai";
+import { getEnvApiKey } from "@nghyane/arcane-ai";
 import { findApiKey as findExaKey } from "../../../exa/mcp-client";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";

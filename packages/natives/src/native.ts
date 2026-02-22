@@ -7,8 +7,8 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $env } from "@nghyane/pi-utils";
-import { getNativesDir } from "@nghyane/pi-utils/dirs";
+import { $env } from "@nghyane/arcane-utils";
+import { getNativesDir } from "@nghyane/arcane-utils/dirs";
 import packageJson from "../package.json";
 import type { NativeBindings } from "./bindings";
 import { embeddedAddon } from "./embedded-addon";
@@ -36,7 +36,7 @@ const execDir = path.dirname(process.execPath);
 const versionedDir = path.join(getNativesDir(), packageVersion);
 const userDataDir =
 	process.platform === "win32"
-		? path.join(Bun.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "omp")
+		? path.join(Bun.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "arcane")
 		: path.join(os.homedir(), ".local", "bin");
 const isCompiledBinary =
 	Bun.env.PI_COMPILED ||
@@ -50,7 +50,10 @@ const selectedVariant = resolveCpuVariant(variantOverride);
 const addonFilenames = getAddonFilenames(platformTag, selectedVariant);
 const addonLabel = selectedVariant ? `${platformTag} (${selectedVariant})` : platformTag;
 
-const debugCandidates = [path.join(nativeDir, "pi_natives.dev.node"), path.join(execDir, "pi_natives.dev.node")];
+const debugCandidates = [
+	path.join(nativeDir, "arcane_natives.dev.node"),
+	path.join(execDir, "arcane_natives.dev.node"),
+];
 const baseReleaseCandidates = addonFilenames.flatMap(filename => [
 	path.join(nativeDir, filename),
 	path.join(execDir, filename),
@@ -123,10 +126,10 @@ function resolveCpuVariant(override: CpuVariant | null): CpuVariant | null {
 }
 
 function getAddonFilenames(tag: string, variant: CpuVariant | null): string[] {
-	const defaultFilename = `pi_natives.${tag}.node`;
+	const defaultFilename = `arcane_natives.${tag}.node`;
 	if (process.arch !== "x64" || !variant) return [defaultFilename];
-	const baselineFilename = `pi_natives.${tag}-baseline.node`;
-	const modernFilename = `pi_natives.${tag}-modern.node`;
+	const baselineFilename = `arcane_natives.${tag}-baseline.node`;
+	const modernFilename = `arcane_natives.${tag}-modern.node`;
 	if (variant === "modern") {
 		return [modernFilename, baselineFilename, defaultFilename];
 	}
@@ -210,7 +213,7 @@ function loadNative(): NativeBindings {
 		const expectedPaths = addonFilenames.map(filename => `  ${path.join(versionedDir, filename)}`).join("\n");
 		const downloadHints = addonFilenames
 			.map(filename => {
-				const downloadUrl = `https://github.com/can1357/oh-my-pi/releases/latest/download/${filename}`;
+				const downloadUrl = `https://github.com/nghyane/arcane/releases/latest/download/${filename}`;
 				const targetPath = path.join(versionedDir, filename);
 				return `  curl -fsSL "${downloadUrl}" -o "${targetPath}"`;
 			})
@@ -220,12 +223,14 @@ function loadNative(): NativeBindings {
 			`If missing, delete ${versionedDir} and re-run, or download manually:\n${downloadHints}`;
 	} else {
 		helpMessage =
-			"If installed via npm/bun, try reinstalling: bun install @nghyane/pi-natives\n" +
+			"If installed via npm/bun, try reinstalling: bun install @nghyane/arcane-natives\n" +
 			"If developing locally, build with: bun --cwd=packages/natives run build:native\n" +
 			"Optional x64 variants: TARGET_VARIANT=baseline|modern bun --cwd=packages/natives run build:native";
 	}
 
-	throw new Error(`Failed to load pi_natives native addon for ${addonLabel}.\n\nTried:\n${details}\n\n${helpMessage}`);
+	throw new Error(
+		`Failed to load arcane_natives native addon for ${addonLabel}.\n\nTried:\n${details}\n\n${helpMessage}`,
+	);
 }
 function validateNative(bindings: NativeBindings, source: string): void {
 	const missing: string[] = [];

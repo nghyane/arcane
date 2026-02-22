@@ -1,4 +1,4 @@
-import { isEnoent, logger } from "@nghyane/pi-utils";
+import { isEnoent, logger } from "@nghyane/arcane-utils";
 
 export interface ChangelogEntry {
 	major: number;

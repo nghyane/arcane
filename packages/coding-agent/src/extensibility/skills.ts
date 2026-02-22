@@ -1,8 +1,8 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { logger } from "@nghyane/pi-utils";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import { logger } from "@nghyane/arcane-utils";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { skillCapability } from "../capability/skill";
 import type { SourceMeta } from "../capability/types";
 import type { SkillsSettings } from "../config/settings";

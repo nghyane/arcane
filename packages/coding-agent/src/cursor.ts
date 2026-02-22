@@ -6,8 +6,8 @@ import type {
 	AgentToolContext,
 	AgentToolResult,
 	AgentToolUpdateCallback,
-} from "@nghyane/pi-agent-core";
-import type { CursorMcpCall, CursorExecHandlers as ICursorExecHandlers, ToolResultMessage } from "@nghyane/pi-ai";
+} from "@nghyane/arcane-agent";
+import type { CursorMcpCall, CursorExecHandlers as ICursorExecHandlers, ToolResultMessage } from "@nghyane/arcane-ai";
 import { resolveToCwd } from "./tools/path-utils";
 
 interface CursorExecBridgeOptions {

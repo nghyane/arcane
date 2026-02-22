@@ -1,8 +1,8 @@
 # Swarm Extension
 
-Multi-agent orchestration for oh-my-pi. Define agent workflows in YAML — pipelines, parallel fan-outs, sequential chains, or any DAG — and run them unattended until completion.
+Multi-agent orchestration for arcane. Define agent workflows in YAML — pipelines, parallel fan-outs, sequential chains, or any DAG — and run them unattended until completion.
 
-Each agent is a full oh-my-pi subagent with access to every tool: bash, python, read, write, edit, grep, find, fetch, web_search, browser. The orchestrator manages lifecycle and ordering; agents communicate through the shared workspace filesystem.
+Each agent is a full arcane subagent with access to every tool: bash, python, read, write, edit, grep, find, fetch, web_search, browser. The orchestrator manages lifecycle and ordering; agents communicate through the shared workspace filesystem.
 
 Use it for anything: research pipelines, code generation, data processing, content creation, analysis workflows, CI-like automation — any multi-step task that benefits from specialized agents working in coordination.
 
@@ -19,18 +19,18 @@ bun install
 
 ```bash
 # Foreground — runs until complete, no timeout:
-omp-swarm path/to/swarm.yaml
+arc-swarm path/to/swarm.yaml
 
 # Background — survives terminal close:
-nohup omp-swarm path/to/swarm.yaml \
+nohup arc-swarm path/to/swarm.yaml \
   > pipeline.log 2>&1 & disown
 ```
 
 The standalone runner has no timeout. It runs iteration after iteration until the pipeline finishes or you kill it.
 
-### Inside oh-my-pi (TUI)
+### Inside arcane (TUI)
 
-Register the extension in your config (`~/.omp/config.json` or `.omp/config.json`):
+Register the extension in your config (`~/.arcane/config.json` or `.arcane/config.json`):
 
 ```json
 {
@@ -103,7 +103,7 @@ swarm:
 | `workspace`    | yes      | —               | Shared working directory. Relative paths resolve from YAML file location       |
 | `mode`         | no       | `sequential`    | Execution mode (see below)                                                     |
 | `target_count` | no       | `1`             | How many times to repeat the full pipeline. Only meaningful in `pipeline` mode |
-| `model`        | no       | session default | Model ID for all agents. Any omp-configured model works                        |
+| `model`        | no       | session default | Model ID for all agents. Any arcane-configured model works                        |
 
 ### Agent Fields
 
@@ -382,7 +382,7 @@ Execution per iteration: scraper_a + scraper_b (wave 1) -> transformer (wave 2) 
 
 ### What Agents Can Do
 
-Each agent is a full oh-my-pi session. It can:
+Each agent is a full arcane session. It can:
 
 - **bash/python**: Run commands, scripts, install packages, process data
 - **read/write/edit**: Create and modify files in the workspace
@@ -434,7 +434,7 @@ tracking/status.json      -> Cumulative state
 
 ## Models
 
-Any model configured in omp works. Set it in the YAML:
+Any model configured in arcane works. Set it in the YAML:
 
 ```yaml
 swarm:
@@ -453,7 +453,7 @@ src/cli.ts   Standalone runner (no TUI, no timeout)
 src/swarm/
   schema.ts           YAML parsing + validation
   dag.ts              Dependency graph, cycle detection, topological sort
-  executor.ts         Spawns agents via oh-my-pi's runSubprocess
+  executor.ts         Spawns agents via arcane's runSubprocess
   pipeline.ts         Iteration loop + wave controller
   state.ts            Filesystem state persistence
   render.ts           Progress display formatting

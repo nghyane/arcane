@@ -8,8 +8,8 @@
  */
 import * as os from "node:os";
 import * as path from "node:path";
-import { logger } from "@nghyane/pi-utils";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import { logger } from "@nghyane/arcane-utils";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import type { Settings } from "../config/settings";
 import { time } from "../utils/timings";
 import { clearCache as clearFsCache, cacheStats as fsCacheStats, invalidate as invalidateFs } from "./fs";

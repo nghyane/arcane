@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { parseCommandArgs, substituteArgs } from "@nghyane/pi-coding-agent/config/prompt-templates";
+import { parseCommandArgs, substituteArgs } from "@nghyane/arcane/config/prompt-templates";
 
 // ============================================================================
 // substituteArgs

@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { type Component, padding, truncateToWidth, visibleWidth } from "@nghyane/pi-tui";
-import { isEnoent } from "@nghyane/pi-utils";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import { type Component, padding, truncateToWidth, visibleWidth } from "@nghyane/arcane-tui";
+import { isEnoent } from "@nghyane/arcane-utils";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { theme } from "../../modes/theme/theme";
 import type { AgentSession } from "../../session/agent-session";
 import { shortenPath } from "../../tools/render-utils";

@@ -11,8 +11,8 @@
  * - web_search_linkedin: Search LinkedIn profiles and companies
  * - web_search_company: Comprehensive company research
  */
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import { StringEnum } from "@nghyane/pi-ai";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import { StringEnum } from "@nghyane/arcane-ai";
 import { Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../../config/prompt-templates";
 import { callExaTool, findApiKey as findExaKey, formatSearchResults, isSearchResponse } from "../../exa/mcp-client";

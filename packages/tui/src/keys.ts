@@ -23,7 +23,7 @@ import {
 	matchesKey as matchesKeyNative,
 	parseKey as parseKeyNative,
 	parseKittySequence as parseKittySequenceNative,
-} from "@nghyane/pi-natives";
+} from "@nghyane/arcane-natives";
 
 // =============================================================================
 // Global Kitty Protocol State

@@ -8,14 +8,14 @@
  * - Shift+J/K: Reorder segment within column
  * - Live preview shown in the actual status line above
  */
-import { Container, matchesKey, padding } from "@nghyane/pi-tui";
+import { Container, matchesKey, padding } from "@nghyane/arcane-tui";
 import type { StatusLineSegmentId } from "../../config/settings-schema";
 import { theme } from "../../modes/theme/theme";
 import { ALL_SEGMENT_IDS } from "./status-line/segments";
 
 // Segment display names and short descriptions
 const SEGMENT_INFO: Record<StatusLineSegmentId, { label: string; short: string }> = {
-	pi: { label: "Pi", short: "π icon" },
+	arcane: { label: "Pi", short: "π icon" },
 	model: { label: "Model", short: "model name" },
 	path: { label: "Path", short: "working dir" },
 	git: { label: "Git", short: "branch/status" },

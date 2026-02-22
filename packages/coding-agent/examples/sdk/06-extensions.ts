@@ -5,19 +5,19 @@
  * They provide a unified system for extensions, custom tools, commands, and more.
  *
  * Extension files are discovered from:
- * - ~/.omp/agent/extensions/ (legacy: ~/.pi/agent/extensions/)
- * - <cwd>/.omp/extensions/ (legacy: <cwd>/.pi/extensions/)
+ * - ~/.arcane/agent/extensions/
+ * - <cwd>/.arcane/extensions/ (legacy: <cwd>/.arcane/extensions/)
  * - Paths specified in settings.json "extensions" array
  * - Paths passed via --extension CLI flag
  *
  * An extension is a TypeScript file that exports a default function:
  *   export default function (pi: ExtensionAPI) { ... }
  */
-import { createAgentSession, SessionManager } from "@nghyane/pi-coding-agent";
+import { createAgentSession, SessionManager } from "@nghyane/arcane";
 
 // Extensions are loaded from disk, not passed inline to createAgentSession.
 // Use the discovery mechanism:
-//   1. Place extension files in ~/.omp/agent/extensions/ or .omp/extensions/
+//   1. Place extension files in ~/.arcane/agent/extensions/ or .arcane/extensions/
 //   2. Add paths to settings.json: { "extensions": ["./my-extension.ts"] }
 //   3. Use --extension flag: pi --extension ./my-extension.ts
 
@@ -38,7 +38,7 @@ console.log();
 
 // Example extension file (./my-logging-extension.ts):
 /*
-import type { ExtensionAPI } from "@nghyane/pi-coding-agent";
+import type { ExtensionAPI } from "@nghyane/arcane";
 
 export default function (pi: ExtensionAPI) {
 	pi.on("agent_start", async () => {

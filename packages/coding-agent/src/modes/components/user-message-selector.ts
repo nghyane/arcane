@@ -1,4 +1,4 @@
-import { type Component, Container, matchesKey, Spacer, Text, truncateToWidth } from "@nghyane/pi-tui";
+import { type Component, Container, matchesKey, Spacer, Text, truncateToWidth } from "@nghyane/arcane-tui";
 import { theme } from "../../modes/theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 

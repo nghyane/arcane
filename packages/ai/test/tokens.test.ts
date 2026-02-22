@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { getBundledModel } from "@nghyane/pi-ai/models";
-import { stream } from "@nghyane/pi-ai/stream";
-import type { Api, Context, Model, OptionsForApi } from "@nghyane/pi-ai/types";
+import { getBundledModel } from "@nghyane/arcane-ai/models";
+import { stream } from "@nghyane/arcane-ai/stream";
+import type { Api, Context, Model, OptionsForApi } from "@nghyane/arcane-ai/types";
 import { e2eApiKey, resolveApiKey } from "./oauth";
 
 // Resolve OAuth tokens at module level (async, runs before tests)

@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { logger, ptree, TempDir } from "@nghyane/pi-utils";
-import { APP_NAME, getToolsDir } from "@nghyane/pi-utils/dirs";
+import { logger, ptree, TempDir } from "@nghyane/arcane-utils";
+import { APP_NAME, getToolsDir } from "@nghyane/arcane-utils/dirs";
 
 const TOOLS_DIR = getToolsDir();
 const TOOL_DOWNLOAD_TIMEOUT_MS = 15000;
@@ -200,7 +200,7 @@ async function downloadTool(tool: ToolName, signal?: AbortSignal): Promise<strin
 	await downloadFile(downloadUrl, archivePath, signal);
 
 	// Extract
-	const tmp = await TempDir.create("@omp-tools-extract-");
+	const tmp = await TempDir.create("@arc-tools-extract-");
 
 	try {
 		if (!assetName.endsWith(".tar.gz") && !assetName.endsWith(".zip")) {

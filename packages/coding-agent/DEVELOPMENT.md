@@ -235,7 +235,7 @@ Notable current limitation from implementation: `#handleLine()` handles `RpcResp
 ### ASCII overview
 
 ```text
-@nghyane/pi-agent-core Agent
+@nghyane/arcane-agent Agent
             │ events/messages
             ▼
        AgentSession
@@ -392,7 +392,7 @@ A `ToolFactory` is `(session: ToolSession) => Tool | null | Promise<Tool | null>
 1. Normalizes requested tool names (`toolNames`) and always injects `exit_plan_mode`.
 2. Resolves Python mode via `PI_PY` override (`getPythonModeFromEnv()`) or `session.settings.get("python.toolMode")`.
 3. Performs Python kernel preflight/warmup when applicable (`checkPythonKernelAvailability`, `warmPythonEnvironment`).
-4. Computes effective gating (`isToolAllowed`) from settings and runtime state:
+4. Carcutes effective gating (`isToolAllowed`) from settings and runtime state:
    - feature toggles (`find.enabled`, `grep.enabled`, etc.)
    - recursion guard for `task` (`task.maxRecursionDepth` vs `session.taskDepth`)
    - submit-result mode (`requireSubmitResultTool`) and `todo_write` suppression
@@ -566,7 +566,7 @@ Path normalization and filtering:
 Directory entry resolution:
 
 - `resolveExtensionEntries(dir)` checks, in order:
-  - `package.json` manifest (`omp` or `pi`) with `extensions[]` entries,
+  - `package.json` manifest (\`arc\` or `pi`) with `extensions[]` entries,
   - `index.ts`, then `index.js` fallback.
 - `discoverExtensionsInDir(dir)` applies one-level rules when the directory itself has no root entry:
   - direct `*.ts`/`*.js` files,
@@ -763,7 +763,7 @@ This subsystem is split into two layers:
 #### Bash executor (`src/exec/bash-executor.ts`)
 
 - Entry point: `executeBash(command, options)`.
-- Uses `Settings.getShellConfig()` and `Shell` from `@nghyane/pi-natives`.
+- Uses `Settings.getShellConfig()` and `Shell` from `@nghyane/arcane-natives`.
 - Reuses shell sessions via `shellSessions: Map<string, Shell>` keyed by `buildSessionKey(...)` (shell, prefix, snapshot path, env, optional `sessionKey`).
 - Applies shell snapshot support via `getOrCreateSnapshot(...)` when using bash.
 - Streams output into `OutputSink` (`onChunk`, artifact path/id support).
@@ -793,7 +793,7 @@ This subsystem is split into two layers:
 
 - Entry point: `executeSSH(host, command, options)`.
 - Ensures remote connectivity/metadata through `ensureConnection(...)` and optional `ensureHostInfo(...)`.
-- Optional compat wrapping (`buildCompatCommand`) when `compatEnabled` and host advertises `compatShell`.
+- Optional compat wrapping (`buildCarcatCommand`) when `compatEnabled` and host advertises `compatShell`.
 - Optional SSHFS mount attempt (`mountRemote`) when available.
 - Runs SSH via `ptree.spawn(["ssh", ...buildRemoteCommand(...)])`.
 - Streams both stdout/stderr into `OutputSink` and returns `SSHResult` with same truncation/accounting shape (`output`, byte/line totals, optional artifact id, `exitCode`, `cancelled`).
@@ -1107,7 +1107,7 @@ Use only script names that exist in `packages/coding-agent/package.json`:
   - `bun --cwd=packages/coding-agent run generate-docs-index`
 - Regenerate template artifacts:
   - `bun --cwd=packages/coding-agent run generate-template`
-- Build compiled binary artifact (`dist/omp`):
+- Build compiled binary artifact (`dist/arc`):
   - `bun --cwd=packages/coding-agent run build:binary`
 
 `packages/coding-agent/README.md` intentionally delegates install/config/CLI docs to the monorepo root README (`../../README.md`) and keeps package-specific references to `CHANGELOG.md`, `docs/`, and `DEVELOPMENT.md`.

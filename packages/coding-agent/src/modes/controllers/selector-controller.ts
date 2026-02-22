@@ -1,8 +1,8 @@
-import type { ThinkingLevel } from "@nghyane/pi-agent-core";
-import { getOAuthProviders, type OAuthProvider } from "@nghyane/pi-ai";
-import type { Component } from "@nghyane/pi-tui";
-import { Input, Loader, Spacer, Text } from "@nghyane/pi-tui";
-import { getAgentDbPath, getProjectDir } from "@nghyane/pi-utils/dirs";
+import type { ThinkingLevel } from "@nghyane/arcane-agent";
+import { getOAuthProviders, type OAuthProvider } from "@nghyane/arcane-ai";
+import type { Component } from "@nghyane/arcane-tui";
+import { Input, Loader, Spacer, Text } from "@nghyane/arcane-tui";
+import { getAgentDbPath, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { MODEL_ROLES } from "../../config/model-registry";
 import { settings } from "../../config/settings";
 import { DebugSelectorComponent } from "../../debug";

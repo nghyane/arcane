@@ -1,10 +1,10 @@
 # Natives Text/Search Pipeline
 
-This document maps the `@nghyane/pi-natives` text/search surface (`grep`, `glob`, `text`, `highlight`) from TypeScript wrappers to Rust N-API exports and back to JS result objects.
+This document maps the `@nghyane/arcane-natives` text/search surface (`grep`, `glob`, `text`, `highlight`) from TypeScript wrappers to Rust N-API exports and back to JS result objects.
 
 Terminology follows `docs/natives-architecture.md`:
 - **Wrapper**: TS API in `packages/natives/src/*`
-- **Rust module layer**: N-API exports in `crates/pi-natives/src/*`
+- **Rust module layer**: N-API exports in `crates/arcane-natives/src/*`
 - **Shared scan cache**: `fs_cache`-backed directory-entry cache used by discovery/search flows
 
 ## Implementation files
@@ -17,13 +17,13 @@ Terminology follows `docs/natives-architecture.md`:
 - `packages/natives/src/text/types.ts`
 - `packages/natives/src/highlight/index.ts`
 - `packages/natives/src/highlight/types.ts`
-- `crates/pi-natives/src/grep.rs`
-- `crates/pi-natives/src/glob.rs`
-- `crates/pi-natives/src/glob_util.rs`
-- `crates/pi-natives/src/fs_cache.rs`
-- `crates/pi-natives/src/text.rs`
-- `crates/pi-natives/src/highlight.rs`
-- `crates/pi-natives/src/fd.rs`
+- `crates/arcane-natives/src/grep.rs`
+- `crates/arcane-natives/src/glob.rs`
+- `crates/arcane-natives/src/glob_util.rs`
+- `crates/arcane-natives/src/fs_cache.rs`
+- `crates/arcane-natives/src/text.rs`
+- `crates/arcane-natives/src/highlight.rs`
+- `crates/arcane-natives/src/fd.rs`
 
 ## JS API ↔ Rust export mapping
 

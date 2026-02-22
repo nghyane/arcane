@@ -5,8 +5,8 @@
  * to avoid import resolution issues with custom tools loaded from user directories.
  */
 import * as path from "node:path";
-import * as piCodingAgent from "@nghyane/pi-coding-agent";
-import { logger } from "@nghyane/pi-utils";
+import * as piCodingAgent from "@nghyane/arcane";
+import { logger } from "@nghyane/arcane-utils";
 import * as typebox from "@sinclair/typebox";
 import { toolCapability } from "../../capability/tool";
 import { type CustomTool, loadCapability } from "../../discovery";
@@ -191,7 +191,7 @@ export async function loadCustomTools(pathsWithSources: ToolPathWithSource[], cw
 /**
  * Discover and load tools from standard locations via capability system:
  * 1. User and project tools discovered by capability providers
- * 2. Installed plugins (~/.omp/plugins/node_modules/*)
+ * 2. Installed plugins (~/.arcane/plugins/node_modules/*)
  * 3. Explicitly configured paths from settings or CLI
  *
  * @param configuredPaths - Explicit paths from settings.json and CLI --tool flags
@@ -221,7 +221,7 @@ export async function discoverAndLoadCustomTools(configuredPaths: string[], cwd:
 		});
 	}
 
-	// 2. Plugin tools: ~/.omp/plugins/node_modules/*/
+	// 2. Plugin tools: ~/.arcane/plugins/node_modules/*/
 	for (const pluginPath of await getAllPluginToolPaths(cwd)) {
 		addPath(pluginPath, { provider: "plugin", providerName: "Plugin", level: "user" });
 	}

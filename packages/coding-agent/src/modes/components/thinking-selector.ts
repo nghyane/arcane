@@ -1,5 +1,5 @@
-import type { ThinkingLevel } from "@nghyane/pi-agent-core";
-import { Container, type SelectItem, SelectList } from "@nghyane/pi-tui";
+import type { ThinkingLevel } from "@nghyane/arcane-agent";
+import { Container, type SelectItem, SelectList } from "@nghyane/arcane-tui";
 import { getSelectListTheme } from "../../modes/theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 

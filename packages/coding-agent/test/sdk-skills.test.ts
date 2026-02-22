@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { Skill } from "@nghyane/pi-coding-agent/sdk";
-import { createAgentSession } from "@nghyane/pi-coding-agent/sdk";
-import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
-import { getProjectAgentDir } from "@nghyane/pi-utils/dirs";
+import type { Skill } from "@nghyane/arcane/sdk";
+import { createAgentSession } from "@nghyane/arcane/sdk";
+import { SessionManager } from "@nghyane/arcane/session/session-manager";
+import { getProjectAgentDir } from "@nghyane/arcane-utils/dirs";
 
 describe("createAgentSession skills option", () => {
 	let tempDir: string;
@@ -13,7 +13,7 @@ describe("createAgentSession skills option", () => {
 
 	beforeEach(() => {
 		tempDir = path.join(os.tmpdir(), `pi-sdk-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-		// Create skill in .omp/skills/ for native project-level discovery
+		// Create skill in .arcane/skills/ for native project-level discovery
 		skillsDir = path.join(getProjectAgentDir(tempDir), "skills", "test-skill");
 		fs.mkdirSync(skillsDir, { recursive: true });
 

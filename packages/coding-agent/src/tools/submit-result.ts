@@ -3,8 +3,8 @@
  *
  * Subagents must call this tool to finish and return structured JSON output.
  */
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import { StringEnum } from "@nghyane/pi-ai";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import { StringEnum } from "@nghyane/arcane-ai";
 import type { Static, TObject } from "@sinclair/typebox";
 import { Type } from "@sinclair/typebox";
 import Ajv, { type ErrorObject, type ValidateFunction } from "ajv";

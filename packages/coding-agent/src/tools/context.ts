@@ -1,8 +1,8 @@
-import type { AgentToolContext, ToolCallContext } from "@nghyane/pi-agent-core";
+import type { AgentToolContext, ToolCallContext } from "@nghyane/arcane-agent";
 import type { CustomToolContext } from "../extensibility/custom-tools/types";
 import type { ExtensionUIContext } from "../extensibility/extensions/types";
 
-declare module "@nghyane/pi-agent-core" {
+declare module "@nghyane/arcane-agent" {
 	interface AgentToolContext extends CustomToolContext {
 		ui?: ExtensionUIContext;
 		hasUI?: boolean;

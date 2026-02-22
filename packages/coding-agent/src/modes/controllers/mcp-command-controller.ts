@@ -3,8 +3,8 @@
  *
  * Handles /mcp subcommands for managing MCP servers.
  */
-import { Spacer, Text } from "@nghyane/pi-tui";
-import { getMCPConfigPath, getProjectDir } from "@nghyane/pi-utils/dirs";
+import { Spacer, Text } from "@nghyane/arcane-tui";
+import { getMCPConfigPath, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import type { SourceMeta } from "../../capability/types";
 import { analyzeAuthError, discoverOAuthEndpoints, MCPManager } from "../../mcp";
 import { connectToServer, disconnectServer, listTools } from "../../mcp/client";
@@ -803,7 +803,7 @@ export class MCPCommandController {
 
 			// Show user-level servers
 			if (userServers.length > 0) {
-				lines.push(theme.fg("accent", "User level") + theme.fg("muted", ` (~/.omp/mcp.json):`));
+				lines.push(theme.fg("accent", "User level") + theme.fg("muted", ` (~/.arcane/mcp.json):`));
 				for (const name of userServers) {
 					const config = userConfig.mcpServers![name];
 					const type = config.type ?? "stdio";
@@ -826,7 +826,7 @@ export class MCPCommandController {
 
 			// Show project-level servers
 			if (projectServers.length > 0) {
-				lines.push(theme.fg("accent", "Project level") + theme.fg("muted", ` (.omp/mcp.json):`));
+				lines.push(theme.fg("accent", "Project level") + theme.fg("muted", ` (.arcane/mcp.json):`));
 				for (const name of projectServers) {
 					const config = projectConfig.mcpServers![name];
 					const type = config.type ?? "stdio";

@@ -15,7 +15,7 @@
 import { Subprocess } from "bun";
 import * as path from "node:path";
 
-const CLI_PATH = Bun.fileURLToPath(import.meta.resolve("@nghyane/pi-coding-agent/cli"));
+const CLI_PATH = Bun.fileURLToPath(import.meta.resolve("@nghyane/arcane/cli"));
 const TRACE_LOADER = path.resolve(import.meta.dir, "trace-loader.ts");
 const POLL_INTERVAL = 200;
 
@@ -46,7 +46,7 @@ interface Instance {
 
 /** Check if stdout contains the TUI (success indicator) */
 function hasLaunched(stdout: string): boolean {
-	return stdout.includes("omp v") || stdout.includes("▀█") || stdout.includes("Welcome back");
+	return stdout.includes("arcane v") || stdout.includes("▀█") || stdout.includes("Welcome back");
 }
 
 /** Non-blocking drain of a stream */

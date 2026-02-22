@@ -7,7 +7,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Snowflake } from "@nghyane/pi-utils";
+import { Snowflake } from "@nghyane/arcane-utils";
 import type { ModelRegistry } from "../config/model-registry";
 import { isDefaultModelAlias } from "../config/model-resolver";
 import type { Settings } from "../config/settings";
@@ -53,7 +53,7 @@ export async function runTaskBatch(options: BatchOptions): Promise<BatchResult> 
 
 	const sessionFile = options.sessionFile;
 	const artifactsDir = sessionFile ? sessionFile.slice(0, -path.extname(sessionFile).length) : null;
-	const tempArtifactsDir = artifactsDir ? null : path.join(os.tmpdir(), `omp-batch-${Snowflake.next()}`);
+	const tempArtifactsDir = artifactsDir ? null : path.join(os.tmpdir(), `arc-batch-${Snowflake.next()}`);
 	const effectiveArtifactsDir = artifactsDir || tempArtifactsDir!;
 	const persistArtifacts = !!artifactsDir;
 

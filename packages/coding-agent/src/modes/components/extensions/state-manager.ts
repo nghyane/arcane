@@ -2,7 +2,7 @@
  * State manager for the Extension Control Center.
  * Handles data loading, tree building, filtering, and toggle persistence.
  */
-import { logger } from "@nghyane/pi-utils";
+import { logger } from "@nghyane/arcane-utils";
 import type { ContextFile } from "../../../capability/context-file";
 import type { ExtensionModule } from "../../../capability/extension-module";
 import type { Hook } from "../../../capability/hook";

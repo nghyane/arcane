@@ -1,7 +1,7 @@
 /**
- * Centralized file logger for omp.
+ * Centralized file logger for arcane.
  *
- * Logs to ~/.omp/logs/ with size-based rotation, supporting concurrent omp instances.
+ * Logs to ~/.arcane/logs/ with size-based rotation, supporting concurrent arcane instances.
  * Each log entry includes process.pid for traceability.
  */
 import * as fs from "node:fs";
@@ -41,7 +41,7 @@ const logFormat = winston.format.combine(
 /** Size-based rotating file transport */
 const fileTransport = new DailyRotateFile({
 	dirname: ensureLogsDir(),
-	filename: "omp.%DATE%.log",
+	filename: "arcane.%DATE%.log",
 	datePattern: "YYYY-MM-DD",
 	maxSize: "10m",
 	maxFiles: 5,
@@ -58,14 +58,14 @@ const winstonLogger = winston.createLogger({
 });
 
 /**
- * Centralized logger for omp.
+ * Centralized logger for arcane.
  *
- * Logs to ~/.omp/logs/omp.YYYY-MM-DD.log with size-based rotation.
- * Safe for concurrent access from multiple omp instances.
+ * Logs to ~/.arcane/logs/arc.YYYY-MM-DD.log with size-based rotation.
+ * Safe for concurrent access from multiple arcane instances.
  *
  * @example
  * ```typescript
- * import { logger } from "@nghyane/pi-utils";
+ * import { logger } from "@nghyane/arcane-utils";
  *
  * logger.error("MCP request failed", { url, method });
  * logger.warn("Theme file invalid, using fallback", { path });

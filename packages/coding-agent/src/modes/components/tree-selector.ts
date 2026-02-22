@@ -7,7 +7,7 @@ import {
 	Text,
 	TruncatedText,
 	truncateToWidth,
-} from "@nghyane/pi-tui";
+} from "@nghyane/arcane-tui";
 import { theme } from "../../modes/theme/theme";
 import type { SessionTreeNode } from "../../session/session-manager";
 import { shortenPath } from "../../tools/render-utils";

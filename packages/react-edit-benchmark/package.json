@@ -1,14 +1,14 @@
 {
 	"type": "module",
 	"private": true,
-	"name": "@nghyane/react-edit-benchmark",
+	"name": "@nghyane/arcane-react-edit-benchmark",
 	"version": "0.0.1",
 	"description": "Edit benchmark suite using React source code mutations",
 	"author": "Can Bölük",
 	"license": "GPL-3.0-or-later",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/nghyane/arcane.git",
 		"directory": "packages/react-edit-benchmark"
 	},
 	"main": "./src/index.ts",
@@ -25,9 +25,9 @@
 		"@babel/parser": "7.29.0",
 		"@babel/traverse": "7.29.0",
 		"@babel/types": "7.29.0",
-		"@nghyane/pi-agent-core": "^12.19.0",
-		"@nghyane/pi-coding-agent": "^12.19.0",
-		"@nghyane/pi-utils": "^12.19.0",
+		"@nghyane/arcane-agent": "workspace:*",
+		"@nghyane/arcane": "workspace:*",
+		"@nghyane/arcane-utils": "workspace:*",
 		"diff": "^8.0.3",
 		"prettier": "^3.8.1",
 		"regexp-tree": "0.1.27"

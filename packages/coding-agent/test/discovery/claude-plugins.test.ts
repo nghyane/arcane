@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { clearCache as clearFsCache } from "@nghyane/pi-coding-agent/capability/fs";
+import { clearCache as clearFsCache } from "@nghyane/arcane/capability/fs";
 import {
 	clearClaudePluginRootsCache,
 	listClaudePluginRoots,
 	parseClaudePluginsRegistry,
-} from "@nghyane/pi-coding-agent/discovery/helpers";
-import { discoverAgents } from "@nghyane/pi-coding-agent/task/discovery";
+} from "@nghyane/arcane/discovery/helpers";
+import { discoverAgents } from "@nghyane/arcane/task/discovery";
 
 describe("parseClaudePluginsRegistry", () => {
 	test("parses valid registry", () => {

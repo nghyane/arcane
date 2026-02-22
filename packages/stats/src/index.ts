@@ -109,10 +109,10 @@ async function main(): Promise<void> {
 
 	if (values.help) {
 		console.log(`
-omp-stats - AI Usage Statistics Dashboard
+arc-stats - AI Usage Statistics Dashboard
 
 Usage:
-  omp-stats [options]
+  arc-stats [options]
 
 Options:
   -p, --port <port>  Port for the dashboard server (default: 3847)
@@ -121,10 +121,10 @@ Options:
   -h, --help         Show this help message
 
 Examples:
-  omp-stats              # Start dashboard server
-  omp-stats --json       # Print stats as JSON
-  omp-stats --port 8080  # Start on custom port
-  omp-stats --sync       # Sync and show summary
+  arc-stats              # Start dashboard server
+  arc-stats --json       # Print stats as JSON
+  arc-stats --port 8080  # Start on custom port
+  arc-stats --sync       # Sync and show summary
 `);
 		return;
 	}

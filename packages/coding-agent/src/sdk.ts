@@ -1,9 +1,9 @@
-import { Agent, type AgentEvent, type AgentMessage, type AgentTool, type ThinkingLevel } from "@nghyane/pi-agent-core";
-import { type Message, type Model, supportsXhigh } from "@nghyane/pi-ai";
-import { prewarmOpenAICodexResponses } from "@nghyane/pi-ai/providers/openai-codex-responses";
-import type { Component } from "@nghyane/pi-tui";
-import { $env, logger, postmortem } from "@nghyane/pi-utils";
-import { getAgentDbPath, getAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
+import { Agent, type AgentEvent, type AgentMessage, type AgentTool, type ThinkingLevel } from "@nghyane/arcane-agent";
+import { type Message, type Model, supportsXhigh } from "@nghyane/arcane-ai";
+import { prewarmOpenAICodexResponses } from "@nghyane/arcane-ai/providers/openai-codex-responses";
+import type { Component } from "@nghyane/arcane-tui";
+import { $env, logger, postmortem } from "@nghyane/arcane-utils";
+import { getAgentDbPath, getAgentDir, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { loadCapability } from "./capability";
 import { type Rule, ruleCapability } from "./capability/rule";
@@ -91,7 +91,7 @@ const debugStartup = $env.PI_DEBUG_STARTUP ? (stage: string) => process.stderr.w
 export interface CreateAgentSessionOptions {
 	/** Working directory for project-local discovery. Default: getProjectDir() */
 	cwd?: string;
-	/** Global config directory. Default: ~/.omp/agent */
+	/** Global config directory. Default: ~/.arcane/agent */
 	agentDir?: string;
 	/** Spawns to allow. Default: "*" */
 	spawns?: string;
@@ -139,7 +139,7 @@ export interface CreateAgentSessionOptions {
 	rules?: Rule[];
 	/** Context files (AGENTS.md content). Default: discovered walking up from cwd */
 	contextFiles?: Array<{ path: string; content: string }>;
-	/** Prompt templates. Default: discovered from cwd/.omp/prompts/ + agentDir/prompts/ */
+	/** Prompt templates. Default: discovered from cwd/.arcane/prompts/ + agentDir/prompts/ */
 	promptTemplates?: PromptTemplate[];
 	/** File-based slash commands. Default: discovered from commands/ directories */
 	slashCommands?: FileSlashCommand[];
@@ -516,7 +516,7 @@ function createCustomToolsExtension(tools: CustomTool[]): ExtensionFactory {
  * const { session } = await createAgentSession();
  *
  * // With explicit model
- * import { getModel } from '@nghyane/pi-ai';
+ * import { getModel } from '@nghyane/arcane-ai';
  * const { session } = await createAgentSession({
  *   model: getModel('anthropic', 'claude-opus-4-5'),
  *   thinkingLevel: 'high',
@@ -836,7 +836,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		}
 	}
 
-	// Discover and load custom tools from .omp/tools/, .claude/tools/, etc.
+	// Discover and load custom tools from .arcane/tools/, .claude/tools/, etc.
 	const builtInToolNames = builtinTools.map(t => t.name);
 	const discoveredCustomTools = await discoverAndLoadCustomTools([], cwd, builtInToolNames);
 	time("discoverAndLoadCustomTools");

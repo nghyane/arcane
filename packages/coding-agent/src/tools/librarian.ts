@@ -27,7 +27,7 @@ export const LibrarianTool = createSubagentTool({
 	schema,
 	descriptionTemplate: librarianDescription,
 	progressText: "Exploring repositories...",
-	tmpPrefix: "omp-librarian-",
+	tmpPrefix: "arc-librarian-",
 	buildTask,
 	buildDescription: p => `Librarian: ${(p.query as string).slice(0, 60)}`,
 });

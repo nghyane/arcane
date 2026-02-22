@@ -1,6 +1,6 @@
-# Porting From pi-mono: A Practical Merge Guide
+# Porting From arcane: A Practical Merge Guide
 
-This guide is a repeatable checklist for porting changes from pi-mono into this repo.
+This guide is a repeatable checklist for porting changes from arcane into this repo.
 Use it for any merge: single file, feature branch, or full release sync.
 
 ## Last Sync Point
@@ -44,10 +44,10 @@ Upstream uses different package scopes. Replace them consistently.
 
 - Replace old scopes with the local scope used here.
 - Examples (adjust to match the actual packages you are porting):
-  - `@mariozechner/pi-coding-agent` → `@nghyane/pi-coding-agent`
-  - `@mariozechner/pi-agent-core` → `@nghyane/pi-agent-core`
-  - `@mariozechner/pi-tui` → `@nghyane/pi-tui`
-  - `@mariozechner/pi-ai` → `@nghyane/pi-ai`
+  - `@mariozechner/arcane` → `@nghyane/arcane`
+  - `@mariozechner/pi-agent-core` → `@nghyane/arcane-agent`
+  - `@mariozechner/pi-tui` → `@nghyane/arcane-tui`
+  - `@mariozechner/pi-ai` → `@nghyane/arcane-ai`
 
 ## 4) Use Bun APIs where they improve on Node
 
@@ -102,7 +102,7 @@ const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "myapp-"));
 Do not copy runtime assets or vendor files at build time.
 
 - If upstream copies assets into a dist folder, replace with Bun-friendly embeds.
-- Prompts are static `.md` files; use Bun text imports (`with { type: "text" }`) and Handlebars instead of inline prompt strings.
+- Promptts are static `.md` files; use Bun text imports (`with { type: "text" }`) and Handlebars instead of inline promptt strings.
 - Use `import.meta.dir` + `Bun.file` to load adjacent non-text resources.
 - Keep assets in-repo and let the bundler include them.
 - Eliminate copy scripts unless the user explicitly requests them.
@@ -127,8 +127,8 @@ Treat `package.json` as a contract. Merge intentionally.
 - Keep existing formatting conventions.
 - Do not introduce `any` unless required.
 - Avoid dynamic imports and inline type imports; use top-level imports only.
-- Never build prompts in code; prompts are static `.md` files rendered with Handlebars.
-- In coding-agent, never use `console.log`/`console.warn`/`console.error`; use `logger` from `@nghyane/pi-utils`.
+- Never build promptts in code; promptts are static `.md` files rendered with Handlebars.
+- In coding-agent, never use `console.log`/`console.warn`/`console.error`; use `logger` from `@nghyane/arcane-utils`.
 - Use `Promise.withResolvers()` instead of `new Promise((resolve, reject) => ...)`.
 - **No `private`/`protected`/`public` keywords on class fields or methods.** Use ES `#` private fields for encapsulation; leave accessible members bare (no keyword). The only exception is constructor parameter properties (`constructor(private readonly x: T)`), where the keyword is required by TypeScript. When porting upstream code that uses `private foo` or `protected bar`, convert to `#foo` (private) or bare `bar` (accessible).
 - Prefer existing helpers and utilities over new ad-hoc code.
@@ -151,7 +151,7 @@ Unless requested, remove upstream compatibility shims.
 
 ## 9) Update docs and references
 
-- Replace pi-mono repo links where appropriate.
+- Replace arcane repo links where appropriate.
 - Update examples to use Bun and correct package scopes.
 - Ensure README instructions still match the current repo behavior.
 
@@ -189,7 +189,7 @@ the improvements and add explicit checks so they don’t get lost in the merge.
 Before porting a file, check if upstream significantly refactored it:
 
 ```bash
-# Compare the file you're about to port against what you have locally
+# Carcaneare the file you're about to port against what you have locally
 git diff HEAD upstream/main -- path/to/file.ts
 ```
 
@@ -229,7 +229,7 @@ When upstream reworked a module:
 # Find all uses of an old concept that may need updating
 rg "oldConceptName" --type ts
 
-# Compare default values between versions
+# Carcaneare default values between versions
 git show upstream/main:path/to/file.ts | rg "default|DEFAULT"
 
 # Check if all enum/union values have handlers
@@ -244,7 +244,7 @@ Use this as a final pass before you finish:
 - [ ] No Node-only APIs in new/ported code
 - [ ] All package scopes updated
 - [ ] `package.json` scripts use Bun
-- [ ] Prompts are `.md` text imports (no inline prompt strings)
+- [ ] Promptts are `.md` text imports (no inline promptt strings)
 - [ ] No `console.*` in coding-agent (use `logger`)
 - [ ] Assets load via Bun embed patterns (no copy scripts)
 - [ ] Tests or checks run (or explicitly noted as blocked)
@@ -256,7 +256,7 @@ When committing a backport, follow the repo format `<type>(scope): <past-tense d
 range in the title.
 
 ```
-fix(coding-agent): backported pi-mono changes (<from>..<to>)
+fix(coding-agent): backported arcane changes (<from>..<to>)
 
 packages/<package>:
 - <type>: <description>
@@ -269,7 +269,7 @@ packages/<other-package>:
 **Example:**
 
 ```
-fix(coding-agent): backported pi-mono changes (9f3eef65f..52532c7c0)
+fix(coding-agent): backported arcane changes (9f3eef65f..52532c7c0)
 
 packages/ai:
 - fix: handle "sensitive" stop reason from Anthropic API
@@ -303,19 +303,19 @@ Our fork has architectural decisions that differ from upstream. **Do not port th
 
 | Upstream                                    | Our Fork                                                  | Reason                                                                |
 | ------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------- |
-| `FooterDataProvider` class                  | `StatusLineComponent`                                     | Simpler, integrated status line                                       |
+| `FooterDataProvider` class                  | `StatusLineCarcaneonent`                                     | Simpler, integrated status line                                       |
 | `ctx.ui.setHeader()` / `ctx.ui.setFooter()` | Stub in non-TUI modes                                     | Implemented in TUI, no-op elsewhere                                   |
-| `ctx.ui.setEditorComponent()`               | Stub in non-TUI modes                                     | Implemented in TUI, no-op elsewhere                                   |
+| `ctx.ui.setEditorCarcaneonent()`               | Stub in non-TUI modes                                     | Implemented in TUI, no-op elsewhere                                   |
 | `InteractiveModeOptions` options object     | Positional constructor args (options type still exported) | Keep constructor signature; update the type when upstream adds fields |
 
-### Component Naming
+### Carcaneonent Naming
 
 | Upstream                     | Our Fork                |
 | ---------------------------- | ----------------------- |
 | `extension-input.ts`         | `hook-input.ts`         |
 | `extension-selector.ts`      | `hook-selector.ts`      |
-| `ExtensionInputComponent`    | `HookInputComponent`    |
-| `ExtensionSelectorComponent` | `HookSelectorComponent` |
+| `ExtensionInputCarcaneonent`    | `HookInputCarcaneonent`    |
+| `ExtensionSelectorCarcaneonent` | `HookSelectorCarcaneonent` |
 
 ### API Naming
 
@@ -329,7 +329,7 @@ Our fork has architectural decisions that differ from upstream. **Do not port th
 
 | Upstream                                           | Our Fork                                | Reason                                  |
 | -------------------------------------------------- | --------------------------------------- | --------------------------------------- |
-| `clipboard.ts` + `clipboard-image.ts` (tool files) | `@nghyane/pi-natives` clipboard module | Merged into N-API native implementation |
+| `clipboard.ts` + `clipboard-image.ts` (tool files) | `@nghyane/arcane-natives` clipboard module | Merged into N-API native implementation |
 
 ### Test Framework
 
@@ -358,14 +358,14 @@ Our fork has architectural decisions that differ from upstream. **Do not port th
 | Upstream                      | Our Fork                                   |
 | ----------------------------- | ------------------------------------------ |
 | `jiti` for TypeScript loading | Native Bun `import()`                      |
-| `pkg.pi` manifest field       | `pkg.omp ?? pkg.pi` (prefer our namespace) |
+| `pkg.pi` manifest field       | `pkg.arcane ?? pkg.pi` (prefer our namespace) |
 
 ### Skip These Upstream Features
 
 When porting, **skip** these files/features entirely:
 
-- `footer-data-provider.ts` — we use StatusLineComponent
-- `clipboard-image.ts` — clipboard is in `@nghyane/pi-natives` N-API module
+- `footer-data-provider.ts` — we use StatusLineCarcaneonent
+- `clipboard-image.ts` — clipboard is in `@nghyane/arcane-natives` N-API module
 - GitHub workflow files — we have our own CI
 - `models.generated.ts` — auto-generated, regenerate locally (as models.json instead)
 
@@ -373,7 +373,7 @@ When porting, **skip** these files/features entirely:
 
 These exist in our fork but not upstream. **Never overwrite:**
 
-- `StatusLineComponent` in interactive mode
+- `StatusLineCarcaneonent` in interactive mode
 - Multi-credential auth with session affinity
 - Capability-based discovery system (`defineCapability`, `registerProvider`, `loadCapability`, `skillCapability`, etc.)
 - MCP/Exa/SSH integrations

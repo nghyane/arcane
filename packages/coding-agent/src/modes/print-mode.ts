@@ -2,10 +2,10 @@
  * Print mode (single-shot): Send prompts, output result, exit.
  *
  * Used for:
- * - `omp -p "prompt"` - text output
- * - `omp --mode json "prompt"` - JSON event stream
+ * - \`arc -p "prompt"` - text output
+ * - \`arc --mode json "prompt"` - JSON event stream
  */
-import type { AssistantMessage, ImageContent } from "@nghyane/pi-ai";
+import type { AssistantMessage, ImageContent } from "@nghyane/arcane-ai";
 import type { AgentSession } from "../session/agent-session";
 
 /**

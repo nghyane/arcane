@@ -5,7 +5,7 @@ This document explains how MCP server definitions become callable `mcp_*` tools 
 ## Architecture at a glance
 
 ```text
-Config sources (.omp/.claude/.cursor/.vscode/mcp.json, mcp.json, etc.)
+Config sources (.arcane/.claude/.cursor/.vscode/mcp.json, mcp.json, etc.)
   -> discovery providers normalize to canonical MCPServer
   -> capability loader dedupes by server name (higher provider priority wins)
   -> loadAllMCPConfigs converts to MCPServerConfig + skips enabled:false
@@ -60,9 +60,9 @@ Result: duplicate server names across sources are not merged. One definition win
 
 The dedicated fallback provider in `src/discovery/mcp-json.ts` reads project-root `mcp.json` and `.mcp.json` (low priority).
 
-In practice MCP servers also come from higher-priority providers (for example native `.omp/...` and tool-specific config dirs). Authoring guidance:
+In practice MCP servers also come from higher-priority providers (for example native `.arcane/...` and tool-specific config dirs). Authoring guidance:
 
-- Prefer `.omp/mcp.json` (project) or `~/.omp/mcp.json` (user) for explicit control.
+- Prefer `.arcane/mcp.json` (project) or `~/.arcane/mcp.json` (user) for explicit control.
 - Use root `mcp.json` / `.mcp.json` when you need fallback compatibility.
 - Reusing the same server name in multiple sources causes precedence shadowing, not merge.
 

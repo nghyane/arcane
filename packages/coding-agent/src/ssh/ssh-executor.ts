@@ -1,4 +1,4 @@
-import { logger, ptree } from "@nghyane/pi-utils";
+import { logger, ptree } from "@nghyane/arcane-utils";
 import { OutputSink } from "../session/streaming-output";
 import { buildRemoteCommand, ensureConnection, ensureHostInfo, type SSHConnectionTarget } from "./connection-manager";
 import { hasSshfs, mountRemote } from "./sshfs-mount";

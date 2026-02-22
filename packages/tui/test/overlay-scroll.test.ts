@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { type Component, TUI } from "@nghyane/pi-tui";
+import { type Component, TUI } from "@nghyane/arcane-tui";
 import { VirtualTerminal } from "./virtual-terminal";
 
 class LineComponent implements Component {

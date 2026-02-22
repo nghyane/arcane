@@ -2,12 +2,12 @@
 
 // TypeBox helper for string enums (convenience for custom tools)
 // Re-export from pi-ai which uses the correct enum-based schema format
-export { StringEnum } from "@nghyane/pi-ai";
+export { StringEnum } from "@nghyane/arcane-ai";
 // Re-export TUI components for custom tool rendering
-export { Container, Markdown, Spacer, Text } from "@nghyane/pi-tui";
+export { Container, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 // Logging
-export { logger } from "@nghyane/pi-utils";
-export { getAgentDir, VERSION } from "@nghyane/pi-utils/dirs";
+export { logger } from "@nghyane/arcane-utils";
+export { getAgentDir, VERSION } from "@nghyane/arcane-utils/dirs";
 export { formatKeyHint, formatKeyHints } from "./config/keybindings";
 export { ModelRegistry } from "./config/model-registry";
 // Prompt templates

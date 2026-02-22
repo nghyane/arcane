@@ -1,4 +1,4 @@
-import type { MouseEvent, Terminal } from "@nghyane/pi-tui/terminal";
+import type { MouseEvent, Terminal } from "@nghyane/arcane-tui/terminal";
 import type { Terminal as XtermTerminalType } from "@xterm/headless";
 import xterm from "@xterm/headless";
 

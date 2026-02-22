@@ -3,14 +3,9 @@
  *
  * File-based templates that inject content when invoked with /templatename.
  */
-import {
-	createAgentSession,
-	discoverPromptTemplates,
-	type PromptTemplate,
-	SessionManager,
-} from "@nghyane/pi-coding-agent";
+import { createAgentSession, discoverPromptTemplates, type PromptTemplate, SessionManager } from "@nghyane/arcane";
 
-// Discover templates from cwd/.pi/prompts/ and ~/.pi/agent/prompts/
+// Discover templates from cwd/.arcane/prompts/ and ~/.arcane/agent/prompts/
 const discovered = await discoverPromptTemplates();
 console.log("Discovered prompt templates:");
 for (const template of discovered) {

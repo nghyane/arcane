@@ -1,18 +1,18 @@
-# @nghyane/pi-agent
+# @nghyane/arcane-agent
 
-Stateful agent with tool execution and event streaming. Built on `@nghyane/pi-ai`.
+Stateful agent with tool execution and event streaming. Built on `@nghyane/arcane-ai`.
 
 ## Installation
 
 ```bash
-npm install @nghyane/pi-agent
+npm install @nghyane/arcane-agent
 ```
 
 ## Quick Start
 
 ```typescript
-import { Agent } from "@nghyane/pi-agent";
-import { getModel } from "@nghyane/pi-ai";
+import { Agent } from "@nghyane/arcane-agent";
+import { getModel } from "@nghyane/arcane-ai";
 
 const agent = new Agent({
 	initialState: {
@@ -255,7 +255,7 @@ steering until the current turn completes.
 Extend `AgentMessage` via declaration merging:
 
 ```typescript
-declare module "@nghyane/pi-agent" {
+declare module "@nghyane/arcane-agent" {
 	interface CustomAgentMessages {
 		notification: { role: "notification"; text: string; timestamp: number };
 	}
@@ -328,7 +328,7 @@ Thrown errors are caught by the agent and reported to the LLM as tool errors wit
 For browser apps that proxy through a backend:
 
 ```typescript
-import { Agent, streamProxy } from "@nghyane/pi-agent";
+import { Agent, streamProxy } from "@nghyane/arcane-agent";
 
 const agent = new Agent({
 	streamFn: (model, context, options) =>
@@ -345,7 +345,7 @@ const agent = new Agent({
 For direct control without the Agent class:
 
 ```typescript
-import { agentLoop, agentLoopContinue } from "@nghyane/pi-agent";
+import { agentLoop, agentLoopContinue } from "@nghyane/arcane-agent";
 
 const context: AgentContext = {
 	systemPrompt: "You are helpful.",

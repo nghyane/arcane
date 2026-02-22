@@ -16,7 +16,7 @@ export const OPENAI_HEADER_VALUES = {
 	BETA_RESPONSES: "responses=experimental",
 	BETA_RESPONSES_WEBSOCKETS: "responses_websockets=2026-02-04",
 	BETA_RESPONSES_WEBSOCKETS_V2: "responses_websockets=2026-02-06",
-	ORIGINATOR_CODEX: "pi",
+	ORIGINATOR_CODEX: "arcane",
 } as const;
 
 export const URL_PATHS = {

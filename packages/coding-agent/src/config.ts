@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { isEnoent, logger } from "@nghyane/pi-utils";
-import { CONFIG_DIR_NAME, getAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
+import { isEnoent, logger } from "@nghyane/arcane-utils";
+import { CONFIG_DIR_NAME, getAgentDir, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import type { TSchema } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import { Ajv, type ErrorObject, type ValidateFunction } from "ajv";
@@ -49,7 +49,7 @@ export function getChangelogPath(): string {
 }
 
 // =============================================================================
-// User Config Paths (~/.omp/agent/*)
+// User Config Paths (~/.arcane/agent/*)
 // =============================================================================
 
 function migrateJsonToYml(jsonPath: string, ymlPath: string) {
@@ -249,8 +249,8 @@ export class ConfigFile<T> implements IConfigFile<T> {
 
 /**
  * Config directory bases in priority order (highest first).
- * User-level: ~/.omp/agent, ~/.claude, ~/.codex, ~/.gemini
- * Project-level: .omp, .claude, .codex, .gemini
+ * User-level: ~/.arcane/agent, ~/.claude, ~/.codex, ~/.gemini
+ * Project-level: .arcane, .claude, .codex, .gemini
  */
 const USER_CONFIG_BASES = priorityList.map(({ dir, globalAgentDir }) => ({
 	base: () => path.join(os.homedir(), globalAgentDir ?? dir),
@@ -264,14 +264,14 @@ const PROJECT_CONFIG_BASES = priorityList.map(({ dir }) => ({
 
 export interface ConfigDirEntry {
 	path: string;
-	source: string; // e.g., ".omp", ".claude"
+	source: string; // e.g., ".arcane", ".claude"
 	level: "user" | "project";
 }
 
 export interface GetConfigDirsOptions {
-	/** Include user-level directories (~/.omp/agent/...). Default: true */
+	/** Include user-level directories (~/.arcane/agent/...). Default: true */
 	user?: boolean;
-	/** Include project-level directories (.omp/...). Default: true */
+	/** Include project-level directories (.arcane/...). Default: true */
 	project?: boolean;
 	/** Current working directory for project paths. Default: getProjectDir() */
 	cwd?: string;
@@ -289,7 +289,7 @@ export interface GetConfigDirsOptions {
  * @example
  * // Get all command directories
  * getConfigDirs("commands")
- * // → [{ path: "~/.omp/agent/commands", source: ".omp", level: "user" }, ...]
+ * // → [{ path: "~/.arcane/agent/commands", source: ".arcane", level: "user" }, ...]
  *
  * @example
  * // Get only existing project skill directories
@@ -379,7 +379,7 @@ export function findConfigFileWithMeta(
 
 /**
  * Find all nearest config directories by walking up from cwd.
- * Returns one entry per config base (.omp, .claude) - the nearest one found.
+ * Returns one entry per config base (.arcane, .claude) - the nearest one found.
  * Results are in priority order (highest first).
  */
 export function findAllNearestProjectConfigDirs(subpath: string, cwd: string = getProjectDir()): ConfigDirEntry[] {

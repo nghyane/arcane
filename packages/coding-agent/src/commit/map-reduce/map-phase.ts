@@ -1,5 +1,5 @@
-import type { Api, AssistantMessage, Message, Model } from "@nghyane/pi-ai";
-import { completeSimple } from "@nghyane/pi-ai";
+import type { Api, AssistantMessage, Message, Model } from "@nghyane/arcane-ai";
+import { completeSimple } from "@nghyane/arcane-ai";
 import fileObserverSystemPrompt from "../../commit/prompts/file-observer-system.md" with { type: "text" };
 import fileObserverUserPrompt from "../../commit/prompts/file-observer-user.md" with { type: "text" };
 import type { FileDiff, FileObservation } from "../../commit/types";

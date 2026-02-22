@@ -1,6 +1,6 @@
 # `/handoff` generation pipeline
 
-This document describes how the coding-agent implements `/handoff` today: trigger path, generation prompt, completion capture, session switch, and context reinjection.
+This document describes how the coding-agent implements `/handoff` today: trigger path, generation promptt, completion capture, session switch, and context reinjection.
 
 ## Scope
 
@@ -28,7 +28,7 @@ Does not cover:
 ## Trigger path
 
 1. `/handoff` is declared in builtin slash command metadata (`slash-commands.ts`) with optional inline hint: `[focus instructions]`.
-2. In interactive input handling (`InputController`), submit text matching `/handoff` or `/handoff ...` is intercepted before normal prompt submission.
+2. In interactive input handling (`InputController`), submit text matching `/handoff` or `/handoff ...` is intercepted before normal promptt submission.
 3. The editor is cleared and `handleHandoffCommand(customInstructions?)` is called.
 4. `CommandController.handleHandoffCommand` performs a preflight guard using current entries:
    - Counts `type === "message"` entries.
@@ -45,20 +45,20 @@ The same minimum-content guard exists again inside `AgentSession.handoff()` and 
 - Reads current branch entries (`sessionManager.getBranch()`)
 - Validates minimum message count (`>= 2`)
 - Creates `#handoffAbortController`
-- Builds a fixed, inline prompt requesting a structured handoff document (`Goal`, `Constraints & Preferences`, `Progress`, `Key Decisions`, `Critical Context`, `Next Steps`)
+- Builds a fixed, inline promptt requesting a structured handoff document (`Goal`, `Constraints & Preferences`, `Progress`, `Key Decisions`, `Critical Context`, `Next Steps`)
 - Appends `Additional focus: ...` if custom instructions are provided
 
-Prompt is sent via:
+Promptt is sent via:
 
 ```ts
-await this.prompt(handoffPrompt, { expandPromptTemplates: false });
+await this.promptt(handoffPromptt, { expandPrompttTemplates: false });
 ```
 
-`expandPromptTemplates: false` prevents slash/prompt-template expansion of this internal instruction payload.
+`expandPrompttTemplates: false` prevents slash/promptt-template expansion of this internal instruction payload.
 
 ### 2) Capture completion
 
-Before sending prompt, `handoff()` subscribes to session events and waits for `agent_end`.
+Before sending promptt, `handoff()` subscribes to session events and waits for `agent_end`.
 
 On `agent_end`, it extracts handoff text from agent state by scanning backward for the most recent `assistant` message, then concatenating all `content` blocks where `type === "text"` with `\n`.
 
@@ -137,7 +137,7 @@ Result: the original session contains the visible generated handoff as part of h
 
 After session reset, handoff is persisted as `custom_message` with `customType: "handoff"`.
 
-`buildSessionContext()` converts this entry into a runtime custom/user-context message via `createCustomMessage(...)`, so it is included in future prompts from the new session.
+`buildSessionContext()` converts this entry into a runtime custom/user-context message via `createCustomMessage(...)`, so it is included in future promptts from the new session.
 
 ## Controller/UI behavior
 
@@ -185,7 +185,7 @@ Current UI classification:
   - UI shows `Handoff cancelled`
 
 - **Failed**
-  - any other thrown error from `handoff()` / prompt pipeline (model/API validation errors, runtime exceptions, etc.)
+  - any other thrown error from `handoff()` / promptt pipeline (model/API validation errors, runtime exceptions, etc.)
   - UI shows `Handoff failed: ...`
 
 Additional nuance: if generation completes but no text is extracted, `handoff()` returns `undefined` and controller currently reports **cancelled**, not **failed**.
@@ -206,7 +206,7 @@ High-level state flow:
 1. Interactive slash command intercepted
 2. Preflight message-count guard
 3. `#handoffAbortController` created (`isGeneratingHandoff = true`)
-4. Internal handoff prompt submitted (visible in chat as normal assistant generation)
+4. Internal handoff promptt submitted (visible in chat as normal assistant generation)
 5. On `agent_end`, last assistant text extracted
 6. If missing/aborted → return `undefined` or cancellation error path
 7. If present:

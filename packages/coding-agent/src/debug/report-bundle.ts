@@ -5,9 +5,9 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { WorkProfile } from "@nghyane/pi-natives";
-import { isEnoent } from "@nghyane/pi-utils";
-import { APP_NAME, getLogPath, getLogsDir, getReportsDir } from "@nghyane/pi-utils/dirs";
+import type { WorkProfile } from "@nghyane/arcane-natives";
+import { isEnoent } from "@nghyane/arcane-utils";
+import { APP_NAME, getLogPath, getLogsDir, getReportsDir } from "@nghyane/arcane-utils/dirs";
 import type { CpuProfile, HeapSnapshot } from "./profiler";
 import { collectSystemInfo, sanitizeEnv } from "./system-info";
 
@@ -82,7 +82,7 @@ export async function createReportBundle(options: ReportBundleOptions): Promise<
 	await fs.mkdir(reportsDir, { recursive: true });
 
 	const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-	const outputPath = path.join(reportsDir, `omp-report-${timestamp}.tar.gz`);
+	const outputPath = path.join(reportsDir, `arc-report-${timestamp}.tar.gz`);
 
 	const data: Record<string, string> = {};
 	const files: string[] = [];

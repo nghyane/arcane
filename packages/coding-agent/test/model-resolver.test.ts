@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import type { Model } from "@nghyane/pi-ai";
-import { parseModelPattern, resolveCliModel } from "@nghyane/pi-coding-agent/config/model-resolver";
+import { parseModelPattern, resolveCliModel } from "@nghyane/arcane/config/model-resolver";
+import type { Model } from "@nghyane/arcane-ai";
 
 // Mock models for testing
 const mockModels: Model<"anthropic-messages">[] = [

@@ -9,7 +9,7 @@ import type {
 	TextContent,
 	Tool,
 	ToolResultMessage,
-} from "@nghyane/pi-ai";
+} from "@nghyane/arcane-ai";
 import type { Static, TSchema } from "@sinclair/typebox";
 
 /** Stream function - can return sync or Promise for async config lookup */

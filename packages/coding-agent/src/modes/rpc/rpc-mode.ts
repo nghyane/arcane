@@ -10,7 +10,7 @@
  * - Events: AgentSessionEvent objects streamed as they occur
  * - Extension UI: Extension UI requests are emitted, client responds with extension_ui_response
  */
-import { readJsonl, Snowflake } from "@nghyane/pi-utils";
+import { readJsonl, Snowflake } from "@nghyane/arcane-utils";
 import type { ExtensionUIContext, ExtensionUIDialogOptions } from "../../extensibility/extensions";
 import { type Theme, theme } from "../../modes/theme/theme";
 import type { AgentSession } from "../../session/agent-session";

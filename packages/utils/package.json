@@ -1,9 +1,9 @@
 {
 	"type": "module",
-	"name": "@nghyane/pi-utils",
+	"name": "@nghyane/arcane-utils",
 	"version": "12.19.0",
 	"description": "Shared utilities for pi packages",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
 	"license": "GPL-3.0-or-later",
 	"publishConfig": {
@@ -11,11 +11,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/nghyane/arcane.git",
 		"directory": "packages/utils"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/nghyane/arcane/issues"
 	},
 	"keywords": [
 		"utilities",

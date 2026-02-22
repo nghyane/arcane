@@ -14,10 +14,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import type { ChildProcess } from "node:child_process";
 import { execSync, spawn } from "node:child_process";
-import { getBundledModel } from "@nghyane/pi-ai/models";
-import { complete } from "@nghyane/pi-ai/stream";
-import type { AssistantMessage, Context, Model, Usage } from "@nghyane/pi-ai/types";
-import { isContextOverflow } from "@nghyane/pi-ai/utils/overflow";
+import { getBundledModel } from "@nghyane/arcane-ai/models";
+import { complete } from "@nghyane/arcane-ai/stream";
+import type { AssistantMessage, Context, Model, Usage } from "@nghyane/arcane-ai/types";
+import { isContextOverflow } from "@nghyane/arcane-ai/utils/overflow";
 import { e2eApiKey, resolveApiKey } from "./oauth";
 
 // Resolve OAuth tokens at module level (async, runs before tests)

@@ -1,5 +1,5 @@
-import { emergencyTerminalRestore } from "@nghyane/pi-tui";
-import { postmortem } from "@nghyane/pi-utils";
+import { emergencyTerminalRestore } from "@nghyane/arcane-tui";
+import { postmortem } from "@nghyane/arcane-utils";
 
 /**
  * Run modes for the coding agent.

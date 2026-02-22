@@ -1,4 +1,4 @@
-import { sanitizeText as nativeSanitizeText } from "@nghyane/pi-natives";
+import { sanitizeText as nativeSanitizeText } from "@nghyane/arcane-natives";
 
 function sanitizeBinaryOutput(str: string): string {
 	let out: string[] | undefined;

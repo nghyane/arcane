@@ -1,10 +1,10 @@
 /**
  * Extension runner - executes extensions and manages their lifecycle.
  */
-import type { AgentMessage } from "@nghyane/pi-agent-core";
-import type { ImageContent, Model } from "@nghyane/pi-ai";
-import type { KeyId } from "@nghyane/pi-tui";
-import { logger } from "@nghyane/pi-utils";
+import type { AgentMessage } from "@nghyane/arcane-agent";
+import type { ImageContent, Model } from "@nghyane/arcane-ai";
+import type { KeyId } from "@nghyane/arcane-tui";
+import { logger } from "@nghyane/arcane-utils";
 import type { ModelRegistry } from "../../config/model-registry";
 import { type Theme, theme } from "../../modes/theme/theme";
 import type { SessionManager } from "../../session/session-manager";

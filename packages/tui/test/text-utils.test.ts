@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { extractSegments, sliceWithWidth, truncateToWidth, visibleWidth } from "@nghyane/pi-tui/utils";
+import { extractSegments, sliceWithWidth, truncateToWidth, visibleWidth } from "@nghyane/arcane-tui/utils";
 
 describe("text utils", () => {
 	it("computes visible width for ANSI and tabs", () => {

@@ -1,7 +1,7 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { getAntigravityHeaders, getEnvApiKey, StringEnum } from "@nghyane/pi-ai";
-import { $env, ptree, readSseJson, Snowflake, untilAborted } from "@nghyane/pi-utils";
+import { getAntigravityHeaders, getEnvApiKey, StringEnum } from "@nghyane/arcane-ai";
+import { $env, ptree, readSseJson, Snowflake, untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { ModelRegistry } from "../config/model-registry";
 import { renderPromptTemplate } from "../config/prompt-templates";
@@ -477,7 +477,7 @@ function getExtensionForMime(mimeType: string): string {
 
 async function saveImageToTemp(image: InlineImageData): Promise<string> {
 	const ext = getExtensionForMime(image.mimeType);
-	const filename = `omp-image-${Snowflake.next()}.${ext}`;
+	const filename = `arc-image-${Snowflake.next()}.${ext}`;
 	const filepath = path.join(os.tmpdir(), filename);
 	await Bun.write(filepath, Buffer.from(image.data, "base64"));
 	return filepath;

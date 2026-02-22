@@ -1,6 +1,6 @@
 # Natives Addon Loader Runtime
 
-This document deep-dives the addon loading/validation layer in `@nghyane/pi-natives`: how `native.ts` decides which `.node` file to load, when embedded payload extraction runs, and how startup failures are reported.
+This document deep-dives the addon loading/validation layer in `@nghyane/arcane-natives`: how `native.ts` decides which `.node` file to load, when embedded payload extraction runs, and how startup failures are reported.
 
 ## Implementation files
 
@@ -31,9 +31,9 @@ At module initialization (`export const native = loadNative();`), `native.ts` co
   - `execDir`: directory containing `process.execPath`.
   - `versionedDir`: `<getNativesDir()>/<packageVersion>`.
   - `userDataDir` fallback:
-    - Windows: `%LOCALAPPDATA%/omp` (or `%USERPROFILE%/AppData/Local/omp`).
+    - Windows: `%LOCALAPPDATA%/arcane` (or `%USERPROFILE%/AppData/Local/arcane`).
     - Non-Windows: `~/.local/bin`.
-- **Compiled-binary mode** (`isCompiledBinary`): true if any of:
+- **Carcaneiled-binary mode** (`isCarcaneiledBinary`): true if any of:
   - `PI_COMPILED` env var is set, or
   - `import.meta.url` contains Bun-embedded markers (`$bunfs`, `~BUN`, `%7EBUN`).
 - **Variant override**: `PI_NATIVE_VARIANT` (`modern`/`baseline` only; invalid values ignored).
@@ -72,17 +72,17 @@ This preserves useful diagnostics for near-miss cases while still failing hard f
 
 ### Non-x64 behavior
 
-- No variant is used; loader stays on the default filename (`pi_natives.<platform>-<arch>.node`).
+- No variant is used; loader stays on the default filename (`arcane_natives.<platform>-<arch>.node`).
 
 ### Filename construction
 
 Given `tag = <platform>-<arch>`:
 
-- Non-x64 or no variant: `pi_natives.<tag>.node`
+- Non-x64 or no variant: `arcane_natives.<tag>.node`
 - x64 + `modern`: try in order
-  1. `pi_natives.<tag>-modern.node`
-  2. `pi_natives.<tag>-baseline.node` (intentional fallback)
-- x64 + `baseline`: only `pi_natives.<tag>-baseline.node`
+  1. `arcane_natives.<tag>-modern.node`
+  2. `arcane_natives.<tag>-baseline.node` (intentional fallback)
+- x64 + `baseline`: only `arcane_natives.<tag>-baseline.node`
 
 The `addonLabel` used in final error messages is either `<tag>` or `<tag> (<variant>)`.
 
@@ -94,8 +94,8 @@ The `addonLabel` used in final error messages is either `<tag>` or `<tag> (<vari
 
 Prepended first:
 
-1. `<nativeDir>/pi_natives.dev.node`
-2. `<execDir>/pi_natives.dev.node`
+1. `<nativeDir>/arcane_natives.dev.node`
+2. `<execDir>/arcane_natives.dev.node`
 
 This path is explicit debug intent and always outranks release candidates.
 
@@ -107,7 +107,7 @@ Built from variant-resolved filename list and searched in this order:
   1. `<nativeDir>/<filename>`
   2. `<execDir>/<filename>`
 
-- **Compiled runtime** (`PI_COMPILED` or Bun embedded markers):
+- **Carcaneiled runtime** (`PI_COMPILED` or Bun embedded markers):
   1. `<versionedDir>/<filename>`
   2. `<userDataDir>/<filename>`
   3. `<nativeDir>/<filename>`
@@ -137,7 +137,7 @@ Current checked-in default is `embeddedAddon: null`; compiled artifacts may repl
 
 Extraction (`maybeExtractEmbeddedAddon`) runs only when all gates pass:
 
-1. `isCompiledBinary === true`
+1. `isCarcaneiledBinary === true`
 2. `embeddedAddon !== null`
 3. `embeddedAddon.platformTag === platformTag`
 4. `embeddedAddon.version === packageVersion`
@@ -162,8 +162,8 @@ On failure, extraction does not crash immediately; it appends an error entry (di
 
 ```text
 Init
-  -> Compute platform/version/variant/candidate lists
-  -> (Compiled + embedded manifest matches?)
+  -> Carcaneute platform/version/variant/candidate lists
+  -> (Carcaneiled + embedded manifest matches?)
        yes -> Try extract embedded to versionedDir (record errors, continue)
        no  -> Skip extraction
   -> For each runtime candidate in order:
@@ -237,7 +237,7 @@ Loader behavior:
 - Continues probing remaining candidates.
 - If no candidate validates, final error includes every attempted path with each failure message.
 
-## Compiled-binary startup failures
+## Carcaneiled-binary startup failures
 
 In compiled mode final diagnostics include:
 
@@ -249,7 +249,7 @@ In compiled mode final diagnostics include:
 
 In normal package/runtime mode final diagnostics include:
 
-- reinstall hint (`bun install @nghyane/pi-natives`),
+- reinstall hint (`bun install @nghyane/arcane-natives`),
 - local rebuild command (`bun --cwd=packages/natives run build:native`),
 - optional x64 variant build hint (`TARGET_VARIANT=baseline|modern ...`).
 
@@ -257,7 +257,7 @@ In normal package/runtime mode final diagnostics include:
 
 When `PI_DEV` is set:
 
-- `pi_natives.dev.node` candidates are prepended ahead of all release candidates.
+- `arcane_natives.dev.node` candidates are prepended ahead of all release candidates.
 - Loader emits per-candidate console diagnostics (`Loaded native addon...` and load errors).
 
 Without `PI_DEV`:

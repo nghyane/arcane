@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { fuzzyFind } from "@nghyane/pi-natives";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import { fuzzyFind } from "@nghyane/arcane-natives";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 
 const PATH_DELIMITERS = new Set([" ", "\t", '"', "'", "="]);
 
@@ -198,7 +198,7 @@ export interface AutocompleteProvider {
 export class CombinedAutocompleteProvider implements AutocompleteProvider {
 	#commands: (SlashCommand | AutocompleteItem)[];
 	#basePath: string;
-	// Intentionally separate from pi-natives cache: this cache is a local,
+	// Intentionally separate from arcane-natives cache: this cache is a local,
 	// per-directory readdir fast-path for prefix completions. Global fuzzy
 	// discovery continues to use native fuzzyFind + shared scan cache.
 	#dirCache: Map<string, { entries: fs.Dirent[]; timestamp: number }> = new Map();

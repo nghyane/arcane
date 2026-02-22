@@ -11,9 +11,10 @@
  *
  * The generated prompt appears as a draft in the editor for review/editing.
  */
-import { complete, type Message } from "@nghyane/pi-ai";
-import type { HookAPI, SessionEntry } from "@nghyane/pi-coding-agent";
-import { BorderedLoader, convertToLlm, serializeConversation } from "@nghyane/pi-coding-agent";
+
+import type { HookAPI, SessionEntry } from "@nghyane/arcane";
+import { BorderedLoader, convertToLlm, serializeConversation } from "@nghyane/arcane";
+import { complete, type Message } from "@nghyane/arcane-ai";
 
 const SYSTEM_PROMPT = `You are a context transfer assistant. Given a conversation history and the user's goal for a new thread, generate a focused prompt that:
 

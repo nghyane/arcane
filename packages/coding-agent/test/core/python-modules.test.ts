@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { loadPythonModules, type PythonModuleExecutor } from "@nghyane/pi-coding-agent/ipy/modules";
-import { TempDir } from "@nghyane/pi-utils";
-import { getAgentModulesDir, getProjectModulesDir } from "@nghyane/pi-utils/dirs";
+import { loadPythonModules, type PythonModuleExecutor } from "@nghyane/arcane/ipy/modules";
+import { TempDir } from "@nghyane/arcane-utils";
+import { getAgentModulesDir, getProjectModulesDir } from "@nghyane/arcane-utils/dirs";
 
 const fixturesDir = path.resolve(import.meta.dir, "../../test/fixtures/python-modules");
 
@@ -26,12 +26,12 @@ describe("python modules", () => {
 	});
 
 	it("loads modules in sorted order with silent execution", async () => {
-		tempRoot = TempDir.createSync("@omp-python-modules-");
+		tempRoot = TempDir.createSync("@arc-python-modules-");
 		const agentDir = path.join(tempRoot.path(), "agent");
 		const cwd = path.join(tempRoot.path(), "project");
 
-		await writeModule(getAgentModulesDir(agentDir), "beta.py", "user-omp");
-		await writeModule(getAgentModulesDir(agentDir), "alpha.py", "user-omp");
+		await writeModule(getAgentModulesDir(agentDir), "beta.py", "user-arc");
+		await writeModule(getAgentModulesDir(agentDir), "alpha.py", "user-arc");
 
 		const calls: Array<{ name: string; options?: { silent?: boolean; storeHistory?: boolean } }> = [];
 		const executor: PythonModuleExecutor = {
@@ -50,12 +50,12 @@ describe("python modules", () => {
 	});
 
 	it("fails fast when a module fails to execute", async () => {
-		tempRoot = TempDir.createSync("@omp-python-modules-");
+		tempRoot = TempDir.createSync("@arc-python-modules-");
 		const agentDir = path.join(tempRoot.path(), "agent");
 		const cwd = path.join(tempRoot.path(), "project");
 
-		await writeModule(getAgentModulesDir(agentDir), "alpha.py", "user-omp");
-		await writeModule(getProjectModulesDir(cwd), "beta.py", "project-omp");
+		await writeModule(getAgentModulesDir(agentDir), "alpha.py", "user-arc");
+		await writeModule(getProjectModulesDir(cwd), "beta.py", "project-arc");
 
 		const executor: PythonModuleExecutor = {
 			execute: async (code: string) => {

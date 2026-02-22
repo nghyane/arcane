@@ -3,9 +3,9 @@
  *
  * Spawns the agent in RPC mode and provides a typed API for all operations.
  */
-import type { AgentEvent, AgentMessage, ThinkingLevel } from "@nghyane/pi-agent-core";
-import type { ImageContent } from "@nghyane/pi-ai";
-import { ptree, readJsonl } from "@nghyane/pi-utils";
+import type { AgentEvent, AgentMessage, ThinkingLevel } from "@nghyane/arcane-agent";
+import type { ImageContent } from "@nghyane/arcane-ai";
+import { ptree, readJsonl } from "@nghyane/arcane-utils";
 import type { BashResult } from "../../exec/bash-executor";
 import type { SessionStats } from "../../session/agent-session";
 import type { CompactionResult } from "../../session/compaction";

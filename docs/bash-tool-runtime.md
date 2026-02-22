@@ -146,8 +146,8 @@ Behavior highlights:
 Environment hardening defaults are injected for unattended runs:
 
 - pagers disabled (`PAGER=cat`, `GIT_PAGER=cat`, etc.),
-- editor prompts disabled (`GIT_EDITOR=true`, `EDITOR=true`, ...),
-- terminal/auth prompts reduced (`GIT_TERMINAL_PROMPT=0`, `SSH_ASKPASS=/usr/bin/false`, `CI=1`),
+- editor promptts disabled (`GIT_EDITOR=true`, `EDITOR=true`, ...),
+- terminal/auth promptts reduced (`GIT_TERMINAL_PROMPT=0`, `SSH_ASKPASS=/usr/bin/false`, `CI=1`),
 - package-manager/tool automation flags for non-interactive behavior.
 
 PTY output is normalized (`CRLF`/`CR` to `LF`, `sanitizeText`) and written into `OutputSink`, including artifact spill support.
@@ -225,9 +225,9 @@ Because built-in tools are wrapped with `wrapToolWithMetaNotice()`, truncation n
 
 `BashRenderContext` has `isFullOutput`, but current renderer context builder does not set it for bash tool results. Expanded view still uses the text already in result content (tail/truncated output) unless another caller provides full artifact content.
 
-## User bang-command component (`BashExecutionComponent`)
+## User bang-command component (`BashExecutionCarcaneonent`)
 
-`BashExecutionComponent` is for user `!` commands in interactive mode (not model tool calls):
+`BashExecutionCarcaneonent` is for user `!` commands in interactive mode (not model tool calls):
 
 - streams chunks live,
 - collapsed preview keeps last 20 logical lines,
@@ -244,7 +244,7 @@ This component is wired by `CommandController.handleBashCommand()` and fed from 
 | Interactive tool call          | `BashTool.execute`                                    | Yes, when `bash.virtualTerminal=on` and UI exists and `PI_NO_PTY!=1` | PTY overlay (interactive) or streamed tail updates                       | Tool errors become `toolResult.isError`          |
 | Print mode tool call           | `BashTool.execute`                                    | No (no UI context)                                                   | No TUI overlay; output appears in event stream/final assistant text flow | Same tool error mapping                          |
 | RPC tool call (agent tooling)  | `BashTool.execute`                                    | Usually no UI -> non-PTY                                             | Structured tool events/results                                           | Same tool error mapping                          |
-| Interactive bang command (`!`) | `AgentSession.executeBash` + `BashExecutionComponent` | No (uses executor directly)                                          | Dedicated bash execution component                                       | Controller catches exceptions and shows UI error |
+| Interactive bang command (`!`) | `AgentSession.executeBash` + `BashExecutionCarcaneonent` | No (uses executor directly)                                          | Dedicated bash execution component                                       | Controller catches exceptions and shows UI error |
 | RPC `bash` command             | `rpc-mode` -> `session.executeBash`                   | No                                                                   | Returns `BashResult` directly                                            | Consumer handles returned fields                 |
 
 ## Operational caveats

@@ -1,10 +1,10 @@
 /**
  * Stats CLI command handlers.
  *
- * Handles `omp stats` subcommand for viewing AI usage statistics.
+ * Handles \`arc stats` subcommand for viewing AI usage statistics.
  */
 
-import { APP_NAME } from "@nghyane/pi-utils/dirs";
+import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { openPath } from "../utils/open";
 
@@ -86,7 +86,7 @@ function formatPercent(n: number): string {
 export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 	// Lazy import to avoid loading stats module when not needed
 	const { getDashboardStats, syncAllSessions, getTotalMessageCount, startServer, closeDb } = await import(
-		"@nghyane/omp-stats"
+		"@nghyane/arcane-stats"
 	);
 
 	// Sync session files first
@@ -128,7 +128,7 @@ export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 }
 
 async function printStatsSummary(): Promise<void> {
-	const { getDashboardStats } = await import("@nghyane/omp-stats");
+	const { getDashboardStats } = await import("@nghyane/arcane-stats");
 	const stats = await getDashboardStats();
 	const { overall, byModel, byFolder } = stats;
 

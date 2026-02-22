@@ -4,7 +4,7 @@
  * Note: command execution is async to avoid blocking the TUI.
  */
 
-import { executeShell } from "@nghyane/pi-natives";
+import { executeShell } from "@nghyane/arcane-natives";
 
 /** Cache for successful shell command results (persists for process lifetime). */
 const commandResultCache = new Map<string, string>();

@@ -1,4 +1,4 @@
-import type { Component } from "@nghyane/pi-tui";
+import type { Component } from "@nghyane/arcane-tui";
 import { theme } from "../../modes/theme/theme";
 
 /**

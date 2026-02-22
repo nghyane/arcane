@@ -4,7 +4,7 @@
  * Shows name, description, origin, status, and kind-specific preview.
  */
 import * as os from "node:os";
-import { type Component, truncateToWidth, wrapTextWithAnsi } from "@nghyane/pi-tui";
+import { type Component, truncateToWidth, wrapTextWithAnsi } from "@nghyane/arcane-tui";
 import { theme } from "../../../modes/theme/theme";
 import type { Extension, ExtensionState } from "./types";
 

@@ -1,7 +1,7 @@
 /**
  * Manage configuration settings.
  */
-import { Args, Command, Flags } from "@nghyane/pi-utils/cli";
+import { Args, Command, Flags } from "@nghyane/arcane-utils/cli";
 import { type ConfigAction, type ConfigCommandArgs, runConfigCommand } from "../cli/config-cli";
 import { initTheme } from "../modes/theme/theme";
 

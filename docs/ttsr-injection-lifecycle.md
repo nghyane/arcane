@@ -8,7 +8,7 @@ This document covers the current Time Traveling Stream Rules (TTSR) runtime path
 - [`../src/export/ttsr.ts`](../packages/coding-agent/src/export/ttsr.ts)
 - [`../src/session/agent-session.ts`](../packages/coding-agent/src/session/agent-session.ts)
 - [`../src/session/session-manager.ts`](../packages/coding-agent/src/session/session-manager.ts)
-- [`../src/prompts/system/ttsr-interrupt.md`](../packages/coding-agent/src/prompts/system/ttsr-interrupt.md)
+- [`../src/promptts/system/ttsr-interrupt.md`](../packages/coding-agent/src/promptts/system/ttsr-interrupt.md)
 - [`../src/capability/index.ts`](../packages/coding-agent/src/capability/index.ts)
 - [`../src/extensibility/extensions/types.ts`](../packages/coding-agent/src/extensibility/extensions/types.ts)
 - [`../src/extensibility/hooks/types.ts`](../packages/coding-agent/src/extensibility/hooks/types.ts)
@@ -147,7 +147,7 @@ A rule can re-trigger only when:
 
 ### Interactive-mode rendering difference
 
-Interactive mode uses `session.isTtsrAbortPending` to suppress showing the aborted assistant stop reason as a visible failure during TTSR interruption, and renders a `TtsrNotificationComponent` when the event arrives.
+Interactive mode uses `session.isTtsrAbortPending` to suppress showing the aborted assistant stop reason as a visible failure during TTSR interruption, and renders a `TtsrNotificationCarcaneonent` when the event arrives.
 
 ## 7. Persistence and resume state (current implementation)
 

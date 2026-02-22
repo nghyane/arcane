@@ -3,9 +3,9 @@
  */
 import * as os from "node:os";
 import * as path from "node:path";
-import type { ThinkingLevel } from "@nghyane/pi-agent-core";
-import { FileType, glob } from "@nghyane/pi-natives";
-import { CONFIG_DIR_NAME } from "@nghyane/pi-utils/dirs";
+import type { ThinkingLevel } from "@nghyane/arcane-agent";
+import { FileType, glob } from "@nghyane/arcane-natives";
+import { CONFIG_DIR_NAME } from "@nghyane/arcane-utils/dirs";
 import { readFile } from "../capability/fs";
 import { parseRuleConditionAndScope, type Rule, type RuleFrontmatter } from "../capability/rule";
 import type { Skill, SkillFrontmatter } from "../capability/skill";
@@ -471,8 +471,8 @@ async function readExtensionModuleManifest(
 	const content = await readFile(packageJsonPath);
 	if (!content) return null;
 
-	const pkg = parseJSON<{ omp?: ExtensionModuleManifest; pi?: ExtensionModuleManifest }>(content);
-	const manifest = pkg?.omp ?? pkg?.pi;
+	const pkg = parseJSON<{ arcane?: ExtensionModuleManifest }>(content);
+	const manifest = pkg?.arcane;
 	if (manifest && typeof manifest === "object") {
 		return manifest;
 	}
@@ -485,7 +485,7 @@ async function readExtensionModuleManifest(
  * Discovery rules:
  * 1. Direct files: `extensions/*.ts` or `*.js` → load
  * 2. Subdirectory with index: `extensions/<ext>/index.ts` or `index.js` → load
- * 3. Subdirectory with package.json: `extensions/<ext>/package.json` with "omp"/"pi" field → load declared paths
+ * 3. Subdirectory with package.json: `extensions/<ext>/package.json` with "arcane"/"pi" field → load declared paths
  *
  * No recursion beyond one level. Complex packages must use package.json manifest.
  * Uses native glob for fast filesystem scanning with gitignore support.

@@ -1,4 +1,4 @@
-import { sanitizeText } from "@nghyane/pi-natives";
+import { sanitizeText } from "@nghyane/arcane-natives";
 
 // =============================================================================
 // Constants

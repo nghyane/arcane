@@ -1,4 +1,4 @@
-import { logger } from "@nghyane/pi-utils";
+import { logger } from "@nghyane/arcane-utils";
 
 export class EventBus {
 	readonly #listeners = new Map<string, Set<(data: unknown) => void>>();

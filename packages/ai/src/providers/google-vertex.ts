@@ -5,7 +5,7 @@ import {
 	type ThinkingConfig,
 	ThinkingLevel,
 } from "@google/genai";
-import { $env } from "@nghyane/pi-utils";
+import { $env } from "@nghyane/arcane-utils";
 import { calculateCost } from "../models";
 import type {
 	Api,

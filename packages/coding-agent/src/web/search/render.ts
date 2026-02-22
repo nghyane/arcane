@@ -4,8 +4,8 @@
  * Tree-based rendering with collapsed/expanded states for web search results.
  */
 
-import type { Component } from "@nghyane/pi-tui";
-import { Text, visibleWidth, wrapTextWithAnsi } from "@nghyane/pi-tui";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text, visibleWidth, wrapTextWithAnsi } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../../extensibility/custom-tools/types";
 import type { Theme } from "../../modes/theme/theme";
 import {

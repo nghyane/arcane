@@ -1,7 +1,7 @@
 import * as path from "node:path";
-import type { Api, Model } from "@nghyane/pi-ai";
-import { logger } from "@nghyane/pi-utils";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import type { Api, Model } from "@nghyane/arcane-ai";
+import { logger } from "@nghyane/arcane-utils";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { ModelRegistry } from "../config/model-registry";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import { Settings } from "../config/settings";
@@ -29,7 +29,7 @@ const RECENT_COMMITS_COUNT = 8;
 const TYPES_DESCRIPTION = renderPromptTemplate(typesDescriptionPrompt);
 
 /**
- * Execute the omp commit pipeline for staged changes.
+ * Execute the arcane commit pipeline for staged changes.
  */
 export async function runCommitCommand(args: CommitCommandArgs): Promise<void> {
 	if (args.legacy) {

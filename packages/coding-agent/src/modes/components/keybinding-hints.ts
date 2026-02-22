@@ -1,7 +1,7 @@
 /**
  * Utilities for formatting keybinding hints in the UI.
  */
-import { type EditorAction, getEditorKeybindings, type KeyId } from "@nghyane/pi-tui";
+import { type EditorAction, getEditorKeybindings, type KeyId } from "@nghyane/arcane-tui";
 import type { AppAction, KeybindingsManager } from "../../config/keybindings";
 import { theme } from "../../modes/theme/theme";
 

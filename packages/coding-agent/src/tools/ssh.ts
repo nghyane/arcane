@@ -1,6 +1,6 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import type { Component } from "@nghyane/pi-tui";
-import { Text } from "@nghyane/pi-tui";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
 import { type Static, Type } from "@sinclair/typebox";
 import type { SSHHost } from "../capability/ssh";
 import { sshCapability } from "../capability/ssh";

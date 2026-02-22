@@ -1,7 +1,7 @@
 /**
  * List available models with optional fuzzy search
  */
-import type { Api, Model } from "@nghyane/pi-ai";
+import type { Api, Model } from "@nghyane/arcane-ai";
 import type { ModelRegistry } from "../config/model-registry";
 import { fuzzyFilter } from "../utils/fuzzy";
 

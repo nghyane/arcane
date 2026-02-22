@@ -1,5 +1,5 @@
-import type { ImageContent } from "@nghyane/pi-ai";
-import { ImageFormat, PhotonImage, SamplingFilter } from "@nghyane/pi-natives";
+import type { ImageContent } from "@nghyane/arcane-ai";
+import { ImageFormat, PhotonImage, SamplingFilter } from "@nghyane/arcane-natives";
 
 export interface ImageResizeOptions {
 	maxWidth?: number; // Default: 2000

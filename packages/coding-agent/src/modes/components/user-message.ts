@@ -1,4 +1,4 @@
-import { Container, Markdown, Spacer } from "@nghyane/pi-tui";
+import { Container, Markdown, Spacer } from "@nghyane/arcane-tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 
 /**

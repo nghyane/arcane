@@ -5,7 +5,7 @@
  * cleaned content.
  */
 
-import { getEnvApiKey } from "@nghyane/pi-ai";
+import { getEnvApiKey } from "@nghyane/arcane-ai";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";
 import type { SearchParams } from "./base";

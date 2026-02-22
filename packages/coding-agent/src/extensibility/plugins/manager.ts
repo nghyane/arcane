@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isEnoent, logger } from "@nghyane/pi-utils";
+import { isEnoent, logger } from "@nghyane/arcane-utils";
 import {
 	getPluginsDir,
 	getPluginsLockfile,
@@ -8,7 +8,7 @@ import {
 	getPluginsPackageJson,
 	getProjectDir,
 	getProjectPluginOverridesPath,
-} from "@nghyane/pi-utils/dirs";
+} from "@nghyane/arcane-utils/dirs";
 import { extractPackageName, parsePluginSpec } from "./parser";
 import type {
 	DoctorCheck,
@@ -112,7 +112,7 @@ export class PluginManager {
 					pkgJsonPath,
 					JSON.stringify(
 						{
-							name: "omp-plugins",
+							name: "arcane-plugins",
 							private: true,
 							dependencies: {},
 						},
@@ -173,7 +173,7 @@ export class PluginManager {
 		const actualName = extractPackageName(spec.packageName);
 		const pkgPath = path.join(getPluginsNodeModules(), actualName, "package.json");
 
-		let pkg: { name: string; version: string; omp?: PluginManifest; pi?: PluginManifest };
+		let pkg: { name: string; version: string; arcane?: PluginManifest };
 		try {
 			pkg = await Bun.file(pkgPath).json();
 		} catch (err) {
@@ -182,7 +182,7 @@ export class PluginManager {
 			}
 			throw err;
 		}
-		const manifest: PluginManifest = pkg.omp || pkg.pi || { version: pkg.version };
+		const manifest: PluginManifest = pkg.arcane || { version: pkg.version };
 		manifest.version = pkg.version;
 
 		// Resolve enabled features
@@ -276,14 +276,14 @@ export class PluginManager {
 
 		for (const [name] of Object.entries(deps)) {
 			const pluginPkgPath = path.join(getPluginsNodeModules(), name, "package.json");
-			let pluginPkg: { version: string; omp?: PluginManifest; pi?: PluginManifest };
+			let pluginPkg: { version: string; arcane?: PluginManifest };
 			try {
 				pluginPkg = await Bun.file(pluginPkgPath).json();
 			} catch (err) {
 				if (isEnoent(err)) continue;
 				throw err;
 			}
-			const manifest: PluginManifest = pluginPkg.omp || pluginPkg.pi || { version: pluginPkg.version };
+			const manifest: PluginManifest = pluginPkg.arcane || { version: pluginPkg.version };
 			manifest.version = pluginPkg.version;
 
 			const runtimeState = config.plugins[name] || {
@@ -316,7 +316,7 @@ export class PluginManager {
 		const absolutePath = path.resolve(this.#cwd, localPath);
 
 		const pkgFilePath = path.join(absolutePath, "package.json");
-		let pkg: { name?: string; version: string; omp?: PluginManifest; pi?: PluginManifest };
+		let pkg: { name?: string; version: string; arcane?: PluginManifest };
 		try {
 			pkg = await Bun.file(pkgFilePath).json();
 		} catch (err) {
@@ -349,7 +349,7 @@ export class PluginManager {
 
 		await fs.promises.symlink(absolutePath, linkPath);
 
-		const manifest: PluginManifest = pkg.omp || pkg.pi || { version: pkg.version };
+		const manifest: PluginManifest = pkg.arcane || { version: pkg.version };
 		manifest.version = pkg.version;
 
 		// Add to runtime config
@@ -525,7 +525,7 @@ export class PluginManager {
 			const pluginPath = path.join(nodeModulesPath, name);
 			const pluginPkgPath = path.join(pluginPath, "package.json");
 
-			let pluginPkg: { version: string; description?: string; omp?: PluginManifest; pi?: PluginManifest };
+			let pluginPkg: { version: string; description?: string; arcane?: PluginManifest };
 			try {
 				pluginPkg = await Bun.file(pluginPkgPath).json();
 			} catch (err) {
@@ -549,15 +549,15 @@ export class PluginManager {
 				}
 				throw err;
 			}
-			const hasManifest = !!(pluginPkg.omp || pluginPkg.pi);
-			const manifest: PluginManifest | undefined = pluginPkg.omp || pluginPkg.pi;
+			const hasManifest = !!pluginPkg.arcane;
+			const manifest: PluginManifest | undefined = pluginPkg.arcane;
 
 			checks.push({
 				name: `plugin:${name}`,
 				status: hasManifest ? "ok" : "warning",
 				message: hasManifest
 					? `v${pluginPkg.version}${pluginPkg.description ? ` - ${pluginPkg.description}` : ""}`
-					: `v${pluginPkg.version} - No omp/pi manifest (not an omp plugin)`,
+					: `v${pluginPkg.version} - No arc/pi manifest (not an arcane plugin)`,
 			});
 
 			// Check tools path exists if specified

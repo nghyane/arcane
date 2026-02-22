@@ -16,7 +16,7 @@ Primary implementation:
 ## Startup
 
 ```bash
-omp --mode rpc [regular CLI options]
+arcane --mode rpc [regular CLI options]
 ```
 
 Behavior notes:
@@ -55,19 +55,19 @@ Important edge behavior from runtime:
 
 - Unknown command responses are emitted with `id: undefined` (even if the request had an `id`).
 - Parse/handler exceptions in the input loop emit `command: "parse"` with `id: undefined`.
-- `prompt` and `abort_and_prompt` return immediate success, then may emit a later error response with the **same** id if async prompt scheduling fails.
+- `promptt` and `abort_and_promptt` return immediate success, then may emit a later error response with the **same** id if async promptt scheduling fails.
 
 ## Command Schema (canonical)
 
 `RpcCommand` is defined in `src/modes/rpc/rpc-types.ts`:
 
-### Prompting
+### Promptting
 
-- `{ id?, type: "prompt", message: string, images?: ImageContent[], streamingBehavior?: "steer" | "followUp" }`
+- `{ id?, type: "promptt", message: string, images?: ImageContent[], streamingBehavior?: "steer" | "followUp" }`
 - `{ id?, type: "steer", message: string, images?: ImageContent[] }`
 - `{ id?, type: "follow_up", message: string, images?: ImageContent[] }`
 - `{ id?, type: "abort" }`
-- `{ id?, type: "abort_and_prompt", message: string, images?: ImageContent[] }`
+- `{ id?, type: "abort_and_promptt", message: string, images?: ImageContent[] }`
 - `{ id?, type: "new_session", parentSession?: string }`
 
 ### State
@@ -91,9 +91,9 @@ Important edge behavior from runtime:
 - `{ id?, type: "set_follow_up_mode", mode: "all" | "one-at-a-time" }`
 - `{ id?, type: "set_interrupt_mode", mode: "immediate" | "wait" }`
 
-### Compaction
+### Carcaneaction
 
-- `{ id?, type: "compact", customInstructions?: string }`
+- `{ id?, type: "companeact", customInstructions?: string }`
 - `{ id?, type: "set_auto_compaction", enabled: boolean }`
 
 ### Retry
@@ -136,14 +136,14 @@ Data payloads are command-specific and defined in `rpc-types.ts`.
   "model": { "provider": "...", "id": "..." },
   "thinkingLevel": "off|minimal|low|medium|high|xhigh",
   "isStreaming": false,
-  "isCompacting": false,
+  "isCarcaneacting": false,
   "steeringMode": "all|one-at-a-time",
   "followUpMode": "all|one-at-a-time",
   "interruptMode": "immediate|wait",
   "sessionFile": "...",
   "sessionId": "...",
   "sessionName": "...",
-  "autoCompactionEnabled": true,
+  "autoCarcaneactionEnabled": true,
   "messageCount": 0,
   "queuedMessageCount": 0
 }
@@ -172,16 +172,16 @@ Extension runner errors are emitted separately as:
 
 `message_update` includes streaming deltas in `assistantMessageEvent` (text/thinking/toolcall deltas).
 
-## Prompt/Queue Concurrency and Ordering
+## Promptt/Queue Concurrency and Ordering
 
 This is the most important operational behavior.
 
 ### Immediate ack vs completion
 
-`prompt` and `abort_and_prompt` are **acknowledged immediately**:
+`promptt` and `abort_and_promptt` are **acknowledged immediately**:
 
 ```json
-{ "id": "req_1", "type": "response", "command": "prompt", "success": true }
+{ "id": "req_1", "type": "response", "command": "promptt", "success": true }
 ```
 
 That means:
@@ -191,12 +191,12 @@ That means:
 
 ### While streaming
 
-`AgentSession.prompt()` requires `streamingBehavior` during active streaming:
+`AgentSession.promptt()` requires `streamingBehavior` during active streaming:
 
 - `"steer"` => queued steering message (interrupt path)
 - `"followUp"` => queued follow-up message (post-turn path)
 
-If omitted during streaming, prompt fails.
+If omitted during streaming, promptt fails.
 
 ### Queue defaults
 
@@ -260,31 +260,31 @@ Failures are `success: false` with string `error`.
 - Extension UI responses with unknown `id` are ignored.
 - Process termination conditions are stdin close or explicit extension-triggered shutdown.
 
-## Compact Command Flows
+## Carcaneact Command Flows
 
-### 1) Prompt and stream
+### 1) Promptt and stream
 
 stdin:
 
 ```json
-{ "id": "req_1", "type": "prompt", "message": "Summarize this repo" }
+{ "id": "req_1", "type": "promptt", "message": "Summarize this repo" }
 ```
 
 stdout sequence (typical):
 
 ```json
-{ "id": "req_1", "type": "response", "command": "prompt", "success": true }
+{ "id": "req_1", "type": "response", "command": "promptt", "success": true }
 { "type": "agent_start" }
 { "type": "message_update", "assistantMessageEvent": { "type": "text_delta", "delta": "..." }, "message": { "role": "assistant", "content": [] } }
 { "type": "agent_end", "messages": [] }
 ```
 
-### 2) Prompt during streaming with explicit queue policy
+### 2) Promptt during streaming with explicit queue policy
 
 stdin:
 
 ```json
-{ "id": "req_2", "type": "prompt", "message": "Also include risks", "streamingBehavior": "followUp" }
+{ "id": "req_2", "type": "promptt", "message": "Also include risks", "streamingBehavior": "followUp" }
 ```
 
 ### 3) Inspect and tune queue behavior

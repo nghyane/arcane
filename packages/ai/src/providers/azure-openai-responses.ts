@@ -1,4 +1,4 @@
-import { $env } from "@nghyane/pi-utils";
+import { $env } from "@nghyane/arcane-utils";
 import type OpenAI from "openai";
 import { AzureOpenAI } from "openai";
 import type {
@@ -478,7 +478,7 @@ function buildParams(
 		// Always request encrypted reasoning content so reasoning items can be
 		// replayed in multi-turn conversations when store is false (items aren't
 		// persisted server-side, so we must include the full content).
-		// See: https://github.com/can1357/oh-my-pi/issues/41
+		// See: https://github.com/nghyane/arcane/issues/41
 		params.include = ["reasoning.encrypted_content"];
 
 		if (options?.reasoningEffort || options?.reasoningSummary) {

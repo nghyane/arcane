@@ -5,8 +5,8 @@
  * by providing authorization URL, token URL, and client credentials.
  */
 
-import type { OAuthController, OAuthCredentials } from "@nghyane/pi-ai";
-import { OAuthCallbackFlow } from "@nghyane/pi-ai/utils/oauth/callback-server";
+import type { OAuthController, OAuthCredentials } from "@nghyane/arcane-ai";
+import { OAuthCallbackFlow } from "@nghyane/arcane-ai/utils/oauth/callback-server";
 
 const DEFAULT_PORT = 3000;
 const CALLBACK_PATH = "/callback";
@@ -179,7 +179,7 @@ export class MCPOAuthFlow extends OAuthCallbackFlow {
 					Accept: "application/json",
 				},
 				body: JSON.stringify({
-					client_name: "oh-my-pi MCP",
+					client_name: "arcane MCP",
 					redirect_uris: [redirectUri],
 					grant_types: ["authorization_code", "refresh_token"],
 					response_types: ["code"],

@@ -10,7 +10,7 @@ It documents only active behavior.
 
 ## Resolution model and precedence
 
-Most runtime lookups use `$env` from `@nghyane/pi-utils` (`packages/utils/src/env.ts`).
+Most runtime lookups use `$env` from `@nghyane/arcane-utils` (`packages/utils/src/env.ts`).
 
 `$env` loading order:
 
@@ -32,7 +32,7 @@ These are consumed via `getEnvApiKey()` (`packages/ai/src/stream.ts`) unless not
 |---|---|---|---|
 | `ANTHROPIC_OAUTH_TOKEN` | Anthropic API auth | Using Anthropic with OAuth token auth | Takes precedence over `ANTHROPIC_API_KEY` for provider auth resolution |
 | `ANTHROPIC_API_KEY` | Anthropic API auth | Using Anthropic without OAuth token | Fallback after `ANTHROPIC_OAUTH_TOKEN` |
-| `OPENAI_API_KEY` | OpenAI auth | Using OpenAI-family providers without explicit apiKey argument | Used by OpenAI Completions/Responses providers |
+| `OPENAI_API_KEY` | OpenAI auth | Using OpenAI-family providers without explicit apiKey argument | Used by OpenAI Carcaneletions/Responses providers |
 | `GEMINI_API_KEY` | Google Gemini auth | Using `google` provider models | Primary key for Gemini provider mapping |
 | `GOOGLE_API_KEY` | Gemini image tool auth fallback | Using `gemini_image` tool without `GEMINI_API_KEY` | Used by coding-agent image tool fallback path |
 | `GROQ_API_KEY` | Groq auth | Using Groq models |  |
@@ -147,7 +147,7 @@ OAuth host chain: `KIMI_CODE_OAUTH_HOST` → `KIMI_OAUTH_HOST` → `https://auth
 | `DEBUG_CURSOR` | Enables provider debug logs; `2`/`verbose` for detailed payload snippets |
 | `DEBUG_CURSOR_LOG` | Optional file path for JSONL debug log output |
 
-### Prompt cache compatibility switch
+### Promptt cache compatibility switch
 
 | Variable | Behavior |
 |---|---|
@@ -219,9 +219,9 @@ Extra conditional behavior:
 | `PI_SLOW_MODEL` | Ephemeral model-role override for `slow` (CLI `--slow` takes precedence) |
 | `PI_PLAN_MODEL` | Ephemeral model-role override for `plan` (CLI `--plan` takes precedence) |
 | `PI_NO_TITLE` | If set (any non-empty value), disables auto session title generation on first user message |
-| `NULL_PROMPT` | If `true`, system prompt builder returns empty string |
+| `NULL_PROMPT` | If `true`, system promptt builder returns empty string |
 | `PI_BLOCKED_AGENT` | Blocks a specific subagent type in task tool |
-| `PI_SUBPROCESS_CMD` | Overrides subagent spawn command (`omp` / `omp.cmd` resolution bypass) |
+| `ARCANE_SUBPROCESS_CMD` | Overrides subagent spawn command (`arcane` / `arcane.cmd` resolution bypass) |
 | `PI_TASK_MAX_OUTPUT_BYTES` | Max captured output bytes per subagent (default `500000`) |
 | `PI_TASK_MAX_OUTPUT_LINES` | Max captured output lines per subagent (default `5000`) |
 | `PI_TIMING` | If `1`, enables startup/tool timing instrumentation logs |
@@ -238,12 +238,12 @@ Extra conditional behavior:
 
 ## 6) Storage and config root paths
 
-These are consumed via `@nghyane/pi-utils/dirs` and affect where coding-agent stores data.
+These are consumed via `@nghyane/arcane-utils/dirs` and affect where coding-agent stores data.
 
 | Variable | Default / behavior |
 |---|---|
-| `PI_CONFIG_DIR` | Config root dirname under home (default `.omp`) |
-| `PI_CODING_AGENT_DIR` | Full override for agent directory (default `~/<PI_CONFIG_DIR or .omp>/agent`) |
+| `ARCANE_CONFIG_DIR` | Config root dirname under home (default `.arcane`) |
+| `PI_CODING_AGENT_DIR` | Full override for agent directory (default `~/<ARCANE_CONFIG_DIR or .arcane>/agent`) |
 | `PWD` | Used when matching canonical current working directory in path helpers |
 
 ---
@@ -275,8 +275,8 @@ These are read as runtime signals; they are usually set by the terminal/OS rathe
 |---|---|
 | `COLORTERM`, `TERM`, `WT_SESSION` | Color capability detection (theme color mode) |
 | `COLORFGBG` | Terminal background light/dark auto-detection |
-| `TERM_PROGRAM`, `TERM_PROGRAM_VERSION`, `TERMINAL_EMULATOR` | Terminal identity in system prompt/context |
-| `KDE_FULL_SESSION`, `XDG_CURRENT_DESKTOP`, `DESKTOP_SESSION`, `XDG_SESSION_DESKTOP`, `GDMSESSION`, `WINDOWMANAGER` | Desktop/window-manager detection in system prompt/context |
+| `TERM_PROGRAM`, `TERM_PROGRAM_VERSION`, `TERMINAL_EMULATOR` | Terminal identity in system promptt/context |
+| `KDE_FULL_SESSION`, `XDG_CURRENT_DESKTOP`, `DESKTOP_SESSION`, `XDG_SESSION_DESKTOP`, `GDMSESSION`, `WINDOWMANAGER` | Desktop/window-manager detection in system promptt/context |
 | `KITTY_WINDOW_ID`, `TMUX_PANE`, `TERM_SESSION_ID`, `WT_SESSION` | Stable per-terminal session breadcrumb IDs |
 | `SHELL`, `ComSpec`, `TERM_PROGRAM`, `TERM` | System info diagnostics |
 | `APPDATA`, `XDG_CONFIG_HOME` | lspmux config path resolution |

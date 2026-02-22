@@ -1,4 +1,4 @@
-import { $env } from "@nghyane/pi-utils";
+import { $env } from "@nghyane/arcane-utils";
 import OpenAI from "openai";
 import type {
 	ChatCompletionAssistantMessageParam,

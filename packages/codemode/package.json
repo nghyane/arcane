@@ -1,5 +1,5 @@
 {
-	"name": "@nghyane/pi-codemode",
+	"name": "@nghyane/arcane-codemode",
 	"version": "12.19.0",
 	"description": "Code Mode: convert tool-calling into TypeScript code generation for LLM orchestration",
 	"type": "module",
@@ -27,8 +27,8 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@nghyane/pi-agent-core": "^12.19.0",
-		"@nghyane/pi-utils": "^12.19.0",
+		"@nghyane/arcane-agent": "workspace:*",
+		"@nghyane/arcane-utils": "workspace:*",
 		"@sinclair/typebox": "^0.34.48"
 	},
 	"devDependencies": {
@@ -45,12 +45,12 @@
 	"license": "GPL-3.0-or-later",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/nghyane/arcane.git",
 		"directory": "packages/codemode"
 	},
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/nghyane/arcane",
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/nghyane/arcane/issues"
 	},
 	"engines": {
 		"bun": ">=1.3.7"

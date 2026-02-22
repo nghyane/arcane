@@ -7,7 +7,9 @@
  * - Register commands, keyboard shortcuts, and CLI flags
  * - Interact with the user via UI primitives
  */
-import type { AgentMessage, AgentToolResult, AgentToolUpdateCallback, ThinkingLevel } from "@nghyane/pi-agent-core";
+
+import type * as piCodingAgent from "@nghyane/arcane";
+import type { AgentMessage, AgentToolResult, AgentToolUpdateCallback, ThinkingLevel } from "@nghyane/arcane-agent";
 import type {
 	Api,
 	AssistantMessageEvent,
@@ -20,9 +22,8 @@ import type {
 	SimpleStreamOptions,
 	TextContent,
 	ToolResultMessage,
-} from "@nghyane/pi-ai";
-import type * as piCodingAgent from "@nghyane/pi-coding-agent";
-import type { AutocompleteItem, Component, EditorComponent, EditorTheme, KeyId, TUI } from "@nghyane/pi-tui";
+} from "@nghyane/arcane-ai";
+import type { AutocompleteItem, Component, EditorComponent, EditorTheme, KeyId, TUI } from "@nghyane/arcane-tui";
 import type { Static, TSchema } from "@sinclair/typebox";
 import type { Rule } from "../../capability/rule";
 import type { KeybindingsManager } from "../../config/keybindings";
@@ -898,7 +899,7 @@ export interface ExtensionAPI {
 	// =========================================================================
 
 	/** File logger for error/warning/debug messages */
-	logger: typeof import("@nghyane/pi-utils").logger;
+	logger: typeof import("@nghyane/arcane-utils").logger;
 
 	/** Injected @sinclair/typebox module for defining tool parameters */
 	typebox: typeof import("@sinclair/typebox");

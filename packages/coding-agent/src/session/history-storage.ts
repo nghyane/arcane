@@ -1,8 +1,8 @@
 import { Database, type Statement } from "bun:sqlite";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { logger } from "@nghyane/pi-utils";
-import { getAgentDir } from "@nghyane/pi-utils/dirs";
+import { logger } from "@nghyane/arcane-utils";
+import { getAgentDir } from "@nghyane/arcane-utils/dirs";
 
 export interface HistoryEntry {
 	id: number;

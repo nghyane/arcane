@@ -2,11 +2,11 @@
  * Agent discovery from filesystem.
  *
  * Discovers agent definitions from:
- *   - ~/.omp/agent/agents/*.md (user-level, primary)
- *   - ~/.pi/agent/agents/*.md (user-level, legacy)
+ *   - ~/.arcane/agent/agents/*.md (user-level, primary)
+ *   - ~/legacy)
  *   - ~/.claude/agents/*.md (user-level, legacy)
- *   - .omp/agents/*.md (project-level, primary)
- *   - .pi/agents/*.md (project-level, legacy)
+ *   - .arcane/agents/*.md (project-level, primary)
+ *   - legacy)
  *   - .claude/agents/*.md (project-level, legacy)
  *
  * Agent files use markdown with YAML frontmatter.
@@ -14,7 +14,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { logger } from "@nghyane/pi-utils";
+import { logger } from "@nghyane/arcane-utils";
 import { findAllNearestProjectConfigDirs, getConfigDirs } from "../config";
 import { listClaudePluginRoots } from "../discovery/helpers";
 import { loadBundledAgents, parseAgent } from "./agents";
@@ -51,7 +51,7 @@ async function loadAgentsFromDir(dir: string, source: AgentSource): Promise<Agen
 /**
  * Discover agents from filesystem and merge with bundled agents.
  *
- * Precedence (highest wins): .omp > .pi > .claude (project before user), then bundled
+ * Precedence (highest wins): .arcane > .pi > .claude (project before user), then bundled
  *
  * @param cwd - Current working directory for project agent discovery
  */
@@ -59,7 +59,7 @@ export async function discoverAgents(cwd: string, home: string = os.homedir()): 
 	const resolvedCwd = path.resolve(cwd);
 	const agentSources = Array.from(new Set(getConfigDirs("", { project: false }).map(entry => entry.source)));
 
-	// Get user directories (priority order: .omp, .pi, .claude, ...)
+	// Get user directories (priority order: .arcane, .pi, .claude, ...)
 	const userDirs = getConfigDirs("agents", { project: false })
 		.filter(entry => agentSources.includes(entry.source))
 		.map(entry => ({

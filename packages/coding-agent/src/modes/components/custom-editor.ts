@@ -1,4 +1,4 @@
-import { Editor, type KeyId, matchesKey, parseKittySequence } from "@nghyane/pi-tui";
+import { Editor, type KeyId, matchesKey, parseKittySequence } from "@nghyane/arcane-tui";
 
 /**
  * Custom editor that handles Escape and Ctrl+C keys for coding-agent

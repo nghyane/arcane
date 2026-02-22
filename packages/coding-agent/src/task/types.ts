@@ -1,6 +1,6 @@
-import type { ThinkingLevel } from "@nghyane/pi-agent-core";
-import type { Usage } from "@nghyane/pi-ai";
-import { $env } from "@nghyane/pi-utils";
+import type { ThinkingLevel } from "@nghyane/arcane-agent";
+import type { Usage } from "@nghyane/arcane-ai";
+import { $env } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 
 /** Source of an agent definition */

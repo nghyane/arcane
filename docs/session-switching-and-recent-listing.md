@@ -22,7 +22,7 @@ It focuses on current implementation behavior, including fallback paths and cave
 
 `SessionManager` stores sessions under a cwd-scoped directory by default:
 
-- `~/.omp/agent/sessions/--<cwd-encoded>--/*.jsonl`
+- `~/.arcane/agent/sessions/--<cwd-encoded>--/*.jsonl`
 
 `SessionManager.list(cwd, sessionDir?)` reads only that directory unless an explicit `sessionDir` is provided.
 
@@ -46,8 +46,8 @@ There are two different listing pipelines:
 
 For recent summaries (`RecentSessionInfo`):
 
-- display name preference: `header.title` -> first user prompt -> `header.id` -> filename
-- name is truncated to 40 chars for compact displays
+- display name preference: `header.title` -> first user promptt -> `header.id` -> filename
+- name is truncated to 40 chars for companeact displays
 - control characters/newlines are stripped/sanitized from title-derived names
 
 For `SessionInfo` list entries:
@@ -59,7 +59,7 @@ For `SessionInfo` list entries:
 
 `SessionManager.continueRecent(cwd, sessionDir?)` resolves the target in this order:
 
-1. Read terminal-scoped breadcrumb (`~/.omp/agent/terminal-sessions/<terminal-id>`)
+1. Read terminal-scoped breadcrumb (`~/.arcane/agent/terminal-sessions/<terminal-id>`)
 2. Validate breadcrumb:
    - current terminal can be identified
    - breadcrumb cwd matches current cwd (resolved path compare)
@@ -83,11 +83,11 @@ Breadcrumb writes are best-effort and non-fatal.
 2. ID prefix value
    - find match in `SessionManager.list(cwd, sessionDir)` by `id.startsWith(sessionArg)`
    - if no local match and `sessionDir` is not forced, try `SessionManager.listAll()`
-   - first match is used (no ambiguity prompt)
+   - first match is used (no ambiguity promptt)
 
 Cross-project match behavior:
 
-- if matched session cwd differs from current cwd, CLI prompts whether to fork into current project
+- if matched session cwd differs from current cwd, CLI promptts whether to fork into current project
 - yes -> `SessionManager.forkFrom(...)`
 - no -> throws error (`Session "..." is in another project (...)`)
 
@@ -111,7 +111,7 @@ Uses `SessionManager.continueRecent(...)` directly (breadcrumb-first behavior ab
 
 ## CLI picker (`src/cli/session-picker.ts`)
 
-`selectSession(sessions)` creates a standalone TUI with `SessionSelectorComponent` and resolves exactly once:
+`selectSession(sessions)` creates a standalone TUI with `SessionSelectorCarcaneonent` and resolves exactly once:
 
 - selection -> resolves selected path
 - cancel (Esc) -> resolves `null`
@@ -122,7 +122,7 @@ Uses `SessionManager.continueRecent(...)` directly (breadcrumb-first behavior ab
 Flow:
 
 1. fetch sessions from current session dir via `SessionManager.list(currentCwd, currentSessionDir)`
-2. mount `SessionSelectorComponent` in editor area using `showSelector(...)`
+2. mount `SessionSelectorCarcaneonent` in editor area using `showSelector(...)`
 3. callbacks:
    - select -> close selector and call `handleResumeSession(sessionPath)`
    - cancel -> restore editor and rerender

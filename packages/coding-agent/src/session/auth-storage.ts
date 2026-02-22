@@ -52,8 +52,8 @@ import {
 	type UsageProvider,
 	type UsageReport,
 	zaiUsageProvider,
-} from "@nghyane/pi-ai";
-import { logger } from "@nghyane/pi-utils";
+} from "@nghyane/arcane-ai";
+import { logger } from "@nghyane/arcane-utils";
 import { resolveConfigValue } from "../config/resolve-config-value";
 import { AgentStorage } from "./agent-storage";
 

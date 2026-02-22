@@ -21,7 +21,7 @@ Retry and compaction are checked from the same `agent_end` path, but they are in
 2. `#isRetryableError(...)` runs first.
 3. If retry is initiated, compaction checks are skipped for that turn.
 4. Context-overflow errors are hard-excluded from retry classification (`isContextOverflow(...)` short-circuits retry).
-5. Overflow therefore falls through to `#checkCompaction(...)` instead of standard retry.
+5. Overflow therefore falls through to `#checkCarcaneaction(...)` instead of standard retry.
 
 So: overload/rate/server/network-style failures use this retry policy; context-window overflow uses compaction recovery.
 
@@ -61,7 +61,7 @@ Flow (`#handleRetryableError`):
 3. Increment `#retryAttempt`.
 4. Create `#retryPromise` once (first attempt in a chain).
 5. If attempt exceeded `retry.maxRetries`, emit final failure event and stop.
-6. Compute delay: `retry.baseDelayMs * 2^(attempt-1)`.
+6. Carcaneute delay: `retry.baseDelayMs * 2^(attempt-1)`.
 7. For usage-limit errors, parse retry hints and call auth storage (`markUsageLimitReached(...)`); if provider/model switch succeeds, force delay to `0`.
 8. Emit `auto_retry_start`.
 9. Remove the trailing assistant error message from agent runtime state (kept in persisted session history).
@@ -127,14 +127,14 @@ On `auto_retry_start`, EventController:
 
 On `auto_retry_end`, it restores prior `Esc` handler and clears loader state.
 
-## Streaming and prompt completion behavior
+## Streaming and promptt completion behavior
 
-`prompt()` ultimately waits on `#waitForRetry()` after `agent.prompt(...)` returns.
+`promptt()` ultimately waits on `#waitForRetry()` after `agent.promptt(...)` returns.
 
 Effect:
 
-- a prompt call does not fully resolve until any started retry chain finishes (success/failure/cancel)
-- retry lifecycle is part of one logical prompt execution boundary
+- a promptt call does not fully resolve until any started retry chain finishes (success/failure/cancel)
+- retry lifecycle is part of one logical promptt execution boundary
 
 This prevents callers from treating a retrying turn as complete too early.
 
@@ -206,4 +206,4 @@ A new retry chain can still start later on a future retryable error after counte
 
 - Classification is regex text matching; provider-specific structured errors are not used here.
 - Retry strips the failing assistant error from **runtime context** before re-continue, but session history still keeps that error entry.
-- `RpcSessionState` currently exposes `autoCompactionEnabled` but not an `autoRetryEnabled` field; RPC callers must track their own toggle state or query settings through other APIs.
+- `RpcSessionState` currently exposes `autoCarcaneactionEnabled` but not an `autoRetryEnabled` field; RPC callers must track their own toggle state or query settings through other APIs.

@@ -1,6 +1,6 @@
 # SDK
 
-The SDK is the in-process integration surface for `@nghyane/pi-coding-agent`.
+The SDK is the in-process integration surface for `@nghyane/arcane`.
 Use it when you want direct access to agent state, event streaming, tool wiring, and session control from your own Bun/Node process.
 
 If you need cross-language/process isolation, use RPC mode instead.
@@ -8,12 +8,12 @@ If you need cross-language/process isolation, use RPC mode instead.
 ## Installation
 
 ```bash
-bun add @nghyane/pi-coding-agent
+bun add @nghyane/arcane
 ```
 
 ## Entry points
 
-`@nghyane/pi-coding-agent` exports the SDK APIs from the package root (and also via `@nghyane/pi-coding-agent/sdk`).
+`@nghyane/arcane` exports the SDK APIs from the package root (and also via `@nghyane/arcane/sdk`).
 
 Core exports for embedders:
 
@@ -23,13 +23,13 @@ Core exports for embedders:
 - `AuthStorage`
 - `ModelRegistry`
 - `discoverAuthStorage`
-- Discovery helpers (`discoverExtensions`, `discoverSkills`, `discoverContextFiles`, `discoverPromptTemplates`, `discoverSlashCommands`, `discoverCustomTSCommands`, `discoverMCPServers`)
+- Discovery helpers (`discoverExtensions`, `discoverSkills`, `discoverContextFiles`, `discoverPrompttTemplates`, `discoverSlashCommands`, `discoverCustomTSCommands`, `discoverMCPServers`)
 - Tool factory surface (`createTools`, `BUILTIN_TOOLS`, tool classes)
 
 ## Quick start (auto-discovery defaults)
 
 ```ts
-import { createAgentSession } from "@nghyane/pi-coding-agent";
+import { createAgentSession } from "@nghyane/arcane";
 
 const { session, modelFallbackMessage } = await createAgentSession();
 
@@ -43,7 +43,7 @@ const unsubscribe = session.subscribe(event => {
 	}
 });
 
-await session.prompt("Summarize this repository in 3 bullets.");
+await session.promptt("Summarize this repository in 3 bullets.");
 unsubscribe();
 await session.dispose();
 ```
@@ -55,12 +55,12 @@ await session.dispose();
 If omitted, it resolves:
 
 - `cwd`: `getProjectDir()`
-- `agentDir`: `~/.omp/agent` (via `getAgentDir()`)
+- `agentDir`: `~/.arcane/agent` (via `getAgentDir()`)
 - `authStorage`: `discoverAuthStorage(agentDir)`
 - `modelRegistry`: `new ModelRegistry(authStorage)` + `await refresh()`
 - `settings`: `await Settings.init({ cwd, agentDir })`
 - `sessionManager`: `SessionManager.create(cwd)` (file-backed)
-- skills/context files/prompt templates/slash commands/extensions/custom TS commands
+- skills/context files/promptt templates/slash commands/extensions/custom TS commands
 - built-in tools via `createTools(...)`
 - MCP tools (enabled by default)
 - LSP integration (enabled by default)
@@ -83,7 +83,7 @@ Typically you must provide only what you want to control:
 ### File-backed (default)
 
 ```ts
-import { createAgentSession, SessionManager } from "@nghyane/pi-coding-agent";
+import { createAgentSession, SessionManager } from "@nghyane/arcane";
 
 const { session } = await createAgentSession({
 	sessionManager: SessionManager.create(process.cwd()),
@@ -99,7 +99,7 @@ console.log(session.sessionFile); // absolute .jsonl path
 ### In-memory
 
 ```ts
-import { createAgentSession, SessionManager } from "@nghyane/pi-coding-agent";
+import { createAgentSession, SessionManager } from "@nghyane/arcane";
 
 const { session } = await createAgentSession({
 	sessionManager: SessionManager.inMemory(),
@@ -115,7 +115,7 @@ console.log(session.sessionFile); // undefined
 ### Resume/open/list helpers
 
 ```ts
-import { SessionManager } from "@nghyane/pi-coding-agent";
+import { SessionManager } from "@nghyane/arcane";
 
 const recent = await SessionManager.continueRecent(process.cwd());
 const listed = await SessionManager.list(process.cwd());
@@ -134,7 +134,7 @@ import {
 	discoverAuthStorage,
 	ModelRegistry,
 	SessionManager,
-} from "@nghyane/pi-coding-agent";
+} from "@nghyane/arcane";
 
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);
@@ -198,13 +198,13 @@ const unsubscribe = session.subscribe(event => {
 - `ttsr_triggered`
 - `todo_reminder`
 
-## Prompt lifecycle
+## Promptt lifecycle
 
-`session.prompt(text, options?)` is the primary entry point.
+`session.promptt(text, options?)` is the primary entry point.
 
 Behavior:
 
-1. optional command/template expansion (`/` commands, custom commands, file slash commands, prompt templates)
+1. optional command/template expansion (`/` commands, custom commands, file slash commands, promptt templates)
 2. if currently streaming:
 	- requires `streamingBehavior: "steer" | "followUp"`
 	- queues instead of throwing work away
@@ -253,7 +253,7 @@ const { session } = await createAgentSession({
 - `setActiveToolsByName(names)`
 - `refreshMCPTools(mcpTools)`
 
-System prompt is rebuilt to reflect active tool changes.
+System promptt is rebuilt to reflect active tool changes.
 
 ## Discovery helpers
 
@@ -263,11 +263,11 @@ Use these when you want partial control without recreating internal discovery lo
 - `discoverExtensions(cwd?)`
 - `discoverSkills(cwd?, _agentDir?, settings?)`
 - `discoverContextFiles(cwd?, _agentDir?)`
-- `discoverPromptTemplates(cwd?, agentDir?)`
+- `discoverPrompttTemplates(cwd?, agentDir?)`
 - `discoverSlashCommands(cwd?)`
 - `discoverCustomTSCommands(cwd?, agentDir?)`
 - `discoverMCPServers(cwd?)`
-- `buildSystemPrompt(options?)`
+- `buildSystemPromptt(options?)`
 
 ## Subagent-oriented options
 
@@ -304,7 +304,7 @@ import {
 	ModelRegistry,
 	SessionManager,
 	Settings,
-} from "@nghyane/pi-coding-agent";
+} from "@nghyane/arcane";
 
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);
@@ -331,6 +331,6 @@ session.subscribe(event => {
 	}
 });
 
-await session.prompt("Find all TODO comments in this repo and propose fixes.");
+await session.promptt("Find all TODO comments in this repo and propose fixes.");
 await session.dispose();
 ```

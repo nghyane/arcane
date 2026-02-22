@@ -178,7 +178,7 @@ First style wastes your time, brittle if code shifts. Second gives agent room to
 <example type="good" label="Shared rules in context, only deltas in assignment">
 <context>
 ## Goal
-Port WASM modules to N-API, matching existing pi-natives conventions.
+Port WASM modules to N-API, matching existing arcane-natives conventions.
 
 ## Non-goals
 Do not touch TS bindings or downstream consumers — separate phase.
@@ -190,7 +190,7 @@ Do not touch TS bindings or downstream consumers — separate phase.
 ...
 
 ## Acceptance (global)
-- Caller verifies after all tasks: `cargo test -p pi-natives` and `cargo build -p pi-natives` with no warnings
+- Caller verifies after all tasks: `cargo test -p arcane-natives` and `cargo build -p arcane-natives` with no warnings
 - Individual tasks must NOT run these commands themselves
 </context>
 

@@ -1,9 +1,9 @@
 {
 	"type": "module",
-	"name": "@nghyane/pi-agent-core",
+	"name": "@nghyane/arcane-agent",
 	"version": "12.19.0",
 	"description": "General-purpose agent with transport abstraction, state management, and attachment support",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
 	"contributors": [
 		"Mario Zechner"
@@ -14,11 +14,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/nghyane/arcane.git",
 		"directory": "packages/agent"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/nghyane/arcane/issues"
 	},
 	"keywords": [
 		"ai",
@@ -34,9 +34,9 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@nghyane/pi-ai": "^12.19.0",
-		"@nghyane/pi-tui": "^12.19.0",
-		"@nghyane/pi-utils": "^12.19.0"
+		"@nghyane/arcane-ai": "workspace:*",
+		"@nghyane/arcane-tui": "workspace:*",
+		"@nghyane/arcane-utils": "workspace:*"
 	},
 	"devDependencies": {
 		"@sinclair/typebox": "^0.34.48",

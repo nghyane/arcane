@@ -12,7 +12,7 @@ import {
 	Text,
 	TruncatedText,
 	truncateToWidth,
-} from "@nghyane/pi-tui";
+} from "@nghyane/arcane-tui";
 import { validateServerName } from "../../mcp/config-writer";
 import { analyzeAuthError, discoverOAuthEndpoints } from "../../mcp/oauth-discovery";
 import type { MCPHttpServerConfig, MCPServerConfig, MCPSseServerConfig, MCPStdioServerConfig } from "../../mcp/types";
@@ -368,8 +368,8 @@ export class MCPAddWizard extends Container {
 		this.#contentContainer.addChild(new Spacer(1));
 
 		const options = [
-			{ value: "user" as const, label: "User level (~/.omp/mcp.json)" },
-			{ value: "project" as const, label: "Project level (.omp/mcp.json)" },
+			{ value: "user" as const, label: "User level (~/.arcane/mcp.json)" },
+			{ value: "project" as const, label: "Project level (.arcane/mcp.json)" },
 		];
 
 		for (let i = 0; i < options.length; i++) {

@@ -1,9 +1,9 @@
 /**
  * CLI argument parsing and help display
  */
-import type { ThinkingLevel } from "@nghyane/pi-agent-core";
-import { logger } from "@nghyane/pi-utils";
-import { APP_NAME, CONFIG_DIR_NAME } from "@nghyane/pi-utils/dirs";
+import type { ThinkingLevel } from "@nghyane/arcane-agent";
+import { logger } from "@nghyane/arcane-utils";
+import { APP_NAME, CONFIG_DIR_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { BUILTIN_TOOLS } from "../tools";
 

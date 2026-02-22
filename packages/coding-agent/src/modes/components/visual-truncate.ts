@@ -2,7 +2,7 @@
  * Shared utility for truncating text to visual lines (accounting for line wrapping).
  * Used by both tool-execution.ts and bash-execution.ts for consistent behavior.
  */
-import { Text } from "@nghyane/pi-tui";
+import { Text } from "@nghyane/arcane-tui";
 
 export interface VisualTruncateResult {
 	/** The visual lines to display */

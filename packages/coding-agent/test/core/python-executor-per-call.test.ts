@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { executePython } from "@nghyane/pi-coding-agent/ipy/executor";
-import type { KernelExecuteOptions, KernelExecuteResult } from "@nghyane/pi-coding-agent/ipy/kernel";
-import { PythonKernel } from "@nghyane/pi-coding-agent/ipy/kernel";
-import { TempDir } from "@nghyane/pi-utils";
+import { executePython } from "@nghyane/arcane/ipy/executor";
+import type { KernelExecuteOptions, KernelExecuteResult } from "@nghyane/arcane/ipy/kernel";
+import { PythonKernel } from "@nghyane/arcane/ipy/kernel";
+import { TempDir } from "@nghyane/arcane-utils";
 
 interface KernelStub {
 	execute: (code: string, options?: KernelExecuteOptions) => Promise<KernelExecuteResult>;
@@ -12,7 +12,7 @@ interface KernelStub {
 describe("executePython (per-call)", () => {
 	it("shuts down kernel on timed-out cancellation", async () => {
 		Bun.env.PI_PYTHON_SKIP_CHECK = "1";
-		using tempDir = TempDir.createSync("@omp-python-executor-per-call-");
+		using tempDir = TempDir.createSync("@arc-python-executor-per-call-");
 
 		let shutdownCalls = 0;
 		const kernel: KernelStub = {

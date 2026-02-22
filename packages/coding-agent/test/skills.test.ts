@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import * as os from "node:os";
 import * as path from "node:path";
-import { loadSkills, loadSkillsFromDir, type Skill } from "@nghyane/pi-coding-agent/extensibility/skills";
+import { loadSkills, loadSkillsFromDir, type Skill } from "@nghyane/arcane/extensibility/skills";
 
 const fixturesDir = path.resolve(__dirname, "fixtures/skills");
 const collisionFixturesDir = path.resolve(__dirname, "fixtures/skills-collision");
@@ -188,14 +188,14 @@ describe("skills", () => {
 		});
 
 		it("should expand ~ in customDirectories", async () => {
-			const homeSkillsDir = path.join(os.homedir(), ".omp/agent/skills");
+			const homeSkillsDir = path.join(os.homedir(), ".arcane/agent/skills");
 			const { skills: withTilde } = await loadSkills({
 				enableCodexUser: false,
 				enableClaudeUser: false,
 				enableClaudeProject: false,
 				enablePiUser: false,
 				enablePiProject: false,
-				customDirectories: ["~/.omp/agent/skills"],
+				customDirectories: ["~/.arcane/agent/skills"],
 			});
 			const { skills: withoutTilde } = await loadSkills({
 				enableCodexUser: false,

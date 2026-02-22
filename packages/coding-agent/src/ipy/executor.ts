@@ -1,6 +1,6 @@
 import * as path from "node:path";
-import { isEnoent, logger } from "@nghyane/pi-utils";
-import { getAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
+import { isEnoent, logger } from "@nghyane/arcane-utils";
+import { getAgentDir, getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { OutputSink } from "../session/streaming-output";
 import { time } from "../utils/timings";
 import { shutdownSharedGateway } from "./gateway-coordinator";
@@ -118,7 +118,7 @@ async function buildPreludeCacheState(cwd: string): Promise<PreludeCacheState> {
 		.map(module => ({ path: module.path, hash: hashPreludeContent(module.content) }))
 		.sort((a, b) => a.path.localeCompare(b.path));
 	const sources: PreludeCacheSource[] = [
-		{ path: "omp:prelude", hash: hashPreludeContent(PYTHON_PRELUDE) },
+		{ path: "arc:prelude", hash: hashPreludeContent(PYTHON_PRELUDE) },
 		...moduleSources,
 	];
 	const composite = sources.map(source => `${source.path}:${source.hash}`).join("|");

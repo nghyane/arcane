@@ -1,10 +1,10 @@
 /**
  * Web search CLI command handlers.
  *
- * Handles `omp q`/`omp web-search` subcommands for testing web search providers.
+ * Handles \`arc q`/\`arc web-search` subcommands for testing web search providers.
  */
 
-import { APP_NAME } from "@nghyane/pi-utils/dirs";
+import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { initTheme, theme } from "../modes/theme/theme";
 import { runSearchQuery, type SearchParams } from "../web/search/index";

@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { discoverAndLoadExtensions, loadExtensions } from "@nghyane/pi-coding-agent/extensibility/extensions/loader";
-import { TempDir } from "@nghyane/pi-utils";
-import { getProjectAgentDir } from "@nghyane/pi-utils/dirs";
+import { discoverAndLoadExtensions, loadExtensions } from "@nghyane/arcane/extensibility/extensions/loader";
+import { TempDir } from "@nghyane/arcane-utils";
+import { getProjectAgentDir } from "@nghyane/arcane-utils/dirs";
 import { filterUserExtensionErrors, filterUserExtensions } from "./utils/filter-user-extensions";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

@@ -9,7 +9,7 @@ import {
 	Text,
 	truncateToWidth,
 	visibleWidth,
-} from "@nghyane/pi-tui";
+} from "@nghyane/arcane-tui";
 import { theme } from "../../modes/theme/theme";
 import type { HistoryEntry, HistoryStorage } from "../../session/history-storage";
 import { DynamicBorder } from "./dynamic-border";

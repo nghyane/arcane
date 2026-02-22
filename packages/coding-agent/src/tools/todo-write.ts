@@ -1,9 +1,9 @@
 import path from "node:path";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import { StringEnum } from "@nghyane/pi-ai";
-import type { Component } from "@nghyane/pi-tui";
-import { Text } from "@nghyane/pi-tui";
-import { logger, Snowflake } from "@nghyane/pi-utils";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import { StringEnum } from "@nghyane/arcane-ai";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
+import { logger, Snowflake } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import chalk from "chalk";
 import { renderPromptTemplate } from "../config/prompt-templates";

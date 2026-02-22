@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { getAgentModulesDir, getProjectDir, getProjectModulesDir } from "@nghyane/pi-utils/dirs";
+import { getAgentModulesDir, getProjectDir, getProjectModulesDir } from "@nghyane/arcane-utils/dirs";
 
 export type PythonModuleSource = "user" | "project";
 

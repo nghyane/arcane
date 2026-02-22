@@ -1,4 +1,4 @@
-import { type Model, modelsAreEqual } from "@nghyane/pi-ai";
+import { type Model, modelsAreEqual } from "@nghyane/arcane-ai";
 import {
 	Container,
 	Input,
@@ -10,7 +10,7 @@ import {
 	Text,
 	type TUI,
 	visibleWidth,
-} from "@nghyane/pi-tui";
+} from "@nghyane/arcane-tui";
 import { MODEL_ROLE_IDS, MODEL_ROLES, type ModelRegistry, type ModelRole } from "../../config/model-registry";
 import { parseModelString } from "../../config/model-resolver";
 import type { Settings } from "../../config/settings";

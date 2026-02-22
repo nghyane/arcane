@@ -1,11 +1,11 @@
 /**
  * Config CLI command handlers.
  *
- * Handles `omp config <command>` subcommands for managing settings.
+ * Handles \`arc config <command>` subcommands for managing settings.
  * Uses settings-defs as the source of truth for available settings.
  */
 
-import { APP_NAME, getAgentDir } from "@nghyane/pi-utils/dirs";
+import { APP_NAME, getAgentDir } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import {
 	getDefault,

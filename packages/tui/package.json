@@ -1,9 +1,9 @@
 {
 	"type": "module",
-	"name": "@nghyane/pi-tui",
+	"name": "@nghyane/arcane-tui",
 	"version": "12.19.0",
 	"description": "Terminal User Interface library with differential rendering for efficient text-based applications",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
 	"contributors": [
 		"Mario Zechner"
@@ -14,11 +14,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/nghyane/arcane.git",
 		"directory": "packages/tui"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/nghyane/arcane/issues"
 	},
 	"keywords": [
 		"tui",
@@ -36,8 +36,8 @@
 		"test": "bun test test/*.test.ts"
 	},
 	"dependencies": {
-		"@nghyane/pi-natives": "^12.19.0",
-		"@nghyane/pi-utils": "^12.19.0",
+		"@nghyane/arcane-natives": "workspace:*",
+		"@nghyane/arcane-utils": "workspace:*",
 		"@types/mime-types": "^3.0.1",
 		"chalk": "^5.6.2",
 		"marked": "^17.0.2",

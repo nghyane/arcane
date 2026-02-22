@@ -6,7 +6,7 @@
  * 1. Add it to settings-schema.ts with a `ui` field
  * 2. That's it - it appears in the UI automatically
  */
-import { TERMINAL } from "@nghyane/pi-tui";
+import { TERMINAL } from "@nghyane/arcane-tui";
 import {
 	getDefault,
 	getEnumValues,

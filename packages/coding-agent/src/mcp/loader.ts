@@ -3,7 +3,7 @@
  *
  * Integrates MCP tool discovery with the custom tools system.
  */
-import { logger } from "@nghyane/pi-utils";
+import { logger } from "@nghyane/arcane-utils";
 import type { LoadedCustomTool } from "../extensibility/custom-tools/types";
 import { AgentStorage } from "../session/agent-storage";
 import type { AuthStorage } from "../session/auth-storage";

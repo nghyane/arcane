@@ -5,8 +5,8 @@
  * Requires OAuth credentials stored in agent.db for provider "google-gemini-cli" or "google-antigravity".
  * Returns synthesized answers with citations and source metadata from grounding chunks.
  */
-import { getAntigravityHeaders, getGeminiCliHeaders, refreshGoogleCloudToken } from "@nghyane/pi-ai";
-import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
+import { getAntigravityHeaders, getGeminiCliHeaders, refreshGoogleCloudToken } from "@nghyane/arcane-ai";
+import { getAgentDbPath } from "@nghyane/arcane-utils/dirs";
 import { AgentStorage } from "../../../session/agent-storage";
 import type { SearchCitation, SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";
@@ -386,7 +386,7 @@ export async function searchGemini(params: GeminiSearchParams): Promise<SearchRe
 	const auth = await findGeminiAuth();
 	if (!auth) {
 		throw new Error(
-			"No Gemini OAuth credentials found. Login with 'omp /login google-gemini-cli' or 'omp /login google-antigravity' to enable Gemini web search.",
+			"No Gemini OAuth credentials found. Login with 'arc /login google-gemini-cli' or 'arc /login google-antigravity' to enable Gemini web search.",
 		);
 	}
 

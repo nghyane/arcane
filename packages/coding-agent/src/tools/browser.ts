@@ -1,10 +1,10 @@
 import * as os from "node:os";
 import * as path from "node:path";
 import { Readability } from "@mozilla/readability";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import { StringEnum } from "@nghyane/pi-ai";
-import { logger, Snowflake, untilAborted } from "@nghyane/pi-utils";
-import { getPuppeteerDir } from "@nghyane/pi-utils/dirs";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import { StringEnum } from "@nghyane/arcane-ai";
+import { logger, Snowflake, untilAborted } from "@nghyane/arcane-utils";
+import { getPuppeteerDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
 import { type HTMLElement, parseHTML } from "linkedom";
 import type {
@@ -91,7 +91,7 @@ const INTERACTIVE_AX_ROLES = new Set([
 declare global {
 	interface Element extends HTMLElement {}
 
-	function getComputedStyle(element: Element): Record<string, unknown>;
+	function getCarcutedStyle(element: Element): Record<string, unknown>;
 	var innerWidth: number;
 	var innerHeight: number;
 	var document: {
@@ -197,7 +197,7 @@ async function resolveActionableQueryHandlerClickTarget(handles: ElementHandle[]
 async function isClickActionable(handle: ElementHandle): Promise<ActionabilityResult> {
 	return (await handle.evaluate(el => {
 		const element = el as HTMLElement;
-		const style = globalThis.getComputedStyle(element);
+		const style = globalThis.getCarcutedStyle(element);
 		if (style.display === "none") return { ok: false as const, reason: "display:none" };
 		if (style.visibility === "hidden") return { ok: false as const, reason: "visibility:hidden" };
 		if (style.pointerEvents === "none") return { ok: false as const, reason: "pointer-events:none" };
@@ -1337,7 +1337,7 @@ export class BrowserTool implements AgentTool<typeof browserSchema, BrowserToolD
 						{ maxBytes: 0.75 * 1024 * 1024 },
 					);
 					const dimensionNote = formatDimensionNote(resized);
-					const tempFile = path.join(os.tmpdir(), `omp-sshots-${Snowflake.next()}.png`);
+					const tempFile = path.join(os.tmpdir(), `arc-sshots-${Snowflake.next()}.png`);
 					await Bun.write(tempFile, resized.buffer);
 					details.screenshotPath = tempFile;
 					details.mimeType = resized.mimeType;

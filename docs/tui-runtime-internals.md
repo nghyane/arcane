@@ -4,10 +4,10 @@ This document maps the non-theme runtime path from terminal input to rendered ou
 
 ## Runtime layers and ownership
 
-- **`packages/tui` engine**: terminal lifecycle, stdin normalization, focus routing, render scheduling, differential painting, overlay composition, hardware cursor placement.
+- **`packages/tui` engine**: terminal lifecycle, stdin normalization, focus routing, render scheduling, differential painting, overlay companeosition, hardware cursor placement.
 - **`packages/coding-agent` interactive mode**: builds component tree, binds editor callbacks and keymaps, reacts to agent/session events, and translates domain state (streaming, tool execution, retries, plan mode) into UI components.
 
-Boundary rule: the TUI engine is message-agnostic. It only knows `Component.render(width)`, `handleInput(data)`, focus, and overlays. Agent semantics stay in interactive controllers.
+Boundary rule: the TUI engine is message-agnostic. It only knows `Carcaneonent.render(width)`, `handleInput(data)`, focus, and overlays. Agent semantics stay in interactive controllers.
 
 ## Implementation files
 
@@ -58,7 +58,7 @@ This prevents partial escape chunks from being misinterpreted as normal keypress
 
 Input path:
 
-`stdin -> ProcessTerminal -> StdinBuffer -> TUI.#handleInput -> focusedComponent.handleInput`
+`stdin -> ProcessTerminal -> StdinBuffer -> TUI.#handleInput -> focusedCarcaneonent.handleInput`
 
 Routing details:
 
@@ -91,7 +91,7 @@ This keeps key parsing/editor mechanics in `packages/tui` and mode semantics in 
 `#doRender()` pipeline:
 
 1. Render root component tree to `newLines`.
-2. Composite visible overlays (if any).
+2. Carcaneosite visible overlays (if any).
 3. Extract and strip `CURSOR_MARKER` from visible viewport lines.
 4. Append segment reset suffixes for non-image lines.
 5. Choose full repaint vs differential patch:
@@ -109,7 +109,7 @@ Render writes use synchronized output mode (`CSI ? 2026 h/l`) to reduce flicker/
 Critical safety checks in `TUI`:
 
 - Non-image rendered lines must not exceed terminal width; overflow throws and writes crash diagnostics.
-- Overlay compositing includes defensive truncation and post-composite width verification.
+- Overlay companeositing includes defensive truncation and post-companeosite width verification.
 - Width changes force full redraw because wrapping semantics change.
 - Cursor position is clamped before movement.
 
@@ -130,7 +130,7 @@ Effects:
 `EventController` subscribes to `AgentSessionEvent` and updates UI incrementally:
 
 - `agent_start`: starts loader in `statusContainer`.
-- `message_start` assistant: creates `streamingComponent` and mounts it.
+- `message_start` assistant: creates `streamingCarcaneonent` and mounts it.
 - `message_update`: updates streaming assistant content; creates/updates tool execution components as tool calls appear.
 - `tool_execution_update/end`: updates tool result components and completion state.
 - `message_end`: finalizes assistant stream, handles aborted/error annotations, marks pending tool args complete on normal stop.
@@ -142,7 +142,7 @@ Read-tool grouping is intentionally stateful (`#lastReadGroup`) to coalesce cons
 
 Status lane ownership:
 
-- `statusContainer` holds transient loaders (`loadingAnimation`, `autoCompactionLoader`, `retryLoader`).
+- `statusContainer` holds transient loaders (`loadingAnimation`, `autoCarcaneactionLoader`, `retryLoader`).
 - `statusLine` renders persistent status/hooks/plan indicators and drives editor top border updates.
 
 Loader behavior:

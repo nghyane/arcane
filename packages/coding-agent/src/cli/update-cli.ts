@@ -1,14 +1,14 @@
 /**
  * Update CLI command handler.
  *
- * Handles `omp update` to check for and install updates.
+ * Handles \`arc update` to check for and install updates.
  * Uses bun if available, otherwise downloads binary from GitHub releases.
  */
 import { execSync, spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import { pipeline } from "node:stream/promises";
-import { isEnoent } from "@nghyane/pi-utils";
-import { APP_NAME, VERSION } from "@nghyane/pi-utils/dirs";
+import { isEnoent } from "@nghyane/arcane-utils";
+import { APP_NAME, VERSION } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { theme } from "../modes/theme/theme";
 
@@ -21,8 +21,8 @@ const isBunBinary =
 	import.meta.url.includes("~BUN") ||
 	import.meta.url.includes("%7EBUN");
 
-const REPO = "can1357/oh-my-pi";
-const PACKAGE = "@nghyane/pi-coding-agent";
+const REPO = "nghyane/arcane";
+const PACKAGE = "@nghyane/arcane";
 
 interface ReleaseInfo {
 	tag: string;

@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "bun:test";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
-import * as pythonExecutor from "@nghyane/pi-coding-agent/ipy/executor";
-import type { ToolSession } from "@nghyane/pi-coding-agent/tools";
-import { PythonTool } from "@nghyane/pi-coding-agent/tools/python";
-import { TempDir } from "@nghyane/pi-utils";
+import { Settings } from "@nghyane/arcane/config/settings";
+import * as pythonExecutor from "@nghyane/arcane/ipy/executor";
+import type { ToolSession } from "@nghyane/arcane/tools";
+import { PythonTool } from "@nghyane/arcane/tools/python";
+import { TempDir } from "@nghyane/arcane-utils";
 
 function createSession(cwd: string): ToolSession {
 	return {

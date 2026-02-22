@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseArgs } from "@nghyane/pi-coding-agent/cli/args";
+import { parseArgs } from "@nghyane/arcane/cli/args";
 
 describe("parseArgs", () => {
 	describe("--version flag", () => {

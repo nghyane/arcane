@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { matchesKey, parseKey, setKittyProtocolActive } from "@nghyane/pi-tui/keys";
+import { matchesKey, parseKey, setKittyProtocolActive } from "@nghyane/arcane-tui/keys";
 
 describe("matchesKey", () => {
 	it("matches ctrl+letter sequences", () => {

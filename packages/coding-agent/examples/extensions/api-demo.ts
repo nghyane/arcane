@@ -5,7 +5,7 @@
  * These features are now exposed directly on the ExtensionAPI, matching
  * the CustomToolAPI interface.
  */
-import type { ExtensionAPI } from "@nghyane/pi-coding-agent";
+import type { ExtensionAPI } from "@nghyane/arcane";
 
 export default function (pi: ExtensionAPI) {
 	// 1. Access TypeBox directly from pi.typebox (no separate import needed)

@@ -4,8 +4,8 @@
  * Provides structured display of MCP tool calls and results,
  * showing args and output in JSON tree format similar to task tool.
  */
-import type { Component } from "@nghyane/pi-tui";
-import { Text } from "@nghyane/pi-tui";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import {

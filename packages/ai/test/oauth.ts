@@ -1,5 +1,5 @@
 /**
- * Test helper for resolving API keys from ~/.omp/agent/testauth.db
+ * Test helper for resolving API keys from ~/.arcane/agent/testauth.db
  *
  * Supports both API key and OAuth credentials.
  * OAuth tokens are automatically refreshed if expired and saved back to testauth.db.
@@ -7,10 +7,10 @@
  * E2E tests are disabled by default. Set E2E=1 environment variable to enable.
  */
 import * as fs from "node:fs/promises";
-import { getOAuthApiKey } from "@nghyane/pi-ai/utils/oauth";
-import type { OAuthCredentials, OAuthProvider } from "@nghyane/pi-ai/utils/oauth/types";
-import { isEnoent } from "@nghyane/pi-utils";
-import { getTestAuthPath } from "@nghyane/pi-utils/dirs";
+import { getOAuthApiKey } from "@nghyane/arcane-ai/utils/oauth";
+import type { OAuthCredentials, OAuthProvider } from "@nghyane/arcane-ai/utils/oauth/types";
+import { isEnoent } from "@nghyane/arcane-utils";
+import { getTestAuthPath } from "@nghyane/arcane-utils/dirs";
 
 /**
  * E2E tests require explicit opt-in via E2E=1 environment variable.
@@ -58,7 +58,7 @@ async function saveAuthStorage(storage: AuthStorage): Promise<void> {
 }
 
 /**
- * Resolve API key for a provider from ~/.omp/agent/testauth.db
+ * Resolve API key for a provider from ~/.arcane/agent/testauth.db
  *
  * For API key credentials, returns the key directly.
  * For OAuth credentials, returns the access token (refreshing if expired and saving back).

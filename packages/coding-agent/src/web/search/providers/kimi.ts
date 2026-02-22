@@ -4,9 +4,9 @@
  * Uses Moonshot Kimi Code search API to retrieve web results.
  * Endpoint: POST https://api.kimi.com/coding/v1/search
  */
-import { getEnvApiKey } from "@nghyane/pi-ai";
-import { $env } from "@nghyane/pi-utils";
-import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
+import { getEnvApiKey } from "@nghyane/arcane-ai";
+import { $env } from "@nghyane/arcane-utils";
+import { getAgentDbPath } from "@nghyane/arcane-utils/dirs";
 import { AgentStorage } from "../../../session/agent-storage";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";
@@ -139,7 +139,7 @@ export async function searchKimi(params: KimiSearchParams): Promise<SearchRespon
 	const apiKey = await findApiKey();
 	if (!apiKey) {
 		throw new Error(
-			"Kimi search credentials not found. Set MOONSHOT_SEARCH_API_KEY, KIMI_SEARCH_API_KEY, MOONSHOT_API_KEY, or login with 'omp /login moonshot'.",
+			"Kimi search credentials not found. Set MOONSHOT_SEARCH_API_KEY, KIMI_SEARCH_API_KEY, MOONSHOT_API_KEY, or login with 'arc /login moonshot'.",
 		);
 	}
 

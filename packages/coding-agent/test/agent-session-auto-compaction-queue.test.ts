@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { Agent } from "@nghyane/pi-agent-core";
-import { getBundledModel } from "@nghyane/pi-ai/models";
-import { ModelRegistry } from "@nghyane/pi-coding-agent/config/model-registry";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
-import { loadExtensions } from "@nghyane/pi-coding-agent/extensibility/extensions/loader";
-import { ExtensionRunner } from "@nghyane/pi-coding-agent/extensibility/extensions/runner";
-import { AgentSession } from "@nghyane/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@nghyane/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
-import { TempDir } from "@nghyane/pi-utils";
-import { getProjectAgentDir } from "@nghyane/pi-utils/dirs";
+import { ModelRegistry } from "@nghyane/arcane/config/model-registry";
+import { Settings } from "@nghyane/arcane/config/settings";
+import { loadExtensions } from "@nghyane/arcane/extensibility/extensions/loader";
+import { ExtensionRunner } from "@nghyane/arcane/extensibility/extensions/runner";
+import { AgentSession } from "@nghyane/arcane/session/agent-session";
+import { AuthStorage } from "@nghyane/arcane/session/auth-storage";
+import { SessionManager } from "@nghyane/arcane/session/session-manager";
+import { Agent } from "@nghyane/arcane-agent";
+import { getBundledModel } from "@nghyane/arcane-ai/models";
+import { TempDir } from "@nghyane/arcane-utils";
+import { getProjectAgentDir } from "@nghyane/arcane-utils/dirs";
 
 const runtimeSignalStoreKey = "__ompRuntimeSignals";
 

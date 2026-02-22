@@ -1,6 +1,6 @@
 # Slash command internals
 
-This document describes how slash commands are discovered, deduplicated, surfaced in interactive mode, and expanded at prompt time in `coding-agent`.
+This document describes how slash commands are discovered, deduplicated, surfaced in interactive mode, and expanded at promptt time in `coding-agent`.
 
 ## Implementation files
 
@@ -58,10 +58,10 @@ So hidden files/directories are not loaded, and ignored paths are skipped.
 
 ## `native` provider (`builtin.ts`)
 
-Search roots come from `.omp` directories:
+Search roots come from `.arcane` directories:
 
-- project: `<cwd>/.omp/commands/*.md`
-- user: `~/.omp/agent/commands/*.md`
+- project: `<cwd>/.arcane/commands/*.md`
+- user: `~/.arcane/agent/commands/*.md`
 
 `getConfigDirs()` returns project first, then user, so **project native commands beat user native commands** when names collide.
 
@@ -93,7 +93,7 @@ Ordering follows registry iteration order and per-plugin entry order from that J
 
 ## 3) Materialization to runtime `FileSlashCommand`
 
-`loadSlashCommands()` in `src/extensibility/slash-commands.ts` converts capability items into `FileSlashCommand` objects used at prompt time.
+`loadSlashCommands()` in `src/extensibility/slash-commands.ts` converts capability items into `FileSlashCommand` objects used at promptt time.
 
 For each command:
 
@@ -131,7 +131,7 @@ Then `init()` calls `refreshSlashCommandState(...)` to load file-based commands 
 - pending commands above
 - discovered file-based commands
 
-`refreshSlashCommandState(...)` also updates `session.setSlashCommands(...)` so prompt expansion uses the same discovered file command set.
+`refreshSlashCommandState(...)` also updates `session.setSlashCommands(...)` so promptt expansion uses the same discovered file command set.
 
 ### Refresh lifecycle
 
@@ -146,25 +146,25 @@ There is no continuous file watcher for command directories.
 
 The Extensions dashboard also loads `slash-commands` capability and displays active/shadowed command entries, including `_shadowed` duplicates.
 
-## 5) Prompt pipeline placement
+## 5) Promptt pipeline placement
 
-`AgentSession.prompt(...)` slash handling order (when `expandPromptTemplates !== false`):
+`AgentSession.promptt(...)` slash handling order (when `expandPrompttTemplates !== false`):
 
 1. **Extension commands** (`#tryExecuteExtensionCommand`)  
-   If `/name` matches extension-registered command, handler executes immediately and prompt returns.
+   If `/name` matches extension-registered command, handler executes immediately and promptt returns.
 2. **TypeScript custom commands** (`#tryExecuteCustomCommand`)  
    Boundary only: if matched, it executes and may return:
-   - `string` -> replace prompt text with that string
-   - `void/undefined` -> treated as handled; no LLM prompt
+   - `string` -> replace promptt text with that string
+   - `void/undefined` -> treated as handled; no LLM promptt
 3. **File-based slash commands** (`expandSlashCommand`)  
    If text still starts with `/`, attempt markdown command expansion.
-4. **Prompt templates** (`expandPromptTemplate`)  
+4. **Promptt templates** (`expandPrompttTemplate`)  
    Applied after slash/custom processing.
 5. **Delivery**  
-   - idle: prompt is sent immediately to agent
-   - streaming: prompt is queued as steer/follow-up depending on `streamingBehavior`
+   - idle: promptt is sent immediately to agent
+   - streaming: promptt is queued as steer/follow-up depending on `streamingBehavior`
 
-This is why slash command expansion sits before prompt-template expansion, and why custom commands can transform away the leading slash before file-command matching.
+This is why slash command expansion sits before promptt-template expansion, and why custom commands can transform away the leading slash before file-command matching.
 
 ## 6) Expansion semantics for file-based slash commands
 
@@ -177,7 +177,7 @@ This is why slash command expansion sits before prompt-template expansion, and w
 - if matched, applies:
   - positional replacement: `$1`, `$2`, ...
   - aggregate replacement: `$ARGUMENTS` and `$@`
-  - then template rendering via `renderPromptTemplate` with `{ args, ARGUMENTS, arguments }`
+  - then template rendering via `renderPrompttTemplate` with `{ args, ARGUMENTS, arguments }`
 - if no match, returns original text unchanged
 
 ### `parseCommandArgs` caveats
@@ -193,29 +193,29 @@ The parser is simple quote-aware splitting:
 
 Unknown slash input is **not rejected** by core slash logic.
 
-If command is not handled by extension/custom/file layers, `expandSlashCommand` returns original text, and the literal `/...` prompt proceeds through normal prompt-template expansion and LLM delivery.
+If command is not handled by extension/custom/file layers, `expandSlashCommand` returns original text, and the literal `/...` promptt proceeds through normal promptt-template expansion and LLM delivery.
 
-Interactive mode separately hard-handles many built-ins in `InputController` (for example `/settings`, `/model`, `/mcp`, `/move`, `/exit`). Those are consumed before `session.prompt(...)` and therefore never reach file-command expansion in that path.
+Interactive mode separately hard-handles many built-ins in `InputController` (for example `/settings`, `/model`, `/mcp`, `/move`, `/exit`). Those are consumed before `session.promptt(...)` and therefore never reach file-command expansion in that path.
 
 ## 8) Streaming-time differences vs idle
 
 ## Idle path
 
-- `session.prompt("/x ...")` runs command pipeline and either executes command immediately or sends expanded text directly.
+- `session.promptt("/x ...")` runs command pipeline and either executes command immediately or sends expanded text directly.
 
 ## Streaming path (`session.isStreaming === true`)
 
-- `prompt(...)` still runs extension/custom/file/template transforms first
+- `promptt(...)` still runs extension/custom/file/template transforms first
 - then requires `streamingBehavior`:
   - `"steer"` -> queue interrupt message (`agent.steer`)
   - `"followUp"` -> queue post-turn message (`agent.followUp`)
-- if `streamingBehavior` is omitted, prompt throws an error
+- if `streamingBehavior` is omitted, promptt throws an error
 
 ### Important command-specific streaming behavior
 
 - Extension commands are executed immediately even during streaming (not queued as text).
 - `steer(...)`/`followUp(...)` helper methods reject extension commands (`#throwIfExtensionCommand`) to avoid queuing command text for handlers that must run synchronously.
-- Compaction queue replay uses `isKnownSlashCommand(...)` to decide whether queued entries should be replayed via `session.prompt(...)` (for known slash commands) vs raw steer/follow-up methods.
+- Carcaneaction queue replay uses `isKnownSlashCommand(...)` to decide whether queued entries should be replayed via `session.promptt(...)` (for known slash commands) vs raw steer/follow-up methods.
 
 ## 9) Error handling and failure surfaces
 

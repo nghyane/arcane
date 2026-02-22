@@ -34,7 +34,7 @@ export const OracleTool = createSubagentTool({
 	schema,
 	descriptionTemplate: oracleDescription,
 	progressText: "Consulting oracle...",
-	tmpPrefix: "omp-oracle-",
+	tmpPrefix: "arc-oracle-",
 	buildTask,
 	buildDescription: p => `Oracle: ${(p.task as string).slice(0, 60)}`,
 });

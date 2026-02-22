@@ -1,6 +1,6 @@
-import type { AssistantMessage } from "@nghyane/pi-ai";
-import { Container, Markdown, Spacer, TERMINAL, Text } from "@nghyane/pi-tui";
-import { logger } from "@nghyane/pi-utils";
+import type { AssistantMessage } from "@nghyane/arcane-ai";
+import { Container, Markdown, Spacer, TERMINAL, Text } from "@nghyane/arcane-tui";
+import { logger } from "@nghyane/arcane-utils";
 import { hasPendingMermaid, prerenderMermaid } from "../../modes/theme/mermaid-cache";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 

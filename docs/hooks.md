@@ -25,7 +25,7 @@ So this file documents the hook subsystem implementation itself (types/loader/ru
 A hook module must default-export a factory:
 
 ```ts
-import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/arcane/hooks";
 
 export default function hook(pi: HookAPI): void {
 	pi.on("tool_call", async (event, ctx) => {
@@ -65,7 +65,7 @@ The factory can:
 
 ### Important legacy mismatch
 
-Discovery providers for `hookCapability` still model pre/post shell-style hook files (for example `.claude/hooks/pre/*`, `.omp/.../hooks/pre/*`).
+Discovery providers for `hookCapability` still model pre/post shell-style hook files (for example `.claude/hooks/pre/*`, `.arcane/.../hooks/pre/*`).
 
 The hook loader here uses dynamic module import and requires a default JS/TS hook factory. If a discovered hook path is not importable as a module, load fails and is reported in `LoadHooksResult.errors`.
 
@@ -80,9 +80,9 @@ Hook events are strongly typed in `types.ts`.
 - `session_switch`
 - `session_before_branch` → can return `{ cancel?: boolean; skipConversationRestore?: boolean }`
 - `session_branch`
-- `session_before_compact` → can return `{ cancel?: boolean; compaction?: CompactionResult }`
-- `session.compacting` → can return `{ context?: string[]; prompt?: string; preserveData?: Record<string, unknown> }`
-- `session_compact`
+- `session_before_companeact` → can return `{ cancel?: boolean; compaction?: CarcaneactionResult }`
+- `session.companeacting` → can return `{ context?: string[]; promptt?: string; preserveData?: Record<string, unknown> }`
+- `session_companeact`
 - `session_before_tree` → can return `{ cancel?: boolean; summary?: { summary: string; details?: unknown } }`
 - `session_tree`
 - `session_shutdown`
@@ -162,7 +162,7 @@ On tool failure, wrapper emits `tool_result` with `isError: true` and error text
 - LLM context for a single call via `context` (`messages` replacement chain)
 - tool output content/details on successful tool calls (`tool_result` path)
 - pre-agent injected message via `before_agent_start`
-- cancellation/custom compaction/tree behavior via `session_before_*` and `session.compacting`
+- cancellation/custom compaction/tree behavior via `session_before_*` and `session.companeacting`
 
 ### What hooks cannot mutate in this implementation
 
@@ -197,7 +197,7 @@ Conflict behavior by event type:
 - `context`: chained; each handler receives prior handler’s message output
 - `before_agent_start`: first returned message is kept; later messages ignored
 - `session_before_*`: latest returned result is tracked; `cancel: true` short-circuits immediately
-- `session.compacting`: latest returned result wins
+- `session.companeacting`: latest returned result wins
 
 Command/renderer conflicts:
 
@@ -252,7 +252,7 @@ Hook status text set via `ctx.ui.setStatus(key, text)` is:
 ### Block unsafe bash commands
 
 ```ts
-import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/arcane/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("tool_call", async (event, ctx) => {
@@ -270,7 +270,7 @@ export default function (pi: HookAPI): void {
 ### Redact tool output on post-execution
 
 ```ts
-import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/arcane/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("tool_result", async event => {
@@ -289,7 +289,7 @@ export default function (pi: HookAPI): void {
 ### Modify model context per LLM call
 
 ```ts
-import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/arcane/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("context", async event => {
@@ -302,7 +302,7 @@ export default function (pi: HookAPI): void {
 ### Register slash command with command-safe context methods
 
 ```ts
-import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/arcane/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.registerCommand("handoff", {

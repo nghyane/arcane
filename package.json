@@ -1,5 +1,5 @@
 {
-	"name": "omp-monorepo",
+	"name": "arcane-monorepo",
 	"private": true,
 	"type": "module",
 	"workspaces": [

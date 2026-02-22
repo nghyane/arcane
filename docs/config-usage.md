@@ -28,7 +28,7 @@ Key integration points:
 ```text
          Config roots (ordered)
 ┌───────────────────────────────────────┐
-│ 1) ~/.omp/agent + <cwd>/.omp          │
+│ 1) ~/.arcane/agent + <cwd>/.arcane          │
 │ 2) ~/.claude   + <cwd>/.claude        │
 │ 3) ~/.codex    + <cwd>/.codex         │
 │ 4) ~/.gemini   + <cwd>/.gemini        │
@@ -57,26 +57,26 @@ Key integration points:
 
 `src/config.ts` defines a fixed source priority list:
 
-1. `.omp` (native)
+1. `.arcane` (native)
 2. `.claude`
 3. `.codex`
 4. `.gemini`
 
 User-level bases:
 
-- `~/.omp/agent`
+- `~/.arcane/agent`
 - `~/.claude`
 - `~/.codex`
 - `~/.gemini`
 
 Project-level bases:
 
-- `<cwd>/.omp`
+- `<cwd>/.arcane`
 - `<cwd>/.claude`
 - `<cwd>/.codex`
 - `<cwd>/.gemini`
 
-`CONFIG_DIR_NAME` is `.omp` (`packages/utils/src/dirs.ts`).
+`CONFIG_DIR_NAME` is `.arcane` (`packages/utils/src/dirs.ts`).
 
 ## Important constraint
 
@@ -108,7 +108,7 @@ Searches for the first existing file across ordered bases, returns first match (
 
 ## `findAllNearestProjectConfigDirs(subpath, cwd)`
 
-Walks parent directories upward and returns the **nearest existing directory per source base** (`.omp`, `.claude`, `.codex`, `.gemini`), then sorts results by source priority.
+Walks parent directories upward and returns the **nearest existing directory per source base** (`.arcane`, `.claude`, `.codex`, `.gemini`), then sorts results by source priority.
 
 Use this when project config should be inherited from ancestor directories (monorepo/nested workspace behavior).
 
@@ -142,7 +142,7 @@ Legacy migration still supported:
 
 The runtime settings model is layered:
 
-1. Global settings: `~/.omp/agent/config.yml`
+1. Global settings: `~/.arcane/agent/config.yml`
 2. Project settings: discovered via settings capability (`settings.json` from providers)
 3. Runtime overrides: in-memory, non-persistent
 4. Schema defaults: from `SETTINGS_SCHEMA`
@@ -160,7 +160,7 @@ Write behavior:
 
 On startup, if `config.yml` is missing:
 
-1. Migrate from `~/.omp/agent/settings.json` (renamed to `.bak` on success)
+1. Migrate from `~/.arcane/agent/settings.json` (renamed to `.bak` on success)
 2. Merge with legacy DB settings from `agent.db`
 3. Write merged result to `config.yml`
 
@@ -188,7 +188,7 @@ Providers are sorted by numeric priority (higher first). Example priorities:
 ```text
 Provider precedence (higher wins)
 
-native (.omp)          priority 100
+native (.arcane)          priority 100
 claude                 priority  80
 codex / agents / ...   priority  70
 gemini                 priority  60
@@ -212,12 +212,12 @@ Relevant keys:
 
 ---
 
-## 6) Native `.omp` provider behavior (`src/discovery/builtin.ts`)
+## 6) Native `.arcane` provider behavior (`src/discovery/builtin.ts`)
 
 Native provider (`id: native`) reads from:
 
-- project: `<cwd>/.omp/...`
-- user: `~/.omp/agent/...`
+- project: `<cwd>/.arcane/...`
+- user: `~/.arcane/agent/...`
 
 ### Directory admission rule
 
@@ -228,7 +228,7 @@ Native provider (`id: native`) reads from:
 - Skills: `skills/*/SKILL.md`
 - Slash commands: `commands/*.md`
 - Rules: `rules/*.{md,mdc}`
-- Prompts: `prompts/*.md`
+- Promptts: `promptts/*.md`
 - Instructions: `instructions/*.md`
 - Hooks: `hooks/pre/*`, `hooks/post/*`
 - Tools: `tools/*.json|*.md` and `tools/<name>/index.ts`
@@ -238,7 +238,7 @@ Native provider (`id: native`) reads from:
 
 ### Nearest-project lookup nuance
 
-For `SYSTEM.md` and `AGENTS.md`, native provider uses nearest-ancestor project `.omp` directory search (walk-up) but still requires the `.omp` dir to be non-empty.
+For `SYSTEM.md` and `AGENTS.md`, native provider uses nearest-ancestor project `.arcane` directory search (walk-up) but still requires the `.arcane` dir to be non-empty.
 
 ---
 
@@ -292,7 +292,7 @@ Settings capability items are not deduplicated; `Settings.#loadProjectSettings()
 - `ConfigFile` JSON -> YAML migration for YAML-targeted files.
 - Settings migration from `settings.json` and `agent.db` to `config.yml`.
 - Settings key migrations (`queueMode`, `ask.timeout`, flat `theme`).
-- Extension manifest compatibility: loader accepts both `package.json.omp` and `package.json.pi` manifest sections.
+- Extension manifest compatibility: loader accepts both `package.json.arcane` and `package.json.pi` manifest sections.
 - Legacy setting names `skills.enablePiUser` / `skills.enablePiProject` are still active gates for native skill source.
 
 If these compatibility paths are removed in code, update this document immediately; several runtime behaviors still depend on them today.

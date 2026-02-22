@@ -1,4 +1,4 @@
-import { logger } from "@nghyane/pi-utils";
+import { logger } from "@nghyane/arcane-utils";
 import { $ } from "bun";
 import { resolvePython } from "./transcriber";
 

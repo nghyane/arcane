@@ -58,7 +58,7 @@ export const TAB_METADATA: Record<SettingTab, { label: string; icon: `tab.${stri
 
 /** Status line segment identifiers */
 export type StatusLineSegmentId =
-	| "pi"
+	| "arcane"
 	| "model"
 	| "path"
 	| "git"

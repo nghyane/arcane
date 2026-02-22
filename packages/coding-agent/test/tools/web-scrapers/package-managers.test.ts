@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { handleAur } from "@nghyane/pi-coding-agent/web/scrapers/aur";
-import { handleBrew } from "@nghyane/pi-coding-agent/web/scrapers/brew";
-import { handleMaven } from "@nghyane/pi-coding-agent/web/scrapers/maven";
-import { handleNuGet } from "@nghyane/pi-coding-agent/web/scrapers/nuget";
-import { handlePackagist } from "@nghyane/pi-coding-agent/web/scrapers/packagist";
-import { handleRubyGems } from "@nghyane/pi-coding-agent/web/scrapers/rubygems";
+import { handleAur } from "@nghyane/arcane/web/scrapers/aur";
+import { handleBrew } from "@nghyane/arcane/web/scrapers/brew";
+import { handleMaven } from "@nghyane/arcane/web/scrapers/maven";
+import { handleNuGet } from "@nghyane/arcane/web/scrapers/nuget";
+import { handlePackagist } from "@nghyane/arcane/web/scrapers/packagist";
+import { handleRubyGems } from "@nghyane/arcane/web/scrapers/rubygems";
 
 const SKIP = !Bun.env.WEB_FETCH_INTEGRATION;
 

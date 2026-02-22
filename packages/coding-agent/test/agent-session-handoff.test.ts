@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { Agent } from "@nghyane/pi-agent-core";
-import type { AssistantMessage } from "@nghyane/pi-ai";
-import { getBundledModel } from "@nghyane/pi-ai/models";
-import { ModelRegistry } from "@nghyane/pi-coding-agent/config/model-registry";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
-import { AgentSession, type AgentSessionEvent } from "@nghyane/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@nghyane/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
-import { TempDir } from "@nghyane/pi-utils";
+import { ModelRegistry } from "@nghyane/arcane/config/model-registry";
+import { Settings } from "@nghyane/arcane/config/settings";
+import { AgentSession, type AgentSessionEvent } from "@nghyane/arcane/session/agent-session";
+import { AuthStorage } from "@nghyane/arcane/session/auth-storage";
+import { SessionManager } from "@nghyane/arcane/session/session-manager";
+import { Agent } from "@nghyane/arcane-agent";
+import type { AssistantMessage } from "@nghyane/arcane-ai";
+import { getBundledModel } from "@nghyane/arcane-ai/models";
+import { TempDir } from "@nghyane/arcane-utils";
 
 describe("AgentSession handoff", () => {
 	let tempDir: TempDir;

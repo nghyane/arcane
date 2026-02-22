@@ -4,7 +4,7 @@ import type {
 	MessageCreateParamsStreaming,
 	MessageParam,
 } from "@anthropic-ai/sdk/resources/messages";
-import { abortableSleep } from "@nghyane/pi-utils";
+import { abortableSleep } from "@nghyane/arcane-utils";
 import { calculateCost } from "../models";
 import { getEnvApiKey, OUTPUT_FALLBACK_BUFFER } from "../stream";
 import type {

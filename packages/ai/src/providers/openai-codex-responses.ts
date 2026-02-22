@@ -1,5 +1,5 @@
 import * as os from "node:os";
-import { $env, abortableSleep, readSseJson } from "@nghyane/pi-utils";
+import { $env, abortableSleep, readSseJson } from "@nghyane/arcane-utils";
 import type {
 	ResponseFunctionToolCall,
 	ResponseInput,

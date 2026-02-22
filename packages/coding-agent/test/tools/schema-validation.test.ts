@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { sanitizeSchemaForGoogle } from "@nghyane/pi-ai";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
-import { createTools, HIDDEN_TOOLS, type ToolSession } from "@nghyane/pi-coding-agent/tools";
+import { Settings } from "@nghyane/arcane/config/settings";
+import { createTools, HIDDEN_TOOLS, type ToolSession } from "@nghyane/arcane/tools";
+import { sanitizeSchemaForGoogle } from "@nghyane/arcane-ai";
 
 /**
  * Problematic JSON Schema features that cause issues with various providers.

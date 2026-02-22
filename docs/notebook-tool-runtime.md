@@ -142,7 +142,7 @@ The kernel client processes Jupyter protocol messages per execution:
   - structured outputs captured separately:
     - `application/json` -> `{ type: "json" }`
     - `image/png` -> `{ type: "image" }`
-    - `application/x-omp-status` -> `{ type: "status" }` (no text emission)
+    - `application/x-arcane-status` -> `{ type: "status" }` (no text emission)
 - `error` -> traceback text pushed to chunk stream + structured error metadata
 - `input_request` -> emits stdin warning text, sends empty `input_reply`, marks stdin requested
 - completion waits for both `execute_reply` and kernel `status=idle`

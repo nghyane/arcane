@@ -4,11 +4,11 @@ This document is a subsystem deep-dive for the **system/media/conversion primiti
 
 ## Implementation files
 
-- `crates/pi-natives/src/image.rs`
-- `crates/pi-natives/src/html.rs`
-- `crates/pi-natives/src/clipboard.rs`
-- `crates/pi-natives/src/prof.rs`
-- `crates/pi-natives/src/task.rs`
+- `crates/arcane-natives/src/image.rs`
+- `crates/arcane-natives/src/html.rs`
+- `crates/arcane-natives/src/clipboard.rs`
+- `crates/arcane-natives/src/prof.rs`
+- `crates/arcane-natives/src/task.rs`
 - `packages/natives/src/image/index.ts`
 - `packages/natives/src/image/types.ts`
 - `packages/natives/src/html/index.ts`
@@ -18,7 +18,7 @@ This document is a subsystem deep-dive for the **system/media/conversion primiti
 - `packages/natives/src/work/index.ts`
 - `packages/natives/src/work/types.ts`
 
-> Note: there is no `crates/pi-natives/src/work.rs`; work profiling is implemented in `prof.rs` and fed by instrumentation in `task.rs`.
+> Note: there is no `crates/arcane-natives/src/work.rs`; work profiling is implemented in `prof.rs` and fed by instrumentation in `task.rs`.
 
 ## TS API ↔ Rust export/module mapping
 

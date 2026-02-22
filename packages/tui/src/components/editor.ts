@@ -1,4 +1,4 @@
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import type { AutocompleteProvider, CombinedAutocompleteProvider } from "../autocomplete";
 import { type EditorKeybindingsManager, getEditorKeybindings } from "../keybindings";
 import { matchesKey } from "../keys";

@@ -1,5 +1,5 @@
-import type { AgentTool } from "@nghyane/pi-agent-core";
-import { sanitizeText } from "@nghyane/pi-natives";
+import type { AgentTool } from "@nghyane/arcane-agent";
+import { sanitizeText } from "@nghyane/arcane-natives";
 import {
 	Box,
 	type Component,
@@ -12,9 +12,9 @@ import {
 	TERMINAL,
 	Text,
 	type TUI,
-} from "@nghyane/pi-tui";
-import { logger } from "@nghyane/pi-utils";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+} from "@nghyane/arcane-tui";
+import { logger } from "@nghyane/arcane-utils";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import type { Theme } from "../../modes/theme/theme";
 import { theme } from "../../modes/theme/theme";
 import {

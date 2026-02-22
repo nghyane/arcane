@@ -14,9 +14,9 @@
  *   - Use recommended: <index> to mark the default option; "(Recommended)" suffix is added automatically
  *   - Questions may time out and auto-select the recommended option (configurable)
  */
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
-import type { Component } from "@nghyane/pi-tui";
-import { TERMINAL, Text } from "@nghyane/pi-tui";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import type { Component } from "@nghyane/arcane-tui";
+import { TERMINAL, Text } from "@nghyane/arcane-tui";
 import { type Static, Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";

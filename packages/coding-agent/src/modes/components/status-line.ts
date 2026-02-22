@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { AssistantMessage } from "@nghyane/pi-ai";
-import { type Component, padding, truncateToWidth, visibleWidth } from "@nghyane/pi-tui";
-import { getProjectDir } from "@nghyane/pi-utils/dirs";
+import type { AssistantMessage } from "@nghyane/arcane-ai";
+import { type Component, padding, truncateToWidth, visibleWidth } from "@nghyane/arcane-tui";
+import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { $ } from "bun";
 import { settings } from "../../config/settings";
 import type { StatusLinePreset, StatusLineSegmentId, StatusLineSeparatorStyle } from "../../config/settings-schema";

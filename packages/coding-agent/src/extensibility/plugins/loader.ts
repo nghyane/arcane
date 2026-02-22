@@ -6,8 +6,8 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isEnoent } from "@nghyane/pi-utils";
-import { getPluginsLockfile, getPluginsNodeModules, getPluginsPackageJson } from "@nghyane/pi-utils/dirs";
+import { isEnoent } from "@nghyane/arcane-utils";
+import { getPluginsLockfile, getPluginsNodeModules, getPluginsPackageJson } from "@nghyane/arcane-utils/dirs";
 import { getConfigDirPaths } from "../../config";
 import type { InstalledPlugin, PluginManifest, PluginRuntimeConfig, ProjectPluginOverrides } from "./types";
 
@@ -29,7 +29,7 @@ async function loadRuntimeConfig(): Promise<PluginRuntimeConfig> {
 }
 
 /**
- * Load project-local plugin overrides (checks .omp and .pi directories).
+ * Load project-local plugin overrides (checks .arcane and .pi directories).
  */
 async function loadProjectOverrides(cwd: string): Promise<ProjectPluginOverrides> {
 	for (const overridesPath of getConfigDirPaths("plugin-overrides.json", { user: false, cwd })) {
@@ -73,7 +73,7 @@ export async function getEnabledPlugins(cwd: string): Promise<InstalledPlugin[]>
 
 	for (const [name] of Object.entries(deps)) {
 		const pluginPkgPath = path.join(nodeModulesPath, name, "package.json");
-		let pluginPkg: { version: string; omp?: PluginManifest; pi?: PluginManifest };
+		let pluginPkg: { version: string; arcane?: PluginManifest };
 		try {
 			pluginPkg = await Bun.file(pluginPkgPath).json();
 		} catch (err) {
@@ -81,10 +81,10 @@ export async function getEnabledPlugins(cwd: string): Promise<InstalledPlugin[]>
 			throw err;
 		}
 
-		const manifest: PluginManifest | undefined = pluginPkg.omp || pluginPkg.pi;
+		const manifest: PluginManifest | undefined = pluginPkg.arcane;
 
 		if (!manifest) {
-			// Not an omp plugin, skip
+			// Not an arcane plugin, skip
 			continue;
 		}
 

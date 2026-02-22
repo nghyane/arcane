@@ -9,7 +9,7 @@ Example extensions for pi-coding-agent.
 pi --extension examples/extensions/permission-gate.ts
 
 # Or copy to extensions directory for auto-discovery
-cp permission-gate.ts ~/.omp/agent/extensions/
+cp permission-gate.ts ~/.arcane/agent/extensions/
 ```
 
 ## Examples
@@ -70,7 +70,7 @@ cp permission-gate.ts ~/.omp/agent/extensions/
 See [docs/extensions.md](../../docs/extensions.md) for full documentation.
 
 ```typescript
-import type { ExtensionAPI } from "@nghyane/pi-coding-agent";
+import type { ExtensionAPI } from "@nghyane/arcane";
 import { Type } from "@sinclair/typebox";
 
 export default function (pi: ExtensionAPI) {
@@ -113,7 +113,7 @@ export default function (pi: ExtensionAPI) {
 **Use StringEnum for string parameters** (required for Google API compatibility):
 
 ```typescript
-import { StringEnum } from "@nghyane/pi-ai";
+import { StringEnum } from "@nghyane/arcane-ai";
 
 // Good
 action: StringEnum(["list", "add"] as const);

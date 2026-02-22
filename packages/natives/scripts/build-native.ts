@@ -4,7 +4,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 
 const repoRoot = path.join(import.meta.dir, "../../..");
-const rustDir = path.join(repoRoot, "crates/pi-natives");
+const rustDir = path.join(repoRoot, "crates/arcane-natives");
 const nativeDir = path.join(import.meta.dir, "../native");
 
 const isDev = process.argv.includes("--dev");
@@ -145,7 +145,7 @@ const cargoArgs = ["build"];
 if (!isDev) cargoArgs.push("--release");
 if (crossTarget) cargoArgs.push("--target", crossTarget);
 
-console.log(`Building pi-natives for ${targetPlatform}-${targetArch}${variantSuffix}${isDev ? " (debug)" : ""}…`);
+console.log(`Building arcane-natives for ${targetPlatform}-${targetArch}${variantSuffix}${isDev ? " (debug)" : ""}…`);
 const buildResult = await $`cargo ${cargoArgs}`.cwd(rustDir).nothrow();
 if (buildResult.exitCode !== 0) {
 	const stderr = buildResult.stderr?.toString("utf-8") ?? "";
@@ -166,7 +166,7 @@ const profileDirs = targetRoots.flatMap(root => {
 	return [path.join(root, profile)];
 });
 
-const libraryNames = ["libpi_natives.so", "libpi_natives.dylib", "pi_natives.dll", "libpi_natives.dll"];
+const libraryNames = ["libarcane_natives.so", "libarcane_natives.dylib", "arcane_natives.dll", "libarcane_natives.dll"];
 
 let sourcePath: string | null = null;
 for (const dir of profileDirs) {
@@ -194,8 +194,8 @@ if (!sourcePath) {
 console.log(`Found: ${sourcePath}`);
 const taggedPath =
 	isDev
-		? path.join(nativeDir, "pi_natives.dev.node")
-		: path.join(nativeDir, `pi_natives.${targetPlatform}-${targetArch}${variantSuffix}.node`);
+		? path.join(nativeDir, "arcane_natives.dev.node")
+		: path.join(nativeDir, `arcane_natives.${targetPlatform}-${targetArch}${variantSuffix}.node`);
 console.log(`Installing: ${taggedPath}`);
 await installBinary(sourcePath, taggedPath);
 

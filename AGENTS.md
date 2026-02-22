@@ -15,9 +15,9 @@ This repo contains multiple packages, but **`packages/coding-agent/`** is the pr
 | `packages/coding-agent` | Main CLI application (primary focus)                 |
 | `packages/tui`          | Terminal UI library with differential rendering      |
 | `packages/natives`      | bindings for native text/image/grep operations       |
-| `packages/stats`        | Local observability dashboard (`omp stats`)          |
+| `packages/stats`        | Local observability dashboard (`arc stats`)          |
 | `packages/utils`        | Shared utilities (logger, streams, temp files)       |
-| `crates/pi-natives`     | Rust crate for performance-critical text/grep ops    |
+| `crates/arcane-natives`     | Rust crate for performance-critical text/grep ops    |
 
 ## Code Quality
 
@@ -193,7 +193,7 @@ if (await Bun.file(path).exists()) {
 }
 
 // GOOD: One syscall, atomic, type-safe error handling
-import { isEnoent } from "@nghyane/pi-utils";
+import { isEnoent } from "@nghyane/arcane-utils";
 
 try {
 	return await Bun.file(path).json();
@@ -382,14 +382,14 @@ const valid = await Bun.password.verify("password", hash);
 Use the centralized logger instead:
 
 ```typescript
-import { logger } from "@nghyane/pi-utils";
+import { logger } from "@nghyane/arcane-utils";
 
 logger.error("MCP request failed", { url, method });
 logger.warn("Theme file invalid, using fallback", { path });
 logger.debug("LSP fallback triggered", { reason });
 ```
 
-Logs go to `~/.omp/logs/omp.YYYY-MM-DD.log` with automatic rotation.
+Logs go to `~/.arcane/logs/arcane.YYYY-MM-DD.log` with automatic rotation.
 
 ## TUI Rendering Sanitization
 
@@ -397,7 +397,7 @@ All text displayed in tool renderers must be sanitized before output. Raw conten
 
 ### Rules
 
-- **Tabs → spaces**: Always pass displayed text through `replaceTabs()` before rendering. Tabs produce variable-width gaps in terminals and cause visual holes in the TUI. Import from `@nghyane/pi-tui` or `../tools/render-utils`.
+- **Tabs → spaces**: Always pass displayed text through `replaceTabs()` before rendering. Tabs produce variable-width gaps in terminals and cause visual holes in the TUI. Import from `@nghyane/arcane-tui` or `../tools/render-utils`.
 - **Line truncation**: Truncate displayed lines with `truncateToWidth()` or `ui.truncate()` to prevent horizontal overflow. Use constants from `TRUNCATE_LENGTHS` for consistency.
 - **Path shortening**: Use `shortenPath()` for file paths shown to users — replaces home directory prefix with `~`.
 - **Content preview limits**: Use `PREVIEW_LIMITS` constants for collapsed/expanded line counts. Don't invent ad-hoc limits.
@@ -486,8 +486,8 @@ Use these sections under `## [Unreleased]`:
 
 ### Attribution
 
-- **Internal changes (from issues)**: `Fixed foo bar ([#123](https://github.com/can1357/oh-my-pi/issues/123))`
-- **External contributions**: `Added feature X ([#456](https://github.com/can1357/oh-my-pi/pull/456) by [@username](https://github.com/username))`
+- **Internal changes (from issues)**: `Fixed foo bar ([#123](https://github.com/nghyane/arcane/issues/123))`
+- **External contributions**: `Added feature X ([#456](https://github.com/nghyane/arcane/pull/456) by [@username](https://github.com/username))`
 
 ## Releasing
 

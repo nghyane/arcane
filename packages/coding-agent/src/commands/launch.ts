@@ -1,8 +1,8 @@
 /**
  * Root command for the coding agent CLI.
  */
-import { Args, Command, Flags } from "@nghyane/pi-utils/cli";
-import { APP_NAME } from "@nghyane/pi-utils/dirs";
+import { Args, Command, Flags } from "@nghyane/arcane-utils/cli";
+import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import { parseArgs } from "../cli/args";
 import { runRootCommand } from "../main";
 
@@ -127,7 +127,7 @@ export default class Index extends Command {
 		`# Continue previous session\n  ${APP_NAME} --continue "What did we discuss?"`,
 		`# Use different model (fuzzy matching)\n  ${APP_NAME} --model opus "Help me refactor this code"`,
 		`# Limit model cycling to specific models\n  ${APP_NAME} --models claude-sonnet,claude-haiku,gpt-4o`,
-		`# Export a session file to HTML\n  ${APP_NAME} --export ~/.omp/agent/sessions/--path--/session.jsonl`,
+		`# Export a session file to HTML\n  ${APP_NAME} --export ~/.arcane/agent/sessions/--path--/session.jsonl`,
 	];
 
 	static strict = false;

@@ -1,4 +1,4 @@
-import { $env, logger, Snowflake } from "@nghyane/pi-utils";
+import { $env, logger, Snowflake } from "@nghyane/arcane-utils";
 import { $ } from "bun";
 import { Settings } from "../config/settings";
 import { time } from "../utils/timings";
@@ -11,7 +11,7 @@ import { filterEnv, resolvePythonRuntime } from "./runtime";
 const TEXT_ENCODER = new TextEncoder();
 const TEXT_DECODER = new TextDecoder();
 const TRACE_IPC = $env.PI_PYTHON_IPC_TRACE === "1";
-const PRELUDE_INTROSPECTION_SNIPPET = "import json\nprint(json.dumps(__omp_prelude_docs__()))";
+const PRELUDE_INTROSPECTION_SNIPPET = "import json\nprint(json.dumps(__arc_prelude_docs__()))";
 
 class SharedGatewayCreateError extends Error {
 	constructor(
@@ -196,8 +196,8 @@ export function renderKernelDisplay(content: Record<string, unknown>): {
 	const outputs: KernelDisplayOutput[] = [];
 
 	// Handle status events (custom MIME type from prelude helpers)
-	if (data["application/x-omp-status"] !== undefined) {
-		const statusData = data["application/x-omp-status"];
+	if (data["application/x-arc-status"] !== undefined) {
+		const statusData = data["application/x-arc-status"];
 		if (statusData && typeof statusData === "object" && "op" in statusData) {
 			outputs.push({ type: "status", event: statusData as PythonStatusEvent });
 		}
@@ -403,7 +403,7 @@ export class PythonKernel {
 			kernelId,
 			config.url,
 			Snowflake.next(),
-			"omp",
+			"arc",
 			false,
 			config.token,
 		);
@@ -449,7 +449,7 @@ export class PythonKernel {
 		time("startWithSharedGateway:parseJson");
 		const kernelId = kernelInfo.id;
 
-		const kernel = new PythonKernel(Snowflake.next(), kernelId, gatewayUrl, Snowflake.next(), "omp", true);
+		const kernel = new PythonKernel(Snowflake.next(), kernelId, gatewayUrl, Snowflake.next(), "arc", true);
 
 		try {
 			await kernel.#connectWebSocket();
@@ -562,11 +562,11 @@ export class PythonKernel {
 		const envPayload = Object.fromEntries(envEntries);
 		const initScript = [
 			"import os, sys",
-			`__omp_cwd = ${JSON.stringify(cwd)}`,
-			"os.chdir(__omp_cwd)",
-			`__omp_env = ${JSON.stringify(envPayload)}`,
-			"for __omp_key, __omp_val in __omp_env.items():\n    os.environ[__omp_key] = __omp_val",
-			"if __omp_cwd not in sys.path:\n    sys.path.insert(0, __omp_cwd)",
+			`__arc_cwd = ${JSON.stringify(cwd)}`,
+			"os.chdir(__arc_cwd)",
+			`__arc_env = ${JSON.stringify(envPayload)}`,
+			"for __arc_key, __arc_val in __arc_env.items():\n    os.environ[__arc_key] = __arc_val",
+			"if __arc_cwd not in sys.path:\n    sys.path.insert(0, __arc_cwd)",
 		].join("\n");
 		const result = await this.execute(initScript, { silent: true, storeHistory: false });
 		if (result.cancelled || result.status === "error") {

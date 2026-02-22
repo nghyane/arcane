@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { adjustIndentation, DEFAULT_FUZZY_THRESHOLD, findEditMatch } from "@nghyane/pi-coding-agent/patch";
+import { adjustIndentation, DEFAULT_FUZZY_THRESHOLD, findEditMatch } from "@nghyane/arcane/patch";
 
 describe("findEditMatch", () => {
 	describe("exact matching", () => {

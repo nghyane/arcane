@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { AssistantMessage } from "@nghyane/pi-ai";
-import { getSessionsDir } from "@nghyane/pi-utils/dirs";
+import type { AssistantMessage } from "@nghyane/arcane-ai";
+import { getSessionsDir } from "@nghyane/arcane-utils/dirs";
 import type { MessageStats, SessionEntry, SessionMessageEntry } from "./types";
 
 /**

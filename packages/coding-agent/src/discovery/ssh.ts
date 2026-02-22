@@ -1,11 +1,11 @@
 /**
  * SSH JSON Provider
  *
- * Discovers SSH hosts from managed omp config paths and legacy root ssh.json files.
+ * Discovers SSH hosts from managed arcane config paths and legacy root ssh.json files.
  * Priority: 5 (low, project/user config discovery)
  */
 import * as path from "node:path";
-import { getSSHConfigPath } from "@nghyane/pi-utils/dirs";
+import { getSSHConfigPath } from "@nghyane/arcane-utils/dirs";
 import { registerProvider } from "../capability";
 import { readFile } from "../capability/fs";
 import { type SSHHost, sshCapability } from "../capability/ssh";
@@ -154,7 +154,7 @@ async function load(ctx: LoadContext): Promise<LoadResult<SSHHost>> {
 registerProvider(sshCapability.id, {
 	id: PROVIDER_ID,
 	displayName: DISPLAY_NAME,
-	description: "Load SSH hosts from managed omp paths and legacy ssh.json/.ssh.json files",
+	description: "Load SSH hosts from managed arcane paths and legacy ssh.json/.ssh.json files",
 	priority: 5,
 	load,
 });

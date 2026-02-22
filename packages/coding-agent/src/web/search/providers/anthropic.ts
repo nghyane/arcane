@@ -9,8 +9,8 @@ import {
 	buildAnthropicHeaders,
 	buildAnthropicSystemBlocks,
 	stripClaudeToolPrefix,
-} from "@nghyane/pi-ai";
-import { $env } from "@nghyane/pi-utils";
+} from "@nghyane/arcane-ai";
+import { $env } from "@nghyane/arcane-utils";
 import { buildAnthropicUrl, findAnthropicAuth } from "../../../web/search/auth";
 import type {
 	AnthropicApiResponse,
@@ -239,7 +239,7 @@ export async function searchAnthropic(params: AnthropicSearchParams): Promise<Se
 	const auth = await findAnthropicAuth();
 	if (!auth) {
 		throw new Error(
-			"No Anthropic credentials found. Set ANTHROPIC_API_KEY or configure OAuth in ~/.omp/agent/agent.db",
+			"No Anthropic credentials found. Set ANTHROPIC_API_KEY or configure OAuth in ~/.arcane/agent/agent.db",
 		);
 	}
 

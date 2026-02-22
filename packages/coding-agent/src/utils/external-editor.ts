@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $env, Snowflake } from "@nghyane/pi-utils";
+import { $env, Snowflake } from "@nghyane/arcane-utils";
 
 /** Returns the user's preferred editor command, or undefined if not configured. */
 export function getEditorCommand(): string | undefined {
@@ -31,7 +31,7 @@ export async function openInEditor(
 	options?: OpenInEditorOptions,
 ): Promise<string | null> {
 	const ext = options?.extension ?? ".md";
-	const tmpFile = path.join(os.tmpdir(), `omp-editor-${Snowflake.next()}${ext}`);
+	const tmpFile = path.join(os.tmpdir(), `arc-editor-${Snowflake.next()}${ext}`);
 
 	try {
 		await Bun.write(tmpFile, content);

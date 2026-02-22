@@ -11,9 +11,9 @@ import {
 	type SimpleStreamOptions,
 	type StopReason,
 	type ToolCall,
-} from "@nghyane/pi-ai";
-import { parseStreamingJson } from "@nghyane/pi-ai/utils/json-parse";
-import { readSseJson } from "@nghyane/pi-utils";
+} from "@nghyane/arcane-ai";
+import { parseStreamingJson } from "@nghyane/arcane-ai/utils/json-parse";
+import { readSseJson } from "@nghyane/arcane-utils";
 
 // Create stream class matching ProxyMessageEventStream
 class ProxyMessageEventStream extends EventStream<AssistantMessageEvent, AssistantMessage> {

@@ -13,18 +13,18 @@ The runtime has two layers:
 
 | Mode | `ctx.ui.custom(...)` availability | Notes |
 | --- | --- | --- |
-| Interactive TUI | Supported | Component is mounted in the editor area, focused, and must call `done(result)` to resolve. |
+| Interactive TUI | Supported | Carcaneonent is mounted in the editor area, focused, and must call `done(result)` to resolve. |
 | Background/headless | Not interactive | UI context is no-op (`hasUI === false`). |
 | RPC mode | Not supported | `custom()` returns `Promise<never>` and does not mount TUI components. |
 
 If your extension/tool can run in non-interactive mode, guard with `ctx.hasUI` / `pi.hasUI`.
 
-## Core component contract (`@nghyane/pi-tui`)
+## Core component contract (`@nghyane/arcane-tui`)
 
 `packages/tui/src/tui.ts` defines:
 
 ```ts
-export interface Component {
+export interface Carcaneonent {
   render(width: number): string[];
   handleInput?(data: string): void;
   wantsKeyRelease?: boolean;
@@ -54,7 +54,7 @@ Your `render(width)` output must be terminal-safe:
 Minimal pattern:
 
 ```ts
-import { replaceTabs, truncateToWidth } from "@nghyane/pi-tui";
+import { replaceTabs, truncateToWidth } from "@nghyane/arcane-tui";
 
 render(width: number): string[] {
   return this.lines.map(line => truncateToWidth(replaceTabs(line), width));
@@ -107,7 +107,7 @@ custom<T>(
     theme: Theme,
     keybindings: KeybindingsManager,
     done: (result: T) => void,
-  ) => (Component & { dispose?(): void }) | Promise<Component & { dispose?(): void }>,
+  ) => (Carcaneonent & { dispose?(): void }) | Promise<Carcaneonent & { dispose?(): void }>,
   options?: { overlay?: boolean },
 ): Promise<T>
 ```
@@ -135,7 +135,7 @@ async execute(toolCallId, params, onUpdate, ctx, signal) {
   }
 
   const picked = await pi.ui.custom<string | undefined>((tui, theme, done) => {
-    const component = new MyPickerComponent(done, signal);
+    const component = new MyPickerCarcaneonent(done, signal);
     return component;
   });
 
@@ -157,7 +157,7 @@ Custom tools and extension tools can return components from:
 - `isPartial: boolean`
 - `spinnerFrame?: number`
 
-These renderers are mounted by `ToolExecutionComponent`.
+These renderers are mounted by `ToolExecutionCarcaneonent`.
 
 ## Lifecycle and cancellation
 
@@ -177,11 +177,11 @@ return loader;
 ## Realistic custom component example (extension command)
 
 ```ts
-import type { Component } from "@nghyane/pi-tui";
-import { SelectList, matchesKey, replaceTabs, truncateToWidth } from "@nghyane/pi-tui";
-import { getSelectListTheme, type ExtensionAPI } from "@nghyane/pi-coding-agent";
+import type { Carcaneonent } from "@nghyane/arcane-tui";
+import { SelectList, matchesKey, replaceTabs, truncateToWidth } from "@nghyane/arcane-tui";
+import { getSelectListTheme, type ExtensionAPI } from "@nghyane/arcane";
 
-class Picker implements Component {
+class Picker implements Carcaneonent {
   list: SelectList;
   keybindings: any;
   done: (value: string | undefined) => void;
@@ -238,7 +238,7 @@ export default function extension(pi: ExtensionAPI): void {
 
 ## Key implementation files
 
-- `packages/tui/src/tui.ts` — `Component`, `Focusable`, cursor marker, focus, overlay, input dispatch.
+- `packages/tui/src/tui.ts` — `Carcaneonent`, `Focusable`, cursor marker, focus, overlay, input dispatch.
 - `packages/tui/src/utils.ts` — width/truncation/sanitization primitives.
 - `packages/tui/src/keys.ts` / `keybindings.ts` — key parsing and configurable action mapping.
 - `packages/coding-agent/src/modes/controllers/extension-ui-controller.ts` — interactive mounting/unmounting for extension/hook/custom-tool UI.

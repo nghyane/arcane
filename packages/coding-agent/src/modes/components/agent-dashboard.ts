@@ -16,7 +16,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { AgentMessage } from "@nghyane/pi-agent-core";
+import type { AgentMessage } from "@nghyane/arcane-agent";
 import {
 	type Component,
 	Container,
@@ -29,8 +29,8 @@ import {
 	truncateToWidth,
 	visibleWidth,
 	wrapTextWithAnsi,
-} from "@nghyane/pi-tui";
-import { isEnoent } from "@nghyane/pi-utils";
+} from "@nghyane/arcane-tui";
+import { isEnoent } from "@nghyane/arcane-utils";
 import { YAML } from "bun";
 import { getConfigDirs } from "../../config";
 import type { ModelRegistry } from "../../config/model-registry";

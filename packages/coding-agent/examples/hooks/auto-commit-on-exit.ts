@@ -4,7 +4,7 @@
  * Automatically commits changes when the agent exits.
  * Uses the last assistant message to generate a commit message.
  */
-import type { HookAPI } from "@nghyane/pi-coding-agent";
+import type { HookAPI } from "@nghyane/arcane";
 
 export default function (pi: HookAPI) {
 	pi.on("session_shutdown", async (_event, ctx) => {
@@ -35,7 +35,7 @@ export default function (pi: HookAPI) {
 
 		// Generate a simple commit message
 		const firstLine = lastAssistantText.split("\n")[0] || "Work in progress";
-		const commitMessage = `[omp] ${firstLine.slice(0, 50)}${firstLine.length > 50 ? "..." : ""}`;
+		const commitMessage = `[arc] ${firstLine.slice(0, 50)}${firstLine.length > 50 ? "..." : ""}`;
 
 		// Stage and commit
 		await pi.exec("git", ["add", "-A"]);

@@ -1,6 +1,6 @@
 import * as path from "node:path";
-import { Ellipsis, Text, truncateToWidth } from "@nghyane/pi-tui";
-import { logger } from "@nghyane/pi-utils";
+import { Ellipsis, Text, truncateToWidth } from "@nghyane/arcane-tui";
+import { logger } from "@nghyane/arcane-utils";
 import { theme } from "../../modes/theme/theme";
 import type { TodoItem } from "../../modes/types";
 import { Hasher, type RenderCache } from "../../tui";

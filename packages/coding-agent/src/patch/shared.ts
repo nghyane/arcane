@@ -1,9 +1,9 @@
 /**
  * Shared utilities for edit tool TUI rendering.
  */
-import type { ToolCallContext } from "@nghyane/pi-agent-core";
-import type { Component } from "@nghyane/pi-tui";
-import { Text } from "@nghyane/pi-tui";
+import type { ToolCallContext } from "@nghyane/arcane-agent";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { FileDiagnosticsResult } from "../lsp";
 import { renderDiff as renderDiffColored } from "../modes/components/diff";

@@ -1,7 +1,7 @@
 /**
  * TUI session selector for --resume flag
  */
-import { ProcessTerminal, TUI } from "@nghyane/pi-tui";
+import { ProcessTerminal, TUI } from "@nghyane/arcane-tui";
 import { SessionSelectorComponent } from "../modes/components/session-selector";
 import type { SessionInfo } from "../session/session-manager";
 

@@ -2,7 +2,7 @@
  * Generic selector component for hooks.
  * Displays a list of string options with keyboard navigation.
  */
-import { Container, matchesKey, padding, Spacer, Text, type TUI, visibleWidth } from "@nghyane/pi-tui";
+import { Container, matchesKey, padding, Spacer, Text, type TUI, visibleWidth } from "@nghyane/arcane-tui";
 import { theme } from "../../modes/theme/theme";
 import { CountdownTimer } from "./countdown-timer";
 import { DynamicBorder } from "./dynamic-border";

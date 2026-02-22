@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { stripVTControlCharacters } from "node:util";
-import { Editor } from "@nghyane/pi-tui/components/editor";
-import { visibleWidth } from "@nghyane/pi-tui/utils";
+import { Editor } from "@nghyane/arcane-tui/components/editor";
+import { visibleWidth } from "@nghyane/arcane-tui/utils";
 import { defaultEditorTheme } from "./test-themes";
 
 describe("Editor component", () => {

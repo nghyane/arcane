@@ -7,8 +7,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { $env } from "@nghyane/pi-utils";
-import { getPythonEnvDir } from "@nghyane/pi-utils/dirs";
+import { $env } from "@nghyane/arcane-utils";
+import { getPythonEnvDir } from "@nghyane/arcane-utils/dirs";
 
 const DEFAULT_ENV_ALLOWLIST = new Set([
 	"PATH",

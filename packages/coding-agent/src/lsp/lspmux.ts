@@ -1,6 +1,6 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { $env, logger } from "@nghyane/pi-utils";
+import { $env, logger } from "@nghyane/arcane-utils";
 import { TOML } from "bun";
 
 /**

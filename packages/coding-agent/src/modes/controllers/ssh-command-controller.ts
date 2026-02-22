@@ -3,8 +3,8 @@
  *
  * Handles /ssh subcommands for managing SSH host configurations.
  */
-import { Spacer, Text } from "@nghyane/pi-tui";
-import { getProjectDir, getSSHConfigPath } from "@nghyane/pi-utils/dirs";
+import { Spacer, Text } from "@nghyane/arcane-tui";
+import { getProjectDir, getSSHConfigPath } from "@nghyane/arcane-utils/dirs";
 import { type SSHHost, sshCapability } from "../../capability/ssh";
 import { loadCapability } from "../../discovery";
 import { addSSHHost, readSSHConfigFile, removeSSHHost, type SSHHostConfig } from "../../ssh/config-writer";
@@ -309,7 +309,7 @@ export class SSHCommandController {
 
 			// Show user-level hosts
 			if (userHosts.length > 0) {
-				lines.push(theme.fg("accent", "User level") + theme.fg("muted", ` (~/.omp/agent/ssh.json):`));
+				lines.push(theme.fg("accent", "User level") + theme.fg("muted", ` (~/.arcane/agent/ssh.json):`));
 				for (const name of userHosts) {
 					const config = userConfig.hosts![name];
 					const details = this.#formatHostDetails(config);
@@ -320,7 +320,7 @@ export class SSHCommandController {
 
 			// Show project-level hosts
 			if (projectHosts.length > 0) {
-				lines.push(theme.fg("accent", "Project level") + theme.fg("muted", ` (.omp/ssh.json):`));
+				lines.push(theme.fg("accent", "Project level") + theme.fg("muted", ` (.arcane/ssh.json):`));
 				for (const name of projectHosts) {
 					const config = projectConfig.hosts![name];
 					const details = this.#formatHostDetails(config);

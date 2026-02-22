@@ -1,9 +1,9 @@
 {
 	"type": "module",
-	"name": "@nghyane/pi-coding-agent",
+	"name": "@nghyane/arcane",
 	"version": "12.19.0",
 	"description": "Coding agent CLI with read, bash, edit, write tools and session management",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
 	"contributors": [
 		"Mario Zechner"
@@ -14,11 +14,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/nghyane/arcane.git",
 		"directory": "packages/coding-agent"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/nghyane/arcane/issues"
 	},
 	"keywords": [
 		"coding-agent",
@@ -31,26 +31,26 @@
 	"main": "./src/index.ts",
 	"types": "./src/index.ts",
 	"bin": {
-		"omp": "src/cli.ts"
+		"arc": "src/cli.ts"
 	},
 	"scripts": {
 		"check": "tsgo -p tsconfig.json",
 		"format-prompts": "bun scripts/format-prompts.ts",
 		"generate-docs-index": "bun scripts/generate-docs-index.ts",
 		"prepack": "bun scripts/generate-docs-index.ts",
-		"build:binary": "cd ../.. && bun --cwd=packages/stats scripts/generate-client-bundle.ts && bun --cwd=packages/natives run embed:native && bun build --compile --define PI_COMPILED=true --root . ./packages/coding-agent/src/cli.ts --outfile packages/coding-agent/dist/omp && bun --cwd=packages/natives run embed:native --reset && bun --cwd=packages/stats scripts/generate-client-bundle.ts --reset",
+		"build:binary": "cd ../.. && bun --cwd=packages/stats scripts/generate-client-bundle.ts && bun --cwd=packages/natives run embed:native && bun build --compile --define PI_COMPILED=true --root . ./packages/coding-agent/src/cli.ts --outfile packages/coding-agent/dist/arc && bun --cwd=packages/natives run embed:native --reset && bun --cwd=packages/stats scripts/generate-client-bundle.ts --reset",
 		"generate-template": "bun scripts/generate-template.ts",
 		"test": "bun test"
 	},
 	"dependencies": {
 		"@mozilla/readability": "0.6.0",
-		"@nghyane/omp-stats": "^12.19.0",
-		"@nghyane/pi-agent-core": "^12.19.0",
-		"@nghyane/pi-codemode": "^12.19.0",
-		"@nghyane/pi-ai": "^12.19.0",
-		"@nghyane/pi-natives": "^12.19.0",
-		"@nghyane/pi-tui": "^12.19.0",
-		"@nghyane/pi-utils": "^12.19.0",
+		"@nghyane/arcane-stats": "workspace:*",
+		"@nghyane/arcane-agent": "workspace:*",
+		"@nghyane/arcane-codemode": "workspace:*",
+		"@nghyane/arcane-ai": "workspace:*",
+		"@nghyane/arcane-natives": "workspace:*",
+		"@nghyane/arcane-tui": "workspace:*",
+		"@nghyane/arcane-utils": "workspace:*",
 		"@sinclair/typebox": "^0.34.48",
 		"@xterm/headless": "^6.0.0",
 		"ajv": "^8.18.0",

@@ -41,14 +41,14 @@
 
 ### Changed
 
-- Changed native addon filename scheme to include CPU variant suffix for x64 builds (e.g., `pi_natives.linux-x64-modern.node`)
+- Changed native addon filename scheme to include CPU variant suffix for x64 builds (e.g., `arcane_natives.linux-x64-modern.node`)
 - Changed embedded addon structure to support multiple variant files per platform instead of single file
 - Changed native addon loader to automatically select appropriate variant based on CPU capabilities or explicit override
 - Changed build output to include variant information in console messages
 
 ### Removed
 
-- Removed fallback untagged `pi_natives.node` binary creation for native builds; platform-tagged variants are now required
+- Removed fallback untagged `arcane_natives.node` binary creation for native builds; platform-tagged variants are now required
 
 ### Fixed
 
@@ -171,7 +171,7 @@
 
 ### Added
 
-- Added automatic extraction of embedded native addon to `~/.omp/natives/<version>` on first run for compiled binaries
+- Added automatic extraction of embedded native addon to `~/.arcane/natives/<version>` on first run for compiled binaries
 - Added `embed:native` build script to embed platform-specific native addon payloads into compiled binaries
 - Exported `Shell` class for creating persistent shell sessions with `run()` method and session options
 - Exported `ShellOptions`, `ShellRunOptions`, and `ShellRunResult` types for shell session management
@@ -197,7 +197,7 @@
 - Refactored module exports to use direct destructuring from native bindings instead of wrapper functions
 - Changed `PhotonImage` API to use instance methods (`resize()`, `encode()`) instead of standalone functions
 - Changed `PhotonImage` to use property accessors for `width` and `height` instead of getter methods
-- Embedded native addon payload for compiled binaries and extract to `~/.omp/natives/<version>` on first run
+- Embedded native addon payload for compiled binaries and extract to `~/.arcane/natives/<version>` on first run
 
 ## [9.7.0] - 2026-02-01
 
@@ -218,7 +218,7 @@
 
 - Modified native binary build process to support both debug and release builds via `--dev` flag
 - Updated native binary search to prioritize platform-tagged builds and separate debug/release candidates
-- Changed debug builds to output to `pi_natives.dev.node` instead of mixing with release artifacts
+- Changed debug builds to output to `arcane_natives.dev.node` instead of mixing with release artifacts
 - Improved native binary installation to use atomic rename operations and better fallback handling for Windows DLLs
 - Reordered native binary search candidates to prioritize platform-tagged builds and avoid loading stale cross-compiled binaries
 - Enhanced cross-compilation detection to prevent installing wrong-platform fallback binaries during cross-compilation builds

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { handleYouTube } from "@nghyane/pi-coding-agent/web/scrapers/youtube";
+import { handleYouTube } from "@nghyane/arcane/web/scrapers/youtube";
 
 const SKIP = !Bun.env.WEB_FETCH_INTEGRATION;
 

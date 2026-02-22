@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { renderTemplate } from "@nghyane/pi-coding-agent/task/template";
+import { renderTemplate } from "@nghyane/arcane/task/template";
 
 describe("renderTemplate", () => {
 	test("returns assignment as task when no context", () => {

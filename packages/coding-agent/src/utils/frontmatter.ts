@@ -1,4 +1,4 @@
-import { logger } from "@nghyane/pi-utils";
+import { logger } from "@nghyane/arcane-utils";
 import { YAML } from "bun";
 
 function stripHtmlComments(content: string): string {

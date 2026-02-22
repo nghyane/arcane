@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { _resetSettingsForTest, Settings } from "@nghyane/pi-coding-agent/config/settings";
-import { executeBash } from "@nghyane/pi-coding-agent/exec/bash-executor";
-import { DEFAULT_MAX_BYTES } from "@nghyane/pi-coding-agent/session/streaming-output";
-import * as shellSnapshot from "@nghyane/pi-coding-agent/utils/shell-snapshot";
+import { _resetSettingsForTest, Settings } from "@nghyane/arcane/config/settings";
+import { executeBash } from "@nghyane/arcane/exec/bash-executor";
+import { DEFAULT_MAX_BYTES } from "@nghyane/arcane/session/streaming-output";
+import * as shellSnapshot from "@nghyane/arcane/utils/shell-snapshot";
 
 function makeTempDir(): string {
-	return fs.mkdtempSync(path.join(os.tmpdir(), "omp-bash-exec-"));
+	return fs.mkdtempSync(path.join(os.tmpdir(), "arc-bash-exec-"));
 }
 
 describe("executeBash", () => {

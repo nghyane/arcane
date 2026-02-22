@@ -3,7 +3,7 @@
  *
  * Run: bun packages/tui/bench/visible-width.ts
  */
-import { visibleWidth as nativeVisibleWidth } from "@nghyane/pi-natives";
+import { visibleWidth as nativeVisibleWidth } from "@nghyane/arcane-natives";
 import { visibleWidthRaw as hybridVisibleWidth, replaceTabs } from "../src/utils";
 
 const ITERATIONS = 10_000;

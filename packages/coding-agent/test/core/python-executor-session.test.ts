@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { disposeAllKernelSessions, executePython } from "@nghyane/pi-coding-agent/ipy/executor";
-import * as pythonKernel from "@nghyane/pi-coding-agent/ipy/kernel";
+import { disposeAllKernelSessions, executePython } from "@nghyane/arcane/ipy/executor";
+import * as pythonKernel from "@nghyane/arcane/ipy/kernel";
 
 class FakeKernel {
 	executeCalls = 0;

@@ -35,7 +35,7 @@ export const ReviewerTool = createSubagentTool({
 	schema,
 	descriptionTemplate: reviewerDescription,
 	progressText: "Reviewing code...",
-	tmpPrefix: "omp-review-",
+	tmpPrefix: "arc-review-",
 	buildTask,
 	buildDescription: p => `Review: ${(p.diff_description as string).slice(0, 60)}`,
 });

@@ -6,7 +6,7 @@
 //!
 //! # Example
 //! ```ignore
-//! use pi_natives::clipboard::copy_to_clipboard;
+//! use arcane_natives::clipboard::copy_to_clipboard;
 //!
 //! # async fn demo() -> napi::Result<()> {
 //! copy_to_clipboard("hello".to_string()).await?;

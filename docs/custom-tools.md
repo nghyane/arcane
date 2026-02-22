@@ -45,11 +45,11 @@ CustomTool.execute(toolCallId, params, onUpdate, ctx, signal)
 `discoverAndLoadCustomTools(configuredPaths, cwd, builtInToolNames)` merges:
 
 1. Capability providers (`toolCapability`), including:
-   - Native OMP config (`~/.omp/agent/tools`, `.omp/tools`)
+   - Native OMP config (`~/.arcane/agent/tools`, `.arcane/tools`)
    - Claude config (`~/.claude/tools`, `.claude/tools`)
    - Codex config (`~/.codex/tools`, `.codex/tools`)
    - Claude marketplace plugin cache provider
-2. Installed plugin manifests (`~/.omp/plugins/node_modules/*` via plugin loader)
+2. Installed plugin manifests (`~/.arcane/plugins/node_modules/*` via plugin loader)
 3. Explicit configured paths passed to the loader
 
 ### Important behavior
@@ -64,7 +64,7 @@ CustomTool.execute(toolCallId, params, onUpdate, ctx, signal)
 A custom tool module must export a function (default export preferred):
 
 ```ts
-import type { CustomToolFactory } from "@nghyane/pi-coding-agent";
+import type { CustomToolFactory } from "@nghyane/arcane";
 
 const factory: CustomToolFactory = (pi) => ({
 	name: "repo_stats",
@@ -121,7 +121,7 @@ From `types.ts` and `loader.ts`:
 - `hasUI`: `false` in non-interactive flows
 - `logger`: shared file logger
 - `typebox`: injected `@sinclair/typebox`
-- `pi`: injected `@nghyane/pi-coding-agent` exports
+- `pi`: injected `@nghyane/arcane` exports
 
 Loader starts with a no-op UI context and requires host code to call `setUIContext(...)` when real UI is ready.
 

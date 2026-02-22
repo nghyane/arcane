@@ -7,7 +7,7 @@ This is an in-file leaf move, not a new session export.
 ## What `/tree` does
 
 - Builds a tree from current session entries (`SessionManager.getTree()`)
-- Opens `TreeSelectorComponent` with keyboard navigation, filters, and search
+- Opens `TreeSelectorCarcaneonent` with keyboard navigation, filters, and search
 - On selection, calls `AgentSession.navigateTree(targetId, { summarize, customInstructions })`
 - Rebuilds visible chat from the new leaf path
 - Optionally prefills editor text when selecting a user/custom message
@@ -15,7 +15,7 @@ This is an in-file leaf move, not a new session export.
 Primary implementation:
 
 - `src/modes/controllers/input-controller.ts` (`/tree`, keybinding wiring, double-escape behavior)
-- `src/modes/controllers/selector-controller.ts` (tree UI launch + summary prompt flow)
+- `src/modes/controllers/selector-controller.ts` (tree UI launch + summary promptt flow)
 - `src/modes/components/tree-selector.ts` (navigation, filters, search, labels, rendering)
 - `src/session/agent-session.ts` (`navigateTree` leaf switching + optional summary)
 - `src/session/session-manager.ts` (`getTree`, `branch`, `branchWithSummary`, `resetLeaf`, label persistence)
@@ -157,18 +157,18 @@ selected node
 
 ## Summary-on-switch flow
 
-Summary prompt is controlled by `branchSummary.enabled` (default: `false`).
+Summary promptt is controlled by `branchSummary.enabled` (default: `false`).
 
 When enabled, after picking a node the UI asks:
 
 - `No summary`
 - `Summarize`
-- `Summarize with custom prompt`
+- `Summarize with custom promptt`
 
 Flow details:
 
-- Escape in summary prompt reopens tree selector
-- Custom prompt cancellation returns to summary choice loop
+- Escape in summary promptt reopens tree selector
+- Custom promptt cancellation returns to summary choice loop
 - During summarization, UI shows loader and binds `Esc` to `abortBranchSummary()`
 - If summarization aborts, tree selector reopens and no move is applied
 
@@ -208,7 +208,7 @@ Key distinction: `/tree` is a navigation/repositioning tool inside one session f
 
 ## Operator workflows
 
-### Re-run from an earlier user prompt without losing current branch
+### Re-run from an earlier user promptt without losing current branch
 
 1. `/tree`
 2. search/select earlier user message
@@ -222,7 +222,7 @@ Effect: new branch grows from selected point within same session file.
 
 1. enable `branchSummary.enabled`
 2. `/tree` and select target node
-3. choose `Summarize` (or custom prompt)
+3. choose `Summarize` (or custom promptt)
 
 Effect: a `branch_summary` entry is appended at the target position before continuing.
 

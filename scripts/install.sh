@@ -2,7 +2,7 @@
 set -e
 
 # OMP Coding Agent Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh
+# Usage: curl -fsSL https://raw.githubusercontent.com/nghyane/arcane/main/scripts/install.sh | sh
 #
 # Options:
 #   --source       Install via bun (installs bun if needed)
@@ -10,8 +10,8 @@ set -e
 #   --ref <ref>    Install specific tag/commit/branch
 #   -r <ref>       Shorthand for --ref
 
-REPO="can1357/oh-my-pi"
-PACKAGE="@nghyane/pi-coding-agent"
+REPO="nghyane/arcane"
+PACKAGE="@nghyane/arcane"
 INSTALL_DIR="${PI_INSTALL_DIR:-$HOME/.local/bin}"
 MIN_BUN_VERSION="1.3.7"
 
@@ -179,8 +179,8 @@ install_via_bun() {
         }
     fi
     echo ""
-    echo "✓ Installed omp via bun"
-    echo "Run 'omp' to get started!"
+    echo "✓ Installed arcane via bun"
+    echo "Run 'arc' to get started!"
 }
 
 # Install binary from GitHub releases
@@ -201,7 +201,7 @@ install_binary() {
         *)             echo "Unsupported architecture: $ARCH"; exit 1 ;;
     esac
 
-    BINARY="omp-${PLATFORM}-${ARCH}"
+    BINARY="arcane--${ARCH}"
     # Get release tag
     if [ -n "$REF" ]; then
         echo "Fetching release $REF..."
@@ -228,12 +228,12 @@ install_binary() {
     # Download binary
     BINARY_URL="https://github.com/${REPO}/releases/download/${LATEST}/${BINARY}"
     echo "Downloading ${BINARY}..."
-    curl -fsSL "$BINARY_URL" -o "${INSTALL_DIR}/omp"
-    chmod +x "${INSTALL_DIR}/omp"
+    curl -fsSL "$BINARY_URL" -o "${INSTALL_DIR}/arc"
+    chmod +x "${INSTALL_DIR}/arc"
     downloaded_native=0
     if [ "$ARCH" = "x64" ]; then
         for variant in modern baseline; do
-            NATIVE_ADDON="pi_natives.${PLATFORM}-${ARCH}-${variant}.node"
+            NATIVE_ADDON="arcane_natives.${PLATFORM}-${ARCH}-${variant}.node"
             NATIVE_URL="https://github.com/${REPO}/releases/download/${LATEST}/${NATIVE_ADDON}"
             echo "Downloading ${NATIVE_ADDON}..."
             curl -fsSL "$NATIVE_URL" -o "${INSTALL_DIR}/${NATIVE_ADDON}" || {
@@ -243,20 +243,20 @@ install_binary() {
             downloaded_native=$((downloaded_native + 1))
         done
     else
-        NATIVE_ADDON="pi_natives.${PLATFORM}-${ARCH}.node"
+        NATIVE_ADDON="arcane_natives.${PLATFORM}-${ARCH}.node"
         NATIVE_URL="https://github.com/${REPO}/releases/download/${LATEST}/${NATIVE_ADDON}"
         echo "Downloading ${NATIVE_ADDON}..."
         curl -fsSL "$NATIVE_URL" -o "${INSTALL_DIR}/${NATIVE_ADDON}"
         downloaded_native=1
     fi
     echo ""
-    echo "✓ Installed omp to ${INSTALL_DIR}/omp"
+    echo "✓ Installed arcane to ${INSTALL_DIR}/arc"
     echo "✓ Installed ${downloaded_native} native addon file(s) to ${INSTALL_DIR}"
 
     # Check if in PATH
     case ":$PATH:" in
-        *":$INSTALL_DIR:"*) echo "Run 'omp' to get started!" ;;
-        *) echo "Add ${INSTALL_DIR} to your PATH, then run 'omp'" ;;
+        *":$INSTALL_DIR:"*) echo "Run 'arc' to get started!" ;;
+        *) echo "Add ${INSTALL_DIR} to your PATH, then run 'arc'" ;;
     esac
 }
 

@@ -4,7 +4,7 @@
  * Calls Brave's web search REST API and maps results into the unified
  * SearchResponse shape used by the web search tool.
  */
-import { getEnvApiKey } from "@nghyane/pi-ai";
+import { getEnvApiKey } from "@nghyane/arcane-ai";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";
 import type { SearchParams } from "./base";

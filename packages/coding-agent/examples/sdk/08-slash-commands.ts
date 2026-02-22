@@ -4,14 +4,9 @@
  * File-based commands that inject content when invoked with /commandname.
  * Note: File-based slash commands are now called "prompt templates".
  */
-import {
-	createAgentSession,
-	discoverPromptTemplates,
-	type PromptTemplate,
-	SessionManager,
-} from "@nghyane/pi-coding-agent";
+import { createAgentSession, discoverPromptTemplates, type PromptTemplate, SessionManager } from "@nghyane/arcane";
 
-// Discover prompt templates from cwd/.pi/prompts/ and ~/.pi/agent/prompts/
+// Discover prompt templates from cwd/.arcane/prompts/ and ~/.arcane/agent/prompts/
 const discovered = await discoverPromptTemplates();
 console.log("Discovered prompt templates:");
 for (const cmd of discovered) {

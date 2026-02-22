@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Release script for pi-mono
+ * Release script for arcane
  *
  * Usage:
  *   bun scripts/release.ts <version>   Full release (preflight, version, changelog, commit, push, watch)

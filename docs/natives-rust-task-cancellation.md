@@ -1,20 +1,20 @@
-# Native Rust task execution and cancellation (`pi-natives`)
+# Native Rust task execution and cancellation (`arcane-natives`)
 
-This document describes how `crates/pi-natives` schedules native work and how cancellation flows from JS options (`timeoutMs`, `AbortSignal`) to Rust execution.
+This document describes how `crates/arcane-natives` schedules native work and how cancellation flows from JS options (`timeoutMs`, `AbortSignal`) to Rust execution.
 
 ## Implementation files
 
-- `crates/pi-natives/src/task.rs`
-- `crates/pi-natives/src/grep.rs`
-- `crates/pi-natives/src/glob.rs`
-- `crates/pi-natives/src/fd.rs`
-- `crates/pi-natives/src/shell.rs`
-- `crates/pi-natives/src/pty.rs`
-- `crates/pi-natives/src/html.rs`
-- `crates/pi-natives/src/image.rs`
-- `crates/pi-natives/src/clipboard.rs`
-- `crates/pi-natives/src/text.rs`
-- `crates/pi-natives/src/ps.rs`
+- `crates/arcane-natives/src/task.rs`
+- `crates/arcane-natives/src/grep.rs`
+- `crates/arcane-natives/src/glob.rs`
+- `crates/arcane-natives/src/fd.rs`
+- `crates/arcane-natives/src/shell.rs`
+- `crates/arcane-natives/src/pty.rs`
+- `crates/arcane-natives/src/html.rs`
+- `crates/arcane-natives/src/image.rs`
+- `crates/arcane-natives/src/clipboard.rs`
+- `crates/arcane-natives/src/text.rs`
+- `crates/arcane-natives/src/ps.rs`
 
 ## Core primitives (`task.rs`)
 

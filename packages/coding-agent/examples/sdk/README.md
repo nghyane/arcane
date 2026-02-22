@@ -1,6 +1,6 @@
 # SDK Examples
 
-Programmatic usage of omp-coding-agent via `createAgentSession()`.
+Programmatic usage of arc-coding-agent via `createAgentSession()`.
 
 ## Examples
 
@@ -29,7 +29,7 @@ npx tsx examples/sdk/01-minimal.ts
 ## Quick Reference
 
 ```typescript
-import { getModel } from "@nghyane/pi-ai";
+import { getModel } from "@nghyane/arcane-ai";
 import {
 	AuthStorage,
 	createAgentSession,
@@ -46,7 +46,7 @@ import {
 	SessionManager,
 	BUILTIN_TOOLS,
 	createTools,
-} from "@nghyane/pi-coding-agent";
+} from "@nghyane/arcane";
 
 // Auth and models setup
 const authStorage = discoverAuthStorage();
@@ -111,7 +111,7 @@ await session.prompt("Hello");
 | `authStorage`               | `discoverAuthStorage()`       | Credential storage                |
 | `modelRegistry`             | `discoverModels(authStorage)` | Model registry                    |
 | `cwd`                       | `process.cwd()`               | Working directory                 |
-| `agentDir`                  | `~/.omp/agent`                | Config directory                  |
+| `agentDir`                  | `~/.arcane/agent`                | Config directory                  |
 | `model`                     | From settings/first available | Model to use                      |
 | `thinkingLevel`             | From settings/"off"           | off, low, medium, high            |
 | `systemPrompt`              | Discovered                    | String or `(default) => modified` |

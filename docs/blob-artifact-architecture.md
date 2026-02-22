@@ -88,7 +88,7 @@ Key behaviors:
    - only when base64 length is at least threshold (`BLOB_EXTERNALIZE_THRESHOLD = 1024`),
    - replaces inline base64 with `blob:sha256:<hash>`.
 
-This keeps session JSONL compact while preserving recoverability.
+This keeps session JSONL companeact while preserving recoverability.
 
 ## 2) Session load rehydration path
 

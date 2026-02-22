@@ -1,4 +1,4 @@
-import { $env } from "@nghyane/pi-utils";
+import { $env } from "@nghyane/arcane-utils";
 import type {
 	UsageAmount,
 	UsageCache,

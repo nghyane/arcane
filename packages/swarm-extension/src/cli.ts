@@ -7,9 +7,9 @@
 
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { discoverAuthStorage } from "@nghyane/pi-coding-agent";
-import { ModelRegistry } from "@nghyane/pi-coding-agent/config/model-registry";
-import { Settings } from "@nghyane/pi-coding-agent/config/settings";
+import { discoverAuthStorage } from "@nghyane/arcane";
+import { ModelRegistry } from "@nghyane/arcane/config/model-registry";
+import { Settings } from "@nghyane/arcane/config/settings";
 import { buildDependencyGraph, buildExecutionWaves, detectCycles } from "./swarm/dag";
 import { PipelineController } from "./swarm/pipeline";
 import { renderSwarmProgress } from "./swarm/render";
@@ -18,7 +18,7 @@ import { StateTracker } from "./swarm/state";
 
 const yamlPath = process.argv[2];
 if (!yamlPath) {
-	console.error("Usage: omp-swarm <path-to-yaml>");
+	console.error("Usage: arc-swarm <path-to-yaml>");
 	process.exit(1);
 }
 

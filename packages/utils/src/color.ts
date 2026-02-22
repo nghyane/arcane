@@ -3,7 +3,7 @@
  *
  * @example
  * ```ts
- * import { shiftHue, hexToHsv, hsvToHex } from "@nghyane/pi-utils";
+ * import { shiftHue, hexToHsv, hsvToHex } from "@nghyane/arcane-utils";
  *
  * // Shift green toward blue for colorblind accessibility
  * const blue = shiftHue("#4ade80", 90); // ~90° shift

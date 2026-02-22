@@ -2,10 +2,18 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { type ChildProcess, execSync, spawn } from "node:child_process";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { getBundledModel } from "@nghyane/pi-ai/models";
-import { complete, stream } from "@nghyane/pi-ai/stream";
-import type { Api, Context, ImageContent, Model, OptionsForApi, Tool, ToolResultMessage } from "@nghyane/pi-ai/types";
-import { StringEnum } from "@nghyane/pi-ai/utils/typebox-helpers";
+import { getBundledModel } from "@nghyane/arcane-ai/models";
+import { complete, stream } from "@nghyane/arcane-ai/stream";
+import type {
+	Api,
+	Context,
+	ImageContent,
+	Model,
+	OptionsForApi,
+	Tool,
+	ToolResultMessage,
+} from "@nghyane/arcane-ai/types";
+import { StringEnum } from "@nghyane/arcane-ai/utils/typebox-helpers";
 import { Type } from "@sinclair/typebox";
 import { e2eApiKey, resolveApiKey } from "./oauth";
 

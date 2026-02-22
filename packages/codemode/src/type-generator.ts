@@ -5,7 +5,7 @@
  * sees in the code tool's description, enabling typed orchestration.
  */
 
-import type { AgentTool } from "@nghyane/pi-agent-core";
+import type { AgentTool } from "@nghyane/arcane-agent";
 import { jsonSchemaToTypeScript } from "./schema-to-ts";
 
 const JS_RESERVED = new Set([

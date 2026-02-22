@@ -154,7 +154,7 @@
 
 ### Changed
 
-- Switched from local `@nghyane/pi-ai` to upstream `@nghyane/pi-ai` package
+- Switched from local `@nghyane/arcane-ai` to upstream `@nghyane/arcane-ai` package
 
 ### Added
 
@@ -201,11 +201,11 @@
 
 ### Changed
 
-- Forked to @oh-my-pi scope with unified versioning across all packages
+- Forked to @arcane scope with unified versioning across all packages
 
 ## [1.337.0] - 2026-01-02
 
-Initial release under @oh-my-pi scope. See previous releases at [badlogic/pi-mono](https://github.com/badlogic/pi-mono).
+Initial release under @arcane scope. See previous releases at [badlogic/arcane](https://github.com/badlogic/arcane).
 
 ## [0.31.0] - 2026-01-02
 
@@ -224,7 +224,7 @@ Initial release under @oh-my-pi scope. See previous releases at [badlogic/pi-mon
 
 - **`UserMessageWithAttachments` and `Attachment` types removed**: Attachment handling is now the responsibility of the `convertToLlm` function.
 
-- **Agent loop moved from `@nghyane/pi-ai`**: The `agentLoop`, `agentLoopContinue`, and related types have moved to this package. Import from `@nghyane/pi-agent` instead.
+- **Agent loop moved from `@nghyane/arcane-ai`**: The `agentLoop`, `agentLoopContinue`, and related types have moved to this package. Import from `@nghyane/arcane-agent` instead.
 
 ### Added
 

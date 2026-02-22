@@ -1,9 +1,9 @@
 {
 	"type": "module",
-	"name": "@nghyane/swarm-extension",
+	"name": "@nghyane/arcane-swarm",
 	"version": "12.19.0",
-	"description": "Swarm orchestration extension for omp",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"description": "Swarm orchestration extension for arcane",
+	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Derek Rynd",
 	"license": "GPL-3.0-or-later",
 	"publishConfig": {
@@ -11,11 +11,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/nghyane/arcane.git",
 		"directory": "packages/swarm-extension"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/nghyane/arcane/issues"
 	},
 	"keywords": [
 		"swarm",
@@ -24,19 +24,19 @@
 		"extension"
 	],
 	"bin": {
-		"omp-swarm": "src/cli.ts"
+		"arc-swarm": "src/cli.ts"
 	},
 	"dependencies": {},
 	"devDependencies": {
 		"@types/bun": "^1.3.9"
 	},
 	"peerDependencies": {
-		"@nghyane/pi-coding-agent": "^11"
+		"@nghyane/arcane": "workspace:*"
 	},
 	"engines": {
 		"bun": ">=1.3.7"
 	},
-	"omp": {
+	"arcane": {
 		"extensions": [
 			"./src/extension.ts"
 		]

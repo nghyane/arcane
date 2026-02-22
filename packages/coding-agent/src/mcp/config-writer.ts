@@ -1,11 +1,11 @@
 /**
  * MCP Configuration File Writer
  *
- * Utilities for reading/writing .omp/mcp.json files at user or project level.
+ * Utilities for reading/writing .arcane/mcp.json files at user or project level.
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isEnoent } from "@nghyane/pi-utils";
+import { isEnoent } from "@nghyane/arcane-utils";
 
 import { validateServerConfig } from "./config";
 import type { MCPConfigFile, MCPServerConfig } from "./types";

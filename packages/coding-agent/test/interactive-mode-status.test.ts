@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test, vi } from "bun:test";
-import { initTheme } from "@nghyane/pi-coding-agent/modes/theme/theme";
-import { UiHelpers } from "@nghyane/pi-coding-agent/modes/utils/ui-helpers";
-import { Container } from "@nghyane/pi-tui";
+import { initTheme } from "@nghyane/arcane/modes/theme/theme";
+import { UiHelpers } from "@nghyane/arcane/modes/utils/ui-helpers";
+import { Container } from "@nghyane/arcane-tui";
 
 function renderLastLine(container: Container, width = 120): string {
 	const last = container.children[container.children.length - 1];

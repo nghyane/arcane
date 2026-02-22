@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { logger, Snowflake } from "@nghyane/pi-utils";
+import { logger, Snowflake } from "@nghyane/arcane-utils";
 import { settings } from "../config/settings";
 import { ensureSTTDependencies } from "./downloader";
 import { type RecordingHandle, startRecording, verifyRecordingFile } from "./recorder";
@@ -75,7 +75,7 @@ export class STTController {
 			}
 		}
 		const id = Snowflake.next();
-		this.#tempFile = path.join(os.tmpdir(), `omp-stt-${id}.wav`);
+		this.#tempFile = path.join(os.tmpdir(), `arc-stt-${id}.wav`);
 
 		try {
 			this.#recordingHandle = await startRecording(this.#tempFile);

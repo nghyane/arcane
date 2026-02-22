@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { CombinedAutocompleteProvider } from "@nghyane/pi-tui/autocomplete";
+import { CombinedAutocompleteProvider } from "@nghyane/arcane-tui/autocomplete";
 
 describe("CombinedAutocompleteProvider", () => {
 	describe("extractPathPrefix", () => {

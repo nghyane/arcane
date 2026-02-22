@@ -1,4 +1,4 @@
-import { sanitizeText } from "@nghyane/pi-natives";
+import { sanitizeText } from "@nghyane/arcane-natives";
 import { replaceTabs, truncateToWidth } from "../tools/render-utils";
 
 export function formatDebugLogLine(line: string, maxWidth: number): string {

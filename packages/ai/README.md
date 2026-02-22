@@ -1,4 +1,4 @@
-# @nghyane/pi-ai
+# @nghyane/arcane-ai
 
 Unified LLM API with automatic model discovery, provider configuration, token and cost tracking, and simple context persistence and hand-off to other models mid-session.
 
@@ -79,13 +79,13 @@ Unified LLM API with automatic model discovery, provider configuration, token an
 ## Installation
 
 ```bash
-npm install @nghyane/pi-ai
+npm install @nghyane/arcane-ai
 ```
 
 ## Quick Start
 
 ```typescript
-import { Type, getModel, stream, complete, Context, Tool, StringEnum } from "@nghyane/pi-ai";
+import { Type, getModel, stream, complete, Context, Tool, StringEnum } from "@nghyane/arcane-ai";
 
 // Fully typed with auto-complete support for both providers and models
 const model = getModel("openai", "gpt-4o-mini");
@@ -214,7 +214,7 @@ Tools enable LLMs to interact with external systems. This library uses TypeBox s
 ### Defining Tools
 
 ```typescript
-import { Type, Tool, StringEnum } from "@nghyane/pi-ai";
+import { Type, Tool, StringEnum } from "@nghyane/arcane-ai";
 
 // Define tool parameters with TypeBox
 const weatherTool: Tool = {
@@ -341,7 +341,7 @@ When using `agentLoop`, tool arguments are automatically validated against your 
 When implementing your own tool execution loop with `stream()` or `complete()`, use `validateToolCall` to validate arguments before passing them to your tools:
 
 ```typescript
-import { stream, validateToolCall, Tool } from "@nghyane/pi-ai";
+import { stream, validateToolCall, Tool } from "@nghyane/arcane-ai";
 
 const tools: Tool[] = [weatherTool, calculatorTool];
 const s = stream(model, { messages, tools });
@@ -395,7 +395,7 @@ Models with vision capabilities can process images. You can check if a model sup
 
 ```typescript
 import * as fs from "node:fs";
-import { getModel, complete } from "@nghyane/pi-ai";
+import { getModel, complete } from "@nghyane/arcane-ai";
 
 const model = getModel("openai", "gpt-4o-mini");
 
@@ -434,7 +434,7 @@ Many models support thinking/reasoning capabilities where they can show their in
 ### Unified Interface (streamSimple/completeSimple)
 
 ```typescript
-import { getModel, streamSimple, completeSimple } from "@nghyane/pi-ai";
+import { getModel, streamSimple, completeSimple } from "@nghyane/arcane-ai";
 
 // Many models across providers support thinking/reasoning
 const model = getModel("anthropic", "claude-sonnet-4-20250514");
@@ -476,7 +476,7 @@ for (const block of response.content) {
 For fine-grained control, use the provider-specific options:
 
 ```typescript
-import { getModel, complete } from "@nghyane/pi-ai";
+import { getModel, complete } from "@nghyane/arcane-ai";
 
 // OpenAI Reasoning (o1, o3, gpt-5)
 const openaiModel = getModel("openai", "gpt-5-mini");
@@ -563,7 +563,7 @@ if (message.stopReason === "error" || message.stopReason === "aborted") {
 The abort signal allows you to cancel in-progress requests. Aborted requests have `stopReason === 'aborted'`:
 
 ```typescript
-import { getModel, stream } from "@nghyane/pi-ai";
+import { getModel, stream } from "@nghyane/arcane-ai";
 
 const model = getModel("openai", "gpt-4o-mini");
 
@@ -664,7 +664,7 @@ A **provider** offers models through a specific API. For example:
 ### Querying Providers and Models
 
 ```typescript
-import { getProviders, getModels, getModel } from "@nghyane/pi-ai";
+import { getProviders, getModels, getModel } from "@nghyane/arcane-ai";
 
 // Get all available providers
 const providers = getProviders();
@@ -691,7 +691,7 @@ You can create custom models for local inference servers or custom endpoints:
 For Ollama, `OLLAMA_API_KEY` is optional and mainly needed for authenticated/self-hosted gateways.
 
 ```typescript
-import { Model, stream } from "@nghyane/pi-ai";
+import { Model, stream } from "@nghyane/arcane-ai";
 
 // Example: Ollama using OpenAI-compatible API
 const ollamaModel: Model<"openai-completions"> = {
@@ -799,7 +799,7 @@ When messages from one provider are sent to a different provider, the library au
 ### Example: Multi-Provider Conversation
 
 ```typescript
-import { getModel, complete, Context } from "@nghyane/pi-ai";
+import { getModel, complete, Context } from "@nghyane/arcane-ai";
 
 // Start with Claude
 const claude = getModel("anthropic", "claude-sonnet-4-20250514");
@@ -846,7 +846,7 @@ This enables flexible workflows where you can:
 The `Context` object can be easily serialized and deserialized using standard JSON methods, making it simple to persist conversations, implement chat history, or transfer contexts between services:
 
 ```typescript
-import { Context, getModel, complete } from "@nghyane/pi-ai";
+import { Context, getModel, complete } from "@nghyane/arcane-ai";
 
 // Create and use a context
 const context: Context = {
@@ -881,7 +881,7 @@ const continuation = await complete(newModel, restored);
 The library supports browser environments. You must pass the API key explicitly since environment variables are not available in browsers:
 
 ```typescript
-import { getModel, complete } from "@nghyane/pi-ai";
+import { getModel, complete } from "@nghyane/arcane-ai";
 
 // API key must be passed explicitly in browser
 const model = getModel("anthropic", "claude-haiku-4-5-20251001");
@@ -966,7 +966,7 @@ const response = await complete(model, context, {
 ### Checking Environment Variables
 
 ```typescript
-import { getEnvApiKey } from "@nghyane/pi-ai";
+import { getEnvApiKey } from "@nghyane/arcane-ai";
 
 // Check if an API key is set in environment variables
 const key = getEnvApiKey("openai"); // checks OPENAI_API_KEY
@@ -1007,7 +1007,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
 ```
 
 ```typescript
-import { getModel, complete } from "@nghyane/pi-ai";
+import { getModel, complete } from "@nghyane/arcane-ai";
 
 (async () => {
 	const model = getModel("google-vertex", "gemini-2.5-flash");
@@ -1028,10 +1028,10 @@ Official docs: [Application Default Credentials](https://cloud.google.com/docs/a
 The quickest way to authenticate:
 
 ```bash
-bunx @nghyane/pi-ai login              # interactive provider selection
-bunx @nghyane/pi-ai login anthropic    # login to specific provider
-bunx @nghyane/pi-ai login vllm         # store vLLM API key (or placeholder for local no-auth)
-bunx @nghyane/pi-ai list               # list available providers
+bunx @nghyane/arcane-ai login              # interactive provider selection
+bunx @nghyane/arcane-ai login anthropic    # login to specific provider
+bunx @nghyane/arcane-ai login vllm         # store vLLM API key (or placeholder for local no-auth)
+bunx @nghyane/arcane-ai list               # list available providers
 ```
 
 Credentials are saved to `agent.db` in the agent directory. `/login qianfan` opens the Qianfan console and stores the pasted API key.
@@ -1072,7 +1072,7 @@ import {
 	// Types
 	type OAuthProvider, // includes 'anthropic', 'openai-codex', 'github-copilot', 'google-gemini-cli', 'google-antigravity', 'together', 'moonshot', 'qianfan', 'nvidia', 'nanogpt', 'huggingface', 'venice', 'xiaomi', 'vllm', 'litellm', 'cloudflare-ai-gateway', 'qwen-portal', ...
 	type OAuthCredentials,
-} from "@nghyane/pi-ai";
+} from "@nghyane/arcane-ai";
 ```
 
 `loginOpenAICodex` accepts an optional `originator` value used in the OAuth flow:
@@ -1087,7 +1087,7 @@ await loginOpenAICodex({
 ### Login Flow Example
 
 ```typescript
-import { loginGitHubCopilot } from "@nghyane/pi-ai";
+import { loginGitHubCopilot } from "@nghyane/arcane-ai";
 import * as fs from "node:fs";
 
 const credentials = await loginGitHubCopilot({
@@ -1111,7 +1111,7 @@ fs.writeFileSync("credentials.json", JSON.stringify(auth, null, 2));
 Use `getOAuthApiKey()` to get an API key, automatically refreshing if expired:
 
 ```typescript
-import { getModel, complete, getOAuthApiKey } from "@nghyane/pi-ai";
+import { getModel, complete, getOAuthApiKey } from "@nghyane/arcane-ai";
 import * as fs from "node:fs";
 
 // Load your stored credentials

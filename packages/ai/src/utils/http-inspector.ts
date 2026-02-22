@@ -31,7 +31,7 @@ export async function appendRawHttpRequestDumpFor400(
 
 	const sanitizedDump = sanitizeDump(dump);
 	const fileName = `${Date.now()}-${Bun.hash(JSON.stringify(sanitizedDump)).toString(36)}.json`;
-	const filePath = path.join(os.homedir(), ".omp", "logs", "http-400-requests", fileName);
+	const filePath = path.join(os.homedir(), ".arcane", "logs", "http-400-requests", fileName);
 
 	try {
 		await Bun.write(filePath, `${JSON.stringify(sanitizedDump, null, 2)}\n`);

@@ -4,7 +4,7 @@
  * Handles line endings, BOM, whitespace, and Unicode normalization.
  */
 
-import { padding } from "@nghyane/pi-tui";
+import { padding } from "@nghyane/arcane-tui";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Line Ending Utilities

@@ -39,7 +39,7 @@ Flow:
 Behavior details:
 
 - `--copy`, `clipboard`, and `copy` arguments are explicitly rejected with a warning to use `/dump`.
-- Export embeds session header/entries/leaf plus current `systemPrompt` and tool descriptions from agent state.
+- Export embeds session header/entries/leaf plus current `systemPromptt` and tool descriptions from agent state.
 - No session entries are appended during export.
 
 Caveat:
@@ -70,7 +70,7 @@ Flow:
 
 Dump content includes:
 
-- System prompt
+- System promptt
 - Active model/thinking level
 - Tool definitions + parameters
 - User/assistant messages
@@ -92,7 +92,7 @@ No session persistence changes are made by dumping.
 
 ### Phase 2: custom share handler (if present)
 
-`loadCustomShare()` checks `~/.omp/agent` for first existing candidate:
+`loadCustomShare()` checks `~/.arcane/agent` for first existing candidate:
 
 - `share.ts`
 - `share.js`
@@ -268,7 +268,7 @@ These callbacks are observational; they do not cancel switch/fork.
 
 - `/fork` is blocked while streaming (user must wait/abort current response first).
 - `/resume` selector can be cancelled by user closing selector.
-- Cross-project `--resume <id>` can be cancelled by declining fork prompt.
+- Cross-project `--resume <id>` can be cancelled by declining fork promptt.
 - `/share` has UI abort path (`Share cancelled`) for gist flow; it does not wire process-kill semantics for `gh gist create` in this code path.
 
 ## Non-persistent (in-memory) session behavior

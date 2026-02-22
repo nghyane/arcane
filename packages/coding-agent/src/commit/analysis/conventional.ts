@@ -1,5 +1,5 @@
-import type { Api, AssistantMessage, Model, ToolCall } from "@nghyane/pi-ai";
-import { completeSimple, validateToolCall } from "@nghyane/pi-ai";
+import type { Api, AssistantMessage, Model, ToolCall } from "@nghyane/arcane-ai";
+import { completeSimple, validateToolCall } from "@nghyane/arcane-ai";
 import { Type } from "@sinclair/typebox";
 import analysisSystemPrompt from "../../commit/prompts/analysis-system.md" with { type: "text" };
 import analysisUserPrompt from "../../commit/prompts/analysis-user.md" with { type: "text" };

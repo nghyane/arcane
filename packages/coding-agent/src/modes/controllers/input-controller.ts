@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
-import type { AgentMessage } from "@nghyane/pi-agent-core";
-import { copyToClipboard, readImageFromClipboard, sanitizeText } from "@nghyane/pi-natives";
-import { $env } from "@nghyane/pi-utils";
+import type { AgentMessage } from "@nghyane/arcane-agent";
+import { copyToClipboard, readImageFromClipboard, sanitizeText } from "@nghyane/arcane-natives";
+import { $env } from "@nghyane/arcane-utils";
 import { settings } from "../../config/settings";
 import { theme } from "../../modes/theme/theme";
 import type { InteractiveModeContext } from "../../modes/types";
@@ -629,7 +629,7 @@ export class InputController {
 				? [ttyHandle.fd, ttyHandle.fd, ttyHandle.fd]
 				: ["inherit", "inherit", "inherit"];
 
-			const result = await openInEditor(editorCmd, currentText, { extension: ".omp.md", stdio });
+			const result = await openInEditor(editorCmd, currentText, { extension: ".arcane.md", stdio });
 			if (result !== null) {
 				this.ctx.editor.setText(result);
 			}

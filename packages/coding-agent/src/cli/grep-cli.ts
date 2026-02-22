@@ -1,11 +1,11 @@
 /**
  * Grep CLI command handlers.
  *
- * Handles `omp grep` subcommand for testing grep tool on Windows.
+ * Handles \`arc grep` subcommand for testing grep tool on Windows.
  */
 import * as path from "node:path";
-import { grep } from "@nghyane/pi-natives";
-import { APP_NAME } from "@nghyane/pi-utils/dirs";
+import { grep } from "@nghyane/arcane-natives";
+import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 
 export interface GrepCommandArgs {

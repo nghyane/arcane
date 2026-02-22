@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { getAgentDir } from "@nghyane/pi-utils/dirs";
+import { getAgentDir } from "@nghyane/arcane-utils/dirs";
 
 export function filterUserExtensions<T extends { path: string }>(extensions: T[]): T[] {
 	const userExtensionsDir = path.join(getAgentDir(), "extensions");

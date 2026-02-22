@@ -6,7 +6,7 @@
  * - Waves execute sequentially (wave N+1 starts after wave N completes)
  * - For pipeline mode, iterations repeat the full DAG execution
  */
-import type { AgentSource, AuthStorage, ModelRegistry, Settings, SingleResult } from "@nghyane/pi-coding-agent";
+import type { AgentSource, AuthStorage, ModelRegistry, Settings, SingleResult } from "@nghyane/arcane";
 import { executeSwarmAgent } from "./executor";
 import type { SwarmDefinition } from "./schema";
 import type { StateTracker } from "./state";

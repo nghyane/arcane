@@ -28,7 +28,7 @@ Does not cover `/tree` UI rendering behavior beyond semantics that affect sessio
 Default session file location:
 
 ```text
-~/.omp/agent/sessions/--<cwd-encoded>--/<timestamp>_<sessionId>.jsonl
+~/.arcane/agent/sessions/--<cwd-encoded>--/<timestamp>_<sessionId>.jsonl
 ```
 
 `<cwd-encoded>` is derived from the working directory by stripping leading slash and replacing `/`, `\\`, and `:` with `-`.
@@ -36,13 +36,13 @@ Default session file location:
 Blob store location:
 
 ```text
-~/.omp/agent/blobs/<sha256>
+~/.arcane/agent/blobs/<sha256>
 ```
 
 Terminal breadcrumb files are written under:
 
 ```text
-~/.omp/agent/terminal-sessions/<terminal-id>
+~/.arcane/agent/terminal-sessions/<terminal-id>
 ```
 
 Breadcrumb content is two lines: original cwd, then session file path. `continueRecent()` prefers this terminal-scoped pointer before scanning most-recent mtime.
@@ -255,7 +255,7 @@ Extension-provided message that does participate in LLM context.
   "id": "d2e3f4a5",
   "parentId": "c2d3e4f5",
   "timestamp": "2026-02-16T10:29:00.000Z",
-  "systemPrompt": "...",
+  "systemPromptt": "...",
   "task": "...",
   "tools": ["read", "edit"],
   "outputSchema": { "type": "object" }
@@ -301,7 +301,7 @@ Applied when header `version < 3`:
 - If any migration ran, the entire file is rewritten to disk immediately.
 - Migration mutates in-memory entries first, then persists rewritten JSONL.
 
-## Load and Compatibility Behavior
+## Load and Carcaneatibility Behavior
 
 `loadEntriesFromFile(path)` behavior:
 
@@ -348,7 +348,7 @@ Algorithm:
    - `custom_message` entries become `custom` AgentMessages via `createCustomMessage`
    - `branch_summary` entries become `branchSummary` AgentMessages via `createBranchSummaryMessage`
    - if a `compaction` exists on path:
-     - emit compaction summary first (`createCompactionSummaryMessage`)
+     - emit compaction summary first (`createCarcaneactionSummaryMessage`)
      - emit path entries starting at `firstKeptEntryId` up to the compaction boundary
      - emit entries after the compaction boundary
 
@@ -420,18 +420,18 @@ Defined in `session-manager.ts`:
 - `getRecentSessions(sessionDir, limit)` -> lightweight metadata for UI/session picker
 - `findMostRecentSession(sessionDir)` -> newest by mtime
 - `list(cwd, sessionDir?)` -> sessions in one project scope
-- `listAll()` -> sessions across all project scopes under `~/.omp/agent/sessions`
+- `listAll()` -> sessions across all project scopes under `~/.arcane/agent/sessions`
 
 Metadata extraction reads only a prefix (`readTextPrefix(..., 4096)`) where possible.
 
-## Related but Distinct: Prompt History Storage
+## Related but Distinct: Promptt History Storage
 
-`HistoryStorage` (`history-storage.ts`) is a separate SQLite subsystem for prompt recall/search, not session replay.
+`HistoryStorage` (`history-storage.ts`) is a separate SQLite subsystem for promptt recall/search, not session replay.
 
-- DB: `~/.omp/agent/history.db`
-- Table: `history(id, prompt, created_at, cwd)`
+- DB: `~/.arcane/agent/history.db`
+- Table: `history(id, promptt, created_at, cwd)`
 - FTS5 index: `history_fts` with trigger-maintained sync
-- Deduplicates consecutive identical prompts using in-memory last-prompt cache
-- Async insertion (`setImmediate`) so prompt capture does not block turn execution
+- Deduplicates consecutive identical promptts using in-memory last-promptt cache
+- Async insertion (`setImmediate`) so promptt capture does not block turn execution
 
-Use session files for conversation graph/state replay; use `HistoryStorage` for prompt history UX.
+Use session files for conversation graph/state replay; use `HistoryStorage` for promptt history UX.

@@ -3,7 +3,7 @@
  *
  * Uses brush-core via native bindings for shell execution.
  */
-import { Shell } from "@nghyane/pi-natives";
+import { Shell } from "@nghyane/arcane-natives";
 import { Settings } from "../config/settings";
 import { OutputSink } from "../session/streaming-output";
 import { getOrCreateSnapshot } from "../utils/shell-snapshot";

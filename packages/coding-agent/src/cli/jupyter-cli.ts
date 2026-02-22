@@ -1,10 +1,10 @@
 /**
  * Jupyter CLI command handlers.
  *
- * Handles `omp jupyter` subcommand for managing the shared Python gateway.
+ * Handles \`arc jupyter` subcommand for managing the shared Python gateway.
  */
 
-import { APP_NAME } from "@nghyane/pi-utils/dirs";
+import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { getGatewayStatus, shutdownSharedGateway } from "../ipy/gateway-coordinator";
 

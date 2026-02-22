@@ -10,13 +10,13 @@ Primary implementation files:
 - `src/config/model-resolver.ts` — parses model patterns and selects initial/smol/slow models
 - `src/config/settings-schema.ts` — model-related settings (`modelRoles`, provider transport preferences)
 - `src/session/auth-storage.ts` — API key + OAuth resolution order
-- `packages/ai/src/models.ts` and `packages/ai/src/types.ts` — built-in providers/models and `Model`/`compat` types
+- `packages/ai/src/models.ts` and `packages/ai/src/types.ts` — built-in providers/models and `Model`/`companeat` types
 
 ## Config file location and legacy behavior
 
 Default config path:
 
-- `~/.omp/agent/models.yml`
+- `~/.arcane/agent/models.yml`
 
 Legacy behavior still present:
 
@@ -65,7 +65,7 @@ providers:
         maxTokens: 16384
         headers:
           X-Model: value
-        compat:
+        companeat:
           supportsStore: true
           supportsDeveloperRole: true
           supportsReasoningEffort: true
@@ -122,7 +122,7 @@ Must define at least one of:
 
 ModelRegistry pipeline (on refresh):
 
-1. Load built-in providers/models from `@nghyane/pi-ai`.
+1. Load built-in providers/models from `@nghyane/arcane-ai`.
 2. Load `models.yml` custom config.
 3. Apply provider overrides (`baseUrl`, `headers`) to built-in models.
 4. Apply `modelOverrides` (per provider + model id).
@@ -135,8 +135,8 @@ Provider defaults vs per-model overrides:
 
 - Provider `headers` are baseline.
 - Model `headers` override provider header keys.
-- `modelOverrides` can override model metadata (`name`, `reasoning`, `input`, `cost`, `contextWindow`, `maxTokens`, `headers`, `compat`, `contextPromotionTarget`).
-- `compat` is deep-merged for nested routing blocks (`openRouterRouting`, `vercelGatewayRouting`).
+- `modelOverrides` can override model metadata (`name`, `reasoning`, `input`, `cost`, `contextWindow`, `maxTokens`, `headers`, `companeat`, `contextPromotionTarget`).
+- `companeat` is deep-merged for nested routing blocks (`openRouterRouting`, `vercelGatewayRouting`).
 
 ## Runtime discovery integration
 
@@ -296,9 +296,9 @@ providers:
 
 The built-in model generator also assigns this automatically for `*-spark` models when a same-provider base model exists.
 
-## Compatibility and routing fields
+## Carcaneatibility and routing fields
 
-`models.yml` supports this `compat` subset:
+`models.yml` supports this `companeat` subset:
 
 - `supportsStore`
 - `supportsDeveloperRole`
@@ -351,7 +351,7 @@ providers:
     modelOverrides:
       anthropic/claude-sonnet-4:
         name: Sonnet 4 (Corp)
-        compat:
+        companeat:
           openRouterRouting:
             only: [anthropic]
 ```
@@ -360,7 +360,7 @@ providers:
 
 Most model configuration now flows through `models.yml` via `ModelRegistry`.
 
-One notable legacy path remains: web-search Anthropic auth resolution still reads `~/.omp/agent/models.json` directly in `src/web/search/auth.ts`.
+One notable legacy path remains: web-search Anthropic auth resolution still reads `~/.arcane/agent/models.json` directly in `src/web/search/auth.ts`.
 
 If you rely on that specific path, keep JSON compatibility in mind until that module is migrated.
 

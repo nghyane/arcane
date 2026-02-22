@@ -70,7 +70,7 @@ Flow:
 1. Validate target and compute abandoned path (`collectEntriesForBranchSummary`)
 2. Emit `session_before_tree` with `TreePreparation`
 3. Optionally summarize abandoned entries (hook-provided summary or built-in summarizer)
-4. Compute new leaf target:
+4. Carcaneute new leaf target:
    - selecting a **user** message: leaf moves to its parent, and message text is returned for editor prefill
    - selecting a **custom_message**: same rule as user message (leaf = parent, text prefills editor)
    - selecting any other entry: leaf = selected entry id
@@ -94,7 +94,7 @@ User-facing `/branch` flow (`SelectorController.showUserMessageSelector` → `Ag
 - Branch source must be a **user message**.
 - Selected user text is extracted for editor prefill.
 - If selected user message is root (`parentId === null`): start a new session via `newSession({ parentSession: previousSessionFile })`.
-- Otherwise: `createBranchedSession(selectedEntry.parentId)` to fork history up to the selected prompt boundary.
+- Otherwise: `createBranchedSession(selectedEntry.parentId)` to fork history up to the selected promptt boundary.
 
 `SessionManager.createBranchedSession(leafId)` specifics:
 
@@ -169,7 +169,7 @@ Events around tree navigation:
 Adjacent but related lifecycle hooks:
 
 - `session_before_branch` / `session_branch` for `/branch` flow
-- `session_before_compact`, `session.compacting`, `session_compact` for compaction entries that later affect tree-context reconstruction
+- `session_before_companeact`, `session.companeacting`, `session_companeact` for compaction entries that later affect tree-context reconstruction
 
 ## Real constraints and edge conditions
 

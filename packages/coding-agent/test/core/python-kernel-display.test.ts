@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { renderKernelDisplay } from "@nghyane/pi-coding-agent/ipy/kernel";
+import { renderKernelDisplay } from "@nghyane/arcane/ipy/kernel";
 
 describe("PythonKernel display rendering", () => {
 	it("normalizes text/plain output and returns no display outputs", () => {

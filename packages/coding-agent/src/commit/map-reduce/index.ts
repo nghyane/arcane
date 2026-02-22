@@ -1,5 +1,5 @@
-import type { Api, Model } from "@nghyane/pi-ai";
-import { $env } from "@nghyane/pi-utils";
+import type { Api, Model } from "@nghyane/arcane-ai";
+import { $env } from "@nghyane/arcane-utils";
 import { parseFileDiffs } from "../../commit/git/diff";
 import type { ConventionalAnalysis } from "../../commit/types";
 import { isExcludedFile } from "../../commit/utils/exclusions";

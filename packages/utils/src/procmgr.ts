@@ -128,7 +128,7 @@ export function getShellConfig(customShellPath?: string): ShellConfig {
 			return cachedShellConfig;
 		}
 		throw new Error(
-			`Custom shell path not found: ${customShellPath}\nPlease update shellPath in ~/.omp/agent/settings.json`,
+			`Custom shell path not found: ${customShellPath}\nPlease update shellPath in ~/.arcane/agent/settings.json`,
 		);
 	}
 
@@ -162,7 +162,7 @@ export function getShellConfig(customShellPath?: string): ShellConfig {
 			`No bash shell found. Options:\n` +
 				`  1. Install Git for Windows: https://git-scm.com/download/win\n` +
 				`  2. Add your bash to PATH (Cygwin, MSYS2, etc.)\n` +
-				`  3. Set shellPath in ~/.omp/agent/settings.json\n\n` +
+				`  3. Set shellPath in ~/.arcane/agent/settings.json\n\n` +
 				`Searched Git Bash in:\n${paths.map(p => `  ${p}`).join("\n")}`,
 		);
 	}
@@ -192,13 +192,13 @@ export function getShellConfig(customShellPath?: string): ShellConfig {
 export type KillTreeFn = (pid: number, signal: number) => number;
 
 /**
- * Global native kill tree function, injected by pi-natives when loaded.
+ * Global native kill tree function, injected by arcane-natives when loaded.
  * Falls back to platform-specific behavior if not set.
  */
 export let nativeKillTree: KillTreeFn | undefined;
 
 /**
- * Set the native kill tree function. Called by pi-natives on load.
+ * Set the native kill tree function. Called by arcane-natives on load.
  */
 export function setNativeKillTree(fn: KillTreeFn): void {
 	nativeKillTree = fn;

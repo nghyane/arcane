@@ -30,14 +30,14 @@ Extension loading builds a list of module entry files, imports each module with 
 
 Effective native locations:
 
-- Project: `<cwd>/.omp/extensions`
-- User: `~/.omp/agent/extensions`
+- Project: `<cwd>/.arcane/extensions`
+- User: `~/.arcane/agent/extensions`
 
 Path roots come from the native provider (`SOURCE_PATHS.native`).
 
 Notes:
 
-- Native auto-discovery is currently `.omp` based.
+- Native auto-discovery is currently `.arcane` based.
 - Legacy `.pi` is still accepted in `package.json` manifest keys (`pi.extensions`), but not as a native root here.
 
 ### 2) Explicitly configured paths
@@ -51,16 +51,16 @@ Configured path sources in the main session startup path (`sdk.ts`):
 
 Global settings file:
 
-- `~/.omp/agent/config.yml` (or custom agent dir via `PI_CODING_AGENT_DIR`)
+- `~/.arcane/agent/config.yml` (or custom agent dir via `PI_CODING_AGENT_DIR`)
 
 Project settings file:
 
-- `<cwd>/.omp/settings.json`
+- `<cwd>/.arcane/settings.json`
 
 Examples:
 
 ```yaml
-# ~/.omp/agent/config.yml
+# ~/.arcane/agent/config.yml
 extensions:
   - ~/my-exts/safety.ts
   - ./local/ext-pack
@@ -68,7 +68,7 @@ extensions:
 
 ```json
 {
-  "extensions": ["./.omp/extensions/my-extra"]
+  "extensions": ["./.arcane/extensions/my-extra"]
 }
 ```
 
@@ -124,13 +124,13 @@ It is used directly as a module entry candidate.
 
 Resolution order:
 
-1. `package.json` in that directory with `omp.extensions` (or legacy `pi.extensions`) -> use declared entries
+1. `package.json` in that directory with `arcane.extensions` (or legacy `pi.extensions`) -> use declared entries
 2. `index.ts`
 3. `index.js`
 4. Otherwise scan one level for extension entries:
    - direct `*.ts` / `*.js`
    - subdir `index.ts` / `index.js`
-   - subdir `package.json` with `omp.extensions` / `pi.extensions`
+   - subdir `package.json` with `arcane.extensions` / `pi.extensions`
 
 Rules and constraints:
 
@@ -212,7 +212,7 @@ When events run through `ExtensionRunner`, handler exceptions are caught and emi
 ### User-level
 
 ```text
-~/.omp/agent/
+~/.arcane/agent/
   config.yml
   extensions/
     guardrails.ts
@@ -224,7 +224,7 @@ When events run through `ExtensionRunner`, handler exceptions are caught and emi
 
 ```text
 <repo>/
-  .omp/
+  .arcane/
     settings.json
     extensions/
       checks/
@@ -236,7 +236,7 @@ When events run through `ExtensionRunner`, handler exceptions are caught and emi
 
 ```json
 {
-  "omp": {
+  "arcane": {
     "extensions": ["./src/check-a.ts", "./src/check-b.js"]
   }
 }
@@ -246,7 +246,7 @@ Legacy manifest key still accepted:
 
 ```json
 {
-  "pi": {
+  "arcane": {
     "extensions": ["./index.ts"]
   }
 }

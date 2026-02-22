@@ -1,10 +1,10 @@
-# @nghyane/omp-stats
+# @nghyane/arcane-stats
 
 Local observability dashboard for AI usage statistics.
 
 ## Features
 
-- **Session log parsing**: Reads JSONL session logs from `~/.omp/agent/sessions/`
+- **Session log parsing**: Reads JSONL session logs from `~/.arcane/agent/sessions/`
 - **SQLite aggregation**: Efficient stats storage and querying using `bun:sqlite`
 - **Web dashboard**: Real-time metrics visualization with Chart.js
 - **Incremental sync**: Only processes new/modified log entries
@@ -26,22 +26,22 @@ Local observability dashboard for AI usage statistics.
 
 ```bash
 # Start dashboard server (default: http://localhost:3847)
-omp stats
+arc stats
 
 # Custom port
-omp stats --port 8080
+arc stats --port 8080
 
 # Print summary to console
-omp stats --summary
+arc stats --summary
 
 # Output as JSON (for scripting)
-omp stats --json
+arc stats --json
 ```
 
 ### Programmatic
 
 ```typescript
-import { getDashboardStats, syncAllSessions } from "@nghyane/omp-stats";
+import { getDashboardStats, syncAllSessions } from "@nghyane/arcane-stats";
 
 // Sync session logs to database
 const { processed, files } = await syncAllSessions();
@@ -64,8 +64,8 @@ console.log(stats.byModel[0].avgTokensPerSecond);
 
 ## Data Storage
 
-- **Session logs**: `~/.omp/agent/sessions/` (JSONL files)
-- **Stats database**: `~/.omp/stats.db` (SQLite)
+- **Session logs**: `~/.arcane/agent/sessions/` (JSONL files)
+- **Stats database**: `~/.arcane/stats.db` (SQLite)
 
 ## Dashboard
 
