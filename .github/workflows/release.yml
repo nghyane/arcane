@@ -23,9 +23,6 @@ jobs:
     if: ${{ !inputs.skip_npm }}
     needs: [native]
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -48,6 +45,8 @@ jobs:
           path: packages/natives/native
           merge-multiple: true
       - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           FAILED=0
           for pkg in packages/*/; do
@@ -58,7 +57,7 @@ jobs:
             PKG_VERSION=$(jq -r .version "$pkg/package.json")
             echo "Publishing $PKG_NAME@$PKG_VERSION..."
             TARBALL=$(cd "$pkg" && bun pack 2>/dev/null | tail -1)
-            (cd "$pkg" && npm publish "$TARBALL" --access public --provenance --tolerate-republish) || FAILED=1
+            (cd "$pkg" && npm publish "$TARBALL" --access public --tolerate-republish) || FAILED=1
           done
           if [ "$FAILED" -eq 1 ]; then exit 1; fi
 
