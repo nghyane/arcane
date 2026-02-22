@@ -39,7 +39,7 @@ bun --cwd=packages/coding-agent run build:binary
 
 BINARY_DIR="$WORK_DIR/binary-bin"
 mkdir -p "$BINARY_DIR"
-cp packages/coding-agent/dist/arc "/arc"
+cp packages/coding-agent/dist/arc "$BINARY_DIR/arc"
 shopt -s nullglob
 native_addons=(packages/natives/native/arcane_natives.*.node)
 shopt -u nullglob
@@ -49,7 +49,7 @@ if [ "${#native_addons[@]}" -eq 0 ]; then
 fi
 cp "${native_addons[@]}" "$BINARY_DIR/"
 
-smoke_cli "/arc"
+smoke_cli "$BINARY_DIR/arc"
 
 section "Source install smoke"
 SOURCE_BUN_HOME="$WORK_DIR/bun-source"
