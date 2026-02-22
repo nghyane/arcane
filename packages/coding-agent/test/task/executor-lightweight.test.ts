@@ -122,7 +122,7 @@ describe("runAgent lightweight fork", () => {
 		expect(result.exitCode).toBe(0);
 	});
 
-	it("creates child session with lightweight startup enabled", async () => {
+	it("passes skipPythonPreflight when python not in agent tools", async () => {
 		const session = createMockSession(({ emit, state }) => {
 			const assistant = createAssistantStopMessage("ok");
 			state.messages.push(assistant);
@@ -139,9 +139,11 @@ describe("runAgent lightweight fork", () => {
 			setToolUIContext: () => {},
 		});
 
-		await runAgent({ ...baseOptions, id: "subagent-lightweight" });
-		const firstCall = createAgentSessionMock.mock.calls[0]?.[0] as { lightweightStartup?: boolean };
-		expect(firstCall?.lightweightStartup).toBe(true);
+		const agentWithTools = { ...baseAgent, tools: ["bash", "read", "write"] };
+		await runAgent({ ...baseOptions, agent: agentWithTools, id: "subagent-no-python" });
+		const calls = createAgentSessionMock.mock.calls;
+		const lastCall = calls[calls.length - 1]?.[0] as { skipPythonPreflight?: boolean };
+		expect(lastCall?.skipPythonPreflight).toBe(true);
 	});
 
 	it("marks execution failed when assistant ends with stopReason=error", async () => {

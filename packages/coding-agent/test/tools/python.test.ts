@@ -38,6 +38,7 @@ function createSettings(toolMode: "ipy-only" | "bash-only" | "both"): Settings {
 		"lsp.formatOnWrite": true,
 		"bashInterceptor.enabled": true,
 		"python.toolMode": toolMode,
+		"codemode.enabled": false,
 	});
 }
 
