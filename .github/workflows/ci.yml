@@ -91,8 +91,8 @@ jobs:
       - name: Upload native addon(s)
         uses: actions/upload-artifact@v4
         with:
-          name: pi-natives-${{ matrix.platform }}-${{ matrix.arch }}
-          path: packages/natives/native/pi_natives.${{ matrix.platform }}-${{ matrix.arch }}*.node
+          name: arcane-natives-${{ matrix.platform }}-${{ matrix.arch }}
+          path: packages/natives/native/arcane_natives.${{ matrix.platform }}-${{ matrix.arch }}*.node
           if-no-files-found: error
 
   test:
@@ -181,7 +181,7 @@ jobs:
       - name: Download native addons
         uses: actions/download-artifact@v4
         with:
-          pattern: pi-natives-*
+          pattern: arcane-natives-*
           path: packages/natives/native
           merge-multiple: true
       - name: Verify native addons
@@ -191,10 +191,10 @@ jobs:
           echo ""
           echo "Expected addons: linux-x64-modern, linux-x64-baseline, linux-arm64, darwin-x64-modern, darwin-x64-baseline, darwin-arm64, win32-x64-modern, win32-x64-baseline"
           for plat in linux-x64-modern linux-x64-baseline linux-arm64 darwin-x64-modern darwin-x64-baseline darwin-arm64 win32-x64-modern win32-x64-baseline; do
-            if [ -f "packages/natives/native/pi_natives.${plat}.node" ]; then
-              echo "✓ pi_natives.${plat}.node"
+            if [ -f "packages/natives/native/arcane_natives.${plat}.node" ]; then
+              echo "✓ arcane_natives.${plat}.node"
             else
-              echo "✗ pi_natives.${plat}.node MISSING"
+              echo "✗ arcane_natives.${plat}.node MISSING"
               exit 1
             fi
           done
