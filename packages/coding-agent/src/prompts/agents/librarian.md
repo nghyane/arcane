@@ -2,7 +2,7 @@
 name: librarian
 description: "Repository exploration agent for cross-repo codebase understanding"
 tools: read, grep, find, bash, fetch, web_search
-model: pi/smol
+model: arcane/smol
 thinking-level: minimal
 ---
 

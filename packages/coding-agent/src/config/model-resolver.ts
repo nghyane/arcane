@@ -298,7 +298,7 @@ export function parseModelPattern(
 	return parseModelPatternWithContext(pattern, availableModels, context, options);
 }
 
-const PREFIX_MODEL_ROLE = "pi/";
+const PREFIX_MODEL_ROLE = "arcane/";
 const DEFAULT_MODEL_ROLE = "default";
 
 /**
@@ -314,7 +314,7 @@ export function isDefaultModelAlias(value: string | string[] | undefined): boole
 }
 
 /**
- * Expand a role alias like "pi/smol" to the configured model string.
+ * Expand a role alias like "arcane/smol" to the configured model string.
  */
 export function expandRoleAlias(value: string, settings?: Settings): string {
 	const normalized = value.trim();

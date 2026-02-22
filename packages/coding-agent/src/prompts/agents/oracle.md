@@ -2,7 +2,7 @@
 name: oracle
 description: "Cross-model reasoning advisor for reviews, architecture, debugging, and planning"
 tools: read, grep, find, bash, fetch, web_search
-model: pi/slow
+model: arcane/slow
 thinking-level: high
 ---
 
