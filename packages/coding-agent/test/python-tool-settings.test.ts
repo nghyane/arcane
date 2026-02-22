@@ -19,7 +19,7 @@ function createSession(
 		hasUI: false,
 		getSessionFile: () => sessionFile,
 		getSessionSpawns: () => null,
-		settings: Settings.isolated({ "python.toolMode": "ipy-only", ...overrides }),
+		settings: Settings.isolated({ "python.toolMode": "ipy-only", "codemode.enabled": false, ...overrides }),
 	};
 }
 
@@ -41,7 +41,7 @@ describe("python tool settings", () => {
 		const sessionFile = path.join(testDir, "session.jsonl");
 		const tools = await createTools(createSession(testDir, sessionFile), ["python"]);
 
-		expect(tools.map(tool => tool.name).sort()).toEqual(["exit_plan_mode", "python"]);
+		expect(tools.map(tool => tool.name).sort()).toEqual(["python"]);
 	});
 
 	it("falls back to bash when python is unavailable", async () => {
@@ -52,7 +52,7 @@ describe("python tool settings", () => {
 		const sessionFile = path.join(testDir, "session.jsonl");
 		const tools = await createTools(createSession(testDir, sessionFile), ["python"]);
 
-		expect(tools.map(tool => tool.name).sort()).toEqual(["bash", "exit_plan_mode"]);
+		expect(tools.map(tool => tool.name).sort()).toEqual(["bash"]);
 	});
 
 	it("passes kernel mode from settings to executor", async () => {

@@ -9,7 +9,7 @@ function createTestSession(overrides: Partial<ToolSession> = {}): ToolSession {
 		hasUI: false,
 		getSessionFile: () => null,
 		getSessionSpawns: () => "*",
-		settings: Settings.isolated(),
+		settings: Settings.isolated({ "codemode.enabled": false }),
 		...overrides,
 	};
 }
@@ -18,6 +18,7 @@ function createSettingsWithOverrides(overrides: Partial<Record<SettingPath, unkn
 	return Settings.isolated({
 		"lsp.formatOnWrite": true,
 		"bashInterceptor.enabled": true,
+		"codemode.enabled": false,
 		...overrides,
 	});
 }
@@ -38,7 +39,7 @@ describe("createTools python fallback", () => {
 		const tools = await createTools(session, ["python"]);
 		const names = tools.map(tool => tool.name).sort();
 
-		expect(names).toEqual(["bash", "exit_plan_mode"]);
+		expect(names).toEqual(["bash"]);
 
 		availabilitySpy.mockRestore();
 	});

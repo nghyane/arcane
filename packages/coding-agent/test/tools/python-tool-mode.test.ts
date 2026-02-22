@@ -12,6 +12,7 @@ function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
 			"lsp.formatOnWrite": true,
 			"bashInterceptor.enabled": true,
 			"python.toolMode": "bash-only",
+			"codemode.enabled": false,
 		}),
 		...overrides,
 	};
@@ -25,7 +26,7 @@ describe("createTools python fallback", () => {
 		const tools = await createTools(session, ["python"]);
 		const names = tools.map(tool => tool.name).sort();
 
-		expect(names).toEqual(["bash", "exit_plan_mode"]);
+		expect(names).toEqual(["bash"]);
 
 		if (previous === undefined) {
 			delete Bun.env.ARCANE_PYTHON_SKIP_CHECK;
