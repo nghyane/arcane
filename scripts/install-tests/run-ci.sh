@@ -63,20 +63,21 @@ SOURCE_BUN_HOME="$WORK_DIR/bun-source"
 section "Tarball install smoke"
 TARBALL_DIR="$WORK_DIR/tarballs"
 mkdir -p "$TARBALL_DIR"
-for pkg in utils natives ai agent tui stats coding-agent; do
+for pkg in utils natives ai agent tui stats codemode coding-agent; do
 	(
 		cd "$ROOT_DIR/packages/$pkg"
 		bun pm pack --destination "$TARBALL_DIR" --quiet >/dev/null
 	)
 done
 
-utils_tgz="$(find_tarball "$TARBALL_DIR"/arcane-pi-utils-*.tgz)"
-natives_tgz="$(find_tarball "$TARBALL_DIR"/arcane-arcane-natives-*.tgz)"
-ai_tgz="$(find_tarball "$TARBALL_DIR"/arcane-pi-ai-*.tgz)"
-agent_tgz="$(find_tarball "$TARBALL_DIR"/arcane-pi-agent-core-*.tgz)"
-tui_tgz="$(find_tarball "$TARBALL_DIR"/arcane-pi-tui-*.tgz)"
-stats_tgz="$(find_tarball "$TARBALL_DIR"/arcane-arc-stats-*.tgz)"
-coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-*.tgz)"
+utils_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-utils-*.tgz)"
+natives_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-natives-*.tgz)"
+ai_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-ai-*.tgz)"
+agent_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-agent-*.tgz)"
+tui_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-tui-*.tgz)"
+stats_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-stats-*.tgz)"
+codemode_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-codemode-*.tgz)"
+coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/nghyane-arcane-0.*.tgz)"
 
 TARBALL_APP_DIR="$WORK_DIR/tarball-install"
 mkdir -p "$TARBALL_APP_DIR"
@@ -85,7 +86,7 @@ mkdir -p "$TARBALL_APP_DIR"
 	bun init -y >/dev/null
 
 	# Write overrides so bun resolves inter-package deps from tarballs, not the registry
-	# (version 12.x.y hasn't been published yet when CI runs pre-release)
+	# (version 0.x.y hasn't been published yet when CI runs pre-release)
 	node -e "
 		const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
 		pkg.overrides = {
@@ -95,12 +96,13 @@ mkdir -p "$TARBALL_APP_DIR"
 			'@nghyane/arcane-agent': '$agent_tgz',
 			'@nghyane/arcane-tui': '$tui_tgz',
 			'@nghyane/arcane-stats': '$stats_tgz',
+			'@nghyane/arcane-codemode': '$codemode_tgz',
 			'@nghyane/arcane': '$coding_agent_tgz'
 		};
 		require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
 	"
 
-	bun add "$utils_tgz" "$natives_tgz" "$ai_tgz" "$agent_tgz" "$tui_tgz" "$stats_tgz" "$coding_agent_tgz"
+	bun add "$utils_tgz" "$natives_tgz" "$ai_tgz" "$agent_tgz" "$tui_tgz" "$stats_tgz" "$codemode_tgz" "$coding_agent_tgz"
 	smoke_cli ./node_modules/.bin/arc
 )
 
