@@ -142,7 +142,8 @@ async function installBinary(src: string, dest: string): Promise<void> {
 }
 
 const cargoArgs = ["build"];
-if (!isDev) cargoArgs.push("--release");
+const cargoProfile = Bun.env.CARGO_PROFILE || (isDev ? "dev" : "release");
+if (cargoProfile !== "dev") cargoArgs.push("--profile", cargoProfile);
 if (crossTarget) cargoArgs.push("--target", crossTarget);
 
 console.log(`Building arcane-natives for ${targetPlatform}-${targetArch}${variantSuffix}${isDev ? " (debug)" : ""}…`);
@@ -152,7 +153,7 @@ if (buildResult.exitCode !== 0) {
 	throw new Error(`cargo build --release failed${stderr ? `:\n${stderr}` : ""}`);
 }
 
-const profile = isDev ? "debug" : "release";
+const profile = cargoProfile === "dev" ? "debug" : cargoProfile;
 const targetRoots = [
 	Bun.env.CARGO_TARGET_DIR ? path.resolve(Bun.env.CARGO_TARGET_DIR) : undefined,
 	path.join(repoRoot, "target"),
