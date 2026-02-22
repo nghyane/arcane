@@ -1,0 +1,197 @@
+name: Release
+
+on:
+  push:
+    tags: ["release/*"]
+  workflow_dispatch:
+    inputs:
+      skip_npm:
+        description: "Skip npm publish"
+        type: boolean
+        default: false
+      skip_binaries:
+        description: "Skip binary build and GitHub Release"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ !inputs.skip_npm }}
+    needs: [native]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Download native addons
+        uses: actions/download-artifact@v4
+        with:
+          pattern: arcane-natives-*
+          path: packages/natives/native
+          merge-multiple: true
+      - name: Publish to npm
+        env:
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          FAILED=0
+          for pkg in packages/*/; do
+            if jq -e '.private == true' "$pkg/package.json" > /dev/null 2>&1; then
+              continue
+            fi
+            PKG_NAME=$(jq -r .name "$pkg/package.json")
+            PKG_VERSION=$(jq -r .version "$pkg/package.json")
+            echo "Publishing $PKG_NAME@$PKG_VERSION..."
+            (cd "$pkg" && bun publish --access public --tolerate-republish) || FAILED=1
+          done
+          if [ "$FAILED" -eq 1 ]; then exit 1; fi
+
+  native:
+    if: ${{ !inputs.skip_npm || !inputs.skip_binaries }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: "ubuntu-22.04", platform: "linux", arch: "x64", variants: "baseline modern" }
+          - { os: "ubuntu-22.04", platform: "linux", arch: "arm64", target: "aarch64-unknown-linux-gnu" }
+          - { os: "macos-15-intel", platform: "darwin", arch: "x64", variants: "baseline modern" }
+          - { os: "macos-14", platform: "darwin", arch: "arm64" }
+          - { os: "windows-latest", platform: "win32", arch: "x64", variants: "baseline modern" }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Cache native addon
+        id: addon-cache
+        uses: actions/cache@v4
+        with:
+          path: packages/natives/native/arcane_natives.${{ matrix.platform }}-${{ matrix.arch }}*.node
+          key: native-${{ matrix.platform }}-${{ matrix.arch }}-release-${{ hashFiles('crates/**', 'Cargo.toml', 'Cargo.lock', 'packages/natives/scripts/**') }}
+      - uses: dtolnay/rust-toolchain@nightly
+        if: steps.addon-cache.outputs.cache-hit != 'true'
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        if: steps.addon-cache.outputs.cache-hit != 'true'
+        with:
+          key: ${{ matrix.target }}
+      - uses: oven-sh/setup-bun@v2
+        if: steps.addon-cache.outputs.cache-hit != 'true'
+        with:
+          bun-version: "1.3"
+      - name: Install cross-compilation toolchain
+        if: steps.addon-cache.outputs.cache-hit != 'true' && matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+      - name: Build native addon(s)
+        if: steps.addon-cache.outputs.cache-hit != 'true'
+        env:
+          CROSS_TARGET: ${{ matrix.target }}
+          TARGET_PLATFORM: ${{ matrix.platform }}
+          TARGET_ARCH: ${{ matrix.arch }}
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+          CARGO_PROFILE: release
+        shell: bash
+        run: |
+          VARIANTS="${{ matrix.variants }}"
+          if [ -z "$VARIANTS" ]; then
+            bun --cwd=packages/natives run build:native
+          else
+            for variant in $VARIANTS; do
+              case "$variant" in
+                baseline) export RUSTFLAGS="-C target-cpu=x86-64-v2" ;;
+                modern)   export RUSTFLAGS="-C target-cpu=x86-64-v3" ;;
+              esac
+              export TARGET_VARIANT="$variant"
+              bun --cwd=packages/natives run build:native
+            done
+          fi
+      - name: Upload native addon(s)
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcane-natives-${{ matrix.platform }}-${{ matrix.arch }}
+          path: packages/natives/native/arcane_natives.${{ matrix.platform }}-${{ matrix.arch }}*.node
+          if-no-files-found: error
+
+  binaries:
+    if: ${{ !inputs.skip_binaries }}
+    needs: [native]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Download native addons
+        uses: actions/download-artifact@v4
+        with:
+          pattern: arcane-natives-*
+          path: packages/natives/native
+          merge-multiple: true
+      - name: Verify native addons
+        run: |
+          echo "Native addons downloaded:"
+          ls -la packages/natives/native/
+          echo ""
+          for plat in linux-x64-modern linux-x64-baseline linux-arm64 darwin-x64-modern darwin-x64-baseline darwin-arm64 win32-x64-modern win32-x64-baseline; do
+            if [ -f "packages/natives/native/arcane_natives.${plat}.node" ]; then
+              echo "ok arcane_natives.${plat}.node"
+            else
+              echo "MISSING arcane_natives.${plat}.node"
+              exit 1
+            fi
+          done
+      - name: Build binaries
+        run: |
+          bun --cwd=packages/stats scripts/generate-client-bundle.ts
+          bun run generate-docs-index
+          bun --cwd=packages/coding-agent run generate-template
+          mkdir -p packages/coding-agent/binaries
+          ENTRYPOINT="./packages/coding-agent/src/cli.ts"
+          DEFINES="--define PI_COMPILED=true --root ."
+          build_binary() {
+            PLATFORM="$1"
+            ARCH="$2"
+            TARGET="$3"
+            OUTFILE="$4"
+            TARGET_PLATFORM="$PLATFORM" TARGET_ARCH="$ARCH" bun --cwd=packages/natives run embed:native
+            bun build --compile $DEFINES --target="$TARGET" "$ENTRYPOINT" --outfile "$OUTFILE"
+          }
+          build_binary darwin arm64 bun-darwin-arm64 packages/coding-agent/binaries/omp-darwin-arm64
+          build_binary darwin x64 bun-darwin-x64 packages/coding-agent/binaries/omp-darwin-x64
+          build_binary linux x64 bun-linux-x64-modern packages/coding-agent/binaries/omp-linux-x64
+          build_binary linux arm64 bun-linux-arm64 packages/coding-agent/binaries/omp-linux-arm64
+          build_binary win32 x64 bun-windows-x64-modern packages/coding-agent/binaries/omp-windows-x64.exe
+          bun --cwd=packages/natives run embed:native --reset
+          bun --cwd=packages/stats scripts/generate-client-bundle.ts --reset
+      - name: Stage native addons for release
+        run: cp packages/natives/native/*.node packages/coding-agent/binaries/
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          files: packages/coding-agent/binaries/*
+          generate_release_notes: true
