@@ -86,6 +86,7 @@ const CODEX_RETRY_DELAY_MS = 500;
 const CODEX_WEBSOCKET_CONNECT_TIMEOUT_MS = 10000;
 const CODEX_WEBSOCKET_IDLE_TIMEOUT_MS = 300000;
 const CODEX_WEBSOCKET_RETRY_BUDGET = CODEX_MAX_RETRIES;
+const CODEX_WEBSOCKET_FALLBACK_COOLDOWN_MS = 120000;
 const CODEX_WEBSOCKET_TRANSPORT_ERROR_PREFIX = "Codex websocket transport error";
 
 function parseCodexNonNegativeInteger(value: string | undefined, fallback: number): number {
@@ -121,6 +122,13 @@ function getCodexWebSocketRetryDelayMs(retry: number): number {
 
 function getCodexWebSocketIdleTimeoutMs(): number {
 	return parseCodexPositiveInteger($env.ARCANE_CODEX_WEBSOCKET_IDLE_TIMEOUT_MS, CODEX_WEBSOCKET_IDLE_TIMEOUT_MS);
+}
+
+function getCodexWebSocketFallbackCooldownMs(): number {
+	return parseCodexPositiveInteger(
+		$env.ARCANE_CODEX_WEBSOCKET_FALLBACK_COOLDOWN_MS,
+		CODEX_WEBSOCKET_FALLBACK_COOLDOWN_MS,
+	);
 }
 
 type CodexWebSocketSessionState = {
@@ -922,7 +930,18 @@ function shouldUseCodexWebSocket(
 	state: CodexWebSocketSessionState | undefined,
 	preferWebsockets?: boolean,
 ): boolean {
-	if (!state || state.disableWebsocket) return false;
+	if (!state) return false;
+	if (state.disableWebsocket) {
+		if (state.lastFallbackAt && Date.now() - state.lastFallbackAt >= getCodexWebSocketFallbackCooldownMs()) {
+			state.disableWebsocket = false;
+			logCodexDebug("codex websocket re-enabled after cooldown", {
+				fallbackCount: state.fallbackCount,
+				cooldownMs: getCodexWebSocketFallbackCooldownMs(),
+			});
+		} else {
+			return false;
+		}
+	}
 	if (preferWebsockets === false) return false;
 	return isCodexWebSocketEnvEnabled() || preferWebsockets === true || model.preferWebsockets === true;
 }
