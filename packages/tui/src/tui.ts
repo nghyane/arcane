@@ -1048,7 +1048,7 @@ export class TUI extends Container {
 				if (i > 0) out += "\r\n";
 				out += renderedLines[i];
 			}
-			const renderCursorRow = Math.max(0, viewportLines.length - 1);
+			const renderCursorRow = Math.max(0, renderedLines.length - 1);
 			const cursorUpdate = this.#buildHardwareCursorSequence(
 				cursorPos ? { row: cursorPos.row - Math.max(0, newLines.length - height), col: cursorPos.col } : null,
 				viewportLines.length,

@@ -38,7 +38,7 @@ coverage/
 packages/ai/test/.temp-images/
 
 # Project specific
-!.omp/
+!.arcane/
 .pi_config/
 .opencode/
 .worktrees/
