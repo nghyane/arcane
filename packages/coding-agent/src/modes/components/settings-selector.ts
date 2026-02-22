@@ -1,4 +1,4 @@
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
+import type { ThinkingLevel } from "@nghyane/pi-agent-core";
 import {
 	Container,
 	matchesKey,
@@ -11,7 +11,7 @@ import {
 	TabBar,
 	type TabBarTheme,
 	Text,
-} from "@oh-my-pi/pi-tui";
+} from "@nghyane/pi-tui";
 import { type SettingPath, settings } from "../../config/settings";
 import type {
 	SettingTab,

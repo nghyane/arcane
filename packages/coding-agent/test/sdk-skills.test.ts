@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { Skill } from "@oh-my-pi/pi-coding-agent/sdk";
-import { createAgentSession } from "@oh-my-pi/pi-coding-agent/sdk";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { getProjectAgentDir } from "@oh-my-pi/pi-utils/dirs";
+import type { Skill } from "@nghyane/pi-coding-agent/sdk";
+import { createAgentSession } from "@nghyane/pi-coding-agent/sdk";
+import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
+import { getProjectAgentDir } from "@nghyane/pi-utils/dirs";
 
 describe("createAgentSession skills option", () => {
 	let tempDir: string;

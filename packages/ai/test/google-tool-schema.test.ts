@@ -3,8 +3,8 @@ import {
 	convertTools,
 	sanitizeSchemaForCloudCodeAssistClaude,
 	sanitizeSchemaForGoogle,
-} from "@oh-my-pi/pi-ai/providers/google-shared";
-import type { Model, Tool } from "@oh-my-pi/pi-ai/types";
+} from "@nghyane/pi-ai/providers/google-shared";
+import type { Model, Tool } from "@nghyane/pi-ai/types";
 import type { TSchema } from "@sinclair/typebox";
 
 function createModel(id: string): Model<"google-gemini-cli"> {

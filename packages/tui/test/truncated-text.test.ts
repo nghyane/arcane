@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { TruncatedText } from "@oh-my-pi/pi-tui/components/truncated-text";
-import { visibleWidth } from "@oh-my-pi/pi-tui/utils";
+import { TruncatedText } from "@nghyane/pi-tui/components/truncated-text";
+import { visibleWidth } from "@nghyane/pi-tui/utils";
 import { Chalk } from "chalk";
 
 // Force full color in CI so ANSI assertions are deterministic

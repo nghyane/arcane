@@ -5,7 +5,7 @@
  * Uses settings-defs as the source of truth for available settings.
  */
 
-import { APP_NAME, getAgentDir } from "@oh-my-pi/pi-utils/dirs";
+import { APP_NAME, getAgentDir } from "@nghyane/pi-utils/dirs";
 import chalk from "chalk";
 import {
 	getDefault,

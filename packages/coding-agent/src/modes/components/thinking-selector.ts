@@ -1,5 +1,5 @@
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { Container, type SelectItem, SelectList } from "@oh-my-pi/pi-tui";
+import type { ThinkingLevel } from "@nghyane/pi-agent-core";
+import { Container, type SelectItem, SelectList } from "@nghyane/pi-tui";
 import { getSelectListTheme } from "../../modes/theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 

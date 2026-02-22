@@ -3,9 +3,9 @@
  * Handles TUI rendering and user interaction, delegating business logic to AgentSession.
  */
 import * as path from "node:path";
-import type { Agent, AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message, UsageReport } from "@oh-my-pi/pi-ai";
-import type { Component, Loader, SlashCommand } from "@oh-my-pi/pi-tui";
+import type { Agent, AgentMessage } from "@nghyane/pi-agent-core";
+import type { AssistantMessage, ImageContent, Message, UsageReport } from "@nghyane/pi-ai";
+import type { Component, Loader, SlashCommand } from "@nghyane/pi-tui";
 import {
 	CombinedAutocompleteProvider,
 	Container,
@@ -14,9 +14,9 @@ import {
 	Spacer,
 	Text,
 	TUI,
-} from "@oh-my-pi/pi-tui";
-import { hsvToRgb, isEnoent, logger, postmortem } from "@oh-my-pi/pi-utils";
-import { APP_NAME, getProjectDir } from "@oh-my-pi/pi-utils/dirs";
+} from "@nghyane/pi-tui";
+import { hsvToRgb, isEnoent, logger, postmortem } from "@nghyane/pi-utils";
+import { APP_NAME, getProjectDir } from "@nghyane/pi-utils/dirs";
 import chalk from "chalk";
 import { KeybindingsManager } from "../config/keybindings";
 import { type Settings, settings } from "../config/settings";

@@ -7,9 +7,9 @@
 /// <reference types="./bun-imports.d.ts" />
 import * as fs from "node:fs";
 import { join } from "node:path";
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { computeLineHash, RpcClient, renderPromptTemplate } from "@oh-my-pi/pi-coding-agent";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import type { ThinkingLevel } from "@nghyane/pi-agent-core";
+import { computeLineHash, RpcClient, renderPromptTemplate } from "@nghyane/pi-coding-agent";
+import { Snowflake } from "@nghyane/pi-utils";
 import { diffLines } from "diff";
 import { formatDirectory } from "./formatter";
 import benchmarkTaskPrompt from "./prompts/benchmark-task.md" with { type: "text" };
@@ -17,7 +17,7 @@ import type { EditTask } from "./tasks";
 import { verifyExpectedFileSubset, verifyExpectedFiles } from "./verify";
 
 const TMP = `/tmp/rb-${crypto.randomUUID()}`;
-const CLI_PATH = Bun.fileURLToPath(import.meta.resolve("@oh-my-pi/pi-coding-agent/cli"));
+const CLI_PATH = Bun.fileURLToPath(import.meta.resolve("@nghyane/pi-coding-agent/cli"));
 
 fs.mkdirSync(TMP);
 

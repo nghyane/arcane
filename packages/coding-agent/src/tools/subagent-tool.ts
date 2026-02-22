@@ -7,8 +7,8 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
+import { Snowflake } from "@nghyane/pi-utils";
 import type { TObject, TProperties } from "@sinclair/typebox";
 import type { ToolSession } from "..";
 import { isDefaultModelAlias } from "../config/model-resolver";

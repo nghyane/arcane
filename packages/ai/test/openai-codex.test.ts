@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { type RequestBody, transformRequestBody } from "@oh-my-pi/pi-ai/providers/openai-codex/request-transformer";
-import { parseCodexError } from "@oh-my-pi/pi-ai/providers/openai-codex/response-handler";
+import { type RequestBody, transformRequestBody } from "@nghyane/pi-ai/providers/openai-codex/request-transformer";
+import { parseCodexError } from "@nghyane/pi-ai/providers/openai-codex/response-handler";
 
 const DEFAULT_PROMPT_PREFIX =
 	"You are an expert coding assistant. You help users with coding tasks by reading files, executing commands";

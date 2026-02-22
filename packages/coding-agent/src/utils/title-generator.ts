@@ -1,9 +1,9 @@
 /**
  * Generate session titles using a smol, fast model.
  */
-import type { Api, Model } from "@oh-my-pi/pi-ai";
-import { completeSimple } from "@oh-my-pi/pi-ai";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { Api, Model } from "@nghyane/pi-ai";
+import { completeSimple } from "@nghyane/pi-ai";
+import { logger } from "@nghyane/pi-utils";
 import type { ModelRegistry } from "../config/model-registry";
 import { parseModelString } from "../config/model-resolver";
 import { renderPromptTemplate } from "../config/prompt-templates";

@@ -5,8 +5,8 @@
  * Messages are newline-delimited JSON.
  */
 
-import { readJsonl } from "@oh-my-pi/pi-utils";
-import { getProjectDir } from "@oh-my-pi/pi-utils/dirs";
+import { readJsonl } from "@nghyane/pi-utils";
+import { getProjectDir } from "@nghyane/pi-utils/dirs";
 import { type Subprocess, spawn } from "bun";
 import type { JsonRpcResponse, MCPRequestOptions, MCPStdioServerConfig, MCPTransport } from "../../mcp/types";
 

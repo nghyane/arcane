@@ -1,7 +1,7 @@
 /**
  * Bordered output container with optional header and sections.
  */
-import { padding, visibleWidth } from "@oh-my-pi/pi-tui";
+import { padding, visibleWidth } from "@nghyane/pi-tui";
 import type { Theme } from "../modes/theme/theme";
 import type { State } from "./types";
 import type { RenderCache } from "./utils";

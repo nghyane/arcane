@@ -5,8 +5,8 @@
  * to avoid import resolution issues with custom tools loaded from user directories.
  */
 import * as path from "node:path";
-import * as piCodingAgent from "@oh-my-pi/pi-coding-agent";
-import { logger } from "@oh-my-pi/pi-utils";
+import * as piCodingAgent from "@nghyane/pi-coding-agent";
+import { logger } from "@nghyane/pi-utils";
 import * as typebox from "@sinclair/typebox";
 import { toolCapability } from "../../capability/tool";
 import { type CustomTool, loadCapability } from "../../discovery";

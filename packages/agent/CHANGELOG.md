@@ -154,7 +154,7 @@
 
 ### Changed
 
-- Switched from local `@oh-my-pi/pi-ai` to upstream `@oh-my-pi/pi-ai` package
+- Switched from local `@nghyane/pi-ai` to upstream `@nghyane/pi-ai` package
 
 ### Added
 
@@ -224,7 +224,7 @@ Initial release under @oh-my-pi scope. See previous releases at [badlogic/pi-mon
 
 - **`UserMessageWithAttachments` and `Attachment` types removed**: Attachment handling is now the responsibility of the `convertToLlm` function.
 
-- **Agent loop moved from `@oh-my-pi/pi-ai`**: The `agentLoop`, `agentLoopContinue`, and related types have moved to this package. Import from `@oh-my-pi/pi-agent` instead.
+- **Agent loop moved from `@nghyane/pi-ai`**: The `agentLoop`, `agentLoopContinue`, and related types have moved to this package. Import from `@nghyane/pi-agent` instead.
 
 ### Added
 

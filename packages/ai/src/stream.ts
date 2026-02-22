@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $env, $pickenv } from "@oh-my-pi/pi-utils";
+import { $env, $pickenv } from "@nghyane/pi-utils";
 import { getCustomApi } from "./api-registry";
 import { supportsXhigh } from "./models";
 import { type BedrockOptions, streamBedrock } from "./providers/amazon-bedrock";

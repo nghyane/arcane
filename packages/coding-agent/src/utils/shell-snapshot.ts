@@ -8,7 +8,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { postmortem } from "@oh-my-pi/pi-utils";
+import { postmortem } from "@nghyane/pi-utils";
 
 const cachedSnapshotPaths = new Map<string, string>();
 const SNAPSHOT_TIMEOUT_MS = 2_000;

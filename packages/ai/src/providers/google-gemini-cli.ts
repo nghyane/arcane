@@ -5,7 +5,7 @@
  */
 import { createHash } from "node:crypto";
 import type { Content, FunctionCallingConfigMode, ThinkingConfig } from "@google/genai";
-import { abortableSleep, readSseJson } from "@oh-my-pi/pi-utils";
+import { abortableSleep, readSseJson } from "@nghyane/pi-utils";
 import { calculateCost } from "../models";
 import type {
 	Api,

@@ -5,8 +5,8 @@
  * Endpoint: POST https://api.synthetic.new/v2/search
  */
 
-import { getEnvApiKey } from "@oh-my-pi/pi-ai";
-import { getAgentDbPath } from "@oh-my-pi/pi-utils/dirs";
+import { getEnvApiKey } from "@nghyane/pi-ai";
+import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
 import { AgentStorage } from "../../../session/agent-storage";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";

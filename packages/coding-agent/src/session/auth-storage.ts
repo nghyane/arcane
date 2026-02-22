@@ -52,8 +52,8 @@ import {
 	type UsageProvider,
 	type UsageReport,
 	zaiUsageProvider,
-} from "@oh-my-pi/pi-ai";
-import { logger } from "@oh-my-pi/pi-utils";
+} from "@nghyane/pi-ai";
+import { logger } from "@nghyane/pi-utils";
 import { resolveConfigValue } from "../config/resolve-config-value";
 import { AgentStorage } from "./agent-storage";
 

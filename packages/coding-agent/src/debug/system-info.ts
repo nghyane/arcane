@@ -2,7 +2,7 @@
  * System information collection for debug reports.
  */
 import * as os from "node:os";
-import { getProjectDir, VERSION } from "@oh-my-pi/pi-utils/dirs";
+import { getProjectDir, VERSION } from "@nghyane/pi-utils/dirs";
 
 export interface SystemInfo {
 	os: string;

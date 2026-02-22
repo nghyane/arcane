@@ -5,8 +5,8 @@
  * by providing authorization URL, token URL, and client credentials.
  */
 
-import type { OAuthController, OAuthCredentials } from "@oh-my-pi/pi-ai";
-import { OAuthCallbackFlow } from "@oh-my-pi/pi-ai/utils/oauth/callback-server";
+import type { OAuthController, OAuthCredentials } from "@nghyane/pi-ai";
+import { OAuthCallbackFlow } from "@nghyane/pi-ai/utils/oauth/callback-server";
 
 const DEFAULT_PORT = 3000;
 const CALLBACK_PATH = "/callback";

@@ -1,6 +1,6 @@
-import { sliceWithWidth } from "@oh-my-pi/pi-natives";
+import { sliceWithWidth } from "@nghyane/pi-natives";
 
-export { Ellipsis, extractSegments, sliceWithWidth, truncateToWidth, wrapTextWithAnsi } from "@oh-my-pi/pi-natives";
+export { Ellipsis, extractSegments, sliceWithWidth, truncateToWidth, wrapTextWithAnsi } from "@nghyane/pi-natives";
 
 // Pre-allocated space buffer for padding
 const SPACE_BUFFER = " ".repeat(512);

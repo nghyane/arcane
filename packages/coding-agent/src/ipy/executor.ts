@@ -1,6 +1,6 @@
 import * as path from "node:path";
-import { isEnoent, logger } from "@oh-my-pi/pi-utils";
-import { getAgentDir, getProjectDir } from "@oh-my-pi/pi-utils/dirs";
+import { isEnoent, logger } from "@nghyane/pi-utils";
+import { getAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
 import { OutputSink } from "../session/streaming-output";
 import { time } from "../utils/timings";
 import { shutdownSharedGateway } from "./gateway-coordinator";

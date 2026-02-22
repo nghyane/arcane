@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { Api, Context, Model, Tool, ToolResultMessage } from "@oh-my-pi/pi-ai";
-import { complete, getBundledModel } from "@oh-my-pi/pi-ai";
-import type { OptionsForApi } from "@oh-my-pi/pi-ai/types";
+import type { Api, Context, Model, Tool, ToolResultMessage } from "@nghyane/pi-ai";
+import { complete, getBundledModel } from "@nghyane/pi-ai";
+import type { OptionsForApi } from "@nghyane/pi-ai/types";
 import { Type } from "@sinclair/typebox";
 import { e2eApiKey, resolveApiKey } from "./oauth";
 

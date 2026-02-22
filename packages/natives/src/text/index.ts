@@ -2,7 +2,7 @@
  * ANSI-aware text utilities powered by native bindings.
  */
 
-import { Ellipsis, type SliceWithWidthResult } from "@oh-my-pi/pi-natives";
+import { Ellipsis, type SliceWithWidthResult } from "@nghyane/pi-natives";
 import { native } from "../native";
 
 export type { ExtractSegmentsResult, SliceWithWidthResult } from "./types";

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import * as path from "node:path";
-import { parseRuleConditionAndScope, type Rule } from "@oh-my-pi/pi-coding-agent/capability/rule";
-import { TtsrManager } from "@oh-my-pi/pi-coding-agent/export/ttsr";
+import { parseRuleConditionAndScope, type Rule } from "@nghyane/pi-coding-agent/capability/rule";
+import { TtsrManager } from "@nghyane/pi-coding-agent/export/ttsr";
 
 function makeRule(partial: Partial<Rule>): Rule {
 	return {

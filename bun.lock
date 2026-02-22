@@ -19,12 +19,12 @@
       },
     },
     "packages/agent": {
-      "name": "@oh-my-pi/pi-agent-core",
+      "name": "@nghyane/pi-agent-core",
       "version": "12.18.4",
       "dependencies": {
-        "@oh-my-pi/pi-ai": "workspace:*",
-        "@oh-my-pi/pi-tui": "workspace:*",
-        "@oh-my-pi/pi-utils": "workspace:*",
+        "@nghyane/pi-ai": "workspace:*",
+        "@nghyane/pi-tui": "workspace:*",
+        "@nghyane/pi-utils": "workspace:*",
       },
       "devDependencies": {
         "@sinclair/typebox": "^0.34.48",
@@ -32,7 +32,7 @@
       },
     },
     "packages/ai": {
-      "name": "@oh-my-pi/pi-ai",
+      "name": "@nghyane/pi-ai",
       "version": "12.18.4",
       "bin": {
         "pi-ai": "./src/cli.ts",
@@ -45,7 +45,7 @@
         "@connectrpc/connect-node": "^2.1.1",
         "@google/genai": "^1.41.0",
         "@mistralai/mistralai": "^1.14.0",
-        "@oh-my-pi/pi-utils": "workspace:*",
+        "@nghyane/pi-utils": "workspace:*",
         "@sinclair/typebox": "^0.34.48",
         "@smithy/node-http-handler": "^4.4.10",
         "ajv": "^8.18.0",
@@ -61,11 +61,11 @@
       },
     },
     "packages/codemode": {
-      "name": "@oh-my-pi/pi-codemode",
+      "name": "@nghyane/pi-codemode",
       "version": "12.18.4",
       "dependencies": {
-        "@oh-my-pi/pi-agent-core": "workspace:*",
-        "@oh-my-pi/pi-utils": "workspace:*",
+        "@nghyane/pi-agent-core": "workspace:*",
+        "@nghyane/pi-utils": "workspace:*",
         "@sinclair/typebox": "^0.34.48",
       },
       "devDependencies": {
@@ -73,20 +73,20 @@
       },
     },
     "packages/coding-agent": {
-      "name": "@oh-my-pi/pi-coding-agent",
+      "name": "@nghyane/pi-coding-agent",
       "version": "12.18.4",
       "bin": {
         "omp": "src/cli.ts",
       },
       "dependencies": {
         "@mozilla/readability": "0.6.0",
-        "@oh-my-pi/omp-stats": "workspace:*",
-        "@oh-my-pi/pi-agent-core": "workspace:*",
-        "@oh-my-pi/pi-ai": "workspace:*",
-        "@oh-my-pi/pi-codemode": "workspace:*",
-        "@oh-my-pi/pi-natives": "workspace:*",
-        "@oh-my-pi/pi-tui": "workspace:*",
-        "@oh-my-pi/pi-utils": "workspace:*",
+        "@nghyane/omp-stats": "workspace:*",
+        "@nghyane/pi-agent-core": "workspace:*",
+        "@nghyane/pi-ai": "workspace:*",
+        "@nghyane/pi-codemode": "workspace:*",
+        "@nghyane/pi-natives": "workspace:*",
+        "@nghyane/pi-tui": "workspace:*",
+        "@nghyane/pi-utils": "workspace:*",
         "@sinclair/typebox": "^0.34.48",
         "@xterm/headless": "^6.0.0",
         "ajv": "^8.18.0",
@@ -110,17 +110,17 @@
       },
     },
     "packages/natives": {
-      "name": "@oh-my-pi/pi-natives",
+      "name": "@nghyane/pi-natives",
       "version": "12.18.4",
       "dependencies": {
-        "@oh-my-pi/pi-utils": "workspace:*",
+        "@nghyane/pi-utils": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "^1.3.9",
       },
     },
     "packages/react-edit-benchmark": {
-      "name": "@oh-my-pi/react-edit-benchmark",
+      "name": "@nghyane/react-edit-benchmark",
       "version": "0.0.1",
       "bin": {
         "react-edit-benchmark": "src/index.ts",
@@ -130,9 +130,9 @@
         "@babel/parser": "7.29.0",
         "@babel/traverse": "7.29.0",
         "@babel/types": "7.29.0",
-        "@oh-my-pi/pi-agent-core": "workspace:*",
-        "@oh-my-pi/pi-coding-agent": "workspace:*",
-        "@oh-my-pi/pi-utils": "workspace:*",
+        "@nghyane/pi-agent-core": "workspace:*",
+        "@nghyane/pi-coding-agent": "workspace:*",
+        "@nghyane/pi-utils": "workspace:*",
         "diff": "^8.0.3",
         "prettier": "^3.8.1",
         "regexp-tree": "0.1.27",
@@ -144,14 +144,14 @@
       },
     },
     "packages/stats": {
-      "name": "@oh-my-pi/omp-stats",
+      "name": "@nghyane/omp-stats",
       "version": "12.18.4",
       "bin": {
         "omp-stats": "./src/index.ts",
       },
       "dependencies": {
-        "@oh-my-pi/pi-ai": "workspace:*",
-        "@oh-my-pi/pi-utils": "workspace:*",
+        "@nghyane/pi-ai": "workspace:*",
+        "@nghyane/pi-utils": "workspace:*",
         "@tailwindcss/node": "4",
         "chart.js": "4.5.1",
         "date-fns": "^4.1.0",
@@ -169,7 +169,7 @@
       },
     },
     "packages/swarm-extension": {
-      "name": "@oh-my-pi/swarm-extension",
+      "name": "@nghyane/swarm-extension",
       "version": "12.18.4",
       "bin": {
         "omp-swarm": "src/cli.ts",
@@ -178,15 +178,15 @@
         "@types/bun": "^1.3.9",
       },
       "peerDependencies": {
-        "@oh-my-pi/pi-coding-agent": "^11",
+        "@nghyane/pi-coding-agent": "^11",
       },
     },
     "packages/tui": {
-      "name": "@oh-my-pi/pi-tui",
+      "name": "@nghyane/pi-tui",
       "version": "12.18.4",
       "dependencies": {
-        "@oh-my-pi/pi-natives": "workspace:*",
-        "@oh-my-pi/pi-utils": "workspace:*",
+        "@nghyane/pi-natives": "workspace:*",
+        "@nghyane/pi-utils": "workspace:*",
         "@types/mime-types": "^3.0.1",
         "chalk": "^5.6.2",
         "marked": "^17.0.2",
@@ -198,7 +198,7 @@
       },
     },
     "packages/utils": {
-      "name": "@oh-my-pi/pi-utils",
+      "name": "@nghyane/pi-utils",
       "version": "12.18.4",
       "dependencies": {
         "winston": "^3.19.0",
@@ -354,25 +354,25 @@
 
     "@mozilla/readability": ["@mozilla/readability@0.6.0", "", {}, "sha512-juG5VWh4qAivzTAeMzvY9xs9HY5rAcr2E4I7tiSSCokRFi7XIZCAu92ZkSTsIj1OPceCifL3cpfteP3pDT9/QQ=="],
 
-    "@oh-my-pi/omp-stats": ["@oh-my-pi/omp-stats@workspace:packages/stats"],
+    "@nghyane/omp-stats": ["@nghyane/omp-stats@workspace:packages/stats"],
 
-    "@oh-my-pi/pi-agent-core": ["@oh-my-pi/pi-agent-core@workspace:packages/agent"],
+    "@nghyane/pi-agent-core": ["@nghyane/pi-agent-core@workspace:packages/agent"],
 
-    "@oh-my-pi/pi-ai": ["@oh-my-pi/pi-ai@workspace:packages/ai"],
+    "@nghyane/pi-ai": ["@nghyane/pi-ai@workspace:packages/ai"],
 
-    "@oh-my-pi/pi-codemode": ["@oh-my-pi/pi-codemode@workspace:packages/codemode"],
+    "@nghyane/pi-codemode": ["@nghyane/pi-codemode@workspace:packages/codemode"],
 
-    "@oh-my-pi/pi-coding-agent": ["@oh-my-pi/pi-coding-agent@workspace:packages/coding-agent"],
+    "@nghyane/pi-coding-agent": ["@nghyane/pi-coding-agent@workspace:packages/coding-agent"],
 
-    "@oh-my-pi/pi-natives": ["@oh-my-pi/pi-natives@workspace:packages/natives"],
+    "@nghyane/pi-natives": ["@nghyane/pi-natives@workspace:packages/natives"],
 
-    "@oh-my-pi/pi-tui": ["@oh-my-pi/pi-tui@workspace:packages/tui"],
+    "@nghyane/pi-tui": ["@nghyane/pi-tui@workspace:packages/tui"],
 
-    "@oh-my-pi/pi-utils": ["@oh-my-pi/pi-utils@workspace:packages/utils"],
+    "@nghyane/pi-utils": ["@nghyane/pi-utils@workspace:packages/utils"],
 
-    "@oh-my-pi/react-edit-benchmark": ["@oh-my-pi/react-edit-benchmark@workspace:packages/react-edit-benchmark"],
+    "@nghyane/react-edit-benchmark": ["@nghyane/react-edit-benchmark@workspace:packages/react-edit-benchmark"],
 
-    "@oh-my-pi/swarm-extension": ["@oh-my-pi/swarm-extension@workspace:packages/swarm-extension"],
+    "@nghyane/swarm-extension": ["@nghyane/swarm-extension@workspace:packages/swarm-extension"],
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 

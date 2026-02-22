@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "@oh-my-pi/omp-stats",
+	"name": "@nghyane/omp-stats",
 	"version": "12.18.4",
 	"description": "Local observability dashboard for pi AI usage statistics",
 	"homepage": "https://github.com/can1357/oh-my-pi",
@@ -33,8 +33,8 @@
 		"build": "bun run build.ts"
 	},
 	"dependencies": {
-		"@oh-my-pi/pi-ai": "workspace:*",
-		"@oh-my-pi/pi-utils": "workspace:*",
+		"@nghyane/pi-ai": "workspace:*",
+		"@nghyane/pi-utils": "workspace:*",
 		"@tailwindcss/node": "4",
 		"chart.js": "4.5.1",
 		"date-fns": "^4.1.0",

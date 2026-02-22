@@ -13,8 +13,8 @@ import type {
 	ModelRegistry,
 	Settings,
 	SingleResult,
-} from "@oh-my-pi/pi-coding-agent";
-import { runAgent } from "@oh-my-pi/pi-coding-agent";
+} from "@nghyane/pi-coding-agent";
+import { runAgent } from "@nghyane/pi-coding-agent";
 import type { SwarmAgent } from "./schema";
 import type { StateTracker } from "./state";
 

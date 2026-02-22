@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message, UsageReport } from "@oh-my-pi/pi-ai";
-import type { Component, Container, Loader, Spacer, Text, TUI } from "@oh-my-pi/pi-tui";
+import type { AgentMessage } from "@nghyane/pi-agent-core";
+import type { AssistantMessage, ImageContent, Message, UsageReport } from "@nghyane/pi-ai";
+import type { Component, Container, Loader, Spacer, Text, TUI } from "@nghyane/pi-tui";
 import type { KeybindingsManager } from "../config/keybindings";
 import type { Settings } from "../config/settings";
 import type { ExtensionUIContext, ExtensionUIDialogOptions } from "../extensibility/extensions";

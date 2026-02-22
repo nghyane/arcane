@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import type { AssistantMessage, ToolCall } from "@oh-my-pi/pi-ai";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
+import type { AssistantMessage, ToolCall } from "@nghyane/pi-ai";
+import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
 
 function buildAssistantMessage(content: AssistantMessage["content"]): AssistantMessage {
 	return {

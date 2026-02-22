@@ -1,4 +1,4 @@
-import type { Api, Model } from "@oh-my-pi/pi-ai";
+import type { Api, Model } from "@nghyane/pi-ai";
 import { MODEL_ROLE_IDS } from "../config/model-registry";
 import {
 	expandRoleAlias,

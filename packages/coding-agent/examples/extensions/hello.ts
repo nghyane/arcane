@@ -3,7 +3,7 @@
  *
  * Demonstrates using ExtensionAPI's logger, typebox, and pi module access.
  */
-import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
+import type { ExtensionAPI } from "@nghyane/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
 	// Access TypeBox via pi.typebox (no need to import separately)

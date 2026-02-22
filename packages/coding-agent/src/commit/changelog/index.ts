@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { Api, Model } from "@oh-my-pi/pi-ai";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { Api, Model } from "@nghyane/pi-ai";
+import { logger } from "@nghyane/pi-utils";
 import type { ControlledGit } from "../../commit/git";
 import { detectChangelogBoundaries } from "./detect";
 import { generateChangelogEntries } from "./generate";

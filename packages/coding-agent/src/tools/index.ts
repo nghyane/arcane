@@ -1,6 +1,6 @@
-import type { AgentTool } from "@oh-my-pi/pi-agent-core";
-import { createCodeTool } from "@oh-my-pi/pi-codemode";
-import { $env, logger } from "@oh-my-pi/pi-utils";
+import type { AgentTool } from "@nghyane/pi-agent-core";
+import { createCodeTool } from "@nghyane/pi-codemode";
+import { $env, logger } from "@nghyane/pi-utils";
 import type { PromptTemplate } from "../config/prompt-templates";
 import type { Settings } from "../config/settings";
 import type { Skill } from "../extensibility/skills";

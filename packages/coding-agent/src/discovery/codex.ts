@@ -7,7 +7,7 @@
  * User directory: ~/.codex
  */
 import * as path from "node:path";
-import { logger } from "@oh-my-pi/pi-utils";
+import { logger } from "@nghyane/pi-utils";
 import { parse as parseToml } from "smol-toml";
 import { registerProvider } from "../capability";
 import type { ContextFile } from "../capability/context-file";

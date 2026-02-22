@@ -1,8 +1,8 @@
 /**
  * Tool output pruning utilities for compaction.
  */
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { ToolResultMessage } from "@oh-my-pi/pi-ai";
+import type { AgentMessage } from "@nghyane/pi-agent-core";
+import type { ToolResultMessage } from "@nghyane/pi-ai";
 import type { SessionEntry, SessionMessageEntry } from "../session-manager";
 import { estimateTokens } from "./compaction";
 

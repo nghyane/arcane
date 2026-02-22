@@ -1,4 +1,4 @@
-import { Container, Text } from "@oh-my-pi/pi-tui";
+import { Container, Text } from "@nghyane/pi-tui";
 import { theme } from "../../modes/theme/theme";
 import { shortenPath } from "../../tools/render-utils";
 import type { ToolExecutionHandle } from "./tool-execution";

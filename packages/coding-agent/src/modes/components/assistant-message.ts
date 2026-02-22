@@ -1,6 +1,6 @@
-import type { AssistantMessage } from "@oh-my-pi/pi-ai";
-import { Container, Markdown, Spacer, TERMINAL, Text } from "@oh-my-pi/pi-tui";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { AssistantMessage } from "@nghyane/pi-ai";
+import { Container, Markdown, Spacer, TERMINAL, Text } from "@nghyane/pi-tui";
+import { logger } from "@nghyane/pi-utils";
 import { hasPendingMermaid, prerenderMermaid } from "../../modes/theme/mermaid-cache";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 

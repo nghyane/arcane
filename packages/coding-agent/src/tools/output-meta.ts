@@ -10,8 +10,8 @@ import type {
 	AgentToolExecFn,
 	AgentToolResult,
 	AgentToolUpdateCallback,
-} from "@oh-my-pi/pi-agent-core";
-import type { ImageContent, TextContent } from "@oh-my-pi/pi-ai";
+} from "@nghyane/pi-agent-core";
+import type { ImageContent, TextContent } from "@nghyane/pi-ai";
 import type { OutputSummary } from "../session/streaming-output";
 import { renderError } from "./tool-errors";
 import type { TruncationResult } from "./truncate";

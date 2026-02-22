@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "@oh-my-pi/swarm-extension",
+	"name": "@nghyane/swarm-extension",
 	"version": "12.18.4",
 	"description": "Swarm orchestration extension for omp",
 	"homepage": "https://github.com/can1357/oh-my-pi",
@@ -28,7 +28,7 @@
 		"@types/bun": "^1.3.9"
 	},
 	"peerDependencies": {
-		"@oh-my-pi/pi-coding-agent": "^11"
+		"@nghyane/pi-coding-agent": "^11"
 	},
 	"engines": {
 		"bun": ">=1.3.7"

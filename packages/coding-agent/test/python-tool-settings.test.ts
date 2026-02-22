@@ -2,12 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { type SettingPath, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import * as pythonExecutor from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import * as pythonKernel from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import { createTools, type ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { PythonTool } from "@oh-my-pi/pi-coding-agent/tools/python";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { type SettingPath, Settings } from "@nghyane/pi-coding-agent/config/settings";
+import * as pythonExecutor from "@nghyane/pi-coding-agent/ipy/executor";
+import * as pythonKernel from "@nghyane/pi-coding-agent/ipy/kernel";
+import { createTools, type ToolSession } from "@nghyane/pi-coding-agent/tools";
+import { PythonTool } from "@nghyane/pi-coding-agent/tools/python";
+import { Snowflake } from "@nghyane/pi-utils";
 
 function createSession(
 	cwd: string,

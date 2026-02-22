@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { ptree, Snowflake } from "@oh-my-pi/pi-utils";
+import { ptree, Snowflake } from "@nghyane/pi-utils";
 import { ensureTool } from "../../utils/tools-manager";
 
 const MAX_BYTES = 50 * 1024 * 1024; // 50MB for binary files

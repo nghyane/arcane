@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "@oh-my-pi/pi-utils",
+	"name": "@nghyane/pi-utils",
 	"version": "12.18.4",
 	"description": "Shared utilities for pi packages",
 	"homepage": "https://github.com/can1357/oh-my-pi",

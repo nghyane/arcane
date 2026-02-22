@@ -12,8 +12,8 @@ import {
 	openMemoryDb,
 	tryClaimGlobalPhase2Job,
 	upsertThreads,
-} from "@oh-my-pi/pi-coding-agent/memories/storage";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+} from "@nghyane/pi-coding-agent/memories/storage";
+import { Snowflake } from "@nghyane/pi-utils";
 
 const GLOBAL_KIND = "memory_consolidate_global";
 const GLOBAL_KEY = "global";

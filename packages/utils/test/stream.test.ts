@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
+import { sanitizeText } from "@nghyane/pi-natives";
 import { parseJsonlLenient, readJsonl, readLines, readSseJson } from "../src/stream";
 
 const encoder = new TextEncoder();

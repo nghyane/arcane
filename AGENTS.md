@@ -193,7 +193,7 @@ if (await Bun.file(path).exists()) {
 }
 
 // GOOD: One syscall, atomic, type-safe error handling
-import { isEnoent } from "@oh-my-pi/pi-utils";
+import { isEnoent } from "@nghyane/pi-utils";
 
 try {
 	return await Bun.file(path).json();
@@ -382,7 +382,7 @@ const valid = await Bun.password.verify("password", hash);
 Use the centralized logger instead:
 
 ```typescript
-import { logger } from "@oh-my-pi/pi-utils";
+import { logger } from "@nghyane/pi-utils";
 
 logger.error("MCP request failed", { url, method });
 logger.warn("Theme file invalid, using fallback", { path });
@@ -397,7 +397,7 @@ All text displayed in tool renderers must be sanitized before output. Raw conten
 
 ### Rules
 
-- **Tabs → spaces**: Always pass displayed text through `replaceTabs()` before rendering. Tabs produce variable-width gaps in terminals and cause visual holes in the TUI. Import from `@oh-my-pi/pi-tui` or `../tools/render-utils`.
+- **Tabs → spaces**: Always pass displayed text through `replaceTabs()` before rendering. Tabs produce variable-width gaps in terminals and cause visual holes in the TUI. Import from `@nghyane/pi-tui` or `../tools/render-utils`.
 - **Line truncation**: Truncate displayed lines with `truncateToWidth()` or `ui.truncate()` to prevent horizontal overflow. Use constants from `TRUNCATE_LENGTHS` for consistency.
 - **Path shortening**: Use `shortenPath()` for file paths shown to users — replaces home directory prefix with `~`.
 - **Content preview limits**: Use `PREVIEW_LIMITS` constants for collapsed/expanded line counts. Don't invent ad-hoc limits.

@@ -5,9 +5,9 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { WorkProfile } from "@oh-my-pi/pi-natives";
-import { isEnoent } from "@oh-my-pi/pi-utils";
-import { APP_NAME, getLogPath, getLogsDir, getReportsDir } from "@oh-my-pi/pi-utils/dirs";
+import type { WorkProfile } from "@nghyane/pi-natives";
+import { isEnoent } from "@nghyane/pi-utils";
+import { APP_NAME, getLogPath, getLogsDir, getReportsDir } from "@nghyane/pi-utils/dirs";
 import type { CpuProfile, HeapSnapshot } from "./profiler";
 import { collectSystemInfo, sanitizeEnv } from "./system-info";
 

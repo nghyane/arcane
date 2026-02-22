@@ -4,8 +4,8 @@
  * Runs each subagent on the main thread and forwards AgentEvents for progress tracking.
  */
 import * as path from "node:path";
-import type { AgentEvent, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { logger, untilAborted } from "@oh-my-pi/pi-utils";
+import type { AgentEvent, ThinkingLevel } from "@nghyane/pi-agent-core";
+import { logger, untilAborted } from "@nghyane/pi-utils";
 import type { TSchema } from "@sinclair/typebox";
 import { ModelRegistry } from "../config/model-registry";
 import { resolveModelOverride } from "../config/model-resolver";

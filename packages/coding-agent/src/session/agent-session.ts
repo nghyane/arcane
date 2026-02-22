@@ -24,7 +24,7 @@ import {
 	type AgentState,
 	type AgentTool,
 	type ThinkingLevel,
-} from "@oh-my-pi/pi-agent-core";
+} from "@nghyane/pi-agent-core";
 import type {
 	AssistantMessage,
 	ImageContent,
@@ -36,10 +36,10 @@ import type {
 	ToolChoice,
 	Usage,
 	UsageReport,
-} from "@oh-my-pi/pi-ai";
-import { isContextOverflow, modelsAreEqual, supportsXhigh } from "@oh-my-pi/pi-ai";
-import { abortableSleep, isEnoent, logger } from "@oh-my-pi/pi-utils";
-import { getAgentDbPath } from "@oh-my-pi/pi-utils/dirs";
+} from "@nghyane/pi-ai";
+import { isContextOverflow, modelsAreEqual, supportsXhigh } from "@nghyane/pi-ai";
+import { abortableSleep, isEnoent, logger } from "@nghyane/pi-utils";
+import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
 import type { Rule } from "../capability/rule";
 import { MODEL_ROLE_IDS, type ModelRegistry, type ModelRole } from "../config/model-registry";
 import { expandRoleAlias, parseModelString } from "../config/model-resolver";

@@ -25,7 +25,7 @@ So this file documents the hook subsystem implementation itself (types/loader/ru
 A hook module must default-export a factory:
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
 
 export default function hook(pi: HookAPI): void {
 	pi.on("tool_call", async (event, ctx) => {
@@ -252,7 +252,7 @@ Hook status text set via `ctx.ui.setStatus(key, text)` is:
 ### Block unsafe bash commands
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("tool_call", async (event, ctx) => {
@@ -270,7 +270,7 @@ export default function (pi: HookAPI): void {
 ### Redact tool output on post-execution
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("tool_result", async event => {
@@ -289,7 +289,7 @@ export default function (pi: HookAPI): void {
 ### Modify model context per LLM call
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("context", async event => {
@@ -302,7 +302,7 @@ export default function (pi: HookAPI): void {
 ### Register slash command with command-safe context methods
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.registerCommand("handoff", {

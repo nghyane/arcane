@@ -4,10 +4,10 @@ import type {
 	AgentToolResult,
 	AgentToolUpdateCallback,
 	ToolCallContext,
-} from "@oh-my-pi/pi-agent-core";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { untilAborted } from "@oh-my-pi/pi-utils";
+} from "@nghyane/pi-agent-core";
+import type { Component } from "@nghyane/pi-tui";
+import { Text } from "@nghyane/pi-tui";
+import { untilAborted } from "@nghyane/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";

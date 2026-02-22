@@ -3,7 +3,7 @@
  *
  * Run: bun packages/tui/bench/visible-width.ts
  */
-import { visibleWidth as nativeVisibleWidth } from "@oh-my-pi/pi-natives";
+import { visibleWidth as nativeVisibleWidth } from "@nghyane/pi-natives";
 import { visibleWidthRaw as hybridVisibleWidth, replaceTabs } from "../src/utils";
 
 const ITERATIONS = 10_000;

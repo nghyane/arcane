@@ -1,4 +1,4 @@
-# @oh-my-pi/pi-codemode
+# @nghyane/pi-codemode
 
 Code Mode replaces sequential tool-calling with LLM-generated JavaScript. Instead of N round-trips for N tools, the LLM writes one async function that orchestrates all calls via a typed `codemode.*` proxy API.
 
@@ -13,7 +13,7 @@ Code Mode replaces sequential tool-calling with LLM-generated JavaScript. Instea
 ## Usage
 
 ```typescript
-import { createCodeTool } from "@oh-my-pi/pi-codemode";
+import { createCodeTool } from "@nghyane/pi-codemode";
 
 const { codeTool, excludedTools } = createCodeTool(tools);
 // Register codeTool + excludedTools with your agent

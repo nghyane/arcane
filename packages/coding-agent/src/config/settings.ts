@@ -13,8 +13,8 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isEnoent, logger, procmgr } from "@oh-my-pi/pi-utils";
-import { getAgentDbPath, getAgentDir, getProjectDir } from "@oh-my-pi/pi-utils/dirs";
+import { isEnoent, logger, procmgr } from "@nghyane/pi-utils";
+import { getAgentDbPath, getAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
 import { YAML } from "bun";
 import { type Settings as SettingsCapabilityItem, settingsCapability } from "../capability/settings";
 import type { ModelRole } from "../config/model-registry";

@@ -6,7 +6,7 @@
  * uses to write orchestration code instead of making individual tool calls.
  */
 
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
 import { Type } from "@sinclair/typebox";
 import {
 	bridgeToolFunctions,

@@ -1,9 +1,9 @@
 import * as path from "node:path";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { htmlToMarkdown } from "@oh-my-pi/pi-natives";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { ptree } from "@oh-my-pi/pi-utils";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
+import { htmlToMarkdown } from "@nghyane/pi-natives";
+import type { Component } from "@nghyane/pi-tui";
+import { Text } from "@nghyane/pi-tui";
+import { ptree } from "@nghyane/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { parse as parseHtml } from "node-html-parser";
 import { renderPromptTemplate } from "../config/prompt-templates";

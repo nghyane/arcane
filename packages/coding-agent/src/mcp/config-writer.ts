@@ -5,7 +5,7 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isEnoent } from "@oh-my-pi/pi-utils";
+import { isEnoent } from "@nghyane/pi-utils";
 
 import { validateServerConfig } from "./config";
 import type { MCPConfigFile, MCPServerConfig } from "./types";

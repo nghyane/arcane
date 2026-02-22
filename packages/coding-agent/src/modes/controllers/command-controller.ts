@@ -7,11 +7,11 @@ import {
 	type ProviderDetails,
 	type UsageLimit,
 	type UsageReport,
-} from "@oh-my-pi/pi-ai";
-import { copyToClipboard } from "@oh-my-pi/pi-natives";
-import { Loader, Markdown, padding, Spacer, Text, visibleWidth } from "@oh-my-pi/pi-tui";
-import { Snowflake } from "@oh-my-pi/pi-utils";
-import { setProjectDir } from "@oh-my-pi/pi-utils/dirs";
+} from "@nghyane/pi-ai";
+import { copyToClipboard } from "@nghyane/pi-natives";
+import { Loader, Markdown, padding, Spacer, Text, visibleWidth } from "@nghyane/pi-tui";
+import { Snowflake } from "@nghyane/pi-utils";
+import { setProjectDir } from "@nghyane/pi-utils/dirs";
 import { $ } from "bun";
 import { reset as resetCapabilities } from "../../capability";
 import { loadCustomShare } from "../../export/custom-share";

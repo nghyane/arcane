@@ -3,7 +3,7 @@ import {
 	deserializeWebSocketMessage,
 	type JupyterMessage,
 	serializeWebSocketMessage,
-} from "@oh-my-pi/pi-coding-agent/ipy/kernel";
+} from "@nghyane/pi-coding-agent/ipy/kernel";
 
 const encoder = new TextEncoder();
 

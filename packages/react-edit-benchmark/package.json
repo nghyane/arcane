@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"private": true,
-	"name": "@oh-my-pi/react-edit-benchmark",
+	"name": "@nghyane/react-edit-benchmark",
 	"version": "0.0.1",
 	"description": "Edit benchmark suite using React source code mutations",
 	"author": "Can Bölük",
@@ -25,9 +25,9 @@
 		"@babel/parser": "7.29.0",
 		"@babel/traverse": "7.29.0",
 		"@babel/types": "7.29.0",
-		"@oh-my-pi/pi-agent-core": "workspace:*",
-		"@oh-my-pi/pi-coding-agent": "workspace:*",
-		"@oh-my-pi/pi-utils": "workspace:*",
+		"@nghyane/pi-agent-core": "workspace:*",
+		"@nghyane/pi-coding-agent": "workspace:*",
+		"@nghyane/pi-utils": "workspace:*",
 		"diff": "^8.0.3",
 		"prettier": "^3.8.1",
 		"regexp-tree": "0.1.27"

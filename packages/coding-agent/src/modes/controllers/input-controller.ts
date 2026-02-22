@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import { copyToClipboard, readImageFromClipboard, sanitizeText } from "@oh-my-pi/pi-natives";
-import { $env } from "@oh-my-pi/pi-utils";
+import type { AgentMessage } from "@nghyane/pi-agent-core";
+import { copyToClipboard, readImageFromClipboard, sanitizeText } from "@nghyane/pi-natives";
+import { $env } from "@nghyane/pi-utils";
 import { settings } from "../../config/settings";
 import { theme } from "../../modes/theme/theme";
 import type { InteractiveModeContext } from "../../modes/types";

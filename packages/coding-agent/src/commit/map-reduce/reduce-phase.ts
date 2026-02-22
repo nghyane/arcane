@@ -1,5 +1,5 @@
-import type { Api, AssistantMessage, Model, ToolCall } from "@oh-my-pi/pi-ai";
-import { completeSimple, validateToolCall } from "@oh-my-pi/pi-ai";
+import type { Api, AssistantMessage, Model, ToolCall } from "@nghyane/pi-ai";
+import { completeSimple, validateToolCall } from "@nghyane/pi-ai";
 import { Type } from "@sinclair/typebox";
 import reduceSystemPrompt from "../../commit/prompts/reduce-system.md" with { type: "text" };
 import reduceUserPrompt from "../../commit/prompts/reduce-user.md" with { type: "text" };

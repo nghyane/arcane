@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
-import { $env } from "@oh-my-pi/pi-utils";
-import { getProjectDir } from "@oh-my-pi/pi-utils/dirs";
+import { $env } from "@nghyane/pi-utils";
+import { getProjectDir } from "@nghyane/pi-utils/dirs";
 import { applyChangelogProposals } from "../../commit/changelog";
 import { detectChangelogBoundaries } from "../../commit/changelog/detect";
 import { parseUnreleasedSection } from "../../commit/changelog/parse";

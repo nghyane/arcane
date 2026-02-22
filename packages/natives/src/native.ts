@@ -7,8 +7,8 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $env } from "@oh-my-pi/pi-utils";
-import { getNativesDir } from "@oh-my-pi/pi-utils/dirs";
+import { $env } from "@nghyane/pi-utils";
+import { getNativesDir } from "@nghyane/pi-utils/dirs";
 import packageJson from "../package.json";
 import type { NativeBindings } from "./bindings";
 import { embeddedAddon } from "./embedded-addon";
@@ -220,7 +220,7 @@ function loadNative(): NativeBindings {
 			`If missing, delete ${versionedDir} and re-run, or download manually:\n${downloadHints}`;
 	} else {
 		helpMessage =
-			"If installed via npm/bun, try reinstalling: bun install @oh-my-pi/pi-natives\n" +
+			"If installed via npm/bun, try reinstalling: bun install @nghyane/pi-natives\n" +
 			"If developing locally, build with: bun --cwd=packages/natives run build:native\n" +
 			"Optional x64 variants: TARGET_VARIANT=baseline|modern bun --cwd=packages/natives run build:native";
 	}

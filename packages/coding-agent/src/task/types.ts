@@ -1,6 +1,6 @@
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { Usage } from "@oh-my-pi/pi-ai";
-import { $env } from "@oh-my-pi/pi-utils";
+import type { ThinkingLevel } from "@nghyane/pi-agent-core";
+import type { Usage } from "@nghyane/pi-ai";
+import { $env } from "@nghyane/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 
 /** Source of an agent definition */

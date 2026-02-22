@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { isEnoent } from "@oh-my-pi/pi-utils";
-import { getAgentDir, getProjectDir } from "@oh-my-pi/pi-utils/dirs";
+import { isEnoent } from "@nghyane/pi-utils";
+import { getAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
 import type { InstalledPlugin } from "./types";
 
 const PLUGINS_DIR = path.join(getAgentDir(), "plugins");

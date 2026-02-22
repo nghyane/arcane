@@ -4,10 +4,10 @@ import {
 	type HighlightColors as NativeHighlightColors,
 	highlightCode as nativeHighlightCode,
 	supportsLanguage as nativeSupportsLanguage,
-} from "@oh-my-pi/pi-natives";
-import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@oh-my-pi/pi-tui";
-import { adjustHsv, isEnoent, logger } from "@oh-my-pi/pi-utils";
-import { getCustomThemesDir } from "@oh-my-pi/pi-utils/dirs";
+} from "@nghyane/pi-natives";
+import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@nghyane/pi-tui";
+import { adjustHsv, isEnoent, logger } from "@nghyane/pi-utils";
+import { getCustomThemesDir } from "@nghyane/pi-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import chalk from "chalk";
@@ -2322,7 +2322,7 @@ export function getEditorTheme(): EditorTheme {
 	};
 }
 
-export function getSettingsListTheme(): import("@oh-my-pi/pi-tui").SettingsListTheme {
+export function getSettingsListTheme(): import("@nghyane/pi-tui").SettingsListTheme {
 	return {
 		label: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : text),
 		value: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : theme.fg("muted", text)),

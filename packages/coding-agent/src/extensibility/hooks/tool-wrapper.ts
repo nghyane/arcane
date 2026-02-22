@@ -1,7 +1,7 @@
 /**
  * Tool wrapper - wraps tools with hook callbacks for interception.
  */
-import type { AgentTool, AgentToolContext, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
+import type { AgentTool, AgentToolContext, AgentToolUpdateCallback } from "@nghyane/pi-agent-core";
 import type { Static, TSchema } from "@sinclair/typebox";
 import { applyToolProxy } from "../tool-proxy";
 import type { HookRunner } from "./runner";

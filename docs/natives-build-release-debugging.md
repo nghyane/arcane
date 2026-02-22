@@ -1,6 +1,6 @@
 # Natives Build, Release, and Debugging Runbook
 
-This runbook describes how the `@oh-my-pi/pi-natives` build pipeline produces `.node` addons, how compiled distributions load them, and how to debug loader/build failures.
+This runbook describes how the `@nghyane/pi-natives` build pipeline produces `.node` addons, how compiled distributions load them, and how to debug loader/build failures.
 
 It follows the architecture terms from `docs/natives-architecture.md`:
 - **build-time artifact production** (`scripts/build-native.ts`)

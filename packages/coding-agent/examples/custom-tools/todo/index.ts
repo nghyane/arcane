@@ -12,7 +12,7 @@ import type {
 	CustomToolContext,
 	CustomToolFactory,
 	CustomToolSessionEvent,
-} from "@oh-my-pi/pi-coding-agent";
+} from "@nghyane/pi-coding-agent";
 
 interface Todo {
 	id: number;

@@ -6,8 +6,8 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isEnoent } from "@oh-my-pi/pi-utils";
-import { getPluginsLockfile, getPluginsNodeModules, getPluginsPackageJson } from "@oh-my-pi/pi-utils/dirs";
+import { isEnoent } from "@nghyane/pi-utils";
+import { getPluginsLockfile, getPluginsNodeModules, getPluginsPackageJson } from "@nghyane/pi-utils/dirs";
 import { getConfigDirPaths } from "../../config";
 import type { InstalledPlugin, PluginManifest, PluginRuntimeConfig, ProjectPluginOverrides } from "./types";
 

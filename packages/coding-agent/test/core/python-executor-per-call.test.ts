@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { executePython } from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import type { KernelExecuteOptions, KernelExecuteResult } from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import { PythonKernel } from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { executePython } from "@nghyane/pi-coding-agent/ipy/executor";
+import type { KernelExecuteOptions, KernelExecuteResult } from "@nghyane/pi-coding-agent/ipy/kernel";
+import { PythonKernel } from "@nghyane/pi-coding-agent/ipy/kernel";
+import { TempDir } from "@nghyane/pi-utils";
 
 interface KernelStub {
 	execute: (code: string, options?: KernelExecuteOptions) => Promise<KernelExecuteResult>;

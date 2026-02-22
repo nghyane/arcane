@@ -1,4 +1,4 @@
-import { logger } from "@oh-my-pi/pi-utils";
+import { logger } from "@nghyane/pi-utils";
 import { $ } from "bun";
 import { resolvePython } from "./transcriber";
 

@@ -1,5 +1,5 @@
 {
-	"name": "@oh-my-pi/pi-codemode",
+	"name": "@nghyane/pi-codemode",
 	"version": "12.18.4",
 	"description": "Code Mode: convert tool-calling into TypeScript code generation for LLM orchestration",
 	"type": "module",
@@ -24,8 +24,8 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@oh-my-pi/pi-agent-core": "workspace:*",
-		"@oh-my-pi/pi-utils": "workspace:*",
+		"@nghyane/pi-agent-core": "workspace:*",
+		"@nghyane/pi-utils": "workspace:*",
 		"@sinclair/typebox": "^0.34.48"
 	},
 	"devDependencies": {

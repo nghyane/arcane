@@ -3,10 +3,10 @@ import {
 	getOpenAICodexTransportDetails,
 	prewarmOpenAICodexResponses,
 	streamOpenAICodexResponses,
-} from "@oh-my-pi/pi-ai/providers/openai-codex-responses";
-import type { Context, Model, ProviderSessionState } from "@oh-my-pi/pi-ai/types";
-import { TempDir } from "@oh-my-pi/pi-utils";
-import { getAgentDir, setAgentDir } from "@oh-my-pi/pi-utils/dirs";
+} from "@nghyane/pi-ai/providers/openai-codex-responses";
+import type { Context, Model, ProviderSessionState } from "@nghyane/pi-ai/types";
+import { TempDir } from "@nghyane/pi-utils";
+import { getAgentDir, setAgentDir } from "@nghyane/pi-utils/dirs";
 
 const originalFetch = global.fetch;
 const originalAgentDir = getAgentDir();

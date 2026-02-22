@@ -102,7 +102,7 @@ Inherited from upstream:
 Requires [Bun](https://bun.sh) **>= 1.3.7**:
 
 ```bash
-bun install -g @oh-my-pi/pi-coding-agent
+bun install -g @nghyane/pi-coding-agent
 ```
 
 ### Via installer script
@@ -698,7 +698,7 @@ Hook locations:
 - CLI: `--hook <path>`
 
 ```typescript
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@nghyane/pi-coding-agent/hooks";
 
 export default function (omp: HookAPI) {
 	omp.on("tool_call", async (event, ctx) => {
@@ -730,7 +730,7 @@ Auto-discovered locations:
 
 ```typescript
 import { Type } from "@sinclair/typebox";
-import type { CustomToolFactory } from "@oh-my-pi/pi-coding-agent";
+import type { CustomToolFactory } from "@nghyane/pi-coding-agent";
 const factory: CustomToolFactory = () => ({
 	name: "greet",
 	label: "Greeting",
@@ -903,7 +903,7 @@ For adding new tools, see [Custom Tools](#custom-tools).
 For embedding omp in Node.js/TypeScript applications, use the SDK:
 
 ```typescript
-import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@oh-my-pi/pi-coding-agent";
+import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@nghyane/pi-coding-agent";
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);
 await modelRegistry.refresh();
@@ -988,21 +988,21 @@ For architecture and contribution guidelines, see [packages/coding-agent/DEVELOP
 
 | Package                                                   | Description                                                                |
 | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **[@oh-my-pi/pi-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
-| **[@oh-my-pi/pi-agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
-| **[@oh-my-pi/pi-codemode](packages/codemode)**            | Code Mode: LLM writes JS to orchestrate tools in a single round-trip      |
-| **[@oh-my-pi/pi-coding-agent](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
-| **[@oh-my-pi/pi-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
-| **[@oh-my-pi/pi-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
-| **[@oh-my-pi/omp-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
-| **[@oh-my-pi/pi-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
-| **[@oh-my-pi/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
+| **[@nghyane/pi-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
+| **[@nghyane/pi-agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
+| **[@nghyane/pi-codemode](packages/codemode)**            | Code Mode: LLM writes JS to orchestrate tools in a single round-trip      |
+| **[@nghyane/pi-coding-agent](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
+| **[@nghyane/pi-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
+| **[@nghyane/pi-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
+| **[@nghyane/omp-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
+| **[@nghyane/pi-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
+| **[@nghyane/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
 
 ### Rust Crates
 
 | Crate                                                         | Description                                                                                  |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@oh-my-pi/pi-natives`                                        |
+| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@nghyane/pi-natives`                                        |
 | **[brush-core-vendored](crates/brush-core-vendored)**         | Vendored fork of [brush-shell](https://github.com/reubeno/brush) for embedded bash execution |
 | **[brush-builtins-vendored](crates/brush-builtins-vendored)** | Vendored bash builtins (cd, echo, test, printf, read, export, etc.)                          |
 

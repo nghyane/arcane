@@ -122,7 +122,7 @@ Must define at least one of:
 
 ModelRegistry pipeline (on refresh):
 
-1. Load built-in providers/models from `@oh-my-pi/pi-ai`.
+1. Load built-in providers/models from `@nghyane/pi-ai`.
 2. Load `models.yml` custom config.
 3. Apply provider overrides (`baseUrl`, `headers`) to built-in models.
 4. Apply `modelOverrides` (per provider + model id).

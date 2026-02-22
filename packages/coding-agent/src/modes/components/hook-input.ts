@@ -1,7 +1,7 @@
 /**
  * Simple text input component for hooks.
  */
-import { Container, Input, matchesKey, Spacer, Text, type TUI } from "@oh-my-pi/pi-tui";
+import { Container, Input, matchesKey, Spacer, Text, type TUI } from "@nghyane/pi-tui";
 import { theme } from "../../modes/theme/theme";
 import { CountdownTimer } from "./countdown-timer";
 import { DynamicBorder } from "./dynamic-border";

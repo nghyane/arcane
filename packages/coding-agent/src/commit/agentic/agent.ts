@@ -1,5 +1,5 @@
-import type { Api, Model } from "@oh-my-pi/pi-ai";
-import { Markdown } from "@oh-my-pi/pi-tui";
+import type { Api, Model } from "@nghyane/pi-ai";
+import { Markdown } from "@nghyane/pi-tui";
 import chalk from "chalk";
 import type { ControlledGit } from "../../commit/git";
 import typesDescriptionPrompt from "../../commit/prompts/types-description.md" with { type: "text" };

@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import { createServer } from "node:net";
 import * as path from "node:path";
-import { isEnoent, logger, procmgr } from "@oh-my-pi/pi-utils";
-import { getAgentDir } from "@oh-my-pi/pi-utils/dirs";
+import { isEnoent, logger, procmgr } from "@nghyane/pi-utils";
+import { getAgentDir } from "@nghyane/pi-utils/dirs";
 import type { Subprocess } from "bun";
 import { Settings } from "../config/settings";
 import { getOrCreateSnapshot } from "../utils/shell-snapshot";

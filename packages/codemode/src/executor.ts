@@ -12,7 +12,7 @@
  * toward the codemode API, not to contain malicious code.
  */
 
-import { logger } from "@oh-my-pi/pi-utils";
+import { logger } from "@nghyane/pi-utils";
 
 export interface ExecuteResult {
 	/** Return value from the code (JSON-serializable) */

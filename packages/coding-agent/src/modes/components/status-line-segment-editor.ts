@@ -8,7 +8,7 @@
  * - Shift+J/K: Reorder segment within column
  * - Live preview shown in the actual status line above
  */
-import { Container, matchesKey, padding } from "@oh-my-pi/pi-tui";
+import { Container, matchesKey, padding } from "@nghyane/pi-tui";
 import type { StatusLineSegmentId } from "../../config/settings-schema";
 import { theme } from "../../modes/theme/theme";
 import { ALL_SEGMENT_IDS } from "./status-line/segments";

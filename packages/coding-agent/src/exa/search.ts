@@ -3,7 +3,7 @@
  *
  * Basic neural/keyword search, deep research, code search, and URL crawling.
  */
-import { StringEnum } from "@oh-my-pi/pi-ai";
+import { StringEnum } from "@nghyane/pi-ai";
 import { Type } from "@sinclair/typebox";
 import type { CustomTool } from "../extensibility/custom-tools/types";
 import { callExaTool, findApiKey, formatSearchResults, isSearchResponse } from "./mcp-client";

@@ -3,7 +3,7 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getCrashLogPath, getDebugLogPath } from "@oh-my-pi/pi-utils/dirs";
+import { getCrashLogPath, getDebugLogPath } from "@nghyane/pi-utils/dirs";
 import { isKeyRelease, matchesKey } from "./keys";
 import type { Terminal } from "./terminal";
 import { setCellDimensions, TERMINAL } from "./terminal-capabilities";
@@ -214,7 +214,7 @@ export class TUI extends Container {
 	#inputBuffer = ""; // Buffer for parsing terminal responses
 	#cellSizeQueryPending = false;
 	#showHardwareCursor = process.env.PI_HARDWARE_CURSOR === "1";
-	#clearOnShrink = process.env.PI_CLEAR_ON_SHRINK !== "0"; // Clear empty rows when content shrinks (default: on, disable with PI_CLEAR_ON_SHRINK=0)
+	#clearOnShrink = process.env.PI_CLEAR_ON_SHRINK === "1"; // Clear empty rows when content shrinks (default: off, enable with PI_CLEAR_ON_SHRINK=1)
 	#maxLinesRendered = 0; // Track terminal's working area (max lines ever rendered)
 	#previousViewportTop = 0; // Track previous viewport top for resize-aware cursor moves
 	#fullRedrawCount = 0;
@@ -928,9 +928,7 @@ export class TUI extends Container {
 			return;
 		}
 
-		// Content shrunk below the working area and no overlays - re-render to clear empty rows.
-		// When an overlay is active, avoid clearing to reduce flicker and avoid resetting scrollback.
-		// Configurable via setClearOnShrink() or PI_CLEAR_ON_SHRINK=0 env var
+		// clearOnShrink: full redraw when content shrinks (opt-in, may flicker on some terminals)
 		if (this.#clearOnShrink && newLines.length < this.#maxLinesRendered && this.overlayStack.length === 0) {
 			logRedraw(`clearOnShrink (maxLinesRendered=${this.#maxLinesRendered})`);
 			fullRender(true);
@@ -1135,8 +1133,12 @@ export class TUI extends Container {
 		// hardwareCursorRow tracks actual terminal cursor position (for movement)
 		this.#cursorRow = Math.max(0, newLines.length - 1);
 		this.#hardwareCursorRow = cursorUpdate.row;
-		// Track terminal's working area (grows but doesn't shrink unless cleared)
-		this.#maxLinesRendered = Math.max(this.#maxLinesRendered, newLines.length);
+		// Track terminal's working area — shrink when stale rows were erased
+		if (this.#previousLines.length > newLines.length) {
+			this.#maxLinesRendered = newLines.length;
+		} else {
+			this.#maxLinesRendered = Math.max(this.#maxLinesRendered, newLines.length);
+		}
 		this.#previousViewportTop = Math.max(0, this.#maxLinesRendered - height);
 		this.#previousLines = newLines;
 		this.#previousWidth = width;

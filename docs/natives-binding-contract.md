@@ -1,6 +1,6 @@
 # Natives Binding Contract (TypeScript Side)
 
-This document defines the TypeScript-side contract that sits between `@oh-my-pi/pi-natives` callers and the loaded N-API addon.
+This document defines the TypeScript-side contract that sits between `@nghyane/pi-natives` callers and the loaded N-API addon.
 
 It focuses on three pieces:
 

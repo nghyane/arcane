@@ -7,8 +7,8 @@
 import { execSync, spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import { pipeline } from "node:stream/promises";
-import { isEnoent } from "@oh-my-pi/pi-utils";
-import { APP_NAME, VERSION } from "@oh-my-pi/pi-utils/dirs";
+import { isEnoent } from "@nghyane/pi-utils";
+import { APP_NAME, VERSION } from "@nghyane/pi-utils/dirs";
 import chalk from "chalk";
 import { theme } from "../modes/theme/theme";
 
@@ -22,7 +22,7 @@ const isBunBinary =
 	import.meta.url.includes("%7EBUN");
 
 const REPO = "can1357/oh-my-pi";
-const PACKAGE = "@oh-my-pi/pi-coding-agent";
+const PACKAGE = "@nghyane/pi-coding-agent";
 
 interface ReleaseInfo {
 	tag: string;

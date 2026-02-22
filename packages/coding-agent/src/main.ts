@@ -10,9 +10,9 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
-import { type ImageContent, supportsXhigh } from "@oh-my-pi/pi-ai";
-import { $env, postmortem } from "@oh-my-pi/pi-utils";
-import { getProjectDir, setProjectDir, VERSION } from "@oh-my-pi/pi-utils/dirs";
+import { type ImageContent, supportsXhigh } from "@nghyane/pi-ai";
+import { $env, postmortem } from "@nghyane/pi-utils";
+import { getProjectDir, setProjectDir, VERSION } from "@nghyane/pi-utils/dirs";
 import chalk from "chalk";
 import type { Args } from "./cli/args";
 import { processFileArguments } from "./cli/file-processor";
@@ -39,7 +39,7 @@ const debugStartup = $env.PI_DEBUG_STARTUP ? (stage: string) => process.stderr.w
 
 async function checkForNewVersion(currentVersion: string): Promise<string | undefined> {
 	try {
-		const response = await fetch("https://registry.npmjs.org/@oh-my-pi/pi-coding-agent/latest");
+		const response = await fetch("https://registry.npmjs.org/@nghyane/pi-coding-agent/latest");
 		if (!response.ok) return undefined;
 
 		const data = (await response.json()) as { version?: string };

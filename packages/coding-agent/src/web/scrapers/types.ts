@@ -1,7 +1,7 @@
 /**
  * Shared types and utilities for web-fetch handlers
  */
-import { ptree } from "@oh-my-pi/pi-utils";
+import { ptree } from "@nghyane/pi-utils";
 import { ToolAbortError } from "../../tools/tool-errors";
 
 export interface RenderResult {

@@ -64,7 +64,7 @@ CustomTool.execute(toolCallId, params, onUpdate, ctx, signal)
 A custom tool module must export a function (default export preferred):
 
 ```ts
-import type { CustomToolFactory } from "@oh-my-pi/pi-coding-agent";
+import type { CustomToolFactory } from "@nghyane/pi-coding-agent";
 
 const factory: CustomToolFactory = (pi) => ({
 	name: "repo_stats",
@@ -121,7 +121,7 @@ From `types.ts` and `loader.ts`:
 - `hasUI`: `false` in non-interactive flows
 - `logger`: shared file logger
 - `typebox`: injected `@sinclair/typebox`
-- `pi`: injected `@oh-my-pi/pi-coding-agent` exports
+- `pi`: injected `@nghyane/pi-coding-agent` exports
 
 Loader starts with a no-op UI context and requires host code to call `setUIContext(...)` when real UI is ready.
 

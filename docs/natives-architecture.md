@@ -1,6 +1,6 @@
 # Natives Architecture
 
-`@oh-my-pi/pi-natives` is a three-layer stack:
+`@nghyane/pi-natives` is a three-layer stack:
 
 1. **TypeScript wrapper/API layer** exposes stable JS/TS entrypoints.
 2. **Addon loading/validation layer** resolves and validates the `.node` binary for the current runtime.
@@ -35,7 +35,7 @@ Current top-level groups:
 - module-specific bindings are added by declaration merging from each module’s `types.ts`
 - `Cancellable` standardizes timeout and abort-signal options for wrappers that expose cancellation
 
-**Guaranteed contract (API-facing):** consumers import from `@oh-my-pi/pi-natives` and use typed wrappers.
+**Guaranteed contract (API-facing):** consumers import from `@nghyane/pi-natives` and use typed wrappers.
 
 **Implementation detail (may change):** declaration merging and internal wrapper layout (`src/<module>/index.ts`, `src/<module>/types.ts`).
 
@@ -149,7 +149,7 @@ At architecture level, ownership is split as follows:
 
 ## Runtime flow (high level)
 
-1. Consumer imports from `@oh-my-pi/pi-natives`.
+1. Consumer imports from `@nghyane/pi-natives`.
 2. Wrapper module calls into singleton `native` binding.
 3. `native.ts` selects candidate binary for platform/arch/variant.
 4. Optional embedded binary extraction occurs for compiled distributions.

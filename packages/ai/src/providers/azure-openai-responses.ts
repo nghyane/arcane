@@ -1,4 +1,4 @@
-import { $env } from "@oh-my-pi/pi-utils";
+import { $env } from "@nghyane/pi-utils";
 import type OpenAI from "openai";
 import { AzureOpenAI } from "openai";
 import type {

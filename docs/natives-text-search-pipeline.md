@@ -1,6 +1,6 @@
 # Natives Text/Search Pipeline
 
-This document maps the `@oh-my-pi/pi-natives` text/search surface (`grep`, `glob`, `text`, `highlight`) from TypeScript wrappers to Rust N-API exports and back to JS result objects.
+This document maps the `@nghyane/pi-natives` text/search surface (`grep`, `glob`, `text`, `highlight`) from TypeScript wrappers to Rust N-API exports and back to JS result objects.
 
 Terminology follows `docs/natives-architecture.md`:
 - **Wrapper**: TS API in `packages/natives/src/*`

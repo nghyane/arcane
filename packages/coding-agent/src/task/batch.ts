@@ -7,7 +7,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { Snowflake } from "@nghyane/pi-utils";
 import type { ModelRegistry } from "../config/model-registry";
 import { isDefaultModelAlias } from "../config/model-resolver";
 import type { Settings } from "../config/settings";

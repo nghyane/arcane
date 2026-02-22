@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import * as path from "node:path";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage, Usage } from "@oh-my-pi/pi-ai";
-import { getBundledModel } from "@oh-my-pi/pi-ai";
+import type { AgentMessage } from "@nghyane/pi-agent-core";
+import type { AssistantMessage, Usage } from "@nghyane/pi-ai";
+import { getBundledModel } from "@nghyane/pi-ai";
 import {
 	type CompactionSettings,
 	calculateContextTokens,
@@ -12,7 +12,7 @@ import {
 	getLastAssistantUsage,
 	prepareCompaction,
 	shouldCompact,
-} from "@oh-my-pi/pi-coding-agent/session/compaction";
+} from "@nghyane/pi-coding-agent/session/compaction";
 import {
 	buildSessionContext,
 	type CompactionEntry,
@@ -22,7 +22,7 @@ import {
 	type SessionEntry,
 	type SessionMessageEntry,
 	type ThinkingLevelChangeEntry,
-} from "@oh-my-pi/pi-coding-agent/session/session-manager";
+} from "@nghyane/pi-coding-agent/session/session-manager";
 import { e2eApiKey } from "./utilities";
 
 // ============================================================================

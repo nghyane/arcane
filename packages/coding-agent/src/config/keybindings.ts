@@ -7,9 +7,9 @@ import {
 	type KeyId,
 	matchesKey,
 	setEditorKeybindings,
-} from "@oh-my-pi/pi-tui";
-import { isEnoent, logger } from "@oh-my-pi/pi-utils";
-import { getAgentDir } from "@oh-my-pi/pi-utils/dirs";
+} from "@nghyane/pi-tui";
+import { isEnoent, logger } from "@nghyane/pi-utils";
+import { getAgentDir } from "@nghyane/pi-utils/dirs";
 
 /**
  * Application-level actions (coding agent specific).

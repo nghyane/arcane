@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import * as os from "node:os";
 import * as path from "node:path";
-import { loadSkills, loadSkillsFromDir, type Skill } from "@oh-my-pi/pi-coding-agent/extensibility/skills";
+import { loadSkills, loadSkillsFromDir, type Skill } from "@nghyane/pi-coding-agent/extensibility/skills";
 
 const fixturesDir = path.resolve(__dirname, "fixtures/skills");
 const collisionFixturesDir = path.resolve(__dirname, "fixtures/skills-collision");

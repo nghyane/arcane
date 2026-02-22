@@ -1,5 +1,5 @@
-import { copyToClipboard, sanitizeText } from "@oh-my-pi/pi-natives";
-import { type Component, matchesKey, padding, truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
+import { copyToClipboard, sanitizeText } from "@nghyane/pi-natives";
+import { type Component, matchesKey, padding, truncateToWidth, visibleWidth } from "@nghyane/pi-tui";
 import { theme } from "../modes/theme/theme";
 import { replaceTabs } from "../tools/render-utils";
 import {

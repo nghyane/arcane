@@ -7,8 +7,8 @@
  */
 import * as fs from "node:fs/promises";
 import path from "node:path";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import { glob } from "@oh-my-pi/pi-natives";
+import type { AgentMessage } from "@nghyane/pi-agent-core";
+import { glob } from "@nghyane/pi-natives";
 import { formatHashLines } from "../patch/hashline";
 import type { FileMentionMessage } from "../session/messages";
 import { resolveReadPath } from "../tools/path-utils";

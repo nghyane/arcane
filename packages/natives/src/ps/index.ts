@@ -2,7 +2,7 @@
  * Process management utilities.
  */
 
-import { setNativeKillTree } from "@oh-my-pi/pi-utils";
+import { setNativeKillTree } from "@nghyane/pi-utils";
 import { native } from "../native";
 
 setNativeKillTree(native.killTree);

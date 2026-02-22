@@ -2,16 +2,16 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Agent } from "@oh-my-pi/pi-agent-core";
-import { getBundledModel } from "@oh-my-pi/pi-ai";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { TodoWriteTool } from "@oh-my-pi/pi-coding-agent/tools";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { Agent } from "@nghyane/pi-agent-core";
+import { getBundledModel } from "@nghyane/pi-ai";
+import { ModelRegistry } from "@nghyane/pi-coding-agent/config/model-registry";
+import { Settings } from "@nghyane/pi-coding-agent/config/settings";
+import { AgentSession } from "@nghyane/pi-coding-agent/session/agent-session";
+import { AuthStorage } from "@nghyane/pi-coding-agent/session/auth-storage";
+import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
+import type { ToolSession } from "@nghyane/pi-coding-agent/tools";
+import { TodoWriteTool } from "@nghyane/pi-coding-agent/tools";
+import { Snowflake } from "@nghyane/pi-utils";
 
 /**
  * Regression test: /new (AgentSession.newSession) must fully switch to a new session file

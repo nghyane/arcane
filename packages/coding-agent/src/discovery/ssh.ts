@@ -5,7 +5,7 @@
  * Priority: 5 (low, project/user config discovery)
  */
 import * as path from "node:path";
-import { getSSHConfigPath } from "@oh-my-pi/pi-utils/dirs";
+import { getSSHConfigPath } from "@nghyane/pi-utils/dirs";
 import { registerProvider } from "../capability";
 import { readFile } from "../capability/fs";
 import { type SSHHost, sshCapability } from "../capability/ssh";

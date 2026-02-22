@@ -1,4 +1,4 @@
-import { $env, logger, Snowflake } from "@oh-my-pi/pi-utils";
+import { $env, logger, Snowflake } from "@nghyane/pi-utils";
 import { $ } from "bun";
 import { Settings } from "../config/settings";
 import { time } from "../utils/timings";

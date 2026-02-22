@@ -48,9 +48,9 @@ See [docs/custom-tools.md](../../docs/custom-tools.md) for full documentation.
 
 ```typescript
 import { Type } from "@sinclair/typebox";
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import { Text } from "@oh-my-pi/pi-tui";
-import type { CustomToolFactory } from "@oh-my-pi/pi-coding-agent";
+import { StringEnum } from "@nghyane/pi-ai";
+import { Text } from "@nghyane/pi-tui";
+import type { CustomToolFactory } from "@nghyane/pi-coding-agent";
 
 const factory: CustomToolFactory = (pi) => ({
 	name: "my_tool",
@@ -99,7 +99,7 @@ renderResult(result, { expanded, isPartial }, theme) {
 **Use StringEnum for string parameters** (required for Google API compatibility):
 
 ```typescript
-import { StringEnum } from "@oh-my-pi/pi-ai";
+import { StringEnum } from "@nghyane/pi-ai";
 
 // Good
 action: StringEnum(["list", "add"] as const);

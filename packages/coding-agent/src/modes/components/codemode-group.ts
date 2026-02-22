@@ -1,6 +1,6 @@
-import type { AgentTool } from "@oh-my-pi/pi-agent-core";
-import type { Component, TUI } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
+import type { AgentTool } from "@nghyane/pi-agent-core";
+import type { Component, TUI } from "@nghyane/pi-tui";
+import { Text } from "@nghyane/pi-tui";
 import { getSymbolTheme, theme } from "../../modes/theme/theme";
 import { shortenPath } from "../../tools/render-utils";
 import { getTreeBranch, getTreeContinuePrefix } from "../../tui";

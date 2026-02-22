@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { Agent } from "@oh-my-pi/pi-agent-core";
-import { type AssistantMessage, getBundledModel, type ThinkingBudgets, type Usage } from "@oh-my-pi/pi-ai";
-import { AssistantMessageEventStream } from "@oh-my-pi/pi-ai/utils/event-stream";
+import { Agent } from "@nghyane/pi-agent-core";
+import { type AssistantMessage, getBundledModel, type ThinkingBudgets, type Usage } from "@nghyane/pi-ai";
+import { AssistantMessageEventStream } from "@nghyane/pi-ai/utils/event-stream";
 
 class MockAssistantStream extends AssistantMessageEventStream {}
 

@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { Agent } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage } from "@oh-my-pi/pi-ai";
-import { getBundledModel } from "@oh-my-pi/pi-ai/models";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { AgentSession, type AgentSessionEvent } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Agent } from "@nghyane/pi-agent-core";
+import type { AssistantMessage } from "@nghyane/pi-ai";
+import { getBundledModel } from "@nghyane/pi-ai/models";
+import { ModelRegistry } from "@nghyane/pi-coding-agent/config/model-registry";
+import { Settings } from "@nghyane/pi-coding-agent/config/settings";
+import { AgentSession, type AgentSessionEvent } from "@nghyane/pi-coding-agent/session/agent-session";
+import { AuthStorage } from "@nghyane/pi-coding-agent/session/auth-storage";
+import { SessionManager } from "@nghyane/pi-coding-agent/session/session-manager";
+import { TempDir } from "@nghyane/pi-utils";
 
 describe("AgentSession handoff", () => {
 	let tempDir: TempDir;

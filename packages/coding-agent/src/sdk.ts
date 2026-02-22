@@ -1,9 +1,9 @@
-import { Agent, type AgentEvent, type AgentMessage, type AgentTool, type ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { type Message, type Model, supportsXhigh } from "@oh-my-pi/pi-ai";
-import { prewarmOpenAICodexResponses } from "@oh-my-pi/pi-ai/providers/openai-codex-responses";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { $env, logger, postmortem } from "@oh-my-pi/pi-utils";
-import { getAgentDbPath, getAgentDir, getProjectDir } from "@oh-my-pi/pi-utils/dirs";
+import { Agent, type AgentEvent, type AgentMessage, type AgentTool, type ThinkingLevel } from "@nghyane/pi-agent-core";
+import { type Message, type Model, supportsXhigh } from "@nghyane/pi-ai";
+import { prewarmOpenAICodexResponses } from "@nghyane/pi-ai/providers/openai-codex-responses";
+import type { Component } from "@nghyane/pi-tui";
+import { $env, logger, postmortem } from "@nghyane/pi-utils";
+import { getAgentDbPath, getAgentDir, getProjectDir } from "@nghyane/pi-utils/dirs";
 import chalk from "chalk";
 import { loadCapability } from "./capability";
 import { type Rule, ruleCapability } from "./capability/rule";
@@ -516,7 +516,7 @@ function createCustomToolsExtension(tools: CustomTool[]): ExtensionFactory {
  * const { session } = await createAgentSession();
  *
  * // With explicit model
- * import { getModel } from '@oh-my-pi/pi-ai';
+ * import { getModel } from '@nghyane/pi-ai';
  * const { session } = await createAgentSession({
  *   model: getModel('anthropic', 'claude-opus-4-5'),
  *   thinkingLevel: 'high',

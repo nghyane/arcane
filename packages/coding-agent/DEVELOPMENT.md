@@ -235,7 +235,7 @@ Notable current limitation from implementation: `#handleLine()` handles `RpcResp
 ### ASCII overview
 
 ```text
-@oh-my-pi/pi-agent-core Agent
+@nghyane/pi-agent-core Agent
             │ events/messages
             ▼
        AgentSession
@@ -763,7 +763,7 @@ This subsystem is split into two layers:
 #### Bash executor (`src/exec/bash-executor.ts`)
 
 - Entry point: `executeBash(command, options)`.
-- Uses `Settings.getShellConfig()` and `Shell` from `@oh-my-pi/pi-natives`.
+- Uses `Settings.getShellConfig()` and `Shell` from `@nghyane/pi-natives`.
 - Reuses shell sessions via `shellSessions: Map<string, Shell>` keyed by `buildSessionKey(...)` (shell, prefix, snapshot path, env, optional `sessionKey`).
 - Applies shell snapshot support via `getOrCreateSnapshot(...)` when using bash.
 - Streams output into `OutputSink` (`onChunk`, artifact path/id support).

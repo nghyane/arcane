@@ -1,5 +1,5 @@
-import type { AgentToolContext } from "@oh-my-pi/pi-agent-core";
-import { type PtyRunResult, PtySession, sanitizeText } from "@oh-my-pi/pi-natives";
+import type { AgentToolContext } from "@nghyane/pi-agent-core";
+import { type PtyRunResult, PtySession, sanitizeText } from "@nghyane/pi-natives";
 import {
 	type Component,
 	matchesKey,
@@ -8,7 +8,7 @@ import {
 	parseKittySequence,
 	truncateToWidth,
 	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@nghyane/pi-tui";
 import type { Terminal as XtermTerminalType } from "@xterm/headless";
 import xterm from "@xterm/headless";
 import type { Theme } from "../modes/theme/theme";

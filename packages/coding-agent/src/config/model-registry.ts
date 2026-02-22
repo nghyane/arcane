@@ -21,8 +21,8 @@ import {
 	type SimpleStreamOptions,
 	unregisterCustomApis,
 	unregisterOAuthProviders,
-} from "@oh-my-pi/pi-ai";
-import { logger } from "@oh-my-pi/pi-utils";
+} from "@nghyane/pi-ai";
+import { logger } from "@nghyane/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type ConfigError, ConfigFile } from "../config";
 import type { ThemeColor } from "../modes/theme/theme";

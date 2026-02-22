@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { ArtifactProtocolHandler } from "@oh-my-pi/pi-coding-agent/internal-urls/artifact-protocol";
-import { InternalUrlRouter } from "@oh-my-pi/pi-coding-agent/internal-urls/router";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { GrepTool } from "@oh-my-pi/pi-coding-agent/tools/grep";
+import { Settings } from "@nghyane/pi-coding-agent/config/settings";
+import { ArtifactProtocolHandler } from "@nghyane/pi-coding-agent/internal-urls/artifact-protocol";
+import { InternalUrlRouter } from "@nghyane/pi-coding-agent/internal-urls/router";
+import type { ToolSession } from "@nghyane/pi-coding-agent/tools";
+import { GrepTool } from "@nghyane/pi-coding-agent/tools/grep";
 
 function getResultText(result: { content: Array<{ type: string; text?: string }> }): string {
 	return result.content

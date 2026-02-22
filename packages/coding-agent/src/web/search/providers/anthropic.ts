@@ -9,8 +9,8 @@ import {
 	buildAnthropicHeaders,
 	buildAnthropicSystemBlocks,
 	stripClaudeToolPrefix,
-} from "@oh-my-pi/pi-ai";
-import { $env } from "@oh-my-pi/pi-utils";
+} from "@nghyane/pi-ai";
+import { $env } from "@nghyane/pi-utils";
 import { buildAnthropicUrl, findAnthropicAuth } from "../../../web/search/auth";
 import type {
 	AnthropicApiResponse,

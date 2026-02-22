@@ -5,8 +5,8 @@
  * Requires OAuth credentials stored in agent.db for provider "google-gemini-cli" or "google-antigravity".
  * Returns synthesized answers with citations and source metadata from grounding chunks.
  */
-import { getAntigravityHeaders, getGeminiCliHeaders, refreshGoogleCloudToken } from "@oh-my-pi/pi-ai";
-import { getAgentDbPath } from "@oh-my-pi/pi-utils/dirs";
+import { getAntigravityHeaders, getGeminiCliHeaders, refreshGoogleCloudToken } from "@nghyane/pi-ai";
+import { getAgentDbPath } from "@nghyane/pi-utils/dirs";
 import { AgentStorage } from "../../../session/agent-storage";
 import type { SearchCitation, SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";

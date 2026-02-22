@@ -3,9 +3,9 @@
  */
 import * as os from "node:os";
 import * as path from "node:path";
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { FileType, glob } from "@oh-my-pi/pi-natives";
-import { CONFIG_DIR_NAME } from "@oh-my-pi/pi-utils/dirs";
+import type { ThinkingLevel } from "@nghyane/pi-agent-core";
+import { FileType, glob } from "@nghyane/pi-natives";
+import { CONFIG_DIR_NAME } from "@nghyane/pi-utils/dirs";
 import { readFile } from "../capability/fs";
 import { parseRuleConditionAndScope, type Rule, type RuleFrontmatter } from "../capability/rule";
 import type { Skill, SkillFrontmatter } from "../capability/skill";

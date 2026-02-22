@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * Syncs ALL @oh-my-pi/* package dependency versions to match their current versions.
+ * Syncs ALL @nghyane/* package dependency versions to match their current versions.
  * This ensures lockstep versioning across the monorepo.
  */
 
@@ -11,6 +11,7 @@ import { join } from "node:path";
 interface PackageJson {
 	name: string;
 	version: string;
+	private?: boolean;
 	dependencies?: Record<string, string>;
 	devDependencies?: Record<string, string>;
 }
@@ -46,10 +47,16 @@ for (const [name, version] of Object.entries(versionMap).sort()) {
 	console.log(`  ${name}: ${version}`);
 }
 
-// Verify all versions are the same (lockstep)
-const versions = new Set(Object.values(versionMap));
+// Verify all non-private packages have the same version (lockstep)
+const publicVersionMap = Object.fromEntries(
+	Object.entries(versionMap).filter(([name]) => {
+		const pkg = Object.values(packages).find((p) => p.data.name === name);
+		return pkg && !pkg.data.private;
+	}),
+);
+const versions = new Set(Object.values(publicVersionMap));
 if (versions.size > 1) {
-	console.error("\n❌ ERROR: Not all packages have the same version!");
+	console.error("\n❌ ERROR: Not all public packages have the same version!");
 	console.error("Expected lockstep versioning. Run one of:");
 	console.error("  npm run version:patch");
 	console.error("  npm run version:minor");

@@ -1,8 +1,8 @@
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { getOAuthProviders, type OAuthProvider } from "@oh-my-pi/pi-ai";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Input, Loader, Spacer, Text } from "@oh-my-pi/pi-tui";
-import { getAgentDbPath, getProjectDir } from "@oh-my-pi/pi-utils/dirs";
+import type { ThinkingLevel } from "@nghyane/pi-agent-core";
+import { getOAuthProviders, type OAuthProvider } from "@nghyane/pi-ai";
+import type { Component } from "@nghyane/pi-tui";
+import { Input, Loader, Spacer, Text } from "@nghyane/pi-tui";
+import { getAgentDbPath, getProjectDir } from "@nghyane/pi-utils/dirs";
 import { MODEL_ROLES } from "../../config/model-registry";
 import { settings } from "../../config/settings";
 import { DebugSelectorComponent } from "../../debug";
