@@ -49,9 +49,7 @@ jobs:
             exit 1
           fi
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$HOME/.npmrc"
-          XDG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
-          mkdir -p "$XDG_DIR"
-          cp "$HOME/.npmrc" "$XDG_DIR/.npmrc"
+          unset XDG_CONFIG_HOME
           FAILED=0
           for pkg in packages/*/; do
             if jq -e '.private == true' "$pkg/package.json" > /dev/null 2>&1; then
