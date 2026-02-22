@@ -214,7 +214,7 @@ export class TUI extends Container {
 	#inputBuffer = ""; // Buffer for parsing terminal responses
 	#cellSizeQueryPending = false;
 	#showHardwareCursor = process.env.PI_HARDWARE_CURSOR === "1";
-	#clearOnShrink = process.env.PI_CLEAR_ON_SHRINK === "1"; // Clear empty rows when content shrinks (default: off)
+	#clearOnShrink = process.env.PI_CLEAR_ON_SHRINK !== "0"; // Clear empty rows when content shrinks (default: on, disable with PI_CLEAR_ON_SHRINK=0)
 	#maxLinesRendered = 0; // Track terminal's working area (max lines ever rendered)
 	#previousViewportTop = 0; // Track previous viewport top for resize-aware cursor moves
 	#fullRedrawCount = 0;

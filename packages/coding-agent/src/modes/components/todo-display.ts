@@ -51,7 +51,8 @@ export class TodoDisplayComponent {
 
 	setTodos(todos: TodoItem[]): void {
 		this.todos = todos;
-		this.#visible = this.todos.length > 0;
+		const allCompleted = todos.length > 0 && todos.every(t => t.status === "completed");
+		this.#visible = todos.length > 0 && !allCompleted;
 		this.#cached = undefined;
 	}
 

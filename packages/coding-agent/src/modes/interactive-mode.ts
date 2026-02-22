@@ -446,9 +446,8 @@ export class InteractiveMode implements InteractiveModeContext {
 
 	#renderTodoList(): void {
 		this.todoContainer.clear();
-		if (this.todoItems.length === 0) {
-			return;
-		}
+		if (this.todoItems.length === 0) return;
+		if (this.todoItems.every(t => t.status === "completed")) return;
 
 		const visibleTodos = this.todoExpanded ? this.todoItems : this.#getCollapsedTodos(this.todoItems);
 		const indent = "  ";
