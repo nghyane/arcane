@@ -191,6 +191,7 @@ impl PtySession {
 	}
 }
 
+#[allow(unused_variables, reason = "process_group_id is only used on unix")]
 fn terminate_pty_processes(
 	child: &mut Box<dyn Child + Send + Sync>,
 	child_pid: Option<i32>,
