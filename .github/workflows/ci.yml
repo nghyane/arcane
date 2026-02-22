@@ -237,9 +237,9 @@ jobs:
             version=$(jq -r .version "$pkg/package.json")
             # Replace workspace:* references with the resolved version
             jq --arg v "$version" '
-              (.dependencies // {}) |= with_entries(if .value == "workspace:*" then .value = $v else . end) |
-              (.devDependencies // {}) |= with_entries(if .value == "workspace:*" then .value = $v else . end) |
-              (.peerDependencies // {}) |= with_entries(if .value == "workspace:*" then .value = $v else . end)
+              if .dependencies then .dependencies |= with_entries(if .value == "workspace:*" then .value = $v else . end) else . end |
+              if .devDependencies then .devDependencies |= with_entries(if .value == "workspace:*" then .value = $v else . end) else . end |
+              if .peerDependencies then .peerDependencies |= with_entries(if .value == "workspace:*" then .value = $v else . end) else . end
             ' "$pkg/package.json" > "$pkg/package.json.tmp" && mv "$pkg/package.json.tmp" "$pkg/package.json"
           done
       - name: Publish to npm
