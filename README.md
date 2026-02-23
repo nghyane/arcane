@@ -1,5 +1,7 @@
+
 <p align="center">
-  <video src="https://github.com/nghyane/arcane/blob/main/assets/demo-hero.mp4?raw=true" width="720" autoplay loop muted playsinline></video>
+
+https://github.com/user-attachments/assets/c28fb0c5-b3e4-430d-b5a1-26b855beaa28
 </p>
 
 <h3 align="center">An AI that codes its own tools.</h3>
