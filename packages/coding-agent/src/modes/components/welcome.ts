@@ -67,9 +67,9 @@ export class WelcomeComponent implements Component {
 		const leftCol = showRightColumn ? dualLeftCol : boxWidth - 2;
 		const rightCol = showRightColumn ? dualRightCol : 0;
 
-		// Block-based OMP logo (gradient: magenta → cyan)
+		// Block-based ARC logo (gradient: magenta → cyan)
 		// biome-ignore format: preserve ASCII art layout
-		const piLogo = ["▀████████████▀", " ╘███    ███  ", "  ███    ███  ", "  ███    ███  ", " ▄███▄  ▄███▄ "];
+		const piLogo = [" ╭━━━╮╭━━━╮╭━━━╮", " ┃╭━╮┃┃╭━╮┃┃╭━━╯", " ┃┃ ┃┃┃╰━╯┃┃┃   ", " ┃╰━╯┃┃╭╮╭╯┃╰━━╮", " ╰━━━╯╰╯╰╯ ╰━━━╯"];
 
 		// Apply gradient to logo
 		const logoColored = piLogo.map(line => this.#gradientLine(line));
