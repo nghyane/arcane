@@ -124,7 +124,7 @@ describe("memories runtime", () => {
 			settings: disabled.settings,
 			modelRegistry: disabled.modelRegistry,
 			agentDir: disabled.agentDir,
-			taskDepth: 0,
+			isSubagent: false,
 		});
 		expect(openSpy).not.toHaveBeenCalled();
 
@@ -134,7 +134,7 @@ describe("memories runtime", () => {
 			settings: subagent.settings,
 			modelRegistry: subagent.modelRegistry,
 			agentDir: subagent.agentDir,
-			taskDepth: 1,
+			isSubagent: true,
 		});
 		expect(openSpy).not.toHaveBeenCalled();
 	});
@@ -151,7 +151,7 @@ describe("memories runtime", () => {
 			settings: fx.settings,
 			modelRegistry: fx.modelRegistry,
 			agentDir: fx.agentDir,
-			taskDepth: 0,
+			isSubagent: false,
 		});
 
 		await Bun.sleep(50);
@@ -201,7 +201,7 @@ describe("memories runtime", () => {
 			settings: fx.settings,
 			modelRegistry: fx.modelRegistry,
 			agentDir: fx.agentDir,
-			taskDepth: 0,
+			isSubagent: false,
 		});
 
 		const memoryRoot = getMemoryRoot(fx.agentDir, fx.session.sessionManager.getCwd());
@@ -261,7 +261,7 @@ describe("memories runtime", () => {
 			settings: fx.settings,
 			modelRegistry: fx.modelRegistry,
 			agentDir: fx.agentDir,
-			taskDepth: 0,
+			isSubagent: false,
 		});
 
 		await waitFor(async () => {
@@ -290,7 +290,7 @@ describe("memories runtime", () => {
 			settings: fx.settings,
 			modelRegistry: fx.modelRegistry,
 			agentDir: fx.agentDir,
-			taskDepth: 0,
+			isSubagent: false,
 		});
 
 		await waitFor(async () => {

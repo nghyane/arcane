@@ -121,12 +121,12 @@ export function startMemoryStartupTask(options: {
 	settings: Settings;
 	modelRegistry: ModelRegistry;
 	agentDir: string;
-	taskDepth: number;
+	isSubagent: boolean;
 }): void {
-	const { session, settings, modelRegistry, agentDir, taskDepth } = options;
+	const { session, settings, modelRegistry, agentDir, isSubagent } = options;
 	const cfg = loadMemoryConfig(settings);
 	if (!cfg.enabled) return;
-	if (taskDepth > 0) return;
+	if (isSubagent) return;
 	if (!session.sessionManager.getSessionFile()) return;
 
 	const dbPath = getAgentDbPath(agentDir);

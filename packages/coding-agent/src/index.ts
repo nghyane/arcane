@@ -179,6 +179,7 @@ export {
 	loadSshTool,
 	PythonTool,
 	ReadTool,
+	type SubagentContext,
 	type ToolSession,
 	WriteTool,
 } from "./sdk";

@@ -72,6 +72,7 @@ import {
 	loadSshTool,
 	PythonTool,
 	ReadTool,
+	type SubagentContext,
 	setPreferredImageProvider,
 	setPreferredSearchProvider,
 	type Tool,
@@ -157,8 +158,8 @@ export interface CreateAgentSessionOptions {
 	/** Tool names explicitly requested (enables disabled-by-default tools) */
 	toolNames?: string[];
 
-	/** Task recursion depth (for subagent sessions). Default: 0 */
-	taskDepth?: number;
+	/** Whether this is a subagent session. Default: false */
+	isSubagent?: boolean;
 	/** Parent task ID prefix for nested artifact naming (e.g., "6-Extensions") */
 	parentTaskPrefix?: string;
 
@@ -219,6 +220,7 @@ export {
 	PythonTool,
 	ReadTool,
 	WriteTool,
+	type SubagentContext,
 	type ToolSession,
 };
 
@@ -625,8 +627,8 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 
 	// For subagent sessions using GitHub Copilot, add X-Initiator header
 	// to ensure proper billing (agent-initiated vs user-initiated)
-	const taskDepth = options.taskDepth ?? 0;
-	const forceCopilotAgentInitiator = taskDepth > 0;
+	const isSubagent = options.isSubagent ?? false;
+	const forceCopilotAgentInitiator = isSubagent;
 	if (forceCopilotAgentInitiator && model?.provider === "github-copilot") {
 		model = {
 			...model,
@@ -718,7 +720,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		contextFiles,
 		skills,
 		eventBus,
-		taskDepth: options.taskDepth ?? 0,
+		isSubagent: options.isSubagent ?? false,
 		getSessionFile: () => sessionManager.getSessionFile() ?? null,
 		getSessionId: () => sessionManager.getSessionId?.() ?? null,
 		getSessionSpawns: () => options.spawns ?? "*",
@@ -730,10 +732,12 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			if (model) return formatModelString(model);
 			return undefined;
 		},
-		getCompactContext: () => session.formatCompactContext(),
+		subagentContext: {
+			getCompactContext: () => session.formatCompactContext(),
+			authStorage,
+			modelRegistry,
+		},
 		settings,
-		authStorage,
-		modelRegistry,
 	};
 
 	// Initialize internal URL router for internal protocols (agent://, artifact://, memory://, skill://, rule://)
@@ -792,7 +796,8 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		});
 		time("discoverAndLoadMCPTools");
 		mcpManager = mcpResult.manager;
-		toolSession.mcpManager = mcpManager;
+		if (!toolSession.subagentContext) toolSession.subagentContext = {};
+		toolSession.subagentContext.mcpManager = mcpManager;
 
 		// If we extracted Exa API keys from MCP configs and EXA_AARCANE_KEY isn't set, use the first one
 		if (mcpResult.exaApiKeys.length > 0 && !$env.EXA_AARCANE_KEY) {
@@ -1267,7 +1272,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		settings,
 		modelRegistry,
 		agentDir,
-		taskDepth,
+		isSubagent,
 	});
 
 	return {

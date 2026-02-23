@@ -8,7 +8,7 @@ Finish only the assigned work and return the minimum useful result.
 - Avoid full-file reads unless necessary.
 - Prefer edits to existing files over creating new ones.
 - NEVER create documentation files (*.md) unless explicitly requested.
-- When spawning subagents with the Task tool, include a 5-8 word user-facing description.
+- When done, write a concise summary of what you did as your final response. This is your output.
 - Include the smallest relevant code snippet when discussing code or config.
 - Follow the main agent's instructions.
 </directives>

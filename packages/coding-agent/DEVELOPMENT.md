@@ -393,7 +393,7 @@ A `ToolFactory` is `(session: ToolSession) => Tool | null | Promise<Tool | null>
 3. Performs Python kernel preflight/warmup when applicable (`checkPythonKernelAvailability`, `warmPythonEnvironment`).
 4. Carcutes effective gating (`isToolAllowed`) from settings and runtime state:
    - feature toggles (`find.enabled`, `grep.enabled`, etc.)
-   - recursion guard for `task` (`task.maxRecursionDepth` vs `session.taskDepth`)
+   - subagent guard for `task` (`session.isSubagent`)
 5. Instantiates tools in parallel with `Promise.all`, records slow factory timings when `ARCANE_TIMING=1`.
 6. Wraps every tool with `wrapToolWithMetaNotice` before returning.
 
@@ -912,7 +912,7 @@ What _is_ isolated is execution context and artifacts, not process memory:
 `runSubprocess(...)` computes active tools from agent frontmatter and runtime rules:
 
 - Adds `task` tool automatically when `agent.spawns` is set and recursion depth permits.
-- Removes `task` when max recursion depth is reached (`task.maxRecursionDepth`).
+- Removes `task` when running inside a subagent (`session.isSubagent`).
 - Expands legacy `exec` alias into `python` and/or `bash` based on `python.toolMode`.
 - Filters parent-owned tools out of child tools (`todo_write` is removed).
 

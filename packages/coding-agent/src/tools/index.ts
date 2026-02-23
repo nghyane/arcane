@@ -106,6 +106,14 @@ export type ContextFileEntry = {
 	depth?: number;
 };
 
+/** Forwarded context for spawning subagent processes */
+export interface SubagentContext {
+	authStorage?: import("../session/auth-storage").AuthStorage;
+	modelRegistry?: import("../config/model-registry").ModelRegistry;
+	mcpManager?: import("../mcp/manager").MCPManager;
+	getCompactContext?: () => string;
+}
+
 /** Session context for tool factories */
 export interface ToolSession {
 	/** Current working directory */
@@ -126,9 +134,8 @@ export interface ToolSession {
 	hasEditTool?: boolean;
 	/** Event bus for tool/extension communication */
 	eventBus?: EventBus;
-	/** Output schema for structured completion (subagents) */
-	/** Task recursion depth (0 = top-level, 1 = first child, etc.) */
-	taskDepth?: number;
+	/** Whether this session is a subagent (spawned by task tool) */
+	isSubagent?: boolean;
 	/** Get session file */
 	getSessionFile: () => string | null;
 	/** Get session ID */
@@ -143,20 +150,14 @@ export interface ToolSession {
 	getModelString?: () => string | undefined;
 	/** Get the current session model string, regardless of how it was chosen */
 	getActiveModelString?: () => string | undefined;
-	/** Auth storage for passing to subagents (avoids re-discovery) */
-	authStorage?: import("../session/auth-storage").AuthStorage;
-	/** Model registry for passing to subagents (avoids re-discovery) */
-	modelRegistry?: import("../config/model-registry").ModelRegistry;
-	/** MCP manager for proxying MCP calls through parent */
-	mcpManager?: import("../mcp/manager").MCPManager;
+	/** Context for spawning subagent processes (only used by task/subagent tools) */
+	subagentContext?: SubagentContext;
 	/** Internal URL router for agent:// and skill:// URLs */
 	internalRouter?: InternalUrlRouter;
 	/** Agent output manager for unique agent:// IDs across task invocations */
 	agentOutputManager?: AgentOutputManager;
 	/** Settings instance for passing to subagents */
 	settings: Settings;
-	/** Get compact conversation context for subagents (excludes tool results, system prompts) */
-	getCompactContext?: () => string;
 }
 
 type ToolFactory = (session: ToolSession) => Tool | null | Promise<Tool | null>;
@@ -285,9 +286,7 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		if (name === "librarian") return session.settings.get("librarian.enabled");
 		if (name === "oracle") return session.settings.get("oracle.enabled");
 		if (name === "task") {
-			const maxDepth = session.settings.get("task.maxRecursionDepth") ?? 2;
-			const currentDepth = session.taskDepth ?? 0;
-			return maxDepth < 0 || currentDepth < maxDepth;
+			return !session.isSubagent;
 		}
 		return true;
 	};

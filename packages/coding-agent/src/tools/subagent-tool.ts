@@ -111,7 +111,7 @@ export function createSubagentTool<T extends TProperties>(
 
 				let contextFilePath: string | undefined;
 				if (passContext) {
-					const compactContext = this.session.getCompactContext?.();
+					const compactContext = this.session.subagentContext?.getCompactContext?.();
 					if (compactContext) {
 						contextFilePath = path.join(effectiveArtifactsDir, "context.md");
 						await Bun.write(contextFilePath, compactContext);
@@ -125,7 +125,7 @@ export function createSubagentTool<T extends TProperties>(
 					description: buildDescription(params),
 					index: 0,
 					id,
-					taskDepth: this.session.taskDepth ?? 0,
+					isSubagent: true,
 					modelOverride,
 					sessionFile,
 					persistArtifacts: !!artifactsDir,
@@ -134,13 +134,13 @@ export function createSubagentTool<T extends TProperties>(
 					enableLsp: false,
 					signal,
 					onProgress: emitProgress,
-					authStorage: this.session.authStorage,
-					modelRegistry: this.session.modelRegistry,
+					authStorage: this.session.subagentContext?.authStorage,
+					modelRegistry: this.session.subagentContext?.modelRegistry,
 					settings: this.session.settings,
 					contextFiles: this.session.contextFiles,
 					skills: this.session.skills,
 					promptTemplates: this.session.promptTemplates,
-					mcpManager: this.session.mcpManager,
+					mcpManager: this.session.subagentContext?.mcpManager,
 				});
 
 				if (tempArtifactsDir) {

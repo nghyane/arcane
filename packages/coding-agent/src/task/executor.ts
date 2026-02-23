@@ -107,7 +107,7 @@ export interface ExecutorOptions {
 	id: string;
 	modelOverride?: string | string[];
 	thinkingLevel?: ThinkingLevel;
-	taskDepth?: number;
+	isSubagent?: boolean;
 	enableLsp?: boolean;
 	signal?: AbortSignal;
 	onProgress?: (progress: AgentProgress) => void;
@@ -682,7 +682,7 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 				sessionManager,
 				hasUI: false,
 				spawns: "",
-				taskDepth: (options.taskDepth ?? 0) + 1,
+				isSubagent: true,
 				parentTaskPrefix: id,
 				enableLsp: lspEnabled,
 				skipPythonPreflight,

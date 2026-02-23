@@ -93,6 +93,10 @@ function wordWrapLine(line: string, maxWidth: number): TextChunk[] {
 
 		// Skip leading whitespace at line start
 		if (atLineStart && token.isWhitespace) {
+			// Extend previous chunk's range to cover the skipped whitespace (no cursor gap)
+			if (chunks.length > 0) {
+				chunks[chunks.length - 1]!.endIndex = token.endIndex;
+			}
 			chunkStartIndex = token.endIndex;
 			continue;
 		}
@@ -162,6 +166,10 @@ function wordWrapLine(line: string, maxWidth: number): TextChunk[] {
 			// Start new line - skip leading whitespace
 			atLineStart = true;
 			if (token.isWhitespace) {
+				// Extend the just-pushed chunk's range to cover this whitespace (no cursor gap)
+				if (chunks.length > 0) {
+					chunks[chunks.length - 1]!.endIndex = token.endIndex;
+				}
 				currentChunk = "";
 				currentWidth = 0;
 				chunkStartIndex = token.endIndex;

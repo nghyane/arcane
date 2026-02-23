@@ -93,7 +93,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 
 		try {
 			await fs.mkdir(effectiveArtifactsDir, { recursive: true });
-			const compactContext = this.session.getCompactContext?.();
+			const compactContext = this.session.subagentContext?.getCompactContext?.();
 			let contextFilePath: string | undefined;
 			if (compactContext) {
 				contextFilePath = path.join(effectiveArtifactsDir, "context.md");
@@ -164,7 +164,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				description: rendered.description,
 				index: 0,
 				id: uniqueId,
-				taskDepth: this.session.taskDepth ?? 0,
+				isSubagent: true,
 				modelOverride,
 				sessionFile,
 				persistArtifacts: !!artifactsDir,
@@ -177,10 +177,10 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 					progressMap.set(0, { ...structuredClone(progress) });
 					emitProgress();
 				},
-				authStorage: this.session.authStorage,
-				modelRegistry: this.session.modelRegistry,
+				authStorage: this.session.subagentContext?.authStorage,
+				modelRegistry: this.session.subagentContext?.modelRegistry,
 				settings: this.session.settings,
-				mcpManager: this.session.mcpManager,
+				mcpManager: this.session.subagentContext?.mcpManager,
 				contextFiles,
 				skills: resolvedSkills,
 				preloadedSkills,

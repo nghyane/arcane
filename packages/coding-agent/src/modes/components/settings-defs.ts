@@ -85,14 +85,6 @@ const OPTION_PROVIDERS: Partial<Record<SettingPath, OptionProvider>> = {
 		{ value: "32", label: "32 tasks" },
 		{ value: "64", label: "64 tasks" },
 	],
-	// Task max recursion depth
-	"task.maxRecursionDepth": [
-		{ value: "-1", label: "Unlimited" },
-		{ value: "0", label: "None" },
-		{ value: "1", label: "Single" },
-		{ value: "2", label: "Double" },
-		{ value: "3", label: "Triple" },
-	],
 	// Todo max reminders
 	"todo.reminders.max": [
 		{ value: "1", label: "1 reminder" },
