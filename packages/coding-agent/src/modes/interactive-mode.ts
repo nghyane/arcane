@@ -175,6 +175,7 @@ export class InteractiveMode implements InteractiveModeContext {
 
 		this.ui = new TUI(new ProcessTerminal(), settings.get("showHardwareCursor"));
 		this.ui.setClearOnShrink(settings.get("clearOnShrink"));
+		this.ui.setAppBg(theme.getAppBgPackedRgb());
 		setMermaidRenderCallback(() => this.ui.requestRender());
 		this.chatContainer = new Container();
 		this.pendingMessagesContainer = new Container();
@@ -344,6 +345,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		// Set up theme file watcher
 		onThemeChange(() => {
 			this.ui.invalidate();
+			this.ui.setAppBg(theme.getAppBgPackedRgb());
 			this.updateEditorBorderColor();
 			this.ui.requestRender();
 		});

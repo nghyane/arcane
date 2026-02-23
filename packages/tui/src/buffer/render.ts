@@ -5,7 +5,7 @@ function styleEquals(a: Style, b: Style): boolean {
 	return a.fg === b.fg && a.bg === b.bg && a.mods === b.mods && a.link === b.link;
 }
 
-function emitStyleDiff(prev: Style, next: Style, parts: string[]): void {
+function emitStyleDiff(prev: Style, next: Style, parts: string[], defaultBg = 0): void {
 	// Check if reset is simpler
 	const needReset =
 		(prev.mods & ~next.mods) !== 0 ||
@@ -23,6 +23,9 @@ function emitStyleDiff(prev: Style, next: Style, parts: string[]): void {
 		if (hasColor(next.bg)) {
 			const [r, g, b] = unpackRgb(next.bg);
 			parts.push(`\x1b[48;2;${r};${g};${b}m`);
+		} else if (defaultBg) {
+			const [r, g, b] = unpackRgb(defaultBg);
+			parts.push(`\x1b[48;2;${r};${g};${b}m`);
 		}
 	} else {
 		if (prev.fg !== next.fg) {
@@ -38,7 +41,12 @@ function emitStyleDiff(prev: Style, next: Style, parts: string[]): void {
 				const [r, g, b] = unpackRgb(next.bg);
 				parts.push(`\x1b[48;2;${r};${g};${b}m`);
 			} else {
-				parts.push("\x1b[49m");
+				if (defaultBg) {
+					const [r, g, b] = unpackRgb(defaultBg);
+					parts.push(`\x1b[48;2;${r};${g};${b}m`);
+				} else {
+					parts.push("\x1b[49m");
+				}
 			}
 		}
 		if (prev.mods !== next.mods) {
@@ -78,7 +86,7 @@ function emitMods(prev: number, next: number, parts: string[]): void {
 	if (removed & Mod.Strikethrough) parts.push("\x1b[29m");
 }
 
-export function renderDiff(changes: CellChange[], _width: number): string {
+export function renderDiff(changes: CellChange[], _width: number, defaultBg = 0): string {
 	if (changes.length === 0) return "";
 
 	const sorted = [...changes].sort((a, b) => (a.row !== b.row ? a.row - b.row : a.col - b.col));
@@ -104,7 +112,7 @@ export function renderDiff(changes: CellChange[], _width: number): string {
 
 		// Style changes
 		if (!styleEquals(curStyle, cell.style)) {
-			emitStyleDiff(curStyle, cell.style, parts);
+			emitStyleDiff(curStyle, cell.style, parts, defaultBg);
 			curStyle = { ...cell.style };
 		}
 
@@ -113,10 +121,14 @@ export function renderDiff(changes: CellChange[], _width: number): string {
 	}
 
 	parts.push("\x1b[0m");
+	if (defaultBg) {
+		const [r, g, b] = unpackRgb(defaultBg);
+		parts.push(`\x1b[48;2;${r};${g};${b}m`);
+	}
 	return parts.join("");
 }
 
-export function renderBuffer(buf: Buffer): string[] {
+export function renderBuffer(buf: Buffer, defaultBg = 0): string[] {
 	const lines: string[] = [];
 
 	for (let row = 0; row < buf.height; row++) {
@@ -130,7 +142,7 @@ export function renderBuffer(buf: Buffer): string[] {
 			if (cell.width === 0) continue;
 
 			if (!styleEquals(curStyle, cell.style)) {
-				emitStyleDiff(curStyle, cell.style, parts);
+				emitStyleDiff(curStyle, cell.style, parts, defaultBg);
 				curStyle = { ...cell.style };
 			}
 
@@ -140,6 +152,10 @@ export function renderBuffer(buf: Buffer): string[] {
 		// Reset at end of line
 		if (!styleEquals(curStyle, DEFAULT_STYLE)) {
 			parts.push("\x1b[0m");
+			if (defaultBg) {
+				const [r, g, b] = unpackRgb(defaultBg);
+				parts.push(`\x1b[48;2;${r};${g};${b}m`);
+			}
 		}
 
 		lines.push(parts.join(""));

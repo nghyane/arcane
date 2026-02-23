@@ -8,6 +8,7 @@ export class UserMessageComponent extends Container {
 	constructor(text: string, synthetic = false) {
 		super();
 		const bgColor = (value: string) => theme.bg("userMessageBg", value);
+		const leftBorder = theme.fg("accent", "▎");
 		const color = synthetic
 			? (value: string) => theme.fg("dim", value)
 			: (value: string) => theme.fg("userMessageText", value);
@@ -16,6 +17,7 @@ export class UserMessageComponent extends Container {
 			new Markdown(text, 1, 1, getMarkdownTheme(), {
 				bgColor,
 				color,
+				leftBorder,
 			}),
 		);
 	}

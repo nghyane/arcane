@@ -56,6 +56,56 @@ export function emergencyTerminalRestore(): void {
 		// Terminal may already be dead during crash cleanup - ignore errors
 	}
 }
+
+/**
+ * Query terminal background color via OSC 11.
+ * Returns hex color string (e.g. "#1c1e26") or null if terminal does not respond.
+ * Must be called before TUI start() — temporarily enters raw mode.
+ */
+export async function queryTerminalBackground(timeoutMs = 150): Promise<string | null> {
+	if (!process.stdin.isTTY || !process.stdout.isTTY) return null;
+
+	const wasRaw = process.stdin.isRaw;
+	if (process.stdin.setRawMode) process.stdin.setRawMode(true);
+	process.stdin.setEncoding("utf8");
+	process.stdin.resume();
+
+	const { promise, resolve } = Promise.withResolvers<string | null>();
+	let settled = false;
+	let buf = "";
+
+	const onData = (data: string) => {
+		buf += data;
+		// OSC 11 response: \x1b]11;rgb:RRRR/GGGG/BBBB\x1b\\ or ...\x07
+		const match = buf.match(/\x1b\]11;rgb:([0-9a-fA-F]{2,4})\/([0-9a-fA-F]{2,4})\/([0-9a-fA-F]{2,4})/);
+		if (match && !settled) {
+			settled = true;
+			const r = parseInt(match[1].slice(0, 2), 16);
+			const g = parseInt(match[2].slice(0, 2), 16);
+			const b = parseInt(match[3].slice(0, 2), 16);
+			resolve(
+				`#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`,
+			);
+		}
+	};
+
+	process.stdin.on("data", onData);
+	process.stdout.write("\x1b]11;?\x1b\\");
+
+	const timer = setTimeout(() => {
+		if (!settled) {
+			settled = true;
+			resolve(null);
+		}
+	}, timeoutMs);
+
+	const result = await promise;
+	clearTimeout(timer);
+	process.stdin.removeListener("data", onData);
+	if (process.stdin.setRawMode) process.stdin.setRawMode(wasRaw);
+	if (!wasRaw) process.stdin.pause();
+	return result;
+}
 export interface Terminal {
 	// Start the terminal with input and resize handlers
 	start(onInput: (data: string) => void, onResize: () => void): void;

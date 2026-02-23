@@ -11,6 +11,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
 import { type ImageContent, supportsXhigh } from "@nghyane/arcane-ai";
+import { queryTerminalBackground } from "@nghyane/arcane-tui";
 import { $env, postmortem } from "@nghyane/arcane-utils";
 import { getProjectDir, setProjectDir } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
@@ -591,12 +592,14 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 		});
 	}
 
+	const terminalBg = isInteractive ? await queryTerminalBackground() : null;
 	await initTheme(
 		isInteractive,
 		settings.get("symbolPreset"),
 		settings.get("colorBlindMode"),
 		settings.get("theme.dark"),
 		settings.get("theme.light"),
+		terminalBg ?? undefined,
 	);
 	time("initTheme:final");
 

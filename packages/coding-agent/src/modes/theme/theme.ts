@@ -6,7 +6,7 @@ import {
 	supportsLanguage as nativeSupportsLanguage,
 } from "@nghyane/arcane-natives";
 import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@nghyane/arcane-tui";
-import { adjustHsv, isEnoent, logger } from "@nghyane/arcane-utils";
+import { adjustHsv, hexToHsv, hsvToHex, isEnoent, logger } from "@nghyane/arcane-utils";
 import { getCustomThemesDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
@@ -959,7 +959,8 @@ export type ThemeBg =
 	| "toolPendingBg"
 	| "toolSuccessBg"
 	| "toolErrorBg"
-	| "statusLineBg";
+	| "statusLineBg"
+	| "appBg";
 
 type ColorMode = "truecolor" | "256color";
 
@@ -1015,7 +1016,7 @@ function resolveVarRefs(
 	vars: Record<string, ColorValue>,
 	visited = new Set<string>(),
 ): string | number {
-	if (typeof value === "number" || value === "" || value.startsWith("#")) {
+	if (typeof value === "number" || value === "" || value.startsWith("#") || value.startsWith("^")) {
 		return value;
 	}
 	if (visited.has(value)) {
@@ -1171,10 +1172,28 @@ export class Theme {
 		return `${ansi}${text}\x1b[39m`; // Reset only foreground color
 	}
 
-	bg(color: ThemeBg, text: string): string {
+	/**
+	 * Wrap text with a background color, stabilizing inner SGR resets.
+	 * When terminal bg is not detected, uses reverse video as fallback.
+	 * This is the single source of truth for bg wrapping — all bg rendering goes through here.
+	 */
+	wrapBg(color: ThemeBg, text: string): string {
 		const ansi = this.#bgColors[color];
 		if (!ansi) throw new Error(`Unknown theme background color: ${color}`);
-		return `${ansi}${text}\x1b[49m`; // Reset only background color
+		if (ansi === "\x1b[49m") {
+			// Transparent fallback: reverse video with fg color preservation
+			const stabilized = text
+				.replace(/\x1b\[(?:0)?m/g, m => `${m}\x1b[7m`)
+				.replace(/\x1b\[(?:3[0-9]m|38;)/g, m => `\x1b[27m${m}`);
+			return `\x1b[7m${stabilized}\x1b[27m`;
+		}
+		// Real bg: stabilize inner resets by re-applying bg after them
+		const stabilized = text.replace(/\x1b\[(?:0)?m/g, m => `${m}${ansi}`).replace(/\x1b\[49m/g, m => `${m}${ansi}`);
+		return `${ansi}${stabilized}${this.#bgColors.appBg}`;
+	}
+
+	bg(color: ThemeBg, text: string): string {
+		return this.wrapBg(color, text);
 	}
 
 	bold(text: string): string {
@@ -1207,6 +1226,19 @@ export class Theme {
 		const ansi = this.#bgColors[color];
 		if (!ansi) throw new Error(`Unknown theme background color: ${color}`);
 		return ansi;
+	}
+
+	getAppBgAnsi(): string {
+		return this.#bgColors.appBg;
+	}
+
+	getAppBgPackedRgb(): number {
+		const ansi = this.#bgColors.appBg;
+		const match = ansi.match(/\x1b\[48;2;(\d+);(\d+);(\d+)m/);
+		if (!match) return 0;
+		return (
+			((Number(match[1]) & 0xff) << 16) | ((Number(match[2]) & 0xff) << 8) | (Number(match[3]) & 0xff) | 0x01000000
+		);
 	}
 
 	getColorMode(): ColorMode {
@@ -1563,10 +1595,47 @@ interface CreateThemeOptions {
 	mode?: ColorMode;
 	symbolPresetOverride?: SymbolPreset;
 	colorBlindMode?: boolean;
+	terminalBg?: string;
 }
 
 /** HSV adjustment to shift green toward blue for colorblind mode (red-green colorblindness) */
 const COLORBLIND_ADJUSTMENT = { h: 60, s: 0.71 };
+
+/**
+ * Resolve a relative bg color value against the terminal background.
+ * Format: "^N" where N is a brightness adjustment percentage.
+ * Positive = lighter, negative = darker. E.g., "^5" or "^-3".
+ * Returns the resolved hex color, or the original value if not relative.
+ */
+function resolveRelativeBg(value: string | number, terminalBg: string): string | number {
+	if (typeof value !== "string" || !value.startsWith("^")) return value;
+	const delta = parseFloat(value.slice(1));
+	if (Number.isNaN(delta)) return value;
+	const hsv = hexToHsv(terminalBg);
+	hsv.v = Math.max(0, Math.min(1, hsv.v + delta / 100));
+	return hsvToHex(hsv);
+}
+
+function detectDefaultSymbolPreset(): SymbolPreset {
+	const termProgram = Bun.env.TERM_PROGRAM ?? "";
+	const term = Bun.env.TERM ?? "";
+
+	// Terminals with known Nerd Font fallback support
+	const nerdFontTerminals = new Set([
+		"iTerm.app",
+		"WezTerm",
+		"Hyper",
+		"vscode",
+		"Termius",
+		"WarpTerminal",
+		"ghostty",
+		"Tabby",
+	]);
+	if (nerdFontTerminals.has(termProgram)) return "nerd";
+	if (term === "xterm-kitty") return "nerd";
+
+	return "unicode";
+}
 
 function createTheme(themeJson: ThemeJson, options: CreateThemeOptions = {}): Theme {
 	const { mode, symbolPresetOverride, colorBlindMode } = options;
@@ -1580,6 +1649,15 @@ function createTheme(themeJson: ThemeJson, options: CreateThemeOptions = {}): Th
 		}
 	}
 
+	// Resolve relative bg colors (^N format) against terminal background
+	const termBg = options.terminalBg;
+	for (const key of Object.keys(resolvedColors) as Array<keyof typeof resolvedColors>) {
+		const value = resolvedColors[key];
+		if (typeof value === "string" && value.startsWith("^")) {
+			resolvedColors[key] = termBg ? resolveRelativeBg(value, termBg) : "";
+		}
+	}
+
 	const fgColors: Record<ThemeColor, string | number> = {} as Record<ThemeColor, string | number>;
 	const bgColors: Record<ThemeBg, string | number> = {} as Record<ThemeBg, string | number>;
 	const bgColorKeys: Set<string> = new Set([
@@ -1590,6 +1668,7 @@ function createTheme(themeJson: ThemeJson, options: CreateThemeOptions = {}): Th
 		"toolSuccessBg",
 		"toolErrorBg",
 		"statusLineBg",
+		"appBg",
 	]);
 	for (const [key, value] of Object.entries(resolvedColors)) {
 		if (bgColorKeys.has(key)) {
@@ -1599,7 +1678,7 @@ function createTheme(themeJson: ThemeJson, options: CreateThemeOptions = {}): Th
 		}
 	}
 	// Extract symbol configuration - settings override takes precedence over theme
-	const symbolPreset: SymbolPreset = symbolPresetOverride ?? themeJson.symbols?.preset ?? "unicode";
+	const symbolPreset: SymbolPreset = symbolPresetOverride ?? themeJson.symbols?.preset ?? detectDefaultSymbolPreset();
 	const symbolOverrides = themeJson.symbols?.overrides ?? {};
 	return new Theme(fgColors, bgColors, colorMode, symbolPreset, symbolOverrides);
 }
@@ -1650,6 +1729,7 @@ export function getCurrentThemeName(): string | undefined {
 }
 var currentSymbolPresetOverride: SymbolPreset | undefined;
 var currentColorBlindMode: boolean = false;
+var currentTerminalBg: string | undefined;
 var themeWatcher: fs.FSWatcher | undefined;
 var sigwinchHandler: (() => void) | undefined;
 var autoDetectedTheme: boolean = false;
@@ -1662,6 +1742,7 @@ function getCurrentThemeOptions(): CreateThemeOptions {
 	return {
 		symbolPresetOverride: currentSymbolPresetOverride,
 		colorBlindMode: currentColorBlindMode,
+		terminalBg: currentTerminalBg,
 	};
 }
 
@@ -1671,6 +1752,7 @@ export async function initTheme(
 	colorBlindMode?: boolean,
 	darkTheme?: string,
 	lightTheme?: string,
+	terminalBg?: string,
 ): Promise<void> {
 	autoDetectedTheme = true;
 	autoDarkTheme = darkTheme ?? "dark";
@@ -1679,6 +1761,7 @@ export async function initTheme(
 	currentThemeName = name;
 	currentSymbolPresetOverride = symbolPreset;
 	currentColorBlindMode = colorBlindMode ?? false;
+	currentTerminalBg = terminalBg;
 	try {
 		theme = await loadTheme(name, getCurrentThemeOptions());
 		if (enableWatcher) {

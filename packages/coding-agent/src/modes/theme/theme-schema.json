@@ -315,6 +315,10 @@
 					"$ref": "#/$defs/colorValue",
 					"description": "Status line background"
 				},
+				"appBg": {
+					"$ref": "#/$defs/colorValue",
+					"description": "App-wide background color"
+				},
 				"statusLineSep": {
 					"$ref": "#/$defs/colorValue",
 					"description": "Status line separator color"

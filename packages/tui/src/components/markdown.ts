@@ -22,6 +22,8 @@ export interface DefaultTextStyle {
 	strikethrough?: boolean;
 	/** Underline text */
 	underline?: boolean;
+	leftBorder?: string;
+	/** Left border string (already styled, prepended to each line) */
 }
 
 /**
@@ -106,8 +108,9 @@ export class Markdown implements Component {
 			return this.#cachedLines;
 		}
 
-		// Calculate available width for content (subtract horizontal padding)
-		const contentWidth = Math.max(1, width - this.#paddingX * 2);
+		const leftBorder = this.#defaultTextStyle?.leftBorder ?? "";
+		const borderWidth = visibleWidth(leftBorder);
+		const contentWidth = Math.max(1, width - this.#paddingX * 2 - borderWidth);
 
 		// Don't render anything if there's no actual text
 		if (!this.#text || this.#text.trim() === "") {
@@ -153,26 +156,23 @@ export class Markdown implements Component {
 		const contentLines: string[] = [];
 
 		for (const line of wrappedLines) {
-			// Image lines must be output raw - no margins or background
 			if (TERMINAL.isImageLine(line)) {
 				contentLines.push(line);
 				continue;
 			}
 
-			const lineWithMargins = leftMargin + line + rightMargin;
+			const lineWithMargins = leftBorder + leftMargin + line + rightMargin;
 
 			if (bgFn) {
 				contentLines.push(applyBackgroundToLine(lineWithMargins, width, bgFn));
 			} else {
-				// No background - just pad to width
 				const visibleLen = visibleWidth(lineWithMargins);
 				const paddingNeeded = Math.max(0, width - visibleLen);
 				contentLines.push(lineWithMargins + padding(paddingNeeded));
 			}
 		}
 
-		// Add top/bottom padding (empty lines)
-		const emptyLine = padding(width);
+		const emptyLine = leftBorder + padding(width - borderWidth);
 		const emptyLines: string[] = [];
 		for (let i = 0; i < this.#paddingY; i++) {
 			const line = bgFn ? applyBackgroundToLine(emptyLine, width, bgFn) : emptyLine;
@@ -365,13 +365,15 @@ export class Markdown implements Component {
 					applyText: quoteStyle,
 					stylePrefix: this.#getStylePrefix(quoteStyle),
 				};
-				const quoteText = this.#renderInlineTokens(token.tokens || [], quoteStyleContext);
-				const quoteLines = quoteText.split("\n");
+
+				// Blockquote tokens contain block-level children (paragraph, code, list, etc.)
+				// Render each child appropriately, then prefix every line with the quote border.
+				const quoteContentLines = this.#renderBlockquoteTokens(token.tokens || [], quoteStyleContext, width - 2);
 
 				// Calculate available width for quote content (subtract border + space = 2 chars)
 				const quoteContentWidth = Math.max(1, width - 2);
 
-				for (const quoteLine of quoteLines) {
+				for (const quoteLine of quoteContentLines) {
 					// Wrap the styled line, then add border to each wrapped line
 					const wrappedLines = wrapTextWithAnsi(quoteLine, quoteContentWidth);
 					for (const wrappedLine of wrappedLines) {
@@ -594,6 +596,81 @@ export class Markdown implements Component {
 				const text = this.#renderInlineTokens([token]);
 				if (text) {
 					lines.push(text);
+				}
+			}
+		}
+
+		return lines;
+	}
+
+	/**
+	 * Render tokens inside a blockquote, handling block-level elements
+	 * (code, list, heading) that #renderInlineTokens cannot process.
+	 */
+	#renderBlockquoteTokens(tokens: Token[], styleContext: InlineStyleContext, availableWidth: number): string[] {
+		const lines: string[] = [];
+
+		for (let i = 0; i < tokens.length; i++) {
+			const token = tokens[i];
+			const nextToken = tokens[i + 1];
+
+			switch (token.type) {
+				case "paragraph": {
+					const text = this.#renderInlineTokens(token.tokens || [], styleContext);
+					lines.push(text);
+					if (nextToken && nextToken.type !== "space") {
+						lines.push("");
+					}
+					break;
+				}
+
+				case "code": {
+					const codeIndent = padding(this.#codeBlockIndent);
+					lines.push(this.#theme.codeBlockBorder(`\`\`\`${token.lang || ""}`));
+					if (this.#theme.highlightCode) {
+						const highlightedLines = this.#theme.highlightCode(token.text, token.lang);
+						for (const hlLine of highlightedLines) {
+							lines.push(`${codeIndent}${hlLine}`);
+						}
+					} else {
+						const codeLines = token.text.split("\n");
+						for (const codeLine of codeLines) {
+							lines.push(`${codeIndent}${this.#theme.codeBlock(codeLine)}`);
+						}
+					}
+					lines.push(this.#theme.codeBlockBorder("```"));
+					if (nextToken && nextToken.type !== "space") {
+						lines.push("");
+					}
+					break;
+				}
+
+				case "heading": {
+					const headingLines = this.#renderToken(token, availableWidth, nextToken?.type);
+					lines.push(...headingLines);
+					break;
+				}
+
+				case "list": {
+					const listLines = this.#renderList(token as any, 0);
+					lines.push(...listLines);
+					break;
+				}
+
+				case "hr": {
+					lines.push(this.#theme.hr(this.#theme.symbols.hrChar.repeat(Math.min(availableWidth, 80))));
+					break;
+				}
+
+				case "space":
+					lines.push("");
+					break;
+
+				default: {
+					const text = this.#renderInlineTokens([token], styleContext);
+					if (text) {
+						lines.push(text);
+					}
 				}
 			}
 		}

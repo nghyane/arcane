@@ -309,78 +309,53 @@ export class StatusLineComponent implements Component {
 		const ctx = this.#buildSegmentContext(width);
 		const effectiveSettings = this.#resolveSettings();
 		const separatorDef = getSeparator(effectiveSettings.separator ?? "powerline-thin", theme);
-
-		const bgAnsi = theme.getBgAnsi("statusLineBg");
 		const fgAnsi = theme.getFgAnsi("text");
 		const sepAnsi = theme.getFgAnsi("statusLineSep");
+		const leftSepWidth = visibleWidth(separatorDef.left);
+		const rightSepWidth = visibleWidth(separatorDef.right);
 
-		// Collect visible segment contents
 		const leftParts: string[] = [];
-		for (const segId of effectiveSettings.leftSegments) {
+		for (const segId of this.#resolveSettings().leftSegments) {
 			const rendered = renderSegment(segId, ctx);
-			if (rendered.visible && rendered.content) {
-				leftParts.push(rendered.content);
-			}
+			if (rendered.visible && rendered.content) leftParts.push(rendered.content);
 		}
 
 		const rightParts: string[] = [];
-		for (const segId of effectiveSettings.rightSegments) {
+		for (const segId of this.#resolveSettings().rightSegments) {
 			const rendered = renderSegment(segId, ctx);
-			if (rendered.visible && rendered.content) {
-				rightParts.push(rendered.content);
-			}
+			if (rendered.visible && rendered.content) rightParts.push(rendered.content);
 		}
 
 		const topFillWidth = width > 0 ? Math.max(0, width - 4) : 0;
 		const left = [...leftParts];
 		const right = [...rightParts];
 
-		const leftSepWidth = visibleWidth(separatorDef.left);
-		const rightSepWidth = visibleWidth(separatorDef.right);
-		const leftCapWidth = separatorDef.endCaps ? visibleWidth(separatorDef.endCaps.right) : 0;
-		const rightCapWidth = separatorDef.endCaps ? visibleWidth(separatorDef.endCaps.left) : 0;
-
-		const groupWidth = (parts: string[], capWidth: number, sepWidth: number): number => {
+		const groupWidth = (parts: string[], sepWidth: number): number => {
 			if (parts.length === 0) return 0;
 			const partsWidth = parts.reduce((sum, part) => sum + visibleWidth(part), 0);
 			const sepTotal = Math.max(0, parts.length - 1) * (sepWidth + 2);
-			return partsWidth + sepTotal + 2 + capWidth;
+			return partsWidth + sepTotal + 2;
 		};
 
-		let leftWidth = groupWidth(left, leftCapWidth, leftSepWidth);
-		let rightWidth = groupWidth(right, rightCapWidth, rightSepWidth);
+		let leftWidth = groupWidth(left, leftSepWidth);
+		let rightWidth = groupWidth(right, rightSepWidth);
 		const totalWidth = () => leftWidth + rightWidth + (left.length > 0 && right.length > 0 ? 1 : 0);
 
 		if (topFillWidth > 0) {
 			while (totalWidth() > topFillWidth && right.length > 0) {
 				right.pop();
-				rightWidth = groupWidth(right, rightCapWidth, rightSepWidth);
+				rightWidth = groupWidth(right, rightSepWidth);
 			}
 			while (totalWidth() > topFillWidth && left.length > 0) {
 				left.pop();
-				leftWidth = groupWidth(left, leftCapWidth, leftSepWidth);
+				leftWidth = groupWidth(left, leftSepWidth);
 			}
 		}
 
 		const renderGroup = (parts: string[], direction: "left" | "right"): string => {
 			if (parts.length === 0) return "";
 			const sep = direction === "left" ? separatorDef.left : separatorDef.right;
-			const cap = separatorDef.endCaps
-				? direction === "left"
-					? separatorDef.endCaps.right
-					: separatorDef.endCaps.left
-				: "";
-			const capPrefix = separatorDef.endCaps?.useBgAsFg ? bgAnsi.replace("\x1b[48;", "\x1b[38;") : bgAnsi + sepAnsi;
-			const capText = cap ? `${capPrefix}${cap}\x1b[0m` : "";
-
-			let content = bgAnsi + fgAnsi;
-			content += ` ${parts.join(` ${sepAnsi}${sep}${fgAnsi} `)} `;
-			content += "\x1b[0m";
-
-			if (capText) {
-				return direction === "right" ? capText + content : content + capText;
-			}
-			return content;
+			return `${fgAnsi} ${parts.join(` ${sepAnsi}${sep}${fgAnsi} `)} \x1b[0m`;
 		};
 
 		const leftGroup = renderGroup(left, "left");
@@ -391,8 +366,8 @@ export class StatusLineComponent implements Component {
 			return leftGroup + (leftGroup && rightGroup ? " " : "") + rightGroup;
 		}
 
-		leftWidth = groupWidth(left, leftCapWidth, leftSepWidth);
-		rightWidth = groupWidth(right, rightCapWidth, rightSepWidth);
+		leftWidth = groupWidth(left, leftSepWidth);
+		rightWidth = groupWidth(right, rightSepWidth);
 		const gapWidth = Math.max(1, topFillWidth - leftWidth - rightWidth);
 		return leftGroup + padding(gapWidth) + rightGroup;
 	}

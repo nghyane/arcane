@@ -1,6 +1,6 @@
 import { linesToBuffer } from "./buffer/ansi-parser.js";
 import type { Buffer as CellBuffer, CellChange } from "./buffer/buffer.js";
-import { Mod } from "./buffer/cell.js";
+import { Mod, unpackRgb } from "./buffer/cell.js";
 import { renderBuffer, renderDiff } from "./buffer/render.js";
 import { isKeyRelease, matchesKey } from "./keys";
 import { type MouseEvent, SCROLL_DOWN, SCROLL_UP, type Terminal } from "./terminal";
@@ -222,6 +222,7 @@ export class TUI extends Container {
 	#scrollFlushScheduled = false; // Whether a flush is scheduled on next tick
 	#fullRenderCache: string[] = []; // Cached full render output for native scroll
 	#previousBuffer: CellBuffer | null = null; // Previous viewport buffer for cell-level diff
+	#appBg = 0; // Packed RGB for app-wide background (0 = terminal default)
 
 	// Selection state for mouse text selection
 	#selectionActive = false;
@@ -273,6 +274,11 @@ export class TUI extends Container {
 	 */
 	setClearOnShrink(enabled: boolean): void {
 		this.#clearOnShrink = enabled;
+	}
+
+	setAppBg(packedRgb: number): void {
+		this.#appBg = packedRgb;
+		this.#previousBuffer = null; // Force full redraw
 	}
 
 	setFocus(component: Component | null): void {
@@ -475,10 +481,14 @@ export class TUI extends Container {
 		if (this.#previousBuffer) {
 			const changes = currentBuffer.diff(this.#previousBuffer);
 			if (changes.length > 0) {
-				out += renderDiff(changes, width);
+				out += renderDiff(changes, width, this.#appBg);
 			}
 		} else {
 			// No previous buffer — full viewport redraw
+			if (this.#appBg) {
+				const [r, g, b] = unpackRgb(this.#appBg);
+				out += `\x1b[48;2;${r};${g};${b}m`;
+			}
 			out += "\x1b[H";
 			for (let i = 0; i < viewportLines.length; i++) {
 				if (i > 0) out += "\r\n";
@@ -715,7 +725,7 @@ export class TUI extends Container {
 		// Output only the changed cells
 		let out = "\x1b[?2026h"; // Synchronized output
 		out += "\x1b7"; // Save cursor position
-		out += renderDiff(changes, width);
+		out += renderDiff(changes, width, this.#appBg);
 		out += "\x1b8"; // Restore cursor position
 		out += "\x1b[?2026l";
 		this.terminal.write(out);
@@ -1046,8 +1056,12 @@ export class TUI extends Container {
 			// No previous buffer — full render
 			this.#fullRedrawCount += 1;
 			let out = "\x1b[?2026h"; // Begin synchronized output
+			if (this.#appBg) {
+				const [r, g, b] = unpackRgb(this.#appBg);
+				out += `\x1b[48;2;${r};${g};${b}m`;
+			}
 			out += this.#clearScrollbackOnNextFullRender ? "\x1b[3J\x1b[2J\x1b[H" : "\x1b[2J\x1b[H";
-			const renderedLines = renderBuffer(currentBuffer);
+			const renderedLines = renderBuffer(currentBuffer, this.#appBg);
 			for (let i = 0; i < renderedLines.length; i++) {
 				if (i > 0) out += "\r\n";
 				out += renderedLines[i];
@@ -1083,7 +1097,7 @@ export class TUI extends Container {
 			} else {
 				// Emit minimal ANSI for changed cells
 				let out = "\x1b[?2026h"; // Begin synchronized output
-				out += renderDiff(changes, width);
+				out += renderDiff(changes, width, this.#appBg);
 				const adjCursorPos = cursorPos
 					? { row: cursorPos.row - Math.max(0, newLines.length - height), col: cursorPos.col }
 					: null;

@@ -21,7 +21,7 @@ import { DynamicBorder } from "./dynamic-border";
 function makeInvertedBadge(label: string, color: ThemeColor): string {
 	const fgAnsi = theme.getFgAnsi(color);
 	const bgAnsi = fgAnsi.replace(/\x1b\[38;/g, "\x1b[48;");
-	return `${bgAnsi}\x1b[30m ${label} \x1b[39m\x1b[49m`;
+	return `${bgAnsi}\x1b[30m ${label} \x1b[39m${theme.getAppBgAnsi()}`;
 }
 
 interface ModelItem {
