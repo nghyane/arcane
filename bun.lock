@@ -62,7 +62,7 @@
     },
     "packages/codemode": {
       "name": "@nghyane/arcane-codemode",
-      "version": "0.1.8",
+      "version": "0.1.9",
       "dependencies": {
         "@nghyane/arcane-agent": "^0.1.8",
         "@nghyane/arcane-utils": "^0.1.6",
@@ -74,7 +74,7 @@
     },
     "packages/coding-agent": {
       "name": "@nghyane/arcane",
-      "version": "0.1.9",
+      "version": "0.1.10",
       "bin": {
         "arc": "src/cli.ts",
       },
@@ -82,7 +82,7 @@
         "@mozilla/readability": "0.6.0",
         "@nghyane/arcane-agent": "^0.1.8",
         "@nghyane/arcane-ai": "^0.1.8",
-        "@nghyane/arcane-codemode": "^0.1.8",
+        "@nghyane/arcane-codemode": "^0.1.9",
         "@nghyane/arcane-natives": "^0.1.7",
         "@nghyane/arcane-stats": "^0.1.8",
         "@nghyane/arcane-tui": "^0.1.8",

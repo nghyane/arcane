@@ -1,6 +1,6 @@
 {
 	"name": "@nghyane/arcane-codemode",
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"description": "Code Mode: convert tool-calling into TypeScript code generation for LLM orchestration",
 	"type": "module",
 	"publishConfig": {
