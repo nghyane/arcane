@@ -194,9 +194,14 @@ async function main(): Promise<void> {
 	// Push commit first, then tags separately — GitHub won't trigger tag-based workflows
 	// if branch and tags are pushed in the same command.
 	console.log("Pushing to remote...");
-	const allNewTags = [...tags, releaseTag];
 	await $`git push origin main`.quiet();
-	await $`git push origin ${allNewTags.map(t => `refs/tags/${t}`)}`.quiet();
+	// Push per-package version tags first (not CI triggers)
+	if (tags.length > 0) {
+		await $`git push origin ${tags.map(t => `refs/tags/${t}`)}`.quiet();
+	}
+	// Push release trigger tag separately — GitHub only fires one push event per
+	// git-push invocation, so the release/* tag must be the sole ref to match the workflow filter.
+	await $`git push origin refs/tags/${releaseTag}`.quiet();
 	console.log();
 
 	console.log(`=== Released: ${tags.join(", ")} ===`);
