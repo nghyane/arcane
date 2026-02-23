@@ -22,7 +22,7 @@
 		"error": "red",
 		"warning": "yellow",
 		"muted": "comment",
-		"dim": "#414868",
+		"dim": "#4c5480",
 		"text": "",
 		"thinkingText": "comment",
 		"selectedBg": "^2",

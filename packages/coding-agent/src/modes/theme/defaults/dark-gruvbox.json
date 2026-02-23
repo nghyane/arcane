@@ -22,7 +22,7 @@
 		"error": "red",
 		"warning": "yellow",
 		"muted": "gray",
-		"dim": "bg1",
+		"dim": "#665c54",
 		"text": "",
 		"thinkingText": "gray",
 		"selectedBg": "^2",

@@ -82,7 +82,7 @@ export class WelcomeComponent implements Component {
 			...logoColored.map(l => this.#centerText(l, leftCol)),
 			"",
 			this.#centerText(theme.fg("muted", this.modelName), leftCol),
-			this.#centerText(theme.fg("borderMuted", this.providerName), leftCol),
+			this.#centerText(theme.fg("dim", this.providerName), leftCol),
 		];
 
 		// Right column separator

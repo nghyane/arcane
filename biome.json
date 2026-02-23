@@ -45,6 +45,7 @@
 			"!**/template.generated.ts",
 			"!**/docs-index.generated.ts",
 			"!**/gen/agent_pb.ts",
+			"!**/gen/agent_pb.d.ts",
 			"!.worktrees/**/*"
 		]
 	},

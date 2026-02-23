@@ -21,7 +21,7 @@
 		"error": "red",
 		"warning": "yellow",
 		"muted": "comment",
-		"dim": "currentLine",
+		"dim": "#5E6490",
 		"text": "",
 		"thinkingText": "comment",
 		"selectedBg": "^2",
