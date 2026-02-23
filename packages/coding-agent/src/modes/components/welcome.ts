@@ -67,9 +67,9 @@ export class WelcomeComponent implements Component {
 		const leftCol = showRightColumn ? dualLeftCol : boxWidth - 2;
 		const rightCol = showRightColumn ? dualRightCol : 0;
 
-		// Block-based ARC logo (gradient: magenta → cyan)
+		// Block-based ARC logo (gradient: blue → cyan → green / Nord Frost)
 		// biome-ignore format: preserve ASCII art layout
-		const piLogo = [" ╭━━━╮╭━━━╮╭━━━╮", " ┃╭━╮┃┃╭━╮┃┃╭━━╯", " ┃┃ ┃┃┃╰━╯┃┃┃   ", " ┃╰━╯┃┃╭╮╭╯┃╰━━╮", " ╰━━━╯╰╯╰╯ ╰━━━╯"];
+		const piLogo = ["╭━━━╮╭━━━╮╭━━━╮", "┃╭━╮┃┃╭━╮┃┃╭━━╯", "┃╰━╯┃┃╰━╯┃┃┃   ", "┃┃ ┃┃┃╭╮╭╯┃╰━━╮", "╰╯ ╰╯╰╯╰╯ ╰━━━╯"];
 
 		// Apply gradient to logo
 		const logoColored = piLogo.map(line => this.#gradientLine(line));
@@ -190,15 +190,14 @@ export class WelcomeComponent implements Component {
 		return padding(leftPad) + text + padding(rightPad);
 	}
 
-	/** Apply magenta→cyan gradient to a string */
+	/** Apply Nord Frost gradient (blue → cyan → green) to a string */
 	#gradientLine(line: string): string {
 		const colors = [
-			"\x1b[38;5;199m", // bright magenta
-			"\x1b[38;5;171m", // magenta-purple
-			"\x1b[38;5;135m", // purple
-			"\x1b[38;5;99m", // purple-blue
-			"\x1b[38;5;75m", // cyan-blue
-			"\x1b[38;5;51m", // bright cyan
+			"\x1b[38;2;136;192;208m", // #88c0d0 blue
+			"\x1b[38;2;141;200;200m", // blend
+			"\x1b[38;2;143;188;187m", // #8fbcbb cyan
+			"\x1b[38;2;153;189;170m", // blend
+			"\x1b[38;2;163;190;140m", // #a3be8c green
 		];
 		const reset = "\x1b[0m";
 
