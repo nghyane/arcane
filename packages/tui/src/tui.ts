@@ -646,6 +646,7 @@ export class TUI extends Container {
 		this.#selectionActive = false;
 		this.#selectionAnchor = null;
 		this.#selectionEnd = null;
+		this.requestRender();
 	}
 
 	#getSelectionRange(): { startRow: number; startCol: number; endRow: number; endCol: number } | null {
@@ -713,7 +714,9 @@ export class TUI extends Container {
 
 		// Output only the changed cells
 		let out = "\x1b[?2026h"; // Synchronized output
+		out += "\x1b7"; // Save cursor position
 		out += renderDiff(changes, width);
+		out += "\x1b8"; // Restore cursor position
 		out += "\x1b[?2026l";
 		this.terminal.write(out);
 	}
