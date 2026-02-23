@@ -1,3 +1,4 @@
+import { $ } from "bun";
 import { detectRecordingTools } from "./recorder";
 import { resolvePython } from "./transcriber";
 
@@ -20,10 +21,7 @@ export async function checkDependencies(): Promise<STTDependencyStatus> {
 
 	let whisperAvailable = false;
 	if (pythonCmd) {
-		const check = Bun.spawnSync([pythonCmd, "-c", "import whisper"], {
-			stdout: "pipe",
-			stderr: "pipe",
-		});
+		const check = await $`${pythonCmd} -c ${"import whisper"}`.quiet().nothrow();
 		whisperAvailable = check.exitCode === 0;
 	}
 	const whisperHint = "Run 'arc setup stt' to auto-install, or: pip install openai-whisper";

@@ -9,6 +9,7 @@ import {
 	getProjectDir,
 	getProjectPluginOverridesPath,
 } from "@nghyane/arcane-utils/dirs";
+import { $ } from "bun";
 import { extractPackageName, parsePluginSpec } from "./parser";
 import type {
 	DoctorCheck,
@@ -155,17 +156,9 @@ export class PluginManager {
 		}
 
 		// Run npm install
-		const proc = Bun.spawn(["bun", "install", spec.packageName], {
-			cwd: getPluginsDir(),
-			stdin: "ignore",
-			stdout: "pipe",
-			stderr: "pipe",
-			windowsHide: true,
-		});
-
-		const exitCode = await proc.exited;
-		if (exitCode !== 0) {
-			const stderr = await new Response(proc.stderr).text();
+		const result = await $`bun install ${spec.packageName}`.cwd(getPluginsDir()).quiet().nothrow();
+		if (result.exitCode !== 0) {
+			const stderr = result.stderr.toString().trim();
 			throw new Error(`npm install failed: ${stderr}`);
 		}
 
@@ -236,16 +229,8 @@ export class PluginManager {
 		validatePackageName(name);
 		await this.#ensurePackageJson();
 
-		const proc = Bun.spawn(["bun", "uninstall", name], {
-			cwd: getPluginsDir(),
-			stdin: "ignore",
-			stdout: "pipe",
-			stderr: "pipe",
-			windowsHide: true,
-		});
-
-		const exitCode = await proc.exited;
-		if (exitCode !== 0) {
+		const result = await $`bun uninstall ${name}`.cwd(getPluginsDir()).quiet().nothrow();
+		if (result.exitCode !== 0) {
 			throw new Error(`npm uninstall failed for ${name}`);
 		}
 
@@ -619,14 +604,8 @@ export class PluginManager {
 
 	async #fixMissingPlugin(): Promise<boolean> {
 		try {
-			const proc = Bun.spawn(["bun", "install"], {
-				cwd: getPluginsDir(),
-				stdin: "ignore",
-				stdout: "pipe",
-				stderr: "pipe",
-				windowsHide: true,
-			});
-			return (await proc.exited) === 0;
+			const result = await $`bun install`.cwd(getPluginsDir()).quiet().nothrow();
+			return result.exitCode === 0;
 		} catch {
 			return false;
 		}

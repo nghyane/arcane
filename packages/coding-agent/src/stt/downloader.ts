@@ -46,10 +46,7 @@ async function ensurePythonWhisper(options?: EnsureOptions): Promise<void> {
 	}
 
 	// Check if whisper module is already importable
-	const check = Bun.spawnSync([pythonCmd, "-c", "import whisper"], {
-		stdout: "pipe",
-		stderr: "pipe",
-	});
+	const check = await $`${pythonCmd} -c ${"import whisper"}`.quiet().nothrow();
 	if (check.exitCode === 0) return;
 
 	options?.onProgress?.({ stage: "Installing openai-whisper (this may take a few minutes)..." });

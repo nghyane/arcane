@@ -1,3 +1,4 @@
+import { $ } from "bun";
 /** Open a URL or file path in the default browser/application. Best-effort, never throws. */
 export function openPath(urlOrPath: string): void {
 	let cmd: string[];
@@ -13,7 +14,7 @@ export function openPath(urlOrPath: string): void {
 			break;
 	}
 	try {
-		Bun.spawn(cmd, { stdout: "ignore", stderr: "ignore", windowsHide: true });
+		$`${cmd}`.quiet().nothrow();
 	} catch {
 		// Best-effort: browser opening is non-critical
 	}

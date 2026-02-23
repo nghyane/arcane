@@ -2,6 +2,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { isEnoent } from "@nghyane/arcane-utils";
 import { getAgentDir, getProjectDir } from "@nghyane/arcane-utils/dirs";
+import { $ } from "bun";
 import type { InstalledPlugin } from "./types";
 
 const PLUGINS_DIR = path.join(getAgentDir(), "plugins");
@@ -45,17 +46,9 @@ export async function installPlugin(packageName: string): Promise<InstalledPlugi
 	}
 
 	// Run npm install in plugins directory
-	const proc = Bun.spawn(["bun", "install", packageName], {
-		cwd: PLUGINS_DIR,
-		stdin: "ignore",
-		stdout: "pipe",
-		stderr: "pipe",
-		windowsHide: true,
-	});
-
-	const exitCode = await proc.exited;
-	if (exitCode !== 0) {
-		const stderr = await new Response(proc.stderr).text();
+	const result = await $`bun install ${packageName}`.cwd(PLUGINS_DIR).quiet().nothrow();
+	if (result.exitCode !== 0) {
+		const stderr = result.stderr.toString().trim();
 		throw new Error(`Failed to install ${packageName}: ${stderr}`);
 	}
 
@@ -87,16 +80,8 @@ export async function uninstallPlugin(name: string): Promise<void> {
 
 	await ensurePluginsDir();
 
-	const proc = Bun.spawn(["bun", "uninstall", name], {
-		cwd: PLUGINS_DIR,
-		stdin: "ignore",
-		stdout: "pipe",
-		stderr: "pipe",
-		windowsHide: true,
-	});
-
-	const exitCode = await proc.exited;
-	if (exitCode !== 0) {
+	const result = await $`bun uninstall ${name}`.cwd(PLUGINS_DIR).quiet().nothrow();
+	if (result.exitCode !== 0) {
 		throw new Error(`Failed to uninstall ${name}`);
 	}
 }
