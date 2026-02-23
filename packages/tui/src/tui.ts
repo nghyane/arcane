@@ -733,11 +733,12 @@ export class TUI extends Container {
 			const line = cache[row];
 			if (TERMINAL.isImageLine(line)) continue;
 			const lineStart = row === startRow ? startCol : 0;
-			const lineEnd = row === endRow ? endCol : visibleWidth(line);
+			const isFullLine = row !== endRow;
+			const lineEnd = isFullLine ? visibleWidth(line) : endCol;
 			const sliced = sliceByColumn(line, lineStart, lineEnd - lineStart, true);
 			// Strip ANSI from the sliced segment
 			const plain = sliced.replace(/\x1b\[[^a-zA-Z]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b_[^\x07]*\x07/g, "");
-			textLines.push(plain);
+			textLines.push(isFullLine ? plain.trimEnd() : plain);
 		}
 
 		const text = textLines.join("\n");
