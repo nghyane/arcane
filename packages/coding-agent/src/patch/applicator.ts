@@ -890,10 +890,11 @@ function applyCharacterMatch(
 	const adjustedNewText = adjustIndentation(normalizedOldText, matchOutcome.match.actualText, newText);
 
 	const warnings: string[] = [];
-	if (matchOutcome.dominantFuzzy && matchOutcome.match) {
+	if (matchOutcome.match && matchOutcome.match.confidence < 0.97) {
 		const similarity = Math.round(matchOutcome.match.confidence * 100);
+		const qualifier = matchOutcome.dominantFuzzy ? "Dominant fuzzy" : "Fuzzy";
 		warnings.push(
-			`Dominant fuzzy match selected in ${path} near line ${matchOutcome.match.startLine} (${similarity}% similar).`,
+			`${qualifier} match applied in ${path} near line ${matchOutcome.match.startLine} (${similarity}% similar).`,
 		);
 	}
 
@@ -1152,9 +1153,16 @@ function computeReplacements(
 
 		const found = searchResult.index;
 
-		if (searchResult.strategy === "fuzzy-dominant") {
+		if (
+			searchResult.strategy === "prefix" ||
+			searchResult.strategy === "substring" ||
+			searchResult.strategy === "fuzzy" ||
+			searchResult.strategy === "fuzzy-dominant"
+		) {
 			const similarity = Math.round(searchResult.confidence * 100);
-			warnings.push(`Dominant fuzzy match selected in ${path} near line ${found + 1} (${similarity}% similar).`);
+			warnings.push(
+				`Non-exact match applied in ${path} near line ${found + 1} (${similarity}% similar, strategy: ${searchResult.strategy}).`,
+			);
 		}
 
 		// Reject if match is ambiguous (prefix/substring matching found multiple matches)
