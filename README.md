@@ -1,7 +1,5 @@
-
 <p align="center">
-
-https://github.com/user-attachments/assets/c28fb0c5-b3e4-430d-b5a1-26b855beaa28
+  <img src="https://github.com/nghyane/arcane/blob/main/assets/hero.png?raw=true" alt="Arcane" width="720">
 </p>
 
 <h3 align="center">An AI that codes its own tools.</h3>
@@ -62,6 +60,10 @@ async () => {
 **Terminal-native TUI** — Differential rendering, theming, Nerd Font support. No Electron, no browser.
 
 **TypeScript + Rust** — Bun for the runtime, Rust for performance-critical text and grep operations.
+
+## Demo
+
+https://github.com/user-attachments/assets/c28fb0c5-b3e4-430d-b5a1-26b855beaa28
 
 ## Providers
 
