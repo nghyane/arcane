@@ -28,4 +28,5 @@ export const LibrarianTool = createSubagentTool({
 	tmpPrefix: "arc-librarian-",
 	buildTask,
 	buildDescription: p => `Librarian: ${(p.query as string).slice(0, 60)}`,
+	toolDescription: "Explore remote GitHub repositories — cross-repo architecture, code search, history",
 });

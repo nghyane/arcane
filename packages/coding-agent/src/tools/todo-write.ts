@@ -117,7 +117,7 @@ function formatTodoLine(item: TodoItem, uiTheme: Theme, prefix: string): string 
 export class TodoWriteTool implements AgentTool<typeof todoWriteSchema, TodoWriteToolDetails> {
 	readonly name = "todo_write";
 	readonly label = "Todo Write";
-	description = "";
+	description = "Update the task/todo list";
 	readonly parameters = todoWriteSchema;
 	readonly concurrency = "exclusive";
 

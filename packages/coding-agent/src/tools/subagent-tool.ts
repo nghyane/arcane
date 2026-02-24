@@ -37,6 +37,8 @@ export interface SubagentToolConfig<T extends TProperties> {
 	buildDescription: (params: Record<string, unknown>) => string;
 	/** Whether to pass compact conversation context to subagent (default: true) */
 	passContext?: boolean;
+	/** One-line tool description for model context */
+	toolDescription?: string;
 }
 
 export function createSubagentTool<T extends TProperties>(
@@ -60,7 +62,7 @@ export function createSubagentTool<T extends TProperties>(
 		readonly name = name;
 		readonly label = label;
 		readonly parameters = schema;
-		description = "";
+		description = config.toolDescription ?? "";
 
 		constructor(private readonly session: ToolSession) {}
 

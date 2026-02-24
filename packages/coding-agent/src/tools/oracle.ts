@@ -35,4 +35,5 @@ export const OracleTool = createSubagentTool({
 	tmpPrefix: "arc-oracle-",
 	buildTask,
 	buildDescription: p => `Oracle: ${(p.task as string).slice(0, 60)}`,
+	toolDescription: "Consult a reasoning-focused advisor for planning, review, or debugging",
 });

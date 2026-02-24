@@ -394,7 +394,7 @@ type CalculatorParams = Static<typeof calculatorSchema>;
 export class CalculatorTool implements AgentTool<typeof calculatorSchema, CalculatorToolDetails> {
 	readonly name = "calc";
 	readonly label = "Calc";
-	description = "";
+	description = "Evaluate mathematical expressions";
 	readonly parameters = calculatorSchema;
 
 	async execute(

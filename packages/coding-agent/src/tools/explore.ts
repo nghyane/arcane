@@ -17,5 +17,6 @@ export const ExploreTool = createSubagentTool({
 	tmpPrefix: "arc-explore-",
 	buildTask: p => p.query as string,
 	buildDescription: p => `Explore: ${(p.query as string).slice(0, 60)}`,
+	toolDescription: "Search local codebase by concept or behavior — spawns a read-only scout agent",
 	passContext: false,
 });

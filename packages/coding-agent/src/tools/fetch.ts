@@ -853,7 +853,7 @@ export interface FetchToolDetails {
 export class FetchTool implements AgentTool<typeof fetchSchema, FetchToolDetails> {
 	readonly name = "fetch";
 	readonly label = "Fetch";
-	description = "";
+	description = "Fetch a URL and return its content";
 	readonly parameters = fetchSchema;
 
 	constructor(private readonly session: ToolSession) {}

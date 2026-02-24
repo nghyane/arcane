@@ -501,7 +501,7 @@ export class EditTool implements AgentTool<TInput> {
 		return editVariant ?? DEFAULT_EDIT_MODE;
 	}
 
-	description = "";
+	description = "Apply edits to existing files (create, update, delete, rename)";
 
 	/**
 	 * Dynamic parameters schema based on current edit mode (which depends on current model).

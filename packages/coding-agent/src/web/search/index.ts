@@ -260,7 +260,7 @@ export async function runSearchQuery(params: SearchParams): Promise<{
 export class SearchTool implements AgentTool<typeof webSearchSchema, SearchRenderDetails> {
 	readonly name = "web_search";
 	readonly label = "Web Search";
-	readonly description = "";
+	readonly description = "Search the web";
 	readonly parameters = webSearchSchema;
 
 	async execute(

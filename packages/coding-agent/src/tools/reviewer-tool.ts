@@ -36,4 +36,5 @@ export const ReviewerTool = createSubagentTool({
 	tmpPrefix: "arc-review-",
 	buildTask,
 	buildDescription: p => `Review: ${(p.diff_description as string).slice(0, 60)}`,
+	toolDescription: "Review code changes for correctness, style, and potential issues",
 });

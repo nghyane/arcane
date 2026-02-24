@@ -29,7 +29,7 @@ export interface UndoEditToolDetails {
 export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditToolDetails> {
 	readonly name = "undo_edit";
 	readonly label = "Undo";
-	description = "";
+	description = "Undo the last edit to a file";
 	readonly parameters = undoEditSchema;
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";

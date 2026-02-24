@@ -535,7 +535,7 @@ type ReadParams = ReadToolInput;
 export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails> {
 	readonly name = "read";
 	readonly label = "Read";
-	description = "";
+	description = "Read file contents, list directories, or view images";
 	readonly parameters = readSchema;
 	readonly nonAbortable = true;
 

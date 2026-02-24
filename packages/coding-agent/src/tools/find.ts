@@ -123,7 +123,7 @@ export interface FindToolOptions {
 export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 	readonly name = "find";
 	readonly label = "Find";
-	description = "";
+	description = "Find files by glob pattern";
 	readonly parameters = findSchema;
 
 	readonly #customOps?: FindOperations;

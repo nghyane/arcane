@@ -70,7 +70,7 @@ type WriteParams = WriteToolInput;
 export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails> {
 	readonly name = "write";
 	readonly label = "Write";
-	description = "";
+	description = "Create a new file";
 	readonly parameters = writeSchema;
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";

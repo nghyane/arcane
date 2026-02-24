@@ -244,7 +244,7 @@ type AskParams = AskToolInput;
 export class AskTool implements AgentTool<typeof askSchema, AskToolDetails> {
 	readonly name = "ask";
 	readonly label = "Ask";
-	description = "";
+	description = "Ask the user a question when genuinely blocked";
 	readonly parameters = askSchema;
 
 	constructor(private readonly session: ToolSession) {}

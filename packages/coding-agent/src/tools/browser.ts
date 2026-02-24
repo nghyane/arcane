@@ -480,7 +480,7 @@ function formatEvaluateResult(value: unknown): string {
 export class BrowserTool implements AgentTool<typeof browserSchema, BrowserToolDetails> {
 	readonly name = "puppeteer";
 	readonly label = "Puppeteer";
-	description = "";
+	description = "Control a headless browser for web interaction";
 	readonly parameters = browserSchema;
 	#browser: Browser | null = null;
 	#page: Page | null = null;

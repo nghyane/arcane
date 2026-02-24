@@ -54,7 +54,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 	readonly renderCall = renderCall;
 	readonly renderResult = renderResult;
 
-	readonly description = "";
+	readonly description = "Delegate work to a subagent for parallel execution";
 
 	private constructor(private readonly session: ToolSession) {
 		this.parameters = taskSchema;

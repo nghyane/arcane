@@ -455,7 +455,7 @@ export class GitHubTool implements AgentTool<typeof schema, GitHubToolDetails, T
 	readonly name = "github";
 	readonly label = "GitHub";
 	readonly parameters = schema;
-	description = "";
+	description = "Interact with GitHub API: repos, issues, PRs, code search";
 
 	constructor(readonly _session: ToolSession) {}
 
