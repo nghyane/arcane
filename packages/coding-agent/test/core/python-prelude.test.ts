@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { Settings } from "@nghyane/arcane/config/settings";
 import { resetPreludeDocsCache, warmPythonEnvironment } from "@nghyane/arcane/ipy/executor";
-import { getPythonToolDescription, PythonTool } from "@nghyane/arcane/tools/python";
+import { PythonTool } from "@nghyane/arcane/tools/python";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 
 const resolvePythonPath = (): string | null => {
@@ -80,14 +80,5 @@ describe.skipIf(!shouldRun)("PYTHON_PRELUDE integration", () => {
 		expect(result.ok).toBe(true);
 		const names = result.docs.map(doc => doc.name);
 		expect(names).toContain("read");
-	});
-
-	it("renders prelude docs in python tool description", async () => {
-		resetPreludeDocsCache();
-		const result = await warmPythonEnvironment(getProjectDir());
-		expect(result.ok).toBe(true);
-		const description = getPythonToolDescription();
-		expect(description).toContain("read");
-		expect(description).not.toContain("Documentation unavailable");
 	});
 });

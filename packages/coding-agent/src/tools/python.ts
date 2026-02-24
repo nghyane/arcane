@@ -110,10 +110,6 @@ function renderJsonTree(value: unknown, theme: Theme, expanded: boolean, maxDept
 	return renderNode(value, "", 0, true);
 }
 
-export function getPythonToolDescription(): string {
-	return "";
-}
-
 export interface PythonToolOptions {
 	proxyExecutor?: PythonProxyExecutor;
 }
@@ -132,7 +128,7 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 		options?: PythonToolOptions,
 	) {
 		this.#proxyExecutor = options?.proxyExecutor;
-		this.description = getPythonToolDescription();
+		this.description = "";
 	}
 
 	async execute(

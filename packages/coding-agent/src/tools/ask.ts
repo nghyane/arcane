@@ -18,10 +18,8 @@ import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallb
 import type { Component } from "@nghyane/arcane-tui";
 import { TERMINAL, Text } from "@nghyane/arcane-tui";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { type Theme, theme } from "../modes/theme/theme";
-import askDescription from "../prompts/tools/ask.md" with { type: "text" };
 import { renderStatusLine } from "../tui";
 import type { ToolSession } from ".";
 import { ToolUIKit } from "./render-utils";
@@ -250,7 +248,7 @@ export class AskTool implements AgentTool<typeof askSchema, AskToolDetails> {
 	readonly parameters = askSchema;
 
 	constructor(private readonly session: ToolSession) {
-		this.description = renderPromptTemplate(askDescription);
+		this.description = "";
 	}
 
 	static createIf(session: ToolSession): AskTool | null {

@@ -12,7 +12,6 @@ import { Snowflake } from "@nghyane/arcane-utils";
 import type { TObject, TProperties } from "@sinclair/typebox";
 import type { ToolSession } from "..";
 import { isDefaultModelAlias } from "../config/model-resolver";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { Theme } from "../modes/theme/theme";
 import { getBundledAgent } from "../task/agents";
 import { runAgent } from "../task/executor";
@@ -28,8 +27,6 @@ export interface SubagentToolConfig<T extends TProperties> {
 	agent: string;
 	/** TypeBox schema for parameters */
 	schema: TObject<T>;
-	/** Raw .md template for tool description */
-	descriptionTemplate?: string;
 	/** Progress message shown during execution */
 	progressText: string;
 	/** Temp directory prefix */
@@ -52,7 +49,6 @@ export function createSubagentTool<T extends TProperties>(
 		label,
 		agent: agentName,
 		schema,
-		descriptionTemplate,
 		progressText,
 		tmpPrefix,
 		buildTask,
@@ -60,7 +56,7 @@ export function createSubagentTool<T extends TProperties>(
 		passContext = true,
 	} = config;
 
-	const description = descriptionTemplate ? renderPromptTemplate(descriptionTemplate) : "";
+	const description = "";
 
 	return class SubagentTool implements AgentTool<TObject<T>, TaskToolDetails, Theme> {
 		readonly name = name;

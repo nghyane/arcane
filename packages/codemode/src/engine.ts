@@ -19,7 +19,7 @@ const codeSchema = Type.Object({
 });
 
 /** Tools excluded from code wrapping (interactive, orchestration, or lifecycle tools) */
-const EXCLUDED_TOOLS = new Set(["ask"]);
+const EXCLUDED_TOOLS = new Set<string>();
 
 /** Max characters to include from code execution result in the tool response */
 const MAX_RESULT_LENGTH = 4000;
@@ -54,7 +54,7 @@ export interface CodeAgentTool extends AgentTool {
  * The LLM writes code against this API instead of making individual
  * tool calls, reducing round-trips and context usage.
  *
- * Tools in EXCLUDED_TOOLS (ask, task, report_finding, etc.) are passed through
+ * Tools in EXCLUDED_TOOLS (or options.excludeTools) are passed through
  * unchanged and should be registered alongside the code tool.
  *
  * @returns An object with the code tool and any excluded tools that need

@@ -1,4 +1,5 @@
 ## Tool Guidance
+- **ask**: ask user when genuinely blocked and user preference is required. Default to action — resolve ambiguity yourself first. Use `recommended` to mark default option. Use `questions` for multiple related questions. Do NOT include "Other" option (UI adds it automatically)
 - **bash**: `skill://`, `docs://`, `rule://` URIs are auto-resolved to filesystem paths
 - **browser**: prefer `click_id`/`type_id`/`fill_id` with element IDs from `observe`; prefer ARIA selectors over CSS; default to `observe` not `screenshot`
 - **grep**: ripgrep syntax — literal braces need escaping{{#if IS_HASHLINE_MODE}}. Results CID prefixed: `LINE#ID:content`{{else}}{{#if IS_LINE_NUMBER_MODE}}. Results line-number-prefixed{{/if}}{{/if}}
