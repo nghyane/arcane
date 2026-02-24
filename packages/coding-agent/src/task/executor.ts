@@ -601,9 +601,11 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 			}
 
 			case "agent_end":
-				// Extract final content from assistant messages only (not user prompts)
+				// Extract only the LAST assistant message — subagent prompts instruct
+				// that only the final message contains the synthesized answer.
 				if (event.messages && Array.isArray(event.messages)) {
-					for (const msg of event.messages) {
+					for (let i = event.messages.length - 1; i >= 0; i--) {
+						const msg = event.messages[i];
 						if ((msg as { role?: string })?.role !== "assistant") continue;
 						const messageContent = getMessageContent(msg);
 						if (messageContent && Array.isArray(messageContent)) {
@@ -613,6 +615,7 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 								}
 							}
 						}
+						break;
 					}
 				}
 				flushProgress = true;

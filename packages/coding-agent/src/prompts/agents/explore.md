@@ -41,3 +41,7 @@ Print findings as text when done. Include:
 - How pieces connect (architecture)
 - Recommended entry point for the receiving agent
 </output>
+
+<critical>
+Only your final message is returned to the caller. It must be self-contained with all findings, paths, and explanations. Do not reference tool names or intermediate steps — present conclusions directly.
+</critical>
