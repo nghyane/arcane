@@ -171,7 +171,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	ask: AskTool.createIf,
 	bash: s => new BashTool(s),
 	python: s => new PythonTool(s),
-	calc: s => new CalculatorTool(s),
+	calc: () => new CalculatorTool(),
 	ssh: loadSshTool,
 	edit: s => new EditTool(s),
 	find: s => new FindTool(s),

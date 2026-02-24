@@ -123,7 +123,7 @@ export interface FindToolOptions {
 export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 	readonly name = "find";
 	readonly label = "Find";
-	readonly description: string;
+	description = "";
 	readonly parameters = findSchema;
 
 	readonly #customOps?: FindOperations;
@@ -133,7 +133,6 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 		options?: FindToolOptions,
 	) {
 		this.#customOps = options?.operations;
-		this.description = "";
 	}
 
 	async execute(

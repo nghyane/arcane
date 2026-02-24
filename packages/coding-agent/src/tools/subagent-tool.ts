@@ -56,13 +56,11 @@ export function createSubagentTool<T extends TProperties>(
 		passContext = true,
 	} = config;
 
-	const description = "";
-
 	return class SubagentTool implements AgentTool<TObject<T>, TaskToolDetails, Theme> {
 		readonly name = name;
 		readonly label = label;
 		readonly parameters = schema;
-		readonly description = description;
+		description = "";
 
 		constructor(private readonly session: ToolSession) {}
 

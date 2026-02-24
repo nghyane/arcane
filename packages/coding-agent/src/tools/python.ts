@@ -117,7 +117,7 @@ export interface PythonToolOptions {
 export class PythonTool implements AgentTool<typeof pythonSchema> {
 	readonly name = "python";
 	readonly label = "Python";
-	readonly description: string;
+	description = "";
 	readonly parameters = pythonSchema;
 	readonly concurrency = "exclusive";
 
@@ -128,7 +128,6 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 		options?: PythonToolOptions,
 	) {
 		this.#proxyExecutor = options?.proxyExecutor;
-		this.description = "";
 	}
 
 	async execute(

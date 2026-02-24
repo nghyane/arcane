@@ -6,7 +6,6 @@ import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, renderTreeList, truncateToWidth } from "../tui";
-import type { ToolSession } from ".";
 import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS, TRUNCATE_LENGTHS } from "./render-utils";
 
 // =============================================================================
@@ -395,12 +394,8 @@ type CalculatorParams = Static<typeof calculatorSchema>;
 export class CalculatorTool implements AgentTool<typeof calculatorSchema, CalculatorToolDetails> {
 	readonly name = "calc";
 	readonly label = "Calc";
-	readonly description: string;
+	description = "";
 	readonly parameters = calculatorSchema;
-
-	constructor(_session: ToolSession) {
-		this.description = "";
-	}
 
 	async execute(
 		_toolCallId: string,

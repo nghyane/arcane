@@ -58,13 +58,11 @@ function isInteractiveResult(result: BashResult | BashInteractiveResult): result
 export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails> {
 	readonly name = "bash";
 	readonly label = "Bash";
-	readonly description: string;
+	description = "";
 	readonly parameters = bashSchema;
 	readonly concurrency = "exclusive";
 
-	constructor(private readonly session: ToolSession) {
-		this.description = "";
-	}
+	constructor(private readonly session: ToolSession) {}
 
 	async execute(
 		_toolCallId: string,

@@ -480,7 +480,7 @@ function formatEvaluateResult(value: unknown): string {
 export class BrowserTool implements AgentTool<typeof browserSchema, BrowserToolDetails> {
 	readonly name = "puppeteer";
 	readonly label = "Puppeteer";
-	readonly description: string;
+	description = "";
 	readonly parameters = browserSchema;
 	#browser: Browser | null = null;
 	#page: Page | null = null;
@@ -491,9 +491,7 @@ export class BrowserTool implements AgentTool<typeof browserSchema, BrowserToolD
 	readonly #elementCache = new Map<number, ElementHandle>();
 	readonly #patchedClients = new WeakSet<object>();
 
-	constructor(private readonly session: ToolSession) {
-		this.description = "";
-	}
+	constructor(private readonly session: ToolSession) {}
 
 	async #closeBrowser(): Promise<void> {
 		await this.#clearElementCache();

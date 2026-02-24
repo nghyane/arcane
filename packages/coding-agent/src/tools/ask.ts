@@ -244,12 +244,10 @@ type AskParams = AskToolInput;
 export class AskTool implements AgentTool<typeof askSchema, AskToolDetails> {
 	readonly name = "ask";
 	readonly label = "Ask";
-	readonly description: string;
+	description = "";
 	readonly parameters = askSchema;
 
-	constructor(private readonly session: ToolSession) {
-		this.description = "";
-	}
+	constructor(private readonly session: ToolSession) {}
 
 	static createIf(session: ToolSession): AskTool | null {
 		return session.hasUI ? new AskTool(session) : null;

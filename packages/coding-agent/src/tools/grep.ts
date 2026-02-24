@@ -56,12 +56,10 @@ type GrepParams = Static<typeof grepSchema>;
 export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails> {
 	readonly name = "grep";
 	readonly label = "Grep";
-	readonly description: string;
+	description = "";
 	readonly parameters = grepSchema;
 
-	constructor(private readonly session: ToolSession) {
-		this.description = "";
-	}
+	constructor(private readonly session: ToolSession) {}
 
 	async execute(
 		_toolCallId: string,

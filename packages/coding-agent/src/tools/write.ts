@@ -70,7 +70,7 @@ type WriteParams = WriteToolInput;
 export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails> {
 	readonly name = "write";
 	readonly label = "Write";
-	readonly description: string;
+	description = "";
 	readonly parameters = writeSchema;
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";
@@ -84,7 +84,6 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 		this.#writethrough = enableLsp
 			? createLspWritethrough(session.cwd, { enableFormat, enableDiagnostics })
 			: writethroughNoop;
-		this.description = "";
 	}
 
 	async execute(

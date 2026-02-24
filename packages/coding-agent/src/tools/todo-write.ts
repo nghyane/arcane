@@ -117,13 +117,11 @@ function formatTodoLine(item: TodoItem, uiTheme: Theme, prefix: string): string 
 export class TodoWriteTool implements AgentTool<typeof todoWriteSchema, TodoWriteToolDetails> {
 	readonly name = "todo_write";
 	readonly label = "Todo Write";
-	readonly description: string;
+	description = "";
 	readonly parameters = todoWriteSchema;
 	readonly concurrency = "exclusive";
 
-	constructor(private readonly session: ToolSession) {
-		this.description = "";
-	}
+	constructor(private readonly session: ToolSession) {}
 
 	async execute(
 		_toolCallId: string,

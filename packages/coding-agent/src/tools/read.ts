@@ -535,7 +535,7 @@ type ReadParams = ReadToolInput;
 export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails> {
 	readonly name = "read";
 	readonly label = "Read";
-	readonly description: string;
+	description = "";
 	readonly parameters = readSchema;
 	readonly nonAbortable = true;
 
@@ -543,7 +543,6 @@ export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails> {
 
 	constructor(private readonly session: ToolSession) {
 		this.#autoResizeImages = session.settings.get("images.autoResize");
-		this.description = "";
 	}
 
 	async execute(

@@ -29,14 +29,12 @@ export interface UndoEditToolDetails {
 export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditToolDetails> {
 	readonly name = "undo_edit";
 	readonly label = "Undo";
-	readonly description: string;
+	description = "";
 	readonly parameters = undoEditSchema;
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";
 
-	constructor(private readonly session: ToolSession) {
-		this.description = "";
-	}
+	constructor(private readonly session: ToolSession) {}
 
 	async execute(
 		_toolCallId: string,
