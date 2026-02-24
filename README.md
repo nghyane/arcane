@@ -64,7 +64,7 @@ async () => {
 
 **Redesigned task system** — Complete overhaul of the task/subagent mechanism with fan-out delegation and todo-based completion tracking.
 
-**New tools** — Finder (semantic codebase exploration) and Oracle (planning/review advisor), inspired by Amp Code's agentic tool design.
+**Oracle tool** — Planning and review advisor, inspired by Amp Code's agentic tool design.
 
 ## Inherited from upstream
 
