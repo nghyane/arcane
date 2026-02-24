@@ -239,24 +239,3 @@ export function getRenderer(name: string): ToolRenderer {
 export function hasRenderer(name: string): boolean {
 	return rendererMap.has(name);
 }
-
-/**
- * @deprecated Use getRenderer() instead. Kept temporarily for migration.
- */
-export const toolRenderers: Record<string, ToolRenderer> = new Proxy({} as Record<string, ToolRenderer>, {
-	get(_target, prop: string) {
-		return rendererMap.get(prop);
-	},
-	has(_target, prop: string) {
-		return rendererMap.has(prop);
-	},
-	ownKeys() {
-		return [...rendererMap.keys()];
-	},
-	getOwnPropertyDescriptor(_target, prop: string) {
-		if (rendererMap.has(prop)) {
-			return { configurable: true, enumerable: true, value: rendererMap.get(prop) };
-		}
-		return undefined;
-	},
-});

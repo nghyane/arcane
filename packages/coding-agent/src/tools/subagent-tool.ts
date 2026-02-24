@@ -5,7 +5,7 @@
  * share identical execution logic. Each tool is a config object;
  * SubagentTool is the single class that runs them.
  *
- * Rendering is handled externally via toolRenderers (see renderers.ts),
+ * Rendering is handled externally via the renderer registry (see renderers.ts),
  * not on the tool class itself.
  */
 import * as fs from "node:fs/promises";
