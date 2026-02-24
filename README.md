@@ -16,6 +16,8 @@
 
 Arcane is a terminal-native coding agent. Instead of calling tools one at a time, the LLM writes a JavaScript program that orchestrates reads, edits, and subagents — all in a single turn.
 
+> **Note**: Documentation is a work in progress.
+
 ## Quickstart
 
 ```bash
