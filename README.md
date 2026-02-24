@@ -61,10 +61,6 @@ async () => {
 
 **TypeScript + Rust** — Bun for the runtime, Rust for performance-critical text and grep operations.
 
-## Demo
-
-https://github.com/user-attachments/assets/c28fb0c5-b3e4-430d-b5a1-26b855beaa28
-
 ## Providers
 
 Arcane supports 25+ LLM providers through a single OAuth flow or API keys.

@@ -18,8 +18,11 @@ export function findApiKey(): string | null {
 }
 
 /** Fetch available tools from Exa MCP */
-export async function fetchExaTools(apiKey: string, toolNames: string[]): Promise<MCPTool[]> {
-	const url = `https://mcp.exa.ai/mcp?exaApiKey=${encodeURIComponent(apiKey)}&toolNames=${encodeURIComponent(toolNames.join(","))}`;
+export async function fetchExaTools(apiKey: string | null, toolNames: string[]): Promise<MCPTool[]> {
+	const params = new URLSearchParams();
+	if (apiKey) params.set("exaApiKey", apiKey);
+	params.set("toolNames", toolNames.join(","));
+	const url = `https://mcp.exa.ai/mcp?${params.toString()}`;
 	const response = (await callMCP(url, "tools/list")) as MCPToolsResponse;
 
 	if (response.error) {
@@ -44,8 +47,15 @@ export async function fetchWebsetsTools(apiKey: string): Promise<MCPTool[]> {
 }
 
 /** Call a tool on Exa MCP (simplified: toolName as first arg for easier use) */
-export async function callExaTool(toolName: string, args: Record<string, unknown>, apiKey: string): Promise<unknown> {
-	const url = `https://mcp.exa.ai/mcp?exaApiKey=${encodeURIComponent(apiKey)}&tools=${encodeURIComponent(toolName)}`;
+export async function callExaTool(
+	toolName: string,
+	args: Record<string, unknown>,
+	apiKey: string | null,
+): Promise<unknown> {
+	const params = new URLSearchParams();
+	if (apiKey) params.set("exaApiKey", apiKey);
+	params.set("tools", toolName);
+	const url = `https://mcp.exa.ai/mcp?${params.toString()}`;
 	const response = (await callMCP(url, "tools/call", {
 		name: toolName,
 		arguments: args,
@@ -188,7 +198,7 @@ const mcpSchemaCache = new Map<string, MCPTool>();
 
 /** Fetch and cache MCP tool schema */
 export async function fetchMCPToolSchema(
-	apiKey: string,
+	apiKey: string | null,
 	mcpToolName: string,
 	isWebsetsTool = false,
 ): Promise<MCPTool | null> {
@@ -198,7 +208,7 @@ export async function fetchMCPToolSchema(
 	}
 
 	try {
-		const tools = isWebsetsTool ? await fetchWebsetsTools(apiKey) : await fetchExaTools(apiKey, [mcpToolName]);
+		const tools = isWebsetsTool ? await fetchWebsetsTools(apiKey!) : await fetchExaTools(apiKey, [mcpToolName]);
 		const tool = tools.find(t => t.name === mcpToolName);
 		if (tool) {
 			mcpSchemaCache.set(cacheKey, tool);
@@ -238,15 +248,15 @@ export class MCPWrappedTool implements CustomTool<TSchema, ExaRenderDetails> {
 	): Promise<CustomToolResult<ExaRenderDetails>> {
 		try {
 			const apiKey = await findApiKey();
-			if (!apiKey) {
+			if (!apiKey && this.config.isWebsetsTool) {
 				return {
-					content: [{ type: "text" as const, text: "Error: EXA_API_KEY not found" }],
-					details: { error: "EXA_API_KEY not found", toolName: this.config.name },
+					content: [{ type: "text" as const, text: "Error: EXA_API_KEY required for Websets tools" }],
+					details: { error: "EXA_API_KEY required for Websets tools", toolName: this.config.name },
 				};
 			}
 
 			const response = this.config.isWebsetsTool
-				? await callWebsetsTool(apiKey, this.config.mcpToolName, params as Record<string, unknown>)
+				? await callWebsetsTool(apiKey!, this.config.mcpToolName, params as Record<string, unknown>)
 				: await callExaTool(this.config.mcpToolName, params as Record<string, unknown>, apiKey);
 
 			if (isSearchResponse(response)) {
@@ -277,7 +287,7 @@ export class MCPWrappedTool implements CustomTool<TSchema, ExaRenderDetails> {
  * Falls back to provided fallback schema if MCP fetch fails.
  */
 export async function createMCPToolFromServer(
-	apiKey: string,
+	apiKey: string | null,
 	config: MCPToolWrapperConfig,
 	fallbackSchema: TSchema,
 	fallbackDescription: string,

@@ -77,6 +77,7 @@ function buildSshTarget(host: SSHConnectionTarget): string {
 
 function buildCommonArgs(host: SSHConnectionTarget): string[] {
 	const args = [
+		"-n",
 		"-o",
 		"ControlMaster=auto",
 		"-o",

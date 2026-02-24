@@ -47,7 +47,7 @@ export const MODEL_ROLES: Record<ModelRole, ModelRoleInfo> = {
 	fast: { tag: "FAST", name: "Fast", color: "warning" },
 	reviewer: { tag: "REVIEW", name: "Reviewer", color: "accent" },
 	oracle: { tag: "ORACLE", name: "Oracle", color: "accent" },
-	commit: { name: "Commit" },
+	commit: { tag: "COMMIT", name: "Commit", color: "dim" },
 };
 
 export const MODEL_ROLE_IDS: ModelRole[] = ["default", "fast", "reviewer", "oracle", "commit"];

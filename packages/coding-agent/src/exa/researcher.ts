@@ -33,12 +33,7 @@ const researcherStartTool: CustomTool<any, ExaRenderDetails> = {
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
 		try {
 			const apiKey = await findApiKey();
-			if (!apiKey) {
-				return {
-					content: [{ type: "text" as const, text: "Error: EXA_API_KEY not found" }],
-					details: { error: "EXA_API_KEY not found", toolName: "exa_researcher_start" },
-				};
-			}
+			// Exa MCP endpoint is publicly accessible; API key is optional
 			const result = await callExaTool("deep_researcher_start", params as Record<string, unknown>, apiKey);
 			return {
 				content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
@@ -65,12 +60,7 @@ const researcherPollTool: CustomTool<any, ExaRenderDetails> = {
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
 		try {
 			const apiKey = await findApiKey();
-			if (!apiKey) {
-				return {
-					content: [{ type: "text" as const, text: "Error: EXA_API_KEY not found" }],
-					details: { error: "EXA_API_KEY not found", toolName: "exa_researcher_poll" },
-				};
-			}
+			// Exa MCP endpoint is publicly accessible; API key is optional
 			const result = await callExaTool("deep_researcher_check", params as Record<string, unknown>, apiKey);
 			return {
 				content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],

@@ -83,12 +83,7 @@ Parameters:
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
 		try {
 			const apiKey = await findApiKey();
-			if (!apiKey) {
-				return {
-					content: [{ type: "text" as const, text: "Error: EXA_API_KEY not found" }],
-					details: { error: "EXA_API_KEY not found", toolName: "exa_search" },
-				};
-			}
+			// Exa MCP endpoint is publicly accessible; API key is optional
 			const response = await callExaTool("web_search_exa", params, apiKey);
 
 			if (isSearchResponse(response)) {
@@ -177,12 +172,7 @@ Similar parameters to exa_search, optimized for research depth.`,
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
 		try {
 			const apiKey = await findApiKey();
-			if (!apiKey) {
-				return {
-					content: [{ type: "text" as const, text: "Error: EXA_API_KEY not found" }],
-					details: { error: "EXA_API_KEY not found", toolName: "exa_search_deep" },
-				};
-			}
+			// Exa MCP endpoint is publicly accessible; API key is optional
 			const args = { ...params, type: "deep" };
 			const response = await callExaTool("web_search_exa", args, apiKey);
 
@@ -232,12 +222,7 @@ Parameters:
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
 		try {
 			const apiKey = await findApiKey();
-			if (!apiKey) {
-				return {
-					content: [{ type: "text" as const, text: "Error: EXA_API_KEY not found" }],
-					details: { error: "EXA_API_KEY not found", toolName: "exa_search_code" },
-				};
-			}
+			// Exa MCP endpoint is publicly accessible; API key is optional
 			const response = await callExaTool("get_code_context_exa", params, apiKey);
 
 			if (isSearchResponse(response)) {
@@ -292,13 +277,8 @@ Parameters:
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
 		try {
 			const apiKey = await findApiKey();
-			if (!apiKey) {
-				return {
-					content: [{ type: "text" as const, text: "Error: EXA_API_KEY not found" }],
-					details: { error: "EXA_API_KEY not found", toolName: "exa_crawl" },
-				};
-			}
-			const response = await callExaTool("crawling", params, apiKey);
+			// Exa MCP endpoint is publicly accessible; API key is optional
+			const response = await callExaTool("crawling_exa", params, apiKey);
 
 			if (isSearchResponse(response)) {
 				const formatted = formatSearchResults(response);

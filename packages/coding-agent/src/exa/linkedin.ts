@@ -26,13 +26,8 @@ Parameters:
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
 		try {
 			const apiKey = await findApiKey();
-			if (!apiKey) {
-				return {
-					content: [{ type: "text" as const, text: "Error: EXA_API_KEY not found" }],
-					details: { error: "EXA_API_KEY not found", toolName: "exa_linkedin" },
-				};
-			}
-			const response = await callExaTool("linkedin_search", params, apiKey);
+			// Exa MCP endpoint is publicly accessible; API key is optional
+			const response = await callExaTool("linkedin_search_exa", params, apiKey);
 
 			if (isSearchResponse(response)) {
 				const formatted = formatSearchResults(response);

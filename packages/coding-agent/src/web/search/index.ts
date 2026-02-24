@@ -461,7 +461,7 @@ Parameters:
 	parameters: webSearchCrawlSchema,
 
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
-		return executeExaTool("crawling", params as Record<string, unknown>, "web_search_crawl");
+		return executeExaTool("crawling_exa", params as Record<string, unknown>, "web_search_crawl");
 	},
 
 	renderCall(args, _options, theme) {
@@ -492,7 +492,7 @@ Parameters:
 	parameters: webSearchLinkedinSchema,
 
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
-		return executeExaTool("linkedin_search", params as Record<string, unknown>, "web_search_linkedin");
+		return executeExaTool("linkedin_search_exa", params as Record<string, unknown>, "web_search_linkedin");
 	},
 
 	renderCall(args, _options, theme) {
@@ -522,7 +522,7 @@ Parameters:
 	parameters: webSearchCompanySchema,
 
 	async execute(_toolCallId, params, _onUpdate, _ctx, _signal) {
-		return executeExaTool("company_research", params as Record<string, unknown>, "web_search_company");
+		return executeExaTool("company_research_exa", params as Record<string, unknown>, "web_search_company");
 	},
 
 	renderCall(args, _options, theme) {

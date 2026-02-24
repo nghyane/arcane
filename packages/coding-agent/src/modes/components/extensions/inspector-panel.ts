@@ -34,11 +34,16 @@ export class InspectorPanel implements Component {
 		lines.push("");
 
 		// Description (wrapped)
-		if (ext.description) {
-			const wrapped = wrapTextWithAnsi(ext.description, width - 2);
+		const desc = ext.description;
+		const isValidDescription = typeof desc === "string" && desc.length > 0;
+		if (isValidDescription && width > 2) {
+			const wrapped = wrapTextWithAnsi(desc, width - 2);
 			for (const line of wrapped) {
 				lines.push(truncateToWidth(line, width));
 			}
+			lines.push("");
+		} else if (isValidDescription) {
+			lines.push(truncateToWidth(desc, width));
 			lines.push("");
 		}
 
