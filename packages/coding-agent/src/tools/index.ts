@@ -22,19 +22,20 @@ import { AskTool } from "./ask";
 import { BashTool } from "./bash";
 import { BrowserTool } from "./browser";
 import { CalculatorTool } from "./calculator";
-import { ExploreTool } from "./explore";
+import { exploreConfig } from "./explore";
 import { FetchTool } from "./fetch";
 import { FindTool } from "./find";
 import { GitHubTool } from "./github";
 import { GrepTool } from "./grep";
-import { LibrarianTool } from "./librarian";
+import { librarianConfig } from "./librarian";
 import { NotebookTool } from "./notebook";
-import { OracleTool } from "./oracle";
+import { oracleConfig } from "./oracle";
 import { wrapToolWithMetaNotice } from "./output-meta";
 import { PythonTool } from "./python";
 import { ReadTool } from "./read";
-import { ReviewerTool } from "./reviewer-tool";
+import { reviewerConfig } from "./reviewer-tool";
 import { loadSshTool } from "./ssh";
+import { SubagentTool } from "./subagent-tool";
 import { TodoWriteTool } from "./todo-write";
 import { UndoEditTool } from "./undo-edit";
 import { WriteTool } from "./write";
@@ -95,7 +96,7 @@ export {
 } from "./bash";
 export { BrowserTool, type BrowserToolDetails } from "./browser";
 export { CalculatorTool, type CalculatorToolDetails } from "./calculator";
-export { ExploreTool } from "./explore";
+export { exploreConfig } from "./explore";
 export { FetchTool, type FetchToolDetails } from "./fetch";
 export {
 	type FindOperations,
@@ -107,16 +108,18 @@ export {
 export { setPreferredImageProvider } from "./gemini-image";
 export { GitHubTool, type GitHubToolDetails } from "./github";
 export { GrepTool, type GrepToolDetails, type GrepToolInput } from "./grep";
-export { LibrarianTool } from "./librarian";
+export { librarianConfig } from "./librarian";
 export { NotebookTool, type NotebookToolDetails } from "./notebook";
-export { OracleTool } from "./oracle";
+export { oracleConfig } from "./oracle";
 export {
 	PythonTool,
 	type PythonToolDetails,
 	type PythonToolOptions,
 } from "./python";
 export { ReadTool, type ReadToolDetails, type ReadToolInput } from "./read";
+export { reviewerConfig } from "./reviewer-tool";
 export { loadSshTool, type SSHToolDetails, SshTool } from "./ssh";
+export { type SubagentConfig, SubagentTool } from "./subagent-tool";
 export {
 	type TodoItem,
 	TodoWriteTool,
@@ -198,17 +201,17 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	ssh: loadSshTool,
 	edit: s => new EditTool(s),
 	find: s => new FindTool(s),
-	explore: s => new ExploreTool(s),
+	explore: s => new SubagentTool(s, exploreConfig),
 	github: s => new GitHubTool(s),
 	grep: s => new GrepTool(s),
-	librarian: s => new LibrarianTool(s),
+	librarian: s => new SubagentTool(s, librarianConfig),
 	lsp: LspTool.createIf,
 	notebook: s => new NotebookTool(s),
-	oracle: s => new OracleTool(s),
+	oracle: s => new SubagentTool(s, oracleConfig),
 	read: s => new ReadTool(s),
 	browser: s => new BrowserTool(s),
 	task: TaskTool.create,
-	code_review: s => new ReviewerTool(s),
+	code_review: s => new SubagentTool(s, reviewerConfig),
 	todo_write: s => new TodoWriteTool(s),
 	undo_edit: s => new UndoEditTool(s),
 	fetch: s => new FetchTool(s),

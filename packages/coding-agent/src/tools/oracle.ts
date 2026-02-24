@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import { createSubagentTool } from "./subagent-tool";
+import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
 	task: Type.String({
@@ -19,21 +19,21 @@ const schema = Type.Object({
 });
 
 function buildTask(p: Record<string, unknown>): string {
-	let task = p.task as string;
-	if (p.context) task += `\n\n## Context\n${p.context}`;
+	const parts: string[] = [p.task as string];
+	if (p.context) parts.push(`\nContext: ${p.context}`);
 	const files = p.files as string[] | undefined;
-	if (files?.length) task += `\n\n## Files to examine\n${files.map(f => `- ${f}`).join("\n")}`;
-	return task;
+	if (files?.length) parts.push(`\nFiles to examine:\n${files.map(f => `- ${f}`).join("\n")}`);
+	return parts.join("\n");
 }
 
-export const OracleTool = createSubagentTool({
+export const oracleConfig: SubagentConfig<typeof schema.properties> = {
 	name: "oracle",
 	label: "Oracle",
 	agent: "oracle",
 	schema,
-	progressText: "Consulting oracle...",
+	progressText: "Analyzing...",
 	tmpPrefix: "arc-oracle-",
 	buildTask,
-	buildDescription: p => `Oracle: ${(p.task as string).slice(0, 60)}`,
-	toolDescription: "Consult a reasoning-focused advisor for planning, review, or debugging",
-});
+	buildDescription: p => (p.task as string).slice(0, 80),
+	toolDescription: "Strategic advisor for planning, debugging strategy, and design review — read-only, no changes",
+};

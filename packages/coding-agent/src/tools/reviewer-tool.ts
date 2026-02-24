@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import { createSubagentTool } from "./subagent-tool";
+import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
 	diff_description: Type.String({
@@ -27,7 +27,7 @@ function buildTask(p: Record<string, unknown>): string {
 	return parts.join("\n");
 }
 
-export const ReviewerTool = createSubagentTool({
+export const reviewerConfig: SubagentConfig<typeof schema.properties> = {
 	name: "code_review",
 	label: "Code Review",
 	agent: "reviewer",
@@ -35,6 +35,6 @@ export const ReviewerTool = createSubagentTool({
 	progressText: "Reviewing code...",
 	tmpPrefix: "arc-review-",
 	buildTask,
-	buildDescription: p => `Review: ${(p.diff_description as string).slice(0, 60)}`,
+	buildDescription: p => (p.diff_description as string).slice(0, 80),
 	toolDescription: "Review code changes for correctness, style, and potential issues",
-});
+};

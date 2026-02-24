@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import { createSubagentTool } from "./subagent-tool";
+import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
 	query: Type.String({
@@ -14,12 +14,12 @@ const schema = Type.Object({
 });
 
 function buildTask(p: Record<string, unknown>): string {
-	let task = p.query as string;
-	if (p.context) task += `\n\nContext: ${p.context}`;
-	return task;
+	const parts: string[] = [p.query as string];
+	if (p.context) parts.push(`\nContext: ${p.context}`);
+	return parts.join("\n");
 }
 
-export const LibrarianTool = createSubagentTool({
+export const librarianConfig: SubagentConfig<typeof schema.properties> = {
 	name: "librarian",
 	label: "Librarian",
 	agent: "librarian",
@@ -27,6 +27,6 @@ export const LibrarianTool = createSubagentTool({
 	progressText: "Exploring repositories...",
 	tmpPrefix: "arc-librarian-",
 	buildTask,
-	buildDescription: p => `Librarian: ${(p.query as string).slice(0, 60)}`,
+	buildDescription: p => (p.query as string).slice(0, 80),
 	toolDescription: "Explore remote GitHub repositories — cross-repo architecture, code search, history",
-});
+};

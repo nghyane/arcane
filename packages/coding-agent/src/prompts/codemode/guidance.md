@@ -7,5 +7,9 @@
 - **lsp actions**: definition, references, hover, symbols (file or workspace search), rename, diagnostics (file or project-wide), reload
 - **find**: pattern includes path: `src/**/*.ts`; simple patterns like `*.ts` search recursively from cwd
 - **task**: assignment must be self-contained (no conversation history); use `Promise.all()` for parallel tasks
+- **explore**: spawns read-only scout agent for local codebase. Use for conceptual searches ("how does X work?"), not specific lookups (use grep/lsp instead)
+- **librarian**: spawns agent with GitHub access for remote repos. Use for cross-repo understanding, not local files
+- **oracle**: spawns reasoning advisor. Returns single comprehensive response — no follow-ups. Pass `files` for it to examine, `context` for background
+- **code_review**: spawns reviewer agent on a diff. Pass `diff_description` (e.g. "uncommitted changes", "last commit"), optionally `files` and `instructions`
 - **write**: new files only — use edit/patch for existing files
 - **python**: kernel persists across calls; supports `!pip install`
