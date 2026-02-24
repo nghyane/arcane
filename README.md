@@ -60,7 +60,7 @@ async () => {
 }
 ```
 
-**Rewritten TUI** — Differential rendering with surgical redraws, theming with bundled presets, Nerd Font detection, mouse text selection.
+**TUI rendering rewrite** — Surgical differential rendering with double buffering, bundled theme presets (Nord Frost), Nerd Font detection, mouse text selection. The TUI framework itself is inherited; the rendering engine is new.
 
 **Subagent architecture** — Task delegation with fan-out, todo-based completion tracking.
 
@@ -68,9 +68,17 @@ async () => {
 
 ## Inherited from upstream
 
+Arcane is built on top of [oh-my-pi](https://github.com/can1357/oh-my-pi) by Can Boluk, which itself forks [pi-mono](https://github.com/badlogic/pi-mono). The following are upstream features:
+
 **Hashline editing** — Edits anchor to content-derived hash tags, not line numbers. They survive concurrent modification, formatting, and reordering.
 
 **Multi-provider LLM client** — 25+ providers through a single OAuth flow or API keys.
+
+**Extension system** — Themes, skills, hooks, and custom tools.
+
+**Sessions** — Branching, context compaction, and autonomous memory.
+
+**Commit tool** — AI-powered conventional commits with hunk-level staging and split commits.
 
 **TypeScript + Rust** — Bun for the runtime, Rust for performance-critical text and grep operations.
 
