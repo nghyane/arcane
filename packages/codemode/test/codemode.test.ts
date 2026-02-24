@@ -9,12 +9,12 @@ import { jsonSchemaToTypeScript } from "../src/schema-to-ts";
 import { generateTypes, sanitizeToolName } from "../src/type-generator";
 
 describe("normalizeCode", () => {
-	test("empty string → async () => {}", () => {
-		expect(normalizeCode("")).toBe("async () => {}");
+	test("empty string → throws", () => {
+		expect(() => normalizeCode("")).toThrow("empty code");
 	});
 
-	test("whitespace → async () => {}", () => {
-		expect(normalizeCode("   \n\t  ")).toBe("async () => {}");
+	test("whitespace → throws", () => {
+		expect(() => normalizeCode("   \n\t  ")).toThrow("empty code");
 	});
 
 	test("already valid async arrow", () => {
@@ -27,117 +27,12 @@ describe("normalizeCode", () => {
 		expect(normalizeCode(code)).toBe(code);
 	});
 
-	test("single expression → wraps with return", () => {
-		expect(normalizeCode('codemode.bash({ command: "ls" })')).toBe(
-			'async () => {\nreturn (codemode.bash({ command: "ls" }));\n}',
-		);
+	test("bare expression → throws", () => {
+		expect(() => normalizeCode('codemode.bash({ command: "ls" })')).toThrow("async arrow function");
 	});
 
-	test("single expression with trailing semicolon → strips semicolon", () => {
-		expect(normalizeCode('codemode.bash({ command: "ls" });')).toBe(
-			'async () => {\nreturn (codemode.bash({ command: "ls" }));\n}',
-		);
-	});
-
-	test("multi-statement with return → wraps as body", () => {
-		const code = "const x = 1;\nreturn x;";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("multi-statement without return → auto-returns last expression", () => {
-		const code = "const x = 1;\nx + 2";
-		expect(normalizeCode(code)).toBe("async () => {\nconst x = 1;\nreturn (x + 2);\n}");
-	});
-
-	test("last line is const → no auto-return", () => {
-		const code = "const a = 1;\nconst b = 2";
-		const result = normalizeCode(code);
-		expect(result).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is let → no auto-return", () => {
-		const code = "const a = 1;\nlet b = 2";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is if → no auto-return", () => {
-		const code = "const a = 1;\nif (a) {}";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is for → no auto-return", () => {
-		const code = "const a = [];\nfor (const x of a) {}";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is while → no auto-return", () => {
-		const code = "let i = 0;\nwhile (i < 10) { i++; }";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is throw → no auto-return", () => {
-		const code = 'const x = 1;\nthrow new Error("fail")';
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is try → no auto-return", () => {
-		const code = "const x = 1;\ntry { x; } catch {}";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is switch → no auto-return", () => {
-		const code = "const x = 1;\nswitch (x) {}";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is do → no auto-return", () => {
-		const code = "let i = 0;\ndo { i++; } while (i < 3)";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is block comment → no auto-return", () => {
-		const code = "const x = 1;\n/* done */";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is line comment → no auto-return", () => {
-		const code = "const x = 1;\n// done";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is { → no auto-return", () => {
-		const code = "const x = 1;\n{";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("contains return keyword → treats as function body", () => {
-		const code = "return 42;";
-		expect(normalizeCode(code)).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("semicolons trigger multi-statement path", () => {
-		const code = "const x = 1; x";
-		const result = normalizeCode(code);
-		expect(result).toContain("async () => {");
-	});
-
-	test("last line is closing brace → no auto-return", () => {
-		const code = "if (true) {\n  doStuff();\n}";
-		const result = normalizeCode(code);
-		expect(result).toBe(`async () => {\n${code}\n}`);
-		expect(result).not.toContain("return (})");
-	});
-
-	test("last line is }) → no auto-return", () => {
-		const code = "arr.forEach(x => {\n  use(x);\n})";
-		const result = normalizeCode(code);
-		expect(result).toBe(`async () => {\n${code}\n}`);
-	});
-
-	test("last line is }); → no auto-return", () => {
-		const code = "arr.forEach(x => {\n  use(x);\n});";
-		const result = normalizeCode(code);
-		expect(result).toBe(`async () => {\n${code}\n}`);
+	test("multi-statement → throws", () => {
+		expect(() => normalizeCode("const x = 1;\nreturn x;")).toThrow("async arrow function");
 	});
 
 	test("strips markdown js code fences", () => {
@@ -146,11 +41,13 @@ describe("normalizeCode", () => {
 	});
 
 	test("strips markdown typescript code fences", () => {
-		const code = `\`\`\`typescript\nconst x = 1;\nreturn x;\n\`\`\``;
-		const result = normalizeCode(code);
-		expect(result).toContain("const x = 1;");
-		expect(result).toContain("return x;");
-		expect(result).not.toContain("```");
+		const code = `\`\`\`typescript\nasync () => { return 1; }\n\`\`\``;
+		expect(normalizeCode(code)).toBe("async () => { return 1; }");
+	});
+
+	test("code inside fences but not async arrow → throws", () => {
+		const code = `\`\`\`js\nconst x = 1;\n\`\`\``;
+		expect(() => normalizeCode(code)).toThrow("async arrow function");
 	});
 });
 
@@ -201,9 +98,11 @@ describe("generateTypes", () => {
 			},
 		];
 		const { declarations } = generateTypes(tools);
+		// Simple empty-object type is inlined, not emitted as separate interface
 		expect(declarations).not.toMatch(/^interface \d/m);
 		expect(declarations).not.toMatch(/^type \d/m);
-		expect(declarations).toContain("Tool123toolInput");
+		// Method name should use sanitized _123tool
+		expect(declarations).toContain("_123tool");
 	});
 });
 
@@ -370,17 +269,14 @@ describe("execute", () => {
 });
 
 describe("normalizeCode edge cases", () => {
-	test("return inside a string does not trigger return detection", () => {
+	test("bare code with return keyword → throws", () => {
 		const code = 'const msg = "please return the value";\nmsg';
-		const result = normalizeCode(code);
-		expect(result).toContain("return (msg)");
+		expect(() => normalizeCode(code)).toThrow("async arrow function");
 	});
 
-	test("semicolons inside strings do not trigger multi-statement detection", () => {
+	test("bare expression with semicolons in string → throws", () => {
 		const code = 'codemode.bash({ command: "echo; echo" })';
-		const result = normalizeCode(code);
-		// Single expression — should be wrapped with return
-		expect(result).toBe('async () => {\nreturn (codemode.bash({ command: "echo; echo" }));\n}');
+		expect(() => normalizeCode(code)).toThrow("async arrow function");
 	});
 
 	test("tsx fenced code is properly stripped", () => {

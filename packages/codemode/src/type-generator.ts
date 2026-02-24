@@ -115,25 +115,30 @@ export function generateTypes(tools: AgentTool[]): GeneratedTypes {
 		const inputTypeName = `${pascalName}Input`;
 		const inputTs = jsonSchemaToTypeScript(tool.parameters);
 
-		if (inputTs.includes("\n")) {
-			interfaceBlocks.push(`interface ${inputTypeName} ${inputTs}`);
-		} else {
-			interfaceBlocks.push(`type ${inputTypeName} = ${inputTs};`);
-		}
+		// Inline simple types directly into method signature to save tokens
+		const lineCount = inputTs.split("\n").length;
+		const isSimple = lineCount <= 5 && inputTs.length < 120;
 
-		// Build JSDoc from tool description
-		const docLines: string[] = ["  /**"];
-		if (tool.description) {
-			// Take first paragraph only to keep description concise
-			const firstParagraph = tool.description.split("\n\n")[0].trim();
-			for (const line of firstParagraph.split("\n")) {
-				docLines.push(`   * ${line.trim()}`);
+		if (!isSimple) {
+			if (inputTs.includes("\n")) {
+				interfaceBlocks.push(`interface ${inputTypeName} ${inputTs}`);
+			} else {
+				interfaceBlocks.push(`type ${inputTypeName} = ${inputTs};`);
 			}
 		}
-		docLines.push("   */");
 
+		// Build JSDoc from tool description — first line only
+		const docLines: string[] = [];
+		if (tool.description) {
+			const firstLine = tool.description.split("\n")[0].trim();
+			if (firstLine) {
+				docLines.push(`  /** ${firstLine} */`);
+			}
+		}
+
+		const paramType = isSimple ? inputTs : inputTypeName;
 		methodLines.push(...docLines);
-		methodLines.push(`  ${safeName}: (input: ${inputTypeName}) => Promise<unknown>;`);
+		methodLines.push(`  ${safeName}: (input: ${paramType}) => Promise<unknown>;`);
 	}
 
 	const declarations = [

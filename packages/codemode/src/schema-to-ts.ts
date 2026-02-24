@@ -120,9 +120,9 @@ function schemaToTs(schema: JSONSchema, inline = false): string {
 	for (const [key, propSchema] of Object.entries(props)) {
 		const propType = schemaToTs(propSchema, true);
 		const opt = required.has(key) ? "" : "?";
-		const desc = propSchema.description;
-		if (desc) {
-			lines.push(`  /** ${desc} */`);
+		const hint = buildPropertyHint(key, propSchema);
+		if (hint) {
+			lines.push(`  /** ${hint} */`);
 		}
 		lines.push(`  ${safePropName(key)}${opt}: ${propType};`);
 	}
@@ -142,6 +142,65 @@ function schemaToTs(schema: JSONSchema, inline = false): string {
 	return lines.join("\n");
 }
 
+/**
+ * Build a concise property hint combining description and constraints.
+ */
+function buildPropertyHint(propName: string, schema: JSONSchema): string | null {
+	const parts: string[] = [];
+	const desc = schema.description;
+	if (desc && !isRedundantDescription(propName, desc)) {
+		parts.push(desc);
+	}
+	const constraints = extractConstraints(schema);
+	if (constraints) {
+		parts.push(constraints);
+	}
+	return parts.length > 0 ? parts.join(" ") : null;
+}
+
+/**
+ * Extract numeric/string/array constraints as a parenthetical hint.
+ */
+function extractConstraints(schema: JSONSchema): string | null {
+	const hints: string[] = [];
+	if (schema.minimum !== undefined) hints.push(`min: ${schema.minimum}`);
+	if (schema.maximum !== undefined) hints.push(`max: ${schema.maximum}`);
+	if (schema.exclusiveMinimum !== undefined) hints.push(`> ${schema.exclusiveMinimum}`);
+	if (schema.exclusiveMaximum !== undefined) hints.push(`< ${schema.exclusiveMaximum}`);
+	if (schema.minLength !== undefined && Number(schema.minLength) > 0) hints.push("non-empty");
+	if (schema.maxLength !== undefined) hints.push(`max length: ${schema.maxLength}`);
+	if (schema.pattern) hints.push(`pattern: ${schema.pattern}`);
+	if (schema.minItems !== undefined && Number(schema.minItems) > 0) hints.push("non-empty");
+	if (schema.maxItems !== undefined) hints.push(`max items: ${schema.maxItems}`);
+	// Check union members for shared constraints
+	const unionSchemas = schema.anyOf ?? schema.oneOf;
+	if (unionSchemas && hints.length === 0) {
+		const allNonEmpty = unionSchemas.every(
+			s =>
+				(s.minItems !== undefined && Number(s.minItems) > 0) ||
+				(s.minLength !== undefined && Number(s.minLength) > 0),
+		);
+		if (allNonEmpty && unionSchemas.length > 0) hints.push("non-empty");
+	}
+	if (hints.length === 0) return null;
+	return `(${[...new Set(hints)].join(", ")})`;
+}
+
+/**
+ * Check if a property description is redundant given the property name.
+ */
+function isRedundantDescription(propName: string, desc: string): boolean {
+	const lower = desc.toLowerCase();
+	if (/\bdefault[s:]?\b/.test(lower)) return false;
+	if (/\be\.g\./.test(lower)) return false;
+	if (/\bformat\b/.test(lower)) return false;
+	if (/\bmust\b/.test(lower)) return false;
+	if (/\(/.test(desc)) return false;
+	const normalized = lower.replace(/[^a-z]/g, "");
+	const nameNorm = propName.toLowerCase().replace(/[^a-z]/g, "");
+	if (normalized.includes(nameNorm) && desc.length < nameNorm.length + 20) return true;
+	return false;
+}
 /**
  * Convert a JSON Schema (TypeBox) to a TypeScript type string.
  */
