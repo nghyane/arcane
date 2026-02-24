@@ -64,8 +64,6 @@ async () => {
 
 **Subagent architecture** — Task delegation with fan-out, todo-based completion tracking.
 
-**Stats dashboard** — Local observability for token usage and tool call metrics.
-
 ## Inherited from upstream
 
 Arcane is built on top of [oh-my-pi](https://github.com/can1357/oh-my-pi) by Can Boluk, which itself forks [pi-mono](https://github.com/badlogic/pi-mono). The following are upstream features:
@@ -81,6 +79,8 @@ Arcane is built on top of [oh-my-pi](https://github.com/can1357/oh-my-pi) by Can
 **Commit tool** — AI-powered conventional commits with hunk-level staging and split commits.
 
 **TypeScript + Rust** — Bun for the runtime, Rust for performance-critical text and grep operations.
+
+**Stats dashboard** — Local observability for token usage and tool call metrics.
 
 ## Providers
 
