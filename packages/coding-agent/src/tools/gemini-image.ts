@@ -6,7 +6,7 @@ import { type Static, Type } from "@sinclair/typebox";
 import type { ModelRegistry } from "../config/model-registry";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { CustomTool } from "../extensibility/custom-tools/types";
-import geminiImageDescription from "../prompts/tools/gemini-image.md" with { type: "text" };
+import geminiImageDescription from "../prompts/codemode/gemini-image.md" with { type: "text" };
 import { detectSupportedImageMimeTypeFromFile } from "../utils/mime";
 import { resolveReadPath } from "./path-utils";
 

@@ -43,11 +43,12 @@ export const taskSchema = Type.Object({
 	}),
 	assignment: Type.String({
 		description:
-			"Complete instructions the subagent executes. Include target files, change description, edge cases, and acceptance criteria.",
+			"Complete instructions the subagent executes. Structure: Target (files, symbols), Change (step-by-step), Edge Cases, Acceptance Criteria. Must be self-contained — subagent has no conversation history.",
 	}),
 	context: Type.Optional(
 		Type.String({
-			description: "Optional shared background prepended to the assignment.",
+			description:
+				"Shared background prepended to assignment. Use for session-specific info subagents lack: API contracts, type definitions, reference files. Do NOT repeat AGENTS.md rules — subagents already have them.",
 		}),
 	),
 	skills: Type.Optional(

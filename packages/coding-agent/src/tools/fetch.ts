@@ -9,7 +9,7 @@ import { parse as parseHtml } from "node-html-parser";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { type Theme, theme } from "../modes/theme/theme";
-import fetchDescription from "../prompts/tools/fetch.md" with { type: "text" };
+import fetchDescription from "../prompts/codemode/fetch.md" with { type: "text" };
 import { DEFAULT_MAX_BYTES, truncateHead } from "../session/streaming-output";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";

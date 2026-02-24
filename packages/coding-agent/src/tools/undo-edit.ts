@@ -11,7 +11,7 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import { generateUnifiedDiffString } from "../patch/diff";
 import { normalizeToLF, stripBom } from "../patch/normalize";
-import undoEditDescription from "../prompts/tools/undo-edit.md" with { type: "text" };
+import undoEditDescription from "../prompts/codemode/undo-edit.md" with { type: "text" };
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
 import type { ToolSession } from ".";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";

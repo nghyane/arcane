@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import reviewerDescription from "../prompts/tools/reviewer.md" with { type: "text" };
+import reviewerDescription from "../prompts/codemode/reviewer.md" with { type: "text" };
 import { createSubagentTool } from "./subagent-tool";
 
 const schema = Type.Object({

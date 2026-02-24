@@ -12,7 +12,7 @@ import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
 import { computeLineHash } from "../patch/hashline";
-import readDescription from "../prompts/tools/read.md" with { type: "text" };
+import readDescription from "../prompts/codemode/read.md" with { type: "text" };
 import type { ToolSession } from "../sdk";
 import {
 	DEFAULT_MAX_BYTES,

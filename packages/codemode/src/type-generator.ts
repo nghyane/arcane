@@ -87,6 +87,49 @@ function toPascalCase(name: string): string {
 	return result || "Unknown";
 }
 
+/**
+ * Parse a tool's markdown description into summary (first paragraph) and guidance (rest).
+ * Skips the H1 heading. Summary = first non-empty paragraph. Guidance = everything after.
+ */
+function parseToolDescription(description: string): { summary: string; guidance: string[] } {
+	const lines = description.split("\n");
+	const summaryLines: string[] = [];
+	const guidanceLines: string[] = [];
+	let pastHeading = false;
+	let pastSummary = false;
+
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (!pastHeading) {
+			if (trimmed.startsWith("# ")) {
+				pastHeading = true;
+				continue;
+			}
+			if (trimmed === "") continue;
+			pastHeading = true;
+		}
+		if (!pastSummary) {
+			if (summaryLines.length > 0 && (trimmed === "" || trimmed.startsWith("#") || trimmed.startsWith("<"))) {
+				pastSummary = true;
+			} else if (trimmed !== "" && !trimmed.startsWith("#") && !trimmed.startsWith("<")) {
+				summaryLines.push(trimmed);
+				continue;
+			} else if (trimmed === "") {
+				continue;
+			} else {
+				pastSummary = true;
+			}
+		}
+		guidanceLines.push(trimmed);
+	}
+
+	// Trim leading/trailing blank lines from guidance
+	while (guidanceLines.length > 0 && guidanceLines[0] === "") guidanceLines.shift();
+	while (guidanceLines.length > 0 && guidanceLines[guidanceLines.length - 1] === "") guidanceLines.pop();
+
+	return { summary: summaryLines.join(" "), guidance: guidanceLines };
+}
+
 interface GeneratedTypes {
 	/** Full TypeScript declaration block */
 	declarations: string;
@@ -127,12 +170,19 @@ export function generateTypes(tools: AgentTool[]): GeneratedTypes {
 			}
 		}
 
-		// Build JSDoc from tool description — first line only
+		// Build JSDoc from tool description — summary + guidance
 		const docLines: string[] = [];
 		if (tool.description) {
-			const firstLine = tool.description.split("\n")[0].trim();
-			if (firstLine) {
-				docLines.push(`  /** ${firstLine} */`);
+			const { summary, guidance } = parseToolDescription(tool.description);
+			if (summary && guidance.length > 0) {
+				docLines.push(`  /** ${summary}`);
+				docLines.push(`  *`);
+				for (const line of guidance) {
+					docLines.push(line === "" ? `  *` : `  * ${line}`);
+				}
+				docLines.push(`  */`);
+			} else if (summary) {
+				docLines.push(`  /** ${summary} */`);
 			}
 		}
 

@@ -8,7 +8,7 @@ import { renderPromptTemplate } from "../config/prompt-templates";
 import { loadCapability } from "../discovery";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
-import sshDescriptionBase from "../prompts/tools/ssh.md" with { type: "text" };
+import sshDescriptionBase from "../prompts/codemode/ssh.md" with { type: "text" };
 import { DEFAULT_MAX_BYTES } from "../session/streaming-output";
 import type { SSHHostInfo } from "../ssh/connection-manager";
 import { ensureHostInfo, getHostInfoForHost } from "../ssh/connection-manager";

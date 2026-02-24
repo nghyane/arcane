@@ -11,6 +11,7 @@ Execute JavaScript code to accomplish tasks. Instead of calling tools individual
 - Write an async arrow function: `async () => { ... }`
 - Use `await` for all `codemode.*` calls
 - Default to `Promise.all()` — serialize only when there is a strict data dependency. Do not limit parallel calls to 3-4; batch as many independent operations as possible. Use `Promise.allSettled()` when partial failure is acceptable
+- Do not make multiple edits to the same file in parallel
 - Return the final result from your function
 - Tool results are already displayed to the user — do NOT repeat raw output in your response text. Summarize or analyze instead.
 - Do NOT use `console.log()` — tool results are already streamed to the UI as they execute

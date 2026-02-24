@@ -9,7 +9,7 @@ import chalk from "chalk";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
-import todoWriteDescription from "../prompts/tools/todo-write.md" with { type: "text" };
+import todoWriteDescription from "../prompts/codemode/todo-write.md" with { type: "text" };
 import type { ToolSession } from "../sdk";
 import { renderStatusLine, renderTreeList } from "../tui";
 import { PREVIEW_LIMITS } from "./render-utils";

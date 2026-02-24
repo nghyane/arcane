@@ -10,7 +10,7 @@ import { Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
-import findDescription from "../prompts/tools/find.md" with { type: "text" };
+import findDescription from "../prompts/codemode/find.md" with { type: "text" };
 import { type TruncationResult, truncateHead } from "../session/streaming-output";
 import {
 	Ellipsis,

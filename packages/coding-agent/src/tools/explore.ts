@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import exploreDescription from "../prompts/tools/explore.md" with { type: "text" };
+import exploreDescription from "../prompts/codemode/explore.md" with { type: "text" };
 import { createSubagentTool } from "./subagent-tool";
 
 const schema = Type.Object({

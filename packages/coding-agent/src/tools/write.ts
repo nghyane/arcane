@@ -13,7 +13,7 @@ import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { createLspWritethrough, type FileDiagnosticsResult, type WritethroughCallback, writethroughNoop } from "../lsp";
 import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
-import writeDescription from "../prompts/tools/write.md" with { type: "text" };
+import writeDescription from "../prompts/codemode/write.md" with { type: "text" };
 import type { ToolSession } from "../sdk";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";

@@ -5,7 +5,7 @@ import { logger, once, untilAborted } from "@nghyane/arcane-utils";
 import type { BunFile } from "bun";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import { type Theme, theme } from "../modes/theme/theme";
-import lspDescription from "../prompts/tools/lsp.md" with { type: "text" };
+import lspDescription from "../prompts/codemode/lsp.md" with { type: "text" };
 import type { ToolSession } from "../tools";
 import { resolveToCwd } from "../tools/path-utils";
 import { ToolAbortError, throwIfAborted } from "../tools/tool-errors";

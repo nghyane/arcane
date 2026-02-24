@@ -10,7 +10,9 @@ import * as path from "node:path";
 import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { Snowflake } from "@nghyane/arcane-utils";
 import type { ToolSession } from "..";
+import { renderPromptTemplate } from "../config/prompt-templates";
 import type { Theme } from "../modes/theme/theme";
+import taskDescription from "../prompts/codemode/task.md" with { type: "text" };
 import { getBundledAgent } from "./agents";
 import { runAgent } from "./executor";
 import { AgentOutputManager } from "./output-manager";
@@ -43,11 +45,11 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 	readonly renderCall = renderCall;
 	readonly renderResult = renderResult;
 
-	readonly description =
-		"Launch a subagent to execute a well-scoped task. Use Promise.all() for parallel tasks. Returns structured {exitCode, output, durationMs, tokens}.";
+	readonly description: string;
 
 	private constructor(private readonly session: ToolSession) {
 		this.parameters = taskSchema;
+		this.description = renderPromptTemplate(taskDescription);
 	}
 
 	/** Create a TaskTool instance. */

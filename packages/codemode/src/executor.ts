@@ -147,7 +147,7 @@ export async function execute(
 
 		return { result, logs };
 	} catch (err) {
-		const error = err instanceof Error ? err.message : String(err);
+		const error = formatExecutionError(err, code);
 		logger.debug("Code Mode execution error", { error });
 		// Suppress unhandled rejection from the still-running resultPromise.
 		// The code may still be executing in-flight tool calls after timeout/abort;
@@ -157,6 +157,35 @@ export async function execute(
 	} finally {
 		for (const cleanup of cleanups) cleanup();
 	}
+}
+
+/**
+ * Format an execution error with code context.
+ *
+ * Bun's eval source maps are unreliable for line pinpointing,
+ * so we include a numbered code snippet instead of highlighting a specific line.
+ */
+function formatExecutionError(err: unknown, code: string): string {
+	if (!(err instanceof Error)) return String(err);
+
+	const message = err.message;
+	const codeLines = code.split("\n");
+
+	// For short code (<= 20 lines), include full numbered snippet
+	// For longer code, include first/last 10 lines
+	let snippet: string;
+	if (codeLines.length <= 20) {
+		snippet = codeLines.map((line, i) => `  ${String(i + 1).padStart(3)} | ${line}`).join("\n");
+	} else {
+		const head = codeLines.slice(0, 10).map((line, i) => `  ${String(i + 1).padStart(3)} | ${line}`);
+		const tail = codeLines.slice(-10).map((line, i) => {
+			const lineNum = codeLines.length - 10 + i + 1;
+			return `  ${String(lineNum).padStart(3)} | ${line}`;
+		});
+		snippet = [...head, `  ... (${codeLines.length - 20} lines omitted)`, ...tail].join("\n");
+	}
+
+	return `${message}\n\n${snippet}`;
 }
 
 function createTimeout(ms: number): { promise: Promise<never>; cleanup: () => void } {

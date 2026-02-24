@@ -2,7 +2,7 @@ import type { AgentTool, AgentToolResult } from "@nghyane/arcane-agent";
 import { type Static, Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { Theme } from "../modes/theme/theme";
-import githubDescription from "../prompts/tools/github.md" with { type: "text" };
+import githubDescription from "../prompts/codemode/github.md" with { type: "text" };
 import { type GitHubResponse, githubClient } from "../web/github-client";
 import type { ToolSession } from ".";
 import type { OutputMeta } from "./output-meta";
@@ -38,8 +38,10 @@ const schema = Type.Object({
 	labels: Type.Optional(Type.String({ description: "Comma-separated label names" })),
 	sha: Type.Optional(Type.String({ description: "Commit SHA, branch, or tag" })),
 	include_diff: Type.Optional(Type.Boolean({ description: "Include file diffs" })),
-	per_page: Type.Optional(Type.Number({ description: "Results per page (max 100)" })),
 	recursive: Type.Optional(Type.Boolean({ description: "Recursively list tree" })),
+	limit: Type.Optional(
+		Type.Number({ description: "Max total results to return (default: 100, max: 500). Auto-paginates internally." }),
+	),
 });
 
 type GitHubInput = Static<typeof schema>;
@@ -217,10 +219,30 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 		case "get_file": {
 			const filePath = input.path ?? "README.md";
 			const ref = input.ref ? `?ref=${input.ref}` : "";
-			const res = await githubClient.request<string>(`${base}/contents/${filePath}${ref}`, {
+			let res = await githubClient.request<string>(`${base}/contents/${filePath}${ref}`, {
 				...opts,
 				mediaType: "application/vnd.github.v3.raw",
 			});
+			// Fallback to Blob API for files >1MB (raw mediaType returns 403)
+			if (!res.ok && res.status === 403) {
+				const metaRes = await githubClient.request<{ sha: string; size: number }>(
+					`${base}/contents/${filePath}${ref}`,
+					opts,
+				);
+				if (metaRes.ok && metaRes.data?.sha) {
+					const blobRes = await githubClient.request<{ content: string; encoding: string }>(
+						`${base}/git/blobs/${metaRes.data.sha}`,
+						opts,
+					);
+					if (blobRes.ok && blobRes.data?.content) {
+						const decoded =
+							blobRes.data.encoding === "base64"
+								? Buffer.from(blobRes.data.content, "base64").toString("utf-8")
+								: blobRes.data.content;
+						res = { data: decoded as any, ok: true, status: 200 };
+					}
+				}
+			}
 			if (!res.ok) return error(res, `file ${filePath}`);
 			const content = String(res.data);
 			const lines = content.split("\n");
@@ -258,7 +280,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 
 		case "search_code": {
 			const q = input.query ? `${input.query} repo:${owner}/${repo}` : `repo:${owner}/${repo}`;
-			const perPage = Math.min(input.per_page ?? 30, 100);
+			const perPage = Math.min(input.limit ?? 30, 100);
 			const res = await githubClient.request<any>(`/search/code?q=${encodeURIComponent(q)}&per_page=${perPage}`, {
 				...opts,
 				accept: "application/vnd.github.text-match+json",
@@ -269,7 +291,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 
 		case "search_repos": {
 			const q = input.query ?? `${owner}/${repo}`;
-			const perPage = Math.min(input.per_page ?? 30, 100);
+			const perPage = Math.min(input.limit ?? 30, 100);
 			const res = await githubClient.request<any>(
 				`/search/repositories?q=${encodeURIComponent(q)}&per_page=${perPage}`,
 				opts,
@@ -300,12 +322,20 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			const params = new URLSearchParams();
 			if (input.state) params.set("state", input.state);
 			if (input.labels) params.set("labels", input.labels);
-			params.set("per_page", String(Math.min(input.per_page ?? 30, 100)));
-			const qs = params.toString();
-			const res = await githubClient.request<any[]>(`${base}/issues?${qs}`, opts);
+			const limit = Math.min(input.limit ?? 100, 500);
+			const perPage = Math.min(limit, 100);
+			const maxPages = Math.ceil(limit / perPage);
+			const res = await githubClient.requestPaginated<any>(`${base}/issues?${params}`, {
+				...opts,
+				perPage,
+				maxPages,
+			});
 			if (!res.ok) return error(res, "issues");
-			const issues = (res.data ?? []).filter((i: any) => !i.pull_request);
-			return { text: issues.map(formatIssueMinimal).join("\n") || "No issues found." };
+			const issues = (res.data ?? []).filter((i: any) => !i.pull_request).slice(0, limit);
+			const header = `${issues.length} issue(s)${issues.length >= limit ? " (limit reached, increase limit for more)" : ""}`;
+			return {
+				text: issues.length ? `${header}\n${issues.map(formatIssueMinimal).join("\n")}` : "No issues found.",
+			};
 		}
 
 		case "get_pull": {
@@ -337,20 +367,40 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 		case "list_pulls": {
 			const params = new URLSearchParams();
 			if (input.state) params.set("state", input.state);
-			params.set("per_page", String(Math.min(input.per_page ?? 30, 100)));
-			const res = await githubClient.request<any[]>(`${base}/pulls?${params}`, opts);
+			const limit = Math.min(input.limit ?? 100, 500);
+			const perPage = Math.min(limit, 100);
+			const maxPages = Math.ceil(limit / perPage);
+			const res = await githubClient.requestPaginated<any>(`${base}/pulls?${params}`, {
+				...opts,
+				perPage,
+				maxPages,
+			});
 			if (!res.ok) return error(res, "pull requests");
-			return { text: (res.data ?? []).map(formatPRMinimal).join("\n") || "No pull requests found." };
+			const pulls = (res.data ?? []).slice(0, limit);
+			const header = `${pulls.length} PR(s)${pulls.length >= limit ? " (limit reached, increase limit for more)" : ""}`;
+			return {
+				text: pulls.length ? `${header}\n${pulls.map(formatPRMinimal).join("\n")}` : "No pull requests found.",
+			};
 		}
 
 		case "list_commits": {
 			const params = new URLSearchParams();
 			if (input.sha) params.set("sha", input.sha);
 			if (input.path) params.set("path", input.path);
-			params.set("per_page", String(Math.min(input.per_page ?? 30, 100)));
-			const res = await githubClient.request<any[]>(`${base}/commits?${params}`, opts);
+			const limit = Math.min(input.limit ?? 100, 500);
+			const perPage = Math.min(limit, 100);
+			const maxPages = Math.ceil(limit / perPage);
+			const res = await githubClient.requestPaginated<any>(`${base}/commits?${params}`, {
+				...opts,
+				perPage,
+				maxPages,
+			});
 			if (!res.ok) return error(res, "commits");
-			return { text: (res.data ?? []).map(formatCommitMinimal).join("\n") || "No commits found." };
+			const commits = (res.data ?? []).slice(0, limit);
+			const header = `${commits.length} commit(s)${commits.length >= limit ? " (limit reached, increase limit for more)" : ""}`;
+			return {
+				text: commits.length ? `${header}\n${commits.map(formatCommitMinimal).join("\n")}` : "No commits found.",
+			};
 		}
 
 		case "get_commit": {

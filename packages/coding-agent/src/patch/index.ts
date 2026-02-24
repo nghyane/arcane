@@ -20,9 +20,9 @@ import {
 	type WritethroughCallback,
 	writethroughNoop,
 } from "../lsp";
-import hashlineDescription from "../prompts/tools/hashline.md" with { type: "text" };
-import patchDescription from "../prompts/tools/patch.md" with { type: "text" };
-import replaceDescription from "../prompts/tools/replace.md" with { type: "text" };
+import hashlineDescription from "../prompts/codemode/hashline.md" with { type: "text" };
+import patchDescription from "../prompts/codemode/patch.md" with { type: "text" };
+import replaceDescription from "../prompts/codemode/replace.md" with { type: "text" };
 import type { ToolSession } from "../tools";
 import {
 	invalidateFsScanAfterDelete,

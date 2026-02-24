@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import oracleDescription from "../prompts/tools/oracle.md" with { type: "text" };
+import oracleDescription from "../prompts/codemode/oracle.md" with { type: "text" };
 import { createSubagentTool } from "./subagent-tool";
 
 const schema = Type.Object({

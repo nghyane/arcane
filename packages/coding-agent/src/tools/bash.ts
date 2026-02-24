@@ -11,7 +11,7 @@ import { type BashResult, executeBash } from "../exec/bash-executor";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import type { Theme } from "../modes/theme/theme";
-import bashDescription from "../prompts/tools/bash.md" with { type: "text" };
+import bashDescription from "../prompts/codemode/bash.md" with { type: "text" };
 import { DEFAULT_MAX_BYTES } from "../session/streaming-output";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";

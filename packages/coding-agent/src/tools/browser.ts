@@ -17,7 +17,7 @@ import type {
 	SerializedAXNode,
 } from "puppeteer";
 import { renderPromptTemplate } from "../config/prompt-templates";
-import browserDescription from "../prompts/tools/browser.md" with { type: "text" };
+import browserDescription from "../prompts/codemode/browser.md" with { type: "text" };
 import type { ToolSession } from "../sdk";
 import { formatDimensionNote, resizeImage } from "../utils/image-resize";
 import { htmlToBasicMarkdown } from "../web/scrapers/types";
