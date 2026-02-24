@@ -6,12 +6,10 @@ import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import { isEnoent, untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import { generateUnifiedDiffString } from "../patch/diff";
 import { normalizeToLF, stripBom } from "../patch/normalize";
-import undoEditDescription from "../prompts/codemode/undo-edit.md" with { type: "text" };
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
 import type { ToolSession } from ".";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
@@ -37,7 +35,7 @@ export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditTo
 	readonly concurrency = "exclusive";
 
 	constructor(private readonly session: ToolSession) {
-		this.description = renderPromptTemplate(undoEditDescription);
+		this.description = "";
 	}
 
 	async execute(

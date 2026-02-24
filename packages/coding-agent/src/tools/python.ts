@@ -6,13 +6,11 @@ import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import { executePython, getPreludeDocs, type PythonExecutorOptions } from "../ipy/executor";
-import type { PreludeHelper, PythonStatusEvent } from "../ipy/kernel";
+import { executePython, type PythonExecutorOptions } from "../ipy/executor";
+import type { PythonStatusEvent } from "../ipy/kernel";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import type { Theme } from "../modes/theme/theme";
-import pythonDescription from "../prompts/codemode/python.md" with { type: "text" };
 import { DEFAULT_MAX_BYTES, OutputSink, type OutputSummary } from "../session/streaming-output";
 import { getTreeBranch, getTreeContinuePrefix, renderCodeCell } from "../tui";
 import type { ToolSession } from ".";
@@ -24,26 +22,6 @@ import { ToolAbortError, ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 
 export const PYTHON_DEFAULT_PREVIEW_LINES = 10;
-
-type PreludeCategory = {
-	name: string;
-	functions: PreludeHelper[];
-};
-
-function groupPreludeHelpers(helpers: PreludeHelper[]): PreludeCategory[] {
-	const categories: PreludeCategory[] = [];
-	const byName = new Map<string, PreludeHelper[]>();
-	for (const helper of helpers) {
-		let bucket = byName.get(helper.category);
-		if (!bucket) {
-			bucket = [];
-			byName.set(helper.category, bucket);
-			categories.push({ name: helper.category, functions: bucket });
-		}
-		bucket.push(helper);
-	}
-	return categories;
-}
 
 export const pythonSchema = Type.Object({
 	cells: Type.Array(
@@ -133,9 +111,7 @@ function renderJsonTree(value: unknown, theme: Theme, expanded: boolean, maxDept
 }
 
 export function getPythonToolDescription(): string {
-	const helpers = getPreludeDocs();
-	const categories = groupPreludeHelpers(helpers);
-	return renderPromptTemplate(pythonDescription, { categories });
+	return "";
 }
 
 export interface PythonToolOptions {

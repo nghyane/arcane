@@ -1,5 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import reviewerDescription from "../prompts/codemode/reviewer.md" with { type: "text" };
 import { createSubagentTool } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -33,7 +32,6 @@ export const ReviewerTool = createSubagentTool({
 	label: "Code Review",
 	agent: "reviewer",
 	schema,
-	descriptionTemplate: reviewerDescription,
 	progressText: "Reviewing code...",
 	tmpPrefix: "arc-review-",
 	buildTask,

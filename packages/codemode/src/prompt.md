@@ -28,6 +28,7 @@ Execute JavaScript code to accomplish tasks. Instead of calling tools individual
 - **librarian over explore** for architecture understanding across repos
 - **oracle** for planning, debugging strategy, design review — does not make changes
 
+{{guidance}}
 ## Persistent State
 
 A `state` Map and `memo` helper persist across all code executions in the conversation.

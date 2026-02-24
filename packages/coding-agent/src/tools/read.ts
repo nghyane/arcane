@@ -8,11 +8,9 @@ import { Text } from "@nghyane/arcane-tui";
 import { ptree, untilAborted } from "@nghyane/arcane-utils";
 import { getRemoteDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
 import { computeLineHash } from "../patch/hashline";
-import readDescription from "../prompts/codemode/read.md" with { type: "text" };
 import type { ToolSession } from "../sdk";
 import {
 	DEFAULT_MAX_BYTES,
@@ -544,13 +542,8 @@ export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails> {
 	readonly #autoResizeImages: boolean;
 
 	constructor(private readonly session: ToolSession) {
-		const displayMode = resolveFileDisplayMode(session);
 		this.#autoResizeImages = session.settings.get("images.autoResize");
-		this.description = renderPromptTemplate(readDescription, {
-			DEFAULT_MAX_LINES: String(DEFAULT_MAX_LINES),
-			IS_HASHLINE_MODE: displayMode.hashLines,
-			IS_LINE_NUMBER_MODE: !displayMode.hashLines && displayMode.lineNumbers,
-		});
+		this.description = "";
 	}
 
 	async execute(

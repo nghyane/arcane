@@ -9,11 +9,9 @@ import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import { untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { createLspWritethrough, type FileDiagnosticsResult, type WritethroughCallback, writethroughNoop } from "../lsp";
 import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
-import writeDescription from "../prompts/codemode/write.md" with { type: "text" };
 import type { ToolSession } from "../sdk";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
@@ -86,7 +84,7 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 		this.#writethrough = enableLsp
 			? createLspWritethrough(session.cwd, { enableFormat, enableDiagnostics })
 			: writethroughNoop;
-		this.description = renderPromptTemplate(writeDescription);
+		this.description = "";
 	}
 
 	async execute(

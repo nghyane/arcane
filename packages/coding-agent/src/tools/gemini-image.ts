@@ -4,9 +4,7 @@ import { getAntigravityHeaders, getEnvApiKey, StringEnum } from "@nghyane/arcane
 import { $env, ptree, readSseJson, Snowflake, untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { ModelRegistry } from "../config/model-registry";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { CustomTool } from "../extensibility/custom-tools/types";
-import geminiImageDescription from "../prompts/codemode/gemini-image.md" with { type: "text" };
 import { detectSupportedImageMimeTypeFromFile } from "../utils/mime";
 import { resolveReadPath } from "./path-utils";
 
@@ -615,7 +613,7 @@ async function parseAntigravitySseForImage(response: Response, signal?: AbortSig
 export const geminiImageTool: CustomTool<typeof geminiImageSchema, GeminiImageToolDetails> = {
 	name: "generate_image",
 	label: "GenerateImage",
-	description: renderPromptTemplate(geminiImageDescription),
+	description: "",
 	parameters: geminiImageSchema,
 	async execute(_toolCallId, params, _onUpdate, ctx, signal) {
 		return untilAborted(signal, async () => {

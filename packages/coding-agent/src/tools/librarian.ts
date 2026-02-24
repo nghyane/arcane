@@ -1,5 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import librarianDescription from "../prompts/codemode/librarian.md" with { type: "text" };
 import { createSubagentTool } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -25,7 +24,6 @@ export const LibrarianTool = createSubagentTool({
 	label: "Librarian",
 	agent: "librarian",
 	schema,
-	descriptionTemplate: librarianDescription,
 	progressText: "Exploring repositories...",
 	tmpPrefix: "arc-librarian-",
 	buildTask,

@@ -3,10 +3,8 @@ import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import { untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
-import calculatorDescription from "../prompts/codemode/calculator.md" with { type: "text" };
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, renderTreeList, truncateToWidth } from "../tui";
 import type { ToolSession } from ".";
 import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS, TRUNCATE_LENGTHS } from "./render-utils";
@@ -401,7 +399,7 @@ export class CalculatorTool implements AgentTool<typeof calculatorSchema, Calcul
 	readonly parameters = calculatorSchema;
 
 	constructor(_session: ToolSession) {
-		this.description = renderPromptTemplate(calculatorDescription);
+		this.description = "";
 	}
 
 	async execute(

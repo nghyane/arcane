@@ -2,6 +2,7 @@ import type { AgentTool } from "@nghyane/arcane-agent";
 import { createCodeTool } from "@nghyane/arcane-codemode";
 import { $env, logger } from "@nghyane/arcane-utils";
 import type { PromptTemplate } from "../config/prompt-templates";
+import { renderPromptTemplate } from "../config/prompt-templates";
 import type { Settings } from "../config/settings";
 import type { Skill } from "../extensibility/skills";
 import type { InternalUrlRouter } from "../internal-urls";
@@ -9,10 +10,12 @@ import { getPreludeDocs, warmPythonEnvironment } from "../ipy/executor";
 import { checkPythonKernelAvailability } from "../ipy/kernel";
 import { LspTool } from "../lsp";
 import { EditTool } from "../patch";
+import guidanceTemplate from "../prompts/codemode/guidance.md" with { type: "text" };
 import type { ArtifactManager } from "../session/artifacts";
 import { TaskTool } from "../task";
 import type { AgentOutputManager } from "../task/output-manager";
 import type { EventBus } from "../utils/event-bus";
+import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import { time } from "../utils/timings";
 import { SearchTool } from "../web/search";
 import { AskTool } from "./ask";
@@ -315,6 +318,11 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 	const tools = results.filter((r): r is Tool => r !== null);
 
 	// Code Mode: wrap all eligible tools into a single "code" tool
-	const { codeTool, excludedTools } = createCodeTool(tools);
+	const displayMode = resolveFileDisplayMode(session);
+	const guidance = renderPromptTemplate(guidanceTemplate, {
+		IS_HASHLINE_MODE: displayMode.hashLines,
+		IS_LINE_NUMBER_MODE: !displayMode.hashLines && displayMode.lineNumbers,
+	});
+	const { codeTool, excludedTools } = createCodeTool(tools, { guidance });
 	return [codeTool as Tool, ...(excludedTools as Tool[])];
 }

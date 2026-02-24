@@ -1,8 +1,6 @@
 import type { AgentTool, AgentToolResult } from "@nghyane/arcane-agent";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { Theme } from "../modes/theme/theme";
-import githubDescription from "../prompts/codemode/github.md" with { type: "text" };
 import { type GitHubResponse, githubClient } from "../web/github-client";
 import type { ToolSession } from ".";
 import type { OutputMeta } from "./output-meta";
@@ -453,7 +451,7 @@ function error(res: GitHubResponse, resource: string): { text: string } {
 // Tool Class
 // =============================================================================
 
-const description = renderPromptTemplate(githubDescription);
+const description = "";
 
 export class GitHubTool implements AgentTool<typeof schema, GitHubToolDetails, Theme> {
 	readonly name = "github";

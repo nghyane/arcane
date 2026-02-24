@@ -6,10 +6,8 @@ import { Text } from "@nghyane/arcane-tui";
 import { logger, Snowflake } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import chalk from "chalk";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
-import todoWriteDescription from "../prompts/codemode/todo-write.md" with { type: "text" };
 import type { ToolSession } from "../sdk";
 import { renderStatusLine, renderTreeList } from "../tui";
 import { PREVIEW_LIMITS } from "./render-utils";
@@ -124,7 +122,7 @@ export class TodoWriteTool implements AgentTool<typeof todoWriteSchema, TodoWrit
 	readonly concurrency = "exclusive";
 
 	constructor(private readonly session: ToolSession) {
-		this.description = renderPromptTemplate(todoWriteDescription);
+		this.description = "";
 	}
 
 	async execute(

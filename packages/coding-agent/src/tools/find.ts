@@ -7,10 +7,8 @@ import { Text } from "@nghyane/arcane-tui";
 import { isEnoent, untilAborted } from "@nghyane/arcane-utils";
 import type { Static } from "@sinclair/typebox";
 import { Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
-import findDescription from "../prompts/codemode/find.md" with { type: "text" };
 import { type TruncationResult, truncateHead } from "../session/streaming-output";
 import {
 	Ellipsis,
@@ -135,7 +133,7 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 		options?: FindToolOptions,
 	) {
 		this.#customOps = options?.operations;
-		this.description = renderPromptTemplate(findDescription);
+		this.description = "";
 	}
 
 	async execute(

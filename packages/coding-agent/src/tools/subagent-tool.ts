@@ -29,7 +29,7 @@ export interface SubagentToolConfig<T extends TProperties> {
 	/** TypeBox schema for parameters */
 	schema: TObject<T>;
 	/** Raw .md template for tool description */
-	descriptionTemplate: string;
+	descriptionTemplate?: string;
 	/** Progress message shown during execution */
 	progressText: string;
 	/** Temp directory prefix */
@@ -60,7 +60,7 @@ export function createSubagentTool<T extends TProperties>(
 		passContext = true,
 	} = config;
 
-	const description = renderPromptTemplate(descriptionTemplate);
+	const description = descriptionTemplate ? renderPromptTemplate(descriptionTemplate) : "";
 
 	return class SubagentTool implements AgentTool<TObject<T>, TaskToolDetails, Theme> {
 		readonly name = name;

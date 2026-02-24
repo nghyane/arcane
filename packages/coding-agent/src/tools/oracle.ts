@@ -1,5 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import oracleDescription from "../prompts/codemode/oracle.md" with { type: "text" };
 import { createSubagentTool } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -32,7 +31,6 @@ export const OracleTool = createSubagentTool({
 	label: "Oracle",
 	agent: "oracle",
 	schema,
-	descriptionTemplate: oracleDescription,
 	progressText: "Consulting oracle...",
 	tmpPrefix: "arc-oracle-",
 	buildTask,

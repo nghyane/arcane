@@ -6,11 +6,9 @@ import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import { untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import { computeLineHash } from "../patch/hashline";
-import grepDescription from "../prompts/codemode/grep.md" with { type: "text" };
 import { DEFAULT_MAX_COLUMN, type TruncationResult, truncateHead } from "../session/streaming-output";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, renderTreeList, truncateToWidth } from "../tui";
 import { resolveFileDisplayMode } from "../utils/file-display-mode";
@@ -62,11 +60,7 @@ export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails> {
 	readonly parameters = grepSchema;
 
 	constructor(private readonly session: ToolSession) {
-		const displayMode = resolveFileDisplayMode(session);
-		this.description = renderPromptTemplate(grepDescription, {
-			IS_HASHLINE_MODE: displayMode.hashLines,
-			IS_LINE_NUMBER_MODE: !displayMode.hashLines && displayMode.lineNumbers,
-		});
+		this.description = "";
 	}
 
 	async execute(

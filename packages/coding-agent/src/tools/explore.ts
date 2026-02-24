@@ -1,5 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import exploreDescription from "../prompts/codemode/explore.md" with { type: "text" };
 import { createSubagentTool } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -14,7 +13,6 @@ export const ExploreTool = createSubagentTool({
 	label: "Explore",
 	agent: "explore",
 	schema,
-	descriptionTemplate: exploreDescription,
 	progressText: "Searching codebase...",
 	tmpPrefix: "arc-explore-",
 	buildTask: p => p.query as string,

@@ -29,6 +29,8 @@ export interface CodeToolOptions {
 	excludeTools?: string[];
 	/** Execution timeout in milliseconds (default: 300_000) */
 	timeoutMs?: number;
+	/** Tool guidance text inserted into the prompt */
+	guidance?: string;
 }
 
 /** Details attached to tool_execution_update for sub-tool rendering */
@@ -62,7 +64,7 @@ export function createCodeTool(
 	tools: AgentTool[],
 	options: CodeToolOptions = {},
 ): { codeTool: CodeAgentTool; excludedTools: AgentTool[] } {
-	const { excludeTools = [], timeoutMs = 300_000 } = options;
+	const { excludeTools = [], timeoutMs = 300_000, guidance = "" } = options;
 	const excludeSet = new Set([...EXCLUDED_TOOLS, ...excludeTools]);
 
 	// Persistent state shared across all code executions in this session
@@ -83,7 +85,7 @@ export function createCodeTool(
 	const { declarations, nameMap } = generateTypes(wrappedTools);
 
 	// Build the tool description with embedded TypeScript API
-	const description = codeToolDescription.replace("{{types}}", declarations);
+	const description = codeToolDescription.replace("{{types}}", declarations).replace("{{guidance}}", guidance);
 
 	// Build the dispatch functions map (sanitized name → executor).
 	// Each fn accepts (toolCallId, args) so the event bridge's ID

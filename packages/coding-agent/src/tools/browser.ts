@@ -16,8 +16,6 @@ import type {
 	default as Puppeteer,
 	SerializedAXNode,
 } from "puppeteer";
-import { renderPromptTemplate } from "../config/prompt-templates";
-import browserDescription from "../prompts/codemode/browser.md" with { type: "text" };
 import type { ToolSession } from "../sdk";
 import { formatDimensionNote, resizeImage } from "../utils/image-resize";
 import { htmlToBasicMarkdown } from "../web/scrapers/types";
@@ -494,7 +492,7 @@ export class BrowserTool implements AgentTool<typeof browserSchema, BrowserToolD
 	readonly #patchedClients = new WeakSet<object>();
 
 	constructor(private readonly session: ToolSession) {
-		this.description = renderPromptTemplate(browserDescription, {});
+		this.description = "";
 	}
 
 	async #closeBrowser(): Promise<void> {

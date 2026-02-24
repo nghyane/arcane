@@ -6,12 +6,10 @@ import { Text } from "@nghyane/arcane-tui";
 import { $env, isEnoent } from "@nghyane/arcane-utils";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import { type BashResult, executeBash } from "../exec/bash-executor";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import type { Theme } from "../modes/theme/theme";
-import bashDescription from "../prompts/codemode/bash.md" with { type: "text" };
 import { DEFAULT_MAX_BYTES } from "../session/streaming-output";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
@@ -65,7 +63,7 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails> {
 	readonly concurrency = "exclusive";
 
 	constructor(private readonly session: ToolSession) {
-		this.description = renderPromptTemplate(bashDescription);
+		this.description = "";
 	}
 
 	async execute(
