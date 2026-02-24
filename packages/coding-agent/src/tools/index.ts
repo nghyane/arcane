@@ -22,6 +22,7 @@ import { CalculatorTool } from "./calculator";
 import { ExploreTool } from "./explore";
 import { FetchTool } from "./fetch";
 import { FindTool } from "./find";
+import { GitHubTool } from "./github";
 import { GrepTool } from "./grep";
 import { LibrarianTool } from "./librarian";
 import { NotebookTool } from "./notebook";
@@ -86,6 +87,7 @@ export { ExploreTool } from "./explore";
 export { FetchTool, type FetchToolDetails } from "./fetch";
 export { type FindOperations, FindTool, type FindToolDetails, type FindToolInput, type FindToolOptions } from "./find";
 export { setPreferredImageProvider } from "./gemini-image";
+export { GitHubTool, type GitHubToolDetails } from "./github";
 export { GrepTool, type GrepToolDetails, type GrepToolInput } from "./grep";
 export { LibrarianTool } from "./librarian";
 export { NotebookTool, type NotebookToolDetails } from "./notebook";
@@ -171,6 +173,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	edit: s => new EditTool(s),
 	find: s => new FindTool(s),
 	explore: s => new ExploreTool(s),
+	github: s => new GitHubTool(s),
 	grep: s => new GrepTool(s),
 	librarian: s => new LibrarianTool(s),
 	lsp: LspTool.createIf,
@@ -285,6 +288,7 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		if (name === "browser") return session.settings.get("browser.enabled");
 		if (name === "librarian") return session.settings.get("librarian.enabled");
 		if (name === "oracle") return session.settings.get("oracle.enabled");
+		if (name === "github") return session.settings.get("github.enabled");
 		if (name === "task") {
 			return !session.isSubagent;
 		}
@@ -311,10 +315,6 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 	const tools = results.filter((r): r is Tool => r !== null);
 
 	// Code Mode: wrap all eligible tools into a single "code" tool
-	if (session.settings.get("codemode.enabled")) {
-		const { codeTool, excludedTools } = createCodeTool(tools);
-		return [codeTool as Tool, ...(excludedTools as Tool[])];
-	}
-
-	return tools;
+	const { codeTool, excludedTools } = createCodeTool(tools);
+	return [codeTool as Tool, ...(excludedTools as Tool[])];
 }

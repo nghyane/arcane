@@ -1,4 +1,4 @@
-import { $env, ptree } from "@nghyane/arcane-utils";
+import { githubClient } from "../github-client";
 import type { RenderResult, SpecialHandler } from "./types";
 import { finalizeOutput, loadPage } from "./types";
 
@@ -9,12 +9,6 @@ interface GitHubUrl {
 	ref?: string;
 	path?: string;
 	number?: number;
-}
-
-interface GitHubIssueComment {
-	user: { login: string };
-	created_at: string;
-	body: string;
 }
 
 /**
@@ -75,40 +69,15 @@ function toRawGitHubUrl(gh: GitHubUrl): string {
 }
 
 /**
- * Fetch from GitHub API
+ * Fetch from GitHub API — delegates to shared github-client.
  */
 export async function fetchGitHubApi(
 	endpoint: string,
 	timeout: number,
 	signal?: AbortSignal,
 ): Promise<{ data: unknown; ok: boolean }> {
-	try {
-		const requestSignal = ptree.combineSignals(signal, timeout * 1000);
-
-		const headers: Record<string, string> = {
-			Accept: "application/vnd.github.v3+json",
-			"User-Agent": "arc-web-fetch/1.0",
-		};
-
-		// Use GITHUB_TOKEN if available
-		const token = $env.GITHUB_TOKEN || $env.GH_TOKEN;
-		if (token) {
-			headers.Authorization = `Bearer ${token}`;
-		}
-
-		const response = await fetch(`https://api.github.com${endpoint}`, {
-			signal: requestSignal,
-			headers,
-		});
-
-		if (!response.ok) {
-			return { data: null, ok: false };
-		}
-
-		return { data: await response.json(), ok: true };
-	} catch {
-		return { data: null, ok: false };
-	}
+	const result = await githubClient.request(endpoint, { timeout, signal });
+	return { data: result.data, ok: result.ok };
 }
 
 /**
@@ -118,35 +87,15 @@ async function fetchGitHubIssueComments(
 	owner: string,
 	repo: string,
 	issueNumber: number,
-	expectedCount: number,
+	_expectedCount: number,
 	timeout: number,
 	signal?: AbortSignal,
-): Promise<GitHubIssueComment[]> {
-	const perPage = 100;
-	const comments: GitHubIssueComment[] = [];
-
-	for (let page = 1; comments.length < expectedCount; page++) {
-		const result = await fetchGitHubApi(
-			`/repos/${owner}/${repo}/issues/${issueNumber}/comments?per_page=${perPage}&page=${page}`,
-			timeout,
-			signal,
-		);
-		if (!result.ok || !Array.isArray(result.data)) {
-			break;
-		}
-
-		const pageComments = result.data as GitHubIssueComment[];
-		if (pageComments.length === 0) {
-			break;
-		}
-
-		comments.push(...pageComments);
-		if (pageComments.length < perPage) {
-			break;
-		}
-	}
-
-	return comments;
+): Promise<Array<{ user: { login: string }; created_at: string; body: string }>> {
+	const result = await githubClient.requestPaginated<{ user: { login: string }; created_at: string; body: string }>(
+		`/repos/${owner}/${repo}/issues/${issueNumber}/comments`,
+		{ timeout, signal, perPage: 100, maxPages: 5 },
+	);
+	return result.ok ? result.data : [];
 }
 
 /**

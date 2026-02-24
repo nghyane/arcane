@@ -128,7 +128,7 @@ class SubagentComponent implements Component, ToolExecutionHandle {
 	}
 }
 
-export class CodeModeGroupComponent implements Component, ToolExecutionHandle {
+export class CodeGroupComponent implements Component, ToolExecutionHandle {
 	#header: Text;
 	#logsText: Text;
 	#orderedSubTools: Component[] = [];

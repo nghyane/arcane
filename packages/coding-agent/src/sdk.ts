@@ -330,7 +330,6 @@ export interface BuildSystemPromptOptions {
 	contextFiles?: Array<{ path: string; content: string }>;
 	cwd?: string;
 	appendPrompt?: string;
-	repeatToolDescriptions?: boolean;
 }
 
 /**
@@ -342,7 +341,6 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 		skills: options.skills,
 		contextFiles: options.contextFiles,
 		appendSystemPrompt: options.appendPrompt,
-		repeatToolDescriptions: options.repeatToolDescriptions,
 	});
 }
 
@@ -1030,7 +1028,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		emitEvent: event => cursorEventEmitter?.(event),
 	});
 
-	const repeatToolDescriptions = settings.get("repeatToolDescriptions");
 	const rebuildSystemPrompt = async (toolNames: string[], tools: Map<string, AgentTool>): Promise<string> => {
 		toolContextStore.setToolNames(toolNames);
 		const memoryInstructions = await buildMemoryToolDeveloperInstructions(agentDir, settings);
@@ -1044,7 +1041,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			rules: rulebookRules,
 			skillsSettings: settings.getGroup("skills") as SkillsSettings,
 			appendSystemPrompt: memoryInstructions,
-			repeatToolDescriptions,
 		});
 
 		if (options.systemPrompt === undefined) {
@@ -1062,7 +1058,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 				skillsSettings: settings.getGroup("skills") as SkillsSettings,
 				customPrompt: options.systemPrompt,
 				appendSystemPrompt: memoryInstructions,
-				repeatToolDescriptions,
 			});
 		}
 		return options.systemPrompt(defaultPrompt);

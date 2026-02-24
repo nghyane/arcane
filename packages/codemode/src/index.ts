@@ -1,8 +1,8 @@
-export { type CodeModeAgentTool, type CodeToolDetails, type CodeToolOptions, createCodeTool } from "./engine";
+export { type CodeAgentTool, type CodeToolDetails, type CodeToolOptions, createCodeTool } from "./engine";
 export {
 	bridgeToolFunctions,
-	type CodeModeEventHandler,
-	type CodeModeToolEvent,
+	type CodeEventHandler,
+	type CodeToolEvent,
 	type DispatchFn,
 } from "./event-bridge";
 export { type ExecuteResult, type ExecutorOptions, execute } from "./executor";

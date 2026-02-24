@@ -470,8 +470,6 @@ export interface BuildSystemPromptOptions {
 	toolNames?: string[];
 	/** Text to append to system prompt. */
 	appendSystemPrompt?: string;
-	/** Repeat full tool descriptions in system prompt. Default: false */
-	repeatToolDescriptions?: boolean;
 	/** Skills settings for discovery. */
 	skillsSettings?: SkillsSettings;
 	/** Working directory. Default: getProjectDir() */
@@ -496,7 +494,6 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 		customPrompt,
 		tools,
 		appendSystemPrompt,
-		repeatToolDescriptions = false,
 		skillsSettings,
 		toolNames,
 		cwd,
@@ -636,12 +633,6 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 		toolNamesArray = defaultToolNames;
 	}
 
-	// Build tool descriptions for system prompt rendering
-	const toolDescriptions = toolNamesArray.map(name => ({
-		name,
-		description: tools?.get(name)?.description ?? "",
-	}));
-
 	// Filter skills to only include those with read tool
 	const hasRead = tools?.has("read");
 	const filteredSkills = preloadedSkills === undefined && hasRead ? skills : [];
@@ -667,8 +658,6 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 	time("getEnvironmentInfo");
 	return renderPromptTemplate(systemPromptTemplate, {
 		tools: toolNamesArray,
-		toolDescriptions,
-		repeatToolDescriptions,
 		environment,
 		systemPromptCustomization: systemPromptCustomization ?? "",
 		contextFiles,

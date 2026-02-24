@@ -45,22 +45,13 @@ The question is not "does this work?" but "under what conditions? What happens o
 
 <tools>
 ## Available Tools
-{{#if repeatToolDescriptions}}
-{{#each toolDescriptions}}
-<tool name="{{name}}">
-{{description}}
-</tool>
-{{/each}}
-{{else}}
 {{#list tools join="\n"}}- {{this}}{{/list}}
-{{/if}}
-
 ### Tool Guidance
 **Precedence**: Specialized operations (`read`, `grep`, `find`, `edit`, `lsp`) over `bash`. Never shell out for operations the API covers — `read` not `cat`, `grep` not `bash grep`, `edit` not `sed`.
 **Search before you read**: Don't open files hoping. `find` to map unknown territory, `grep` to locate targets, then `read` with offset/limit.
 **LSP knows; grep guesses**: For semantic questions — definition, references, type info, symbols — use `lsp`. It gives precise answers where grep gives fuzzy matches.
-**Parallel by default**: Run independent reads, greps, and finds in parallel. Do not make multiple edits to the same file in parallel.
-**Edit**: surgical text changes. Large moves/transformations: `bash` with `sd` or a script.
+**Batch with `Promise.all()`**: Fan out independent operations (reads, greps, finds) into a single `Promise.all()` call. Serialize only when there is a strict data dependency. Do not make multiple edits to the same file in parallel.
+**Use `memo(key, fn)`**: Cache expensive lookups (file reads, grep results) that may be reused across code executions in the same conversation.
 **SSH**: Match commands to the remote host's shell. Check host list for OS. Remote filesystems: `~/.arcane/remote/<hostname>/`.
 </tools>
 

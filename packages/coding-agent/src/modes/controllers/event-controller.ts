@@ -2,7 +2,7 @@ import { INTENT_FIELD } from "@nghyane/arcane-agent";
 import { Loader, TERMINAL, Text } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
-import { CodeModeGroupComponent } from "../../modes/components/codemode-group";
+import { CodeGroupComponent } from "../../modes/components/code-group";
 import { ReadToolGroupComponent } from "../../modes/components/read-tool-group";
 import { TodoReminderComponent } from "../../modes/components/todo-reminder";
 import { ToolExecutionComponent } from "../../modes/components/tool-execution";
@@ -13,7 +13,7 @@ import type { AgentSessionEvent } from "../../session/agent-session";
 
 export class EventController {
 	#lastReadGroup: ReadToolGroupComponent | undefined = undefined;
-	#codemodeGroups = new Map<string, CodeModeGroupComponent>();
+	#codeGroups = new Map<string, CodeGroupComponent>();
 	#lastThinkingCount = 0;
 	#renderedCustomMessages = new Set<string>();
 	#lastIntent: string | undefined = undefined;
@@ -42,14 +42,14 @@ export class EventController {
 		this.ctx.setWorkingMessage(`${trimmed} (esc to interrupt)`);
 	}
 
-	#ensureCodemodeGroup(id: string): CodeModeGroupComponent {
-		let group = this.#codemodeGroups.get(id);
+	#ensureCodeGroup(id: string): CodeGroupComponent {
+		let group = this.#codeGroups.get(id);
 		if (!group) {
 			this.#resetReadGroup();
-			group = new CodeModeGroupComponent(this.ctx.ui);
+			group = new CodeGroupComponent(this.ctx.ui);
 			group.setExpanded(this.ctx.toolOutputExpanded);
 			this.ctx.chatContainer.addChild(group);
-			this.#codemodeGroups.set(id, group);
+			this.#codeGroups.set(id, group);
 			this.ctx.pendingTools.set(id, group);
 			this.#hideLoader();
 		}
@@ -64,7 +64,7 @@ export class EventController {
 	}
 
 	#restoreLoader(): void {
-		if (this.ctx.loadingAnimation || this.#codemodeGroups.size > 0) return;
+		if (this.ctx.loadingAnimation || this.#codeGroups.size > 0) return;
 		this.ctx.loadingAnimation = new Loader(
 			this.ctx.ui,
 			spinner => theme.fg("accent", spinner),
@@ -167,7 +167,7 @@ export class EventController {
 						if (content.type !== "toolCall") continue;
 						// Code Mode: create group component early during streaming for intent display
 						if (content.name === "code") {
-							const group = this.#ensureCodemodeGroup(content.id);
+							const group = this.#ensureCodeGroup(content.id);
 							const args = content.arguments;
 							if (args && typeof args === "object" && INTENT_FIELD in args) {
 								const intent = (args[INTENT_FIELD] as string | undefined)?.trim();
@@ -213,7 +213,7 @@ export class EventController {
 					// Update working message with intent — skip for code tools that already have a visible group
 					for (const content of this.ctx.streamingMessage.content) {
 						if (content.type !== "toolCall") continue;
-						if (this.#codemodeGroups.has(content.id)) continue;
+						if (this.#codeGroups.has(content.id)) continue;
 						const args = content.arguments;
 						if (!args || typeof args !== "object" || !(INTENT_FIELD in args)) continue;
 						this.#updateWorkingMessageFromIntent(args[INTENT_FIELD] as string | undefined);
@@ -260,9 +260,9 @@ export class EventController {
 				break;
 
 			case "tool_execution_start": {
-				if (!this.#codemodeGroups.has(event.toolCallId)) this.#updateWorkingMessageFromIntent(event.intent);
+				if (!this.#codeGroups.has(event.toolCallId)) this.#updateWorkingMessageFromIntent(event.intent);
 				if (event.toolName === "code") {
-					const group = this.#ensureCodemodeGroup(event.toolCallId);
+					const group = this.#ensureCodeGroup(event.toolCallId);
 					const intent = (event.intent ?? (event.args as Record<string, unknown>)?.agent__intent) as
 						| string
 						| undefined;
@@ -272,9 +272,9 @@ export class EventController {
 					this.ctx.ui.requestRender();
 					break;
 				}
-				// Route sub-tools into their parent codemode group
+				// Route sub-tools into their parent code group
 				if (event.parentToolCallId) {
-					const parentGroup = this.#codemodeGroups.get(event.parentToolCallId);
+					const parentGroup = this.#codeGroups.get(event.parentToolCallId);
 					if (parentGroup) {
 						const tool = event.tool ?? this.ctx.session.getToolByName(event.toolName);
 						const handle = parentGroup.addSubTool(
@@ -345,14 +345,14 @@ export class EventController {
 				}
 				// Code Mode: finalize the group when the "code" tool ends
 				if (event.toolName === "code") {
-					const group = this.#codemodeGroups.get(event.toolCallId);
+					const group = this.#codeGroups.get(event.toolCallId);
 					if (group) {
 						const details = event.result.details as { logs?: string[] } | undefined;
 						if (details?.logs) {
 							group.setLogs(details.logs);
 						}
 						group.setDone();
-						this.#codemodeGroups.delete(event.toolCallId);
+						this.#codeGroups.delete(event.toolCallId);
 					}
 					this.#restoreLoader();
 				}
@@ -385,7 +385,7 @@ export class EventController {
 					this.ctx.streamingMessage = undefined;
 				}
 				this.ctx.pendingTools.clear();
-				this.#codemodeGroups.clear();
+				this.#codeGroups.clear();
 				this.ctx.ui.requestRender();
 				this.sendCompletionNotification();
 				break;

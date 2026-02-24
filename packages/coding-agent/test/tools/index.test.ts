@@ -10,7 +10,7 @@ function createTestSession(overrides: Partial<ToolSession> = {}): ToolSession {
 		hasUI: false,
 		getSessionFile: () => null,
 		getSessionSpawns: () => "*",
-		settings: Settings.isolated({ "codemode.enabled": false }),
+		settings: Settings.isolated({}),
 		...overrides,
 	};
 }
@@ -19,7 +19,6 @@ function createSettingsWithOverrides(overrides: Partial<Record<SettingPath, unkn
 	return Settings.isolated({
 		"lsp.formatOnWrite": true,
 		"bashInterceptor.enabled": true,
-		"codemode.enabled": false,
 		...overrides,
 	});
 }

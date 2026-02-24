@@ -646,7 +646,10 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 			const authStorage = options.authStorage ?? (await discoverAuthStorage());
 			checkAbort();
 			const modelRegistry = options.modelRegistry ?? new ModelRegistry(authStorage);
-			await modelRegistry.refresh();
+			// Skip refresh when reusing parent's registry — models are already discovered
+			if (!options.modelRegistry) {
+				await modelRegistry.refresh();
+			}
 			checkAbort();
 
 			const { model, thinkingLevel: resolvedThinkingLevel } = resolveModelOverride(
@@ -688,6 +691,7 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 				skipPythonPreflight,
 				enableMCP,
 				customTools: mcpProxyTools.length > 0 ? mcpProxyTools : undefined,
+				disableExtensionDiscovery: true,
 			});
 
 			activeSession = session;

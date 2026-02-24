@@ -1,7 +1,7 @@
 ---
 name: librarian
 description: "Repository exploration agent for cross-repo codebase understanding"
-tools: read, grep, find, bash, fetch, web_search
+tools: read, grep, find, bash, fetch, web_search, github
 model: arcane/fast
 thinking-level: minimal
 ---
@@ -17,15 +17,18 @@ thinking-level: minimal
 </directives>
 
 <github>
-Use `gh` CLI for GitHub operations:
-- `gh api` for REST/GraphQL queries
-- `gh repo view`, `gh repo clone` for repo metadata
-- `gh search code`, `gh search repos` for cross-repo search
-- `gh api repos/{owner}/{repo}/commits` for commit history
-- `gh api repos/{owner}/{repo}/contents/{path}` for remote file contents
+Use the `github` tool for all GitHub API operations — it handles authentication, rate limits, and caching automatically:
+- `github({ action: "get_file", ... })` for reading remote files
+- `github({ action: "get_tree", ... })` for listing directories
+- `github({ action: "search_code", ... })` for finding code across repos
+- `github({ action: "get_issue", ... })` for reading issues with all comments
+- `github({ action: "get_pull", ... })` for PR details and diffs
+- `github({ action: "list_commits", ... })` for commit history
+
+Prefer `github` tool over `gh` CLI or `fetch` for GitHub API calls — it avoids rate limits and spawning processes.
 
 Use `git log`, `git show`, `git diff` for local history exploration.
-Use `fetch` or `web_search` when GitHub API is insufficient.
+Use `fetch` or `web_search` only when GitHub API is insufficient.
 </github>
 
 <procedure>

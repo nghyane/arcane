@@ -2,7 +2,8 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { logger, ptree, TempDir } from "@nghyane/arcane-utils";
-import { APP_NAME, getToolsDir } from "@nghyane/arcane-utils/dirs";
+import { getToolsDir } from "@nghyane/arcane-utils/dirs";
+import { githubClient } from "../web/github-client";
 
 const TOOLS_DIR = getToolsDir();
 const TOOL_DOWNLOAD_TIMEOUT_MS = 15000;
@@ -120,25 +121,14 @@ export function getToolPath(tool: ToolName): string | null {
 
 // Fetch latest release version from GitHub
 async function getLatestVersion(repo: string, signal?: AbortSignal): Promise<string> {
-	let response: Response;
-	try {
-		response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
-			headers: { "User-Agent": `${APP_NAME}-coding-agent` },
-			signal: ptree.combineSignals(signal, TOOL_METADATA_TIMEOUT_MS),
-		});
-	} catch (err) {
-		if (err instanceof Error && err.name === "AbortError") {
-			throw new Error("GitHub API request timed out");
-		}
-		throw err;
+	const result = await githubClient.request<{ tag_name: string }>(`/repos/${repo}/releases/latest`, {
+		timeout: Math.ceil(TOOL_METADATA_TIMEOUT_MS / 1000),
+		signal,
+	});
+	if (!result.ok) {
+		throw new Error(`GitHub API error: ${result.status}`);
 	}
-
-	if (!response.ok) {
-		throw new Error(`GitHub API error: ${response.status}`);
-	}
-
-	const data = (await response.json()) as { tag_name: string };
-	return data.tag_name.replace(/^v/, "");
+	return (result.data as { tag_name: string }).tag_name.replace(/^v/, "");
 }
 
 // Download a file from URL

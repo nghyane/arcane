@@ -262,15 +262,6 @@ export const SETTINGS_SCHEMA = {
 			description: "Rewrite tool call arguments to normalized format in session history",
 		},
 	},
-	repeatToolDescriptions: {
-		type: "boolean",
-		default: false,
-		ui: {
-			tab: "agent",
-			label: "Repeat tool descriptions",
-			description: "Render full tool descriptions in the system prompt instead of a tool name list",
-		},
-	},
 	readLineNumbers: {
 		type: "boolean",
 		default: false,
@@ -468,6 +459,15 @@ export const SETTINGS_SCHEMA = {
 		type: "boolean",
 		default: true,
 		ui: { tab: "tools", label: "Enable Fetch", description: "Enable the fetch tool for URL fetching" },
+	},
+	"github.enabled": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "tools",
+			label: "Enable GitHub",
+			description: "Enable the GitHub API tool for repository exploration",
+		},
 	},
 	"librarian.enabled": {
 		type: "boolean",
@@ -735,19 +735,6 @@ export const SETTINGS_SCHEMA = {
 		type: "boolean",
 		default: false,
 		ui: { tab: "services", label: "Exa websets", description: "Webset management and enrichment tools" },
-	},
-
-	// ─────────────────────────────────────────────────────────────────────────
-	// Code Mode settings
-	// ─────────────────────────────────────────────────────────────────────────
-	"codemode.enabled": {
-		type: "boolean",
-		default: true,
-		ui: {
-			tab: "agent",
-			label: "Code Mode",
-			description: "Replace tool-calling with code generation (LLM writes JS to orchestrate tools)",
-		},
 	},
 
 	// Bash interceptor settings

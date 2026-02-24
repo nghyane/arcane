@@ -12,7 +12,6 @@ function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
 			"lsp.formatOnWrite": true,
 			"bashInterceptor.enabled": true,
 			"python.toolMode": "bash-only",
-			"codemode.enabled": false,
 		}),
 		...overrides,
 	};

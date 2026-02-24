@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Type } from "@sinclair/typebox";
 import { createCodeTool } from "../src/engine";
-import type { CodeModeToolEvent, DispatchFn } from "../src/event-bridge";
+import type { CodeToolEvent, DispatchFn } from "../src/event-bridge";
 import { bridgeToolFunctions } from "../src/event-bridge";
 import { execute } from "../src/executor";
 import { normalizeCode } from "../src/normalize";
@@ -368,7 +368,7 @@ describe("createCodeTool", () => {
 
 describe("bridgeToolFunctions", () => {
 	test("emits tool_start before execution and tool_done after", async () => {
-		const events: CodeModeToolEvent[] = [];
+		const events: CodeToolEvent[] = [];
 		const fns: Record<string, DispatchFn> = {
 			my_tool: async (_id, args) => `echoed: ${args.x}`,
 		};
@@ -389,7 +389,7 @@ describe("bridgeToolFunctions", () => {
 	});
 
 	test("emits tool_error and re-throws on failure", async () => {
-		const events: CodeModeToolEvent[] = [];
+		const events: CodeToolEvent[] = [];
 		const fns: Record<string, DispatchFn> = {
 			bad_tool: async () => {
 				throw new Error("fail");
@@ -408,7 +408,7 @@ describe("bridgeToolFunctions", () => {
 	});
 
 	test("nameMap reverse mapping uses original name in events", async () => {
-		const events: CodeModeToolEvent[] = [];
+		const events: CodeToolEvent[] = [];
 		const fns: Record<string, DispatchFn> = {
 			mcp_read: async () => "data",
 		};
@@ -422,7 +422,7 @@ describe("bridgeToolFunctions", () => {
 	});
 
 	test("toolCallId is generated with expected format", async () => {
-		const events: CodeModeToolEvent[] = [];
+		const events: CodeToolEvent[] = [];
 		const fns: Record<string, DispatchFn> = {
 			my_tool: async () => "ok",
 		};

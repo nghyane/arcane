@@ -399,6 +399,33 @@ A `ToolFactory` is `(session: ToolSession) => Tool | null | Promise<Tool | null>
 
 The wrapper step is not cosmetic: it enforces uniform meta-notice behavior and normalized error rendering across all tools.
 
+### Code execution: native tool interface
+
+Built-in tools are **always** wrapped into a single `code` AgentTool via `createCodeTool()` from `@nghyane/arcane-codemode`. The LLM writes JavaScript async arrow functions that call `codemode.<tool>(args)` instead of making individual tool calls. This is not a "mode" — it is the native tool interface.
+
+Benefits:
+
+- **Parallelism**: LLM batches independent operations with `Promise.all()` in a single round-trip
+- **Composability**: results flow through JS variables, no intermediate tool-call overhead
+- **Token efficiency**: one tool call replaces N sequential calls
+
+The `ask` tool is excluded from code wrapping (remains a standalone tool call) because it requires interactive user input that cannot be orchestrated from code.
+
+**External tools (MCP, extensions, custom) are NOT wrapped into the code tool.** They remain standard tool calls. Rationale:
+
+- External tool schemas are defined by third parties — TypeScript type generation from arbitrary JSON Schema is unreliable
+- External tools are often stateful/side-effect heavy; an extra execution layer adds failure modes without benefit
+- Tool authors test against the standard tool-call interface; wrapping changes the contract
+- The LLM handles mixed interfaces (code tool + standard tools) without confusion because the code tool description clearly scopes what it wraps
+
+```text
+Built-in tools ──► createCodeTool() ──► "code" AgentTool (LLM writes JS)
+                                        └── ask (excluded, standalone)
+MCP tools ──────────────────────────────► standalone tool calls
+Extension tools ────────────────────────► standalone tool calls
+Custom tools (.arcane/tools/) ───────────► standalone tool calls
+```
+
 ### Output metadata model and notice formatting
 
 `packages/coding-agent/src/tools/output-meta.ts` defines `OutputMeta` and builder logic used by tools to attach machine-readable output annotations under `details.meta`.

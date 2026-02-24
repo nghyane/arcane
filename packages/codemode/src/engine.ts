@@ -1,5 +1,5 @@
 /**
- * Code Mode engine — the main entry point.
+ * Code execution engine — the main entry point.
  *
  * createCodeTool() takes the existing tool registry, generates TypeScript
  * type definitions, and returns a single "code" AgentTool that the LLM
@@ -8,29 +8,24 @@
 
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { Type } from "@sinclair/typebox";
-import {
-	bridgeToolFunctions,
-	type CodeModeEventHandler,
-	type CodeModeToolEvent,
-	type DispatchFn,
-} from "./event-bridge";
+import { bridgeToolFunctions, type CodeEventHandler, type CodeToolEvent, type DispatchFn } from "./event-bridge";
 import { execute } from "./executor";
 import { normalizeCode } from "./normalize";
 import codeToolDescription from "./prompt.md" with { type: "text" };
 import { generateTypes, sanitizeToolName } from "./type-generator";
 
 const codeSchema = Type.Object({
-	code: Type.String({ description: "JavaScript async arrow function to execute using the codemode API" }),
+	code: Type.String({ description: "JavaScript async arrow function to execute using the tool API" }),
 });
 
-/** Tools excluded from Code Mode wrapping (interactive, orchestration, or lifecycle tools) */
+/** Tools excluded from code wrapping (interactive, orchestration, or lifecycle tools) */
 const EXCLUDED_TOOLS = new Set(["ask"]);
 
 /** Max characters to include from code execution result in the tool response */
 const MAX_RESULT_LENGTH = 4000;
 
 export interface CodeToolOptions {
-	/** Additional tool names to exclude from Code Mode */
+	/** Additional tool names to exclude from code wrapping */
 	excludeTools?: string[];
 	/** Execution timeout in milliseconds (default: 300_000) */
 	timeoutMs?: number;
@@ -39,19 +34,19 @@ export interface CodeToolOptions {
 /** Details attached to tool_execution_update for sub-tool rendering */
 export interface CodeToolDetails {
 	/** Sub-tool events that occurred during execution */
-	events: CodeModeToolEvent[];
+	events: CodeToolEvent[];
 	/** Captured console output from the code */
 	logs: string[];
 }
 
-/** Code Mode tool with access to original wrapped tools for TUI rendering */
-export interface CodeModeAgentTool extends AgentTool {
+/** Code tool with access to original wrapped tools for TUI rendering */
+export interface CodeAgentTool extends AgentTool {
 	/** Map of original tool name → AgentTool, used by TUI for sub-tool rendering */
 	wrappedToolMap: ReadonlyMap<string, AgentTool>;
 }
 
 /**
- * Create a single Code Mode tool from a set of existing AgentTools.
+ * Create a single code tool from a set of existing AgentTools.
  *
  * The returned tool wraps all eligible tools into a TypeScript API.
  * The LLM writes code against this API instead of making individual
@@ -66,7 +61,7 @@ export interface CodeModeAgentTool extends AgentTool {
 export function createCodeTool(
 	tools: AgentTool[],
 	options: CodeToolOptions = {},
-): { codeTool: CodeModeAgentTool; excludedTools: AgentTool[] } {
+): { codeTool: CodeAgentTool; excludedTools: AgentTool[] } {
 	const { excludeTools = [], timeoutMs = 300_000 } = options;
 	const excludeSet = new Set([...EXCLUDED_TOOLS, ...excludeTools]);
 
@@ -100,7 +95,7 @@ export function createCodeTool(
 		for (const tool of wrappedTools) {
 			const safeName = sanitizeToolName(tool.name);
 			fns[safeName] = async (toolCallId: string, args: Record<string, unknown>) => {
-				// Forward onUpdate directly to the agent event stream — no intermediate CodeModeToolEvent
+				// Forward onUpdate directly to the agent event stream — no intermediate CodeToolEvent
 				const onUpdate: AgentToolUpdateCallback | undefined = ctx?.emit
 					? partialResult => {
 							ctx.emit!({
@@ -126,7 +121,7 @@ export function createCodeTool(
 		return { fns, fullResults };
 	};
 
-	const codeTool: CodeModeAgentTool = {
+	const codeTool: CodeAgentTool = {
 		name: "code",
 		label: "Code",
 		description,
@@ -143,7 +138,7 @@ export function createCodeTool(
 			ctx?: AgentToolContext,
 		): Promise<AgentToolResult> {
 			const code = (params as { code: string }).code;
-			const events: CodeModeToolEvent[] = [];
+			const events: CodeToolEvent[] = [];
 
 			// Build tool lookup map for sub-tool event emission
 			const toolByName = new Map<string, AgentTool>();
@@ -151,7 +146,7 @@ export function createCodeTool(
 				toolByName.set(tool.name, tool);
 			}
 
-			const eventHandler: CodeModeEventHandler = event => {
+			const eventHandler: CodeEventHandler = event => {
 				events.push(event);
 
 				// Emit sub-tool events directly to the agent's event stream
