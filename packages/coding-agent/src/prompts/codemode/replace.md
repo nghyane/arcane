@@ -1,3 +1,3 @@
 # Replace
 
-Targeted string replacement with fuzzy whitespace matching.
+Regex-based search and replace across files.

@@ -1,12 +1,6 @@
 # Python
 
-Persistent IPython kernel. State survives across calls.
-- Variables, imports, and state persist between executions
-- Use for: data analysis, visualization, complex computation, prototyping
-- Kernel auto-starts on first call
-{{#if categories}}
-Available helpers:
-{{#each categories}}
-**{{@key}}**: {{#each this}}{{name}}{{#unless @last}}, {{/unless}}{{/each}}
-{{/each}}
-{{/if}}
+Run Python code in a Jupyter-like kernel.
+- Kernel persists across calls — variables, imports, and state are retained
+- Use for: data analysis, visualization, math, prototyping
+- Supports `!pip install` for packages

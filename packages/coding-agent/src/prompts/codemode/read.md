@@ -1,7 +1,6 @@
 # Read
 
 Read local files or internal URLs (docs://, skill://, rule://).
-- Reads up to {{DEFAULT_MAX_LINES}} lines by default, use `offset`/`limit` for large files
 {{#if IS_HASHLINE_MODE}}
 - Text output is CID prefixed: `LINE#ID:content`
 {{else}}
