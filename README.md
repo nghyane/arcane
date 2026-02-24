@@ -60,7 +60,7 @@ async () => {
 }
 ```
 
-**TUI rendering rewrite** — Surgical differential rendering with double buffering, bundled theme presets (Nord Frost), Nerd Font detection, mouse text selection. The TUI framework itself is inherited; the rendering engine is new.
+**Heavily improved TUI** — Surgical differential rendering with double buffering, bundled theme presets (Nord Frost), Nerd Font detection, mouse text selection, transparent status line, and numerous UX refinements over upstream.
 
 **Subagent architecture** — Task delegation with fan-out, todo-based completion tracking.
 
