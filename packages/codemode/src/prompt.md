@@ -16,8 +16,17 @@ Execute JavaScript code to accomplish tasks. Instead of calling tools individual
 - Tool results are already displayed to the user — do NOT repeat raw output in your response text. Summarize or analyze instead.
 - Do NOT use `console.log()` — tool results are already streamed to the UI as they execute
 - Handle errors with try/catch when needed
-- Browser and notebook are stateful singletons — call them sequentially
+- Browser and notebook are stateful singletons — call actions sequentially, not in parallel
 - Prefer smaller parallel edits over one massive sequential operation — fan out when targets are disjoint
+
+## Tool Precedence
+
+- **read/grep/find/edit/write over bash** — never shell out for file operations
+- **lsp over grep** for semantic queries: definitions, references, type info, rename
+- **grep over bash** for text search
+- **explore/task over grep** for multi-round or conceptual searches
+- **librarian over explore** for architecture understanding across repos
+- **oracle** for planning, debugging strategy, design review — does not make changes
 
 ## Persistent State
 

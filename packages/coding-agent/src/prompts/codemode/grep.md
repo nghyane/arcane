@@ -1,6 +1,6 @@
 # Grep
 
-Regex search across files. Use over bash grep.
+Regex search across files.
 - Pattern syntax uses ripgrep — literal braces need escaping
 {{#if IS_HASHLINE_MODE}}
 - Results are CID prefixed: `LINE#ID:content`
@@ -9,5 +9,3 @@ Regex search across files. Use over bash grep.
 - Results are line-number-prefixed
 {{/if}}
 {{/if}}
-- For semantic queries (definition, references, type info) use `lsp` instead
-- For open-ended searches requiring multiple rounds, use task/explore instead
