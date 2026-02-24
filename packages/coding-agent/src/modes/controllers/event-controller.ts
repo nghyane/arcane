@@ -42,6 +42,39 @@ export class EventController {
 		this.ctx.setWorkingMessage(`${trimmed} (esc to interrupt)`);
 	}
 
+	#ensureCodemodeGroup(id: string): CodeModeGroupComponent {
+		let group = this.#codemodeGroups.get(id);
+		if (!group) {
+			this.#resetReadGroup();
+			group = new CodeModeGroupComponent(this.ctx.ui);
+			group.setExpanded(this.ctx.toolOutputExpanded);
+			this.ctx.chatContainer.addChild(group);
+			this.#codemodeGroups.set(id, group);
+			this.ctx.pendingTools.set(id, group);
+			this.#hideLoader();
+		}
+		return group;
+	}
+
+	#hideLoader(): void {
+		if (!this.ctx.loadingAnimation) return;
+		this.ctx.loadingAnimation.stop();
+		this.ctx.statusContainer.clear();
+		this.ctx.loadingAnimation = undefined;
+	}
+
+	#restoreLoader(): void {
+		if (this.ctx.loadingAnimation || this.#codemodeGroups.size > 0) return;
+		this.ctx.loadingAnimation = new Loader(
+			this.ctx.ui,
+			spinner => theme.fg("accent", spinner),
+			text => theme.fg("muted", text),
+			`Working\u2026 (esc to interrupt)`,
+			getSymbolTheme().spinnerFrames,
+		);
+		this.ctx.statusContainer.addChild(this.ctx.loadingAnimation);
+	}
+
 	subscribeToAgent(): void {
 		this.ctx.unsubscribe = this.ctx.session.subscribe(async (event: AgentSessionEvent) => {
 			await this.handleEvent(event);
@@ -132,8 +165,16 @@ export class EventController {
 
 					for (const content of this.ctx.streamingMessage.content) {
 						if (content.type !== "toolCall") continue;
-						// Code Mode: suppress streaming render for "code" tool
-						if (content.name === "code") continue;
+						// Code Mode: create group component early during streaming for intent display
+						if (content.name === "code") {
+							const group = this.#ensureCodemodeGroup(content.id);
+							const args = content.arguments;
+							if (args && typeof args === "object" && INTENT_FIELD in args) {
+								const intent = (args[INTENT_FIELD] as string | undefined)?.trim();
+								if (intent) group.setIntent(intent);
+							}
+							continue;
+						}
 
 						if (!this.ctx.pendingTools.has(content.id)) {
 							if (content.name === "read") {
@@ -169,9 +210,10 @@ export class EventController {
 						}
 					}
 
-					// Update working message with intent from streamed tool arguments
+					// Update working message with intent — skip for code tools that already have a visible group
 					for (const content of this.ctx.streamingMessage.content) {
 						if (content.type !== "toolCall") continue;
+						if (this.#codemodeGroups.has(content.id)) continue;
 						const args = content.arguments;
 						if (!args || typeof args !== "object" || !(INTENT_FIELD in args)) continue;
 						this.#updateWorkingMessageFromIntent(args[INTENT_FIELD] as string | undefined);
@@ -218,19 +260,15 @@ export class EventController {
 				break;
 
 			case "tool_execution_start": {
-				this.#updateWorkingMessageFromIntent(event.intent);
-				// Code Mode: create a group component for the "code" tool
+				if (!this.#codemodeGroups.has(event.toolCallId)) this.#updateWorkingMessageFromIntent(event.intent);
 				if (event.toolName === "code") {
-					this.#resetReadGroup();
-					const group = new CodeModeGroupComponent(this.ctx.ui);
-					const intent = event.intent ?? (event.args as Record<string, unknown>)?.agent__intent;
+					const group = this.#ensureCodemodeGroup(event.toolCallId);
+					const intent = (event.intent ?? (event.args as Record<string, unknown>)?.agent__intent) as
+						| string
+						| undefined;
 					if (typeof intent === "string" && intent.trim()) {
 						group.setIntent(intent.trim());
 					}
-					group.setExpanded(this.ctx.toolOutputExpanded);
-					this.ctx.chatContainer.addChild(group);
-					this.#codemodeGroups.set(event.toolCallId, group);
-					this.ctx.pendingTools.set(event.toolCallId, group);
 					this.ctx.ui.requestRender();
 					break;
 				}
@@ -316,6 +354,7 @@ export class EventController {
 						group.setDone();
 						this.#codemodeGroups.delete(event.toolCallId);
 					}
+					this.#restoreLoader();
 				}
 				// Update todo display when todo_write tool completes
 				if (event.toolName === "todo_write" && !event.isError) {

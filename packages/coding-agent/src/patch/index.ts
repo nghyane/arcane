@@ -199,7 +199,7 @@ function hashlineParseContent(edit: string | string[] | null): string[] {
 	if (Array.isArray(edit)) return edit;
 	const lines = stripNewLinePrefixes(edit.split("\n"));
 	if (lines.length === 0) return [];
-	if (lines[lines.length - 1].trim() === "") return lines.slice(0, -1);
+	if (lines.length > 1 && lines[lines.length - 1].trim() === "") return lines.slice(0, -1);
 	return lines;
 }
 
