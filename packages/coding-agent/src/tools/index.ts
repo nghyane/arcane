@@ -42,7 +42,11 @@ import { WriteTool } from "./write";
 // Exa MCP tools (22 tools)
 
 export { exaTools } from "../exa";
-export type { ExaRenderDetails, ExaSearchResponse, ExaSearchResult } from "../exa/types";
+export type {
+	ExaRenderDetails,
+	ExaSearchResponse,
+	ExaSearchResult,
+} from "../exa/types";
 export {
 	type FileDiagnosticsResult,
 	type FileFormatResult,
@@ -83,22 +87,41 @@ export {
 	webSearchLinkedinTool,
 } from "../web/search";
 export { AskTool, type AskToolDetails } from "./ask";
-export { BashTool, type BashToolDetails, type BashToolInput, type BashToolOptions } from "./bash";
+export {
+	BashTool,
+	type BashToolDetails,
+	type BashToolInput,
+	type BashToolOptions,
+} from "./bash";
 export { BrowserTool, type BrowserToolDetails } from "./browser";
 export { CalculatorTool, type CalculatorToolDetails } from "./calculator";
 export { ExploreTool } from "./explore";
 export { FetchTool, type FetchToolDetails } from "./fetch";
-export { type FindOperations, FindTool, type FindToolDetails, type FindToolInput, type FindToolOptions } from "./find";
+export {
+	type FindOperations,
+	FindTool,
+	type FindToolDetails,
+	type FindToolInput,
+	type FindToolOptions,
+} from "./find";
 export { setPreferredImageProvider } from "./gemini-image";
 export { GitHubTool, type GitHubToolDetails } from "./github";
 export { GrepTool, type GrepToolDetails, type GrepToolInput } from "./grep";
 export { LibrarianTool } from "./librarian";
 export { NotebookTool, type NotebookToolDetails } from "./notebook";
 export { OracleTool } from "./oracle";
-export { PythonTool, type PythonToolDetails, type PythonToolOptions } from "./python";
+export {
+	PythonTool,
+	type PythonToolDetails,
+	type PythonToolOptions,
+} from "./python";
 export { ReadTool, type ReadToolDetails, type ReadToolInput } from "./read";
 export { loadSshTool, type SSHToolDetails, SshTool } from "./ssh";
-export { type TodoItem, TodoWriteTool, type TodoWriteToolDetails } from "./todo-write";
+export {
+	type TodoItem,
+	TodoWriteTool,
+	type TodoWriteToolDetails,
+} from "./todo-write";
 export { UndoEditTool, type UndoEditToolDetails } from "./undo-edit";
 export { WriteTool, type WriteToolDetails, type WriteToolInput } from "./write";
 
@@ -189,7 +212,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	todo_write: s => new TodoWriteTool(s),
 	undo_edit: s => new UndoEditTool(s),
 	fetch: s => new FetchTool(s),
-	web_search: s => new SearchTool(s),
+	web_search: () => new SearchTool(),
 	write: s => new WriteTool(s),
 };
 

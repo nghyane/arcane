@@ -10,9 +10,7 @@ import * as path from "node:path";
 import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { Snowflake } from "@nghyane/arcane-utils";
 import type { ToolSession } from "..";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import type { Theme } from "../modes/theme/theme";
-import taskDescription from "../prompts/codemode/task.md" with { type: "text" };
 import { getBundledAgent } from "./agents";
 import { runAgent } from "./executor";
 import { AgentOutputManager } from "./output-manager";
@@ -22,10 +20,21 @@ import { type AgentProgress, type TaskParams, type TaskSchema, type TaskToolDeta
 
 // Re-export types and utilities
 export { loadBundledAgents as BUNDLED_AGENTS } from "./agents";
-export { type BatchOptions, type BatchResult, type BatchTask, runTaskBatch } from "./batch";
+export {
+	type BatchOptions,
+	type BatchResult,
+	type BatchTask,
+	runTaskBatch,
+} from "./batch";
 export { discoverAgents, getAgent } from "./discovery";
 export { AgentOutputManager } from "./output-manager";
-export type { AgentDefinition, AgentProgress, SingleResult, TaskParams, TaskToolDetails } from "./types";
+export type {
+	AgentDefinition,
+	AgentProgress,
+	SingleResult,
+	TaskParams,
+	TaskToolDetails,
+} from "./types";
 export { taskSchema } from "./types";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -45,11 +54,10 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 	readonly renderCall = renderCall;
 	readonly renderResult = renderResult;
 
-	readonly description: string;
+	readonly description = "";
 
 	private constructor(private readonly session: ToolSession) {
 		this.parameters = taskSchema;
-		this.description = renderPromptTemplate(taskDescription);
 	}
 
 	/** Create a TaskTool instance. */
@@ -136,7 +144,12 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				if (missing.length > 0) {
 					const available = availableSkills.map(s => s.name).join(", ") || "none";
 					return {
-						content: [{ type: "text", text: `Unknown skills: ${missing.join(", ")}. Available: ${available}` }],
+						content: [
+							{
+								type: "text",
+								text: `Unknown skills: ${missing.join(", ")}. Available: ${available}`,
+							},
+						],
 						details: { results: [], totalDurationMs: Date.now() - startTime },
 					};
 				}

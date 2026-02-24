@@ -3,9 +3,7 @@ import path from "node:path";
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { logger, once, untilAborted } from "@nghyane/arcane-utils";
 import type { BunFile } from "bun";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import { type Theme, theme } from "../modes/theme/theme";
-import lspDescription from "../prompts/codemode/lsp.md" with { type: "text" };
 import type { ToolSession } from "../tools";
 import { resolveToCwd } from "../tools/path-utils";
 import { ToolAbortError, throwIfAborted } from "../tools/tool-errors";
@@ -112,7 +110,10 @@ export async function warmupLspServers(cwd: string, options?: LspWarmupOptions):
 			});
 		} else {
 			const errorMsg = result.reason?.message ?? String(result.reason);
-			logger.warn("LSP server failed to start", { server: name, error: errorMsg });
+			logger.warn("LSP server failed to start", {
+				server: name,
+				error: errorMsg,
+			});
 			servers.push({
 				name,
 				status: "error",
@@ -286,22 +287,38 @@ interface ProjectType {
 function detectProjectType(cwd: string): ProjectType {
 	// Check for Rust (Cargo.toml)
 	if (fs.existsSync(path.join(cwd, "Cargo.toml"))) {
-		return { type: "rust", command: ["cargo", "check", "--message-format=short"], description: "Rust (cargo check)" };
+		return {
+			type: "rust",
+			command: ["cargo", "check", "--message-format=short"],
+			description: "Rust (cargo check)",
+		};
 	}
 
 	// Check for TypeScript (tsconfig.json)
 	if (fs.existsSync(path.join(cwd, "tsconfig.json"))) {
-		return { type: "typescript", command: ["npx", "tsc", "--noEmit"], description: "TypeScript (tsc --noEmit)" };
+		return {
+			type: "typescript",
+			command: ["npx", "tsc", "--noEmit"],
+			description: "TypeScript (tsc --noEmit)",
+		};
 	}
 
 	// Check for Go (go.mod)
 	if (fs.existsSync(path.join(cwd, "go.mod"))) {
-		return { type: "go", command: ["go", "build", "./..."], description: "Go (go build)" };
+		return {
+			type: "go",
+			command: ["go", "build", "./..."],
+			description: "Go (go build)",
+		};
 	}
 
 	// Check for Python (pyproject.toml or pyrightconfig.json)
 	if (fs.existsSync(path.join(cwd, "pyproject.toml")) || fs.existsSync(path.join(cwd, "pyrightconfig.json"))) {
-		return { type: "python", command: ["pyright"], description: "Python (pyright)" };
+		return {
+			type: "python",
+			command: ["pyright"],
+			description: "Python (pyright)",
+		};
 	}
 
 	return { type: "unknown", description: "Unknown project type" };
@@ -344,14 +361,20 @@ async function runWorkspaceDiagnostics(
 		// Limit output length
 		const lines = combined.split("\n");
 		if (lines.length > 50) {
-			return { output: `${lines.slice(0, 50).join("\n")}\n... and ${lines.length - 50} more lines`, projectType };
+			return {
+				output: `${lines.slice(0, 50).join("\n")}\n... and ${lines.length - 50} more lines`,
+				projectType,
+			};
 		}
 		return { output: combined, projectType };
 	} catch (e) {
 		if (signal?.aborted) {
 			throw new ToolAbortError();
 		}
-		return { output: `Failed to run ${projectType.command.join(" ")}: ${e}`, projectType };
+		return {
+			output: `Failed to run ${projectType.command.join(" ")}: ${e}`,
+			projectType,
+		};
 	} finally {
 		signal?.removeEventListener("abort", abortHandler);
 	}
@@ -639,7 +662,10 @@ export async function flushLspWritethroughBatch(
 	return flushWritethroughBatch(Array.from(state.entries.values()), cwd, state.options, signal);
 }
 
-function summarizeDiagnosticMessages(messages: string[]): { summary: string; errored: boolean } {
+function summarizeDiagnosticMessages(messages: string[]): {
+	summary: string;
+	errored: boolean;
+} {
 	const counts = { error: 0, warning: 0, info: 0, hint: 0 };
 	for (const message of messages) {
 		const match = message.match(/\[(error|warning|info|hint)\]/i);
@@ -864,16 +890,14 @@ export function createLspWritethrough(cwd: string, options?: WritethroughOptions
 export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Theme> {
 	readonly name = "lsp";
 	readonly label = "LSP";
-	readonly description: string;
+	readonly description = "";
 	readonly parameters = lspSchema;
 	readonly renderCall = renderCall;
 	readonly renderResult = renderResult;
 	readonly mergeCallAndResult = true;
 	readonly inline = true;
 
-	constructor(private readonly session: ToolSession) {
-		this.description = renderPromptTemplate(lspDescription);
-	}
+	constructor(private readonly session: ToolSession) {}
 
 	static createIf(session: ToolSession): LspTool | null {
 		return session.enableLsp === false ? null : new LspTool(session);
@@ -988,7 +1012,11 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 					if (uniqueDiagnostics.length === 0) {
 						return {
 							content: [{ type: "text", text: "No diagnostics" }],
-							details: { action, serverName: Array.from(allServerNames).join(", "), success: true },
+							details: {
+								action,
+								serverName: Array.from(allServerNames).join(", "),
+								success: true,
+							},
 						};
 					}
 
@@ -997,7 +1025,11 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 					const output = `${summary}:\n${formatted.map(f => `  ${f}`).join("\n")}`;
 					return {
 						content: [{ type: "text", text: output }],
-						details: { action, serverName: Array.from(allServerNames).join(", "), success: true },
+						details: {
+							action,
+							serverName: Array.from(allServerNames).join(", "),
+							success: true,
+						},
 					};
 				}
 
@@ -1014,7 +1046,11 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 
 			return {
 				content: [{ type: "text", text: results.join("\n") }],
-				details: { action, serverName: Array.from(allServerNames).join(", "), success: true },
+				details: {
+					action,
+					serverName: Array.from(allServerNames).join(", "),
+					success: true,
+				},
 			};
 		}
 
@@ -1022,7 +1058,12 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 
 		if (requiresFile) {
 			return {
-				content: [{ type: "text", text: "Error: file parameter required for this action" }],
+				content: [
+					{
+						type: "text",
+						text: "Error: file parameter required for this action",
+					},
+				],
 				details: { action, success: false },
 			};
 		}
@@ -1081,7 +1122,12 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 							if ("targetUri" in loc) {
 								// Use targetSelectionRange (the precise identifier range) with fallback to targetRange
 								const link = loc as LocationLink;
-								return [{ uri: link.targetUri, range: link.targetSelectionRange ?? link.targetRange }];
+								return [
+									{
+										uri: link.targetUri,
+										range: link.targetSelectionRange ?? link.targetRange,
+									},
+								];
 							}
 							return [];
 						});
@@ -1143,7 +1189,10 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 						if (!query) {
 							return {
 								content: [
-									{ type: "text", text: "Error: query parameter required for workspace symbol search" },
+									{
+										type: "text",
+										text: "Error: query parameter required for workspace symbol search",
+									},
 								],
 								details: { action, serverName, success: false },
 							};
@@ -1191,7 +1240,12 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 				case "rename": {
 					if (!new_name) {
 						return {
-							content: [{ type: "text", text: "Error: new_name parameter required for rename" }],
+							content: [
+								{
+									type: "text",
+									text: "Error: new_name parameter required for rename",
+								},
+							],
 							details: { action, serverName, success: false },
 						};
 					}

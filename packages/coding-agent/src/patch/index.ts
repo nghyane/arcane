@@ -12,7 +12,6 @@ import * as fs from "node:fs/promises";
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { StringEnum } from "@nghyane/arcane-ai";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import {
 	createLspWritethrough,
 	type FileDiagnosticsResult,
@@ -20,9 +19,6 @@ import {
 	type WritethroughCallback,
 	writethroughNoop,
 } from "../lsp";
-import hashlineDescription from "../prompts/codemode/hashline.md" with { type: "text" };
-import patchDescription from "../prompts/codemode/patch.md" with { type: "text" };
-import replaceDescription from "../prompts/codemode/replace.md" with { type: "text" };
 import type { ToolSession } from "../tools";
 import {
 	invalidateFsScanAfterDelete,
@@ -67,7 +63,13 @@ export {
 } from "./diff";
 
 // Fuzzy matching
-export { DEFAULT_FUZZY_THRESHOLD, findContextLine, findMatch as findEditMatch, findMatch, seekSequence } from "./fuzzy";
+export {
+	DEFAULT_FUZZY_THRESHOLD,
+	findContextLine,
+	findMatch as findEditMatch,
+	findMatch,
+	seekSequence,
+} from "./fuzzy";
 // Hashline
 export {
 	applyHashlineEdits,
@@ -80,9 +82,19 @@ export {
 	validateLineRef,
 } from "./hashline";
 // Normalization
-export { adjustIndentation, detectLineEnding, normalizeToLF, restoreLineEndings, stripBom } from "./normalize";
+export {
+	adjustIndentation,
+	detectLineEnding,
+	normalizeToLF,
+	restoreLineEndings,
+	stripBom,
+} from "./normalize";
 // Parsing
-export { normalizeCreateContent, normalizeDiff, parseHunks as parseDiffHunks } from "./parser";
+export {
+	normalizeCreateContent,
+	normalizeDiff,
+	parseHunks as parseDiffHunks,
+} from "./parser";
 export type { EditRenderContext, EditToolDetails } from "./shared";
 // Rendering
 export { editToolRenderer, getLspBatchRequest } from "./shared";
@@ -118,9 +130,15 @@ export { ApplyPatchError, EditMatchError, ParseError } from "./types";
 
 const replaceEditSchema = Type.Object({
 	path: Type.String({ description: "File path (relative or absolute)" }),
-	old_text: Type.String({ description: "Text to find (fuzzy whitespace matching enabled)" }),
+	old_text: Type.String({
+		description: "Text to find (fuzzy whitespace matching enabled)",
+	}),
 	new_text: Type.String({ description: "Replacement text" }),
-	all: Type.Optional(Type.Boolean({ description: "Replace all occurrences (default: unique match required)" })),
+	all: Type.Optional(
+		Type.Boolean({
+			description: "Replace all occurrences (default: unique match required)",
+		}),
+	),
 });
 
 const patchEditSchema = Type.Object({
@@ -131,7 +149,11 @@ const patchEditSchema = Type.Object({
 		}),
 	),
 	rename: Type.Optional(Type.String({ description: "New path for move" })),
-	diff: Type.Optional(Type.String({ description: "Diff hunks (update) or full content (create)" })),
+	diff: Type.Optional(
+		Type.String({
+			description: "Diff hunks (update) or full content (create)",
+		}),
+	),
 });
 
 export type ReplaceParams = Static<typeof replaceEditSchema>;
@@ -479,19 +501,7 @@ export class EditTool implements AgentTool<TInput> {
 		return editVariant ?? DEFAULT_EDIT_MODE;
 	}
 
-	/**
-	 * Dynamic description based on current edit mode (which depends on current model).
-	 */
-	get description(): string {
-		switch (this.mode) {
-			case "patch":
-				return renderPromptTemplate(patchDescription);
-			case "hashline":
-				return renderPromptTemplate(hashlineDescription, { allowReplaceText: HL_REPLACE_ENABLED });
-			default:
-				return renderPromptTemplate(replaceDescription);
-		}
-	}
+	description = "";
 
 	/**
 	 * Dynamic parameters schema based on current edit mode (which depends on current model).
@@ -585,7 +595,11 @@ export class EditTool implements AgentTool<TInput> {
 				switch (edit.op) {
 					case "set": {
 						const { tag, content } = edit;
-						anchorEdits.push({ op: "set", tag: parseTag(tag), content: hashlineParseContent(content) });
+						anchorEdits.push({
+							op: "set",
+							tag: parseTag(tag),
+							content: hashlineParseContent(content),
+						});
 						break;
 					}
 					case "replace": {
@@ -813,7 +827,12 @@ export class EditTool implements AgentTool<TInput> {
 				throw new Error("Cannot edit Jupyter notebooks with the Edit tool. Use the NotebookEdit tool instead.");
 			}
 
-			const input: PatchInput = { path: resolvedPath, op, rename: resolvedRename, diff };
+			const input: PatchInput = {
+				path: resolvedPath,
+				op,
+				rename: resolvedRename,
+				diff,
+			};
 			const fs = new LspFileSystem(this.#writethrough, signal, batchRequest);
 			const result = await applyPatch(input, {
 				cwd: this.session.cwd,
@@ -834,7 +853,10 @@ export class EditTool implements AgentTool<TInput> {
 			const effRename = result.change.newPath ? rename : undefined;
 
 			// Generate diff for display
-			let diffResult = { diff: "", firstChangedLine: undefined as number | undefined };
+			let diffResult = {
+				diff: "",
+				firstChangedLine: undefined as number | undefined,
+			};
 			if (result.change.type === "update" && result.change.oldContent && result.change.newContent) {
 				const normalizedOld = normalizeToLF(stripBom(result.change.oldContent).text);
 				const normalizedNew = normalizeToLF(stripBom(result.change.newContent).text);
@@ -958,7 +980,12 @@ export class EditTool implements AgentTool<TInput> {
 
 		return {
 			content: [{ type: "text", text: resultText }],
-			details: { diff: diffResult.diff, firstChangedLine: diffResult.firstChangedLine, diagnostics, meta },
+			details: {
+				diff: diffResult.diff,
+				firstChangedLine: diffResult.firstChangedLine,
+				diagnostics,
+				meta,
+			},
 		};
 	}
 }

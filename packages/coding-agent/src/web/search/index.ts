@@ -14,15 +14,12 @@
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { StringEnum } from "@nghyane/arcane-ai";
 import { Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../../config/prompt-templates";
 import { callExaTool, findApiKey as findExaKey, formatSearchResults, isSearchResponse } from "../../exa/mcp-client";
 import { renderExaCall, renderExaResult } from "../../exa/render";
 import type { ExaRenderDetails } from "../../exa/types";
 import type { CustomTool, CustomToolContext, RenderResultOptions } from "../../extensibility/custom-tools/types";
 import type { Theme } from "../../modes/theme/theme";
-import webSearchDescription from "../../prompts/codemode/web-search.md" with { type: "text" };
 import webSearchSystemPrompt from "../../prompts/system/web-search.md" with { type: "text" };
-import type { ToolSession } from "../../tools";
 import { formatAge } from "../../tools/render-utils";
 import { getSearchProvider, resolveProviderChain, type SearchProvider } from "./provider";
 import { renderSearchCall, renderSearchResult, type SearchRenderDetails } from "./render";
@@ -183,7 +180,10 @@ function formatForLLM(response: SearchResponse): string {
 async function executeSearch(
 	_toolCallId: string,
 	params: SearchParams,
-): Promise<{ content: Array<{ type: "text"; text: string }>; details: SearchRenderDetails }> {
+): Promise<{
+	content: Array<{ type: "text"; text: string }>;
+	details: SearchRenderDetails;
+}> {
 	const providers =
 		params.provider && params.provider !== "auto" && params.no_fallback
 			? (await getSearchProvider(params.provider).isAvailable())
@@ -234,16 +234,20 @@ async function executeSearch(
 
 	return {
 		content: [{ type: "text" as const, text: `Error: ${message}` }],
-		details: { response: { provider: lastProvider.id, sources: [] }, error: message },
+		details: {
+			response: { provider: lastProvider.id, sources: [] },
+			error: message,
+		},
 	};
 }
 
 /**
  * Execute a web search query for CLI/testing workflows.
  */
-export async function runSearchQuery(
-	params: SearchParams,
-): Promise<{ content: Array<{ type: "text"; text: string }>; details: SearchRenderDetails }> {
+export async function runSearchQuery(params: SearchParams): Promise<{
+	content: Array<{ type: "text"; text: string }>;
+	details: SearchRenderDetails;
+}> {
 	return executeSearch("cli-web-search", params);
 }
 
@@ -256,12 +260,8 @@ export async function runSearchQuery(
 export class SearchTool implements AgentTool<typeof webSearchSchema, SearchRenderDetails> {
 	readonly name = "web_search";
 	readonly label = "Web Search";
-	readonly description: string;
+	readonly description = "";
 	readonly parameters = webSearchSchema;
-
-	constructor(_session: ToolSession) {
-		this.description = renderPromptTemplate(webSearchDescription);
-	}
 
 	async execute(
 		_toolCallId: string,
@@ -278,7 +278,7 @@ export class SearchTool implements AgentTool<typeof webSearchSchema, SearchRende
 export const webSearchCustomTool: CustomTool<typeof webSearchSchema, SearchRenderDetails> = {
 	name: "web_search",
 	label: "Web Search",
-	description: renderPromptTemplate(webSearchDescription),
+	description: "",
 	parameters: webSearchSchema,
 
 	async execute(toolCallId: string, params: SearchParams, _onUpdate, _ctx: CustomToolContext, _signal?: AbortSignal) {
@@ -307,36 +307,64 @@ const webSearchDeepSchema = Type.Object({
 		}),
 	),
 	include_domains: Type.Optional(
-		Type.Array(Type.String(), { description: "Only include results from these domains" }),
+		Type.Array(Type.String(), {
+			description: "Only include results from these domains",
+		}),
 	),
-	exclude_domains: Type.Optional(Type.Array(Type.String(), { description: "Exclude results from these domains" })),
+	exclude_domains: Type.Optional(
+		Type.Array(Type.String(), {
+			description: "Exclude results from these domains",
+		}),
+	),
 	start_published_date: Type.Optional(
-		Type.String({ description: "Filter results published after this date (ISO 8601)" }),
+		Type.String({
+			description: "Filter results published after this date (ISO 8601)",
+		}),
 	),
 	end_published_date: Type.Optional(
-		Type.String({ description: "Filter results published before this date (ISO 8601)" }),
+		Type.String({
+			description: "Filter results published before this date (ISO 8601)",
+		}),
 	),
 	num_results: Type.Optional(
-		Type.Number({ description: "Maximum results (default: 10, max: 100)", minimum: 1, maximum: 100 }),
+		Type.Number({
+			description: "Maximum results (default: 10, max: 100)",
+			minimum: 1,
+			maximum: 100,
+		}),
 	),
 });
 
 /** Schema for code context search */
 const webSearchCodeContextSchema = Type.Object({
 	query: Type.String({ description: "Code or technical search query" }),
-	code_context: Type.Optional(Type.String({ description: "Additional context about what you're looking for" })),
+	code_context: Type.Optional(
+		Type.String({
+			description: "Additional context about what you're looking for",
+		}),
+	),
 });
 
 /** Schema for URL crawling */
 const webSearchCrawlSchema = Type.Object({
 	url: Type.String({ description: "URL to crawl and extract content from" }),
-	text: Type.Optional(Type.Boolean({ description: "Include full page text content (default: false)" })),
-	highlights: Type.Optional(Type.Boolean({ description: "Include highlighted relevant snippets (default: false)" })),
+	text: Type.Optional(
+		Type.Boolean({
+			description: "Include full page text content (default: false)",
+		}),
+	),
+	highlights: Type.Optional(
+		Type.Boolean({
+			description: "Include highlighted relevant snippets (default: false)",
+		}),
+	),
 });
 
 /** Schema for LinkedIn search */
 const webSearchLinkedinSchema = Type.Object({
-	query: Type.String({ description: 'LinkedIn search query (e.g., "Software Engineer at OpenAI")' }),
+	query: Type.String({
+		description: 'LinkedIn search query (e.g., "Software Engineer at OpenAI")',
+	}),
 });
 
 /** Schema for company research */
@@ -349,7 +377,10 @@ async function executeExaTool(
 	mcpToolName: string,
 	params: Record<string, unknown>,
 	toolName: string,
-): Promise<{ content: Array<{ type: "text"; text: string }>; details: ExaRenderDetails }> {
+): Promise<{
+	content: Array<{ type: "text"; text: string }>;
+	details: ExaRenderDetails;
+}> {
 	try {
 		const apiKey = await findExaKey();
 		if (!apiKey) {
@@ -591,8 +622,8 @@ export async function hasExaSearch(): Promise<boolean> {
 	return exaKey !== null;
 }
 
-export {
-	getSearchProvider,
-	setPreferredSearchProvider,
-} from "./provider";
-export type { SearchProviderId as SearchProvider, SearchResponse } from "./types";
+export { getSearchProvider, setPreferredSearchProvider } from "./provider";
+export type {
+	SearchProviderId as SearchProvider,
+	SearchResponse,
+} from "./types";
