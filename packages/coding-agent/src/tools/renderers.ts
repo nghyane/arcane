@@ -109,15 +109,6 @@ const defaultRenderer: ToolRenderer = {
 		const icon = isPartial ? "pending" : result.isError ? "error" : "success";
 		lines.push(renderStatusLine({ icon, title: label }, theme));
 
-		// Args preview
-		const argsObject = asRecord(args);
-		if (!expanded && argsObject && Object.keys(argsObject).length > 0) {
-			const preview = formatArgsInline(argsObject, 70);
-			if (preview) {
-				lines.push(` ${theme.fg("dim", theme.tree.last)} ${theme.fg("dim", preview)}`);
-			}
-		}
-
 		if (expanded && args !== undefined) {
 			lines.push("");
 			lines.push(theme.fg("dim", "Args"));
