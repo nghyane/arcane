@@ -60,15 +60,19 @@ async () => {
 }
 ```
 
-**Rewritten TUI** — Differential rendering, theming, Nerd Font support. No Electron, no browser.
+**Rewritten TUI** — Differential rendering with surgical redraws, theming with bundled presets, Nerd Font detection, mouse text selection.
+
+**Subagent architecture** — Task delegation with fan-out, todo-based completion tracking.
+
+**Stats dashboard** — Local observability for token usage and tool call metrics.
 
 ## Inherited from upstream
 
 **Hashline editing** — Edits anchor to content-derived hash tags, not line numbers. They survive concurrent modification, formatting, and reordering.
 
-**TypeScript + Rust** — Bun for the runtime, Rust for performance-critical text and grep operations.
+**Multi-provider LLM client** — 25+ providers through a single OAuth flow or API keys.
 
-**Multi-provider LLM client** — 25+ providers through OAuth or API keys.
+**TypeScript + Rust** — Bun for the runtime, Rust for performance-critical text and grep operations.
 
 ## Providers
 
