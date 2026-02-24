@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-02-24
+
 ### Fixed
 
 - Preserve single blank line content in edit tool — `hashlineParseContent` no longer strips the only line when it is empty
