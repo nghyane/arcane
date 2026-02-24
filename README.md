@@ -2,7 +2,7 @@
   <img src="https://github.com/nghyane/arcane/blob/main/assets/hero.png?raw=true" alt="Arcane" width="720">
 </p>
 
-<h3 align="center">An AI that codes its own tools.</h3>
+<h3 align="center">A coding agent that builds itself.</h3>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@nghyane/arcane"><img src="https://img.shields.io/npm/v/%40nghyane%2Farcane?style=flat&colorA=222222&label=%40nghyane%2Farcane" alt="npm"></a>
@@ -37,7 +37,7 @@ bun link --cwd packages/coding-agent
 
 ## What makes it different
 
-**Code as tool call** — Each turn, the LLM writes a full async program: parallel reads, conditional edits, subagent fan-out. No sequential round-trips.
+**Code as tool call** — Each turn, the LLM writes a full async program: parallel reads, conditional edits, subagent fan-out. Work that takes 3-4 turns with sequential tool-calling finishes in one.
 
 ```javascript
 async () => {
@@ -104,6 +104,7 @@ providers:
 | [`@nghyane/arcane-ai`](packages/ai) | Multi-provider LLM client |
 | [`@nghyane/arcane-tui`](packages/tui) | Terminal UI library |
 | [`@nghyane/arcane-natives`](packages/natives) | Rust bindings for text/grep ops |
+| [`@nghyane/arcane-codemode`](packages/codemode) | Code Mode engine — replaces tool-calling with JS orchestration |
 | [`@nghyane/arcane-stats`](packages/stats) | Usage dashboard |
 | [`@nghyane/arcane-utils`](packages/utils) | Shared utilities |
 

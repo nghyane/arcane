@@ -1,11 +1,11 @@
 # @nghyane/arcane-agent
 
-Stateful agent with tool execution and event streaming. Built on `@nghyane/arcane-ai`.
+Agent runtime that handles the LLM loop, tool execution, streaming, and state — so you wire up tools and prompts, not plumbing. Built on `@nghyane/arcane-ai`.
 
 ## Installation
 
 ```bash
-npm install @nghyane/arcane-agent
+bun add @nghyane/arcane-agent
 ```
 
 ## Quick Start
@@ -135,7 +135,7 @@ const agent = new Agent({
     systemPrompt: string,
     model: Model,
     thinkingLevel: "off" | "minimal" | "low" | "medium" | "high" | "xhigh",
-    tools: AgentTool<any>[],
+    tools: AgentTool[],
     messages: AgentMessage[],
   },
 
@@ -166,7 +166,7 @@ interface AgentState {
 	systemPrompt: string;
 	model: Model;
 	thinkingLevel: ThinkingLevel;
-	tools: AgentTool<any>[];
+	tools: AgentTool[];
 	messages: AgentMessage[];
 	isStreaming: boolean;
 	streamMessage: AgentMessage | null; // Current partial during streaming

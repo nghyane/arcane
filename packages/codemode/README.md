@@ -1,14 +1,21 @@
 # @nghyane/arcane-codemode
 
-Code Mode replaces sequential tool-calling with LLM-generated JavaScript. Instead of N round-trips for N tools, the LLM writes one async function that orchestrates all calls via a typed `codemode.*` proxy API.
+Code Mode replaces tool-calling with LLM-generated JavaScript. The LLM writes one async function that reads, transforms, and edits across multiple files — work that normally takes 3-4 LLM turns finishes in one.
+
+## How it works
+
+1. Tool schemas are converted to TypeScript declarations (`codemode.*` API)
+2. The LLM writes an async arrow function that orchestrates tool calls
+3. Each `codemode.*` call dispatches to the real tool and streams results to the TUI
 
 ## Features
 
-- **Single round-trip**: One async JS function orchestrates multiple tools
-- **Parallel execution**: `Promise.all()` for independent operations
+- **More done per turn**: Conditional logic, data transforms, and parallel calls — all in one function
+- **Parallel by default**: `Promise.all()` for independent operations
 - **Typed API**: Auto-generated TypeScript declarations from tool schemas
-- **Transparent rendering**: Sub-tool calls render individually in the TUI
-- **Sandboxed execution**: `AsyncFunction` with shadowed globals, timeout, and abort support
+- **Transparent**: Sub-tool calls render individually in the TUI — not a black box
+- **Persistent state**: `state` Map and `memo()` cache survive across turns
+- **Guarded execution**: `AsyncFunction` with shadowed globals, timeout, and abort (not a security sandbox)
 
 ## Usage
 
@@ -32,4 +39,4 @@ const { codeTool, excludedTools } = createCodeTool(tools);
 
 ## License
 
-MIT
+GPL-3.0-or-later
