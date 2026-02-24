@@ -5,7 +5,6 @@ import type { AgentTool, AgentToolContext, AgentToolUpdateCallback } from "@nghy
 import type { ImageContent, TextContent } from "@nghyane/arcane-ai";
 import { Text } from "@nghyane/arcane-tui";
 import type { Static, TSchema } from "@sinclair/typebox";
-import type { Theme } from "../../modes/theme/theme";
 import { registerRenderer } from "../../tools/renderers";
 import { applyToolProxy } from "../tool-proxy";
 import type { ExtensionRunner } from "./runner";
@@ -31,7 +30,7 @@ export class RegisteredToolAdapter implements AgentTool<any, any, any> {
 			const noop = () => new Text("", 0, 0);
 			registerRenderer(this.name, {
 				renderCall: def.renderCall
-					? (args: any, options: any, theme: any) => def.renderCall!(args, options, theme as Theme)
+					? (args: any, options: any, theme: any) => def.renderCall!(args, options, theme)
 					: noop,
 				renderResult: def.renderResult
 					? (result: any, options: any, theme: any, args?: any) =>
@@ -42,7 +41,7 @@ export class RegisteredToolAdapter implements AgentTool<any, any, any> {
 									isPartial: options.isPartial,
 									spinnerFrame: options.spinnerFrame,
 								},
-								theme as Theme,
+								theme,
 								args,
 							)
 					: noop,

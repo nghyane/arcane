@@ -48,12 +48,32 @@ export type ToolRenderer = {
 	renderCall: (args: unknown, options: RenderResultOptions, theme: Theme) => Component;
 	renderResult: (
 		result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
-		options: RenderResultOptions & { renderContext?: Record<string, unknown> },
+		options: RenderResultOptions,
 		theme: Theme,
 		args?: unknown,
 	) => Component;
 	mergeCallAndResult?: boolean;
 	/** Render without background box, inline in the response flow */
+	inline?: boolean;
+};
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+	if (value !== null && value !== undefined && typeof value === "object") {
+		return value as Record<string, unknown>;
+	}
+	return null;
+}
+
+/**
+ * Accepted input shape for registerRenderer.
+ * Allows renderers with narrower parameter types (e.g. BashRenderArgs instead of unknown).
+ * The registry stores them widened to ToolRenderer — safe because tool-execution.ts
+ * always passes the correct args for each tool name.
+ */
+type ToolRendererInput = {
+	renderCall: (args: any, options: any, theme: any) => Component;
+	renderResult: (result: any, options: any, theme: any, args?: any) => Component;
+	mergeCallAndResult?: boolean;
 	inline?: boolean;
 };
 
@@ -63,11 +83,11 @@ export type ToolRenderer = {
  */
 const defaultRenderer: ToolRenderer = {
 	renderCall(args: unknown, options: RenderResultOptions, theme: Theme): Component {
-		const label = (options as { label?: string }).label ?? "Tool";
+		const label = options.label ?? "Tool";
 		const lines: string[] = [];
 		lines.push(renderStatusLine({ icon: "pending", title: label }, theme));
 
-		const argsObject = args && typeof args === "object" ? (args as Record<string, unknown>) : null;
+		const argsObject = asRecord(args);
 		if (argsObject && Object.keys(argsObject).length > 0) {
 			const preview = formatArgsInline(argsObject, 70);
 			if (preview) {
@@ -84,13 +104,13 @@ const defaultRenderer: ToolRenderer = {
 		args?: unknown,
 	): Component {
 		const { expanded = false, isPartial = false } = options;
-		const label = (options as { label?: string }).label ?? "Tool";
+		const label = options.label ?? "Tool";
 		const lines: string[] = [];
 		const icon = isPartial ? "pending" : result.isError ? "error" : "success";
 		lines.push(renderStatusLine({ icon, title: label }, theme));
 
 		// Args preview
-		const argsObject = args && typeof args === "object" ? (args as Record<string, unknown>) : null;
+		const argsObject = asRecord(args);
 		if (!expanded && argsObject && Object.keys(argsObject).length > 0) {
 			const preview = formatArgsInline(argsObject, 70);
 			if (preview) {
@@ -162,14 +182,14 @@ const defaultRenderer: ToolRenderer = {
 	},
 };
 
-function createSubagentRenderer(config: SubagentConfig): ToolRenderer {
+function createSubagentRenderer(config: SubagentConfig): ToolRendererInput {
 	return {
 		renderCall(args: unknown, _options: RenderResultOptions, theme: Theme): Component {
-			const params = args as Record<string, unknown>;
+			const params = (args ?? {}) as Record<string, unknown>;
 			const desc = truncateToWidth(replaceTabs(config.buildDescription(params)), 80);
 			return new Text(renderStatusLine({ icon: "pending", title: config.label, description: desc }, theme), 0, 0);
 		},
-		renderResult: renderTaskResult as ToolRenderer["renderResult"],
+		renderResult: renderTaskResult,
 		mergeCallAndResult: true,
 	};
 }
@@ -181,28 +201,28 @@ const subagentConfigs: SubagentConfig[] = [exploreConfig, librarianConfig, oracl
 const rendererMap = new Map<string, ToolRenderer>();
 
 function registerBuiltins(): void {
-	const builtins: Array<[string, ToolRenderer]> = [
-		["ask", askToolRenderer as ToolRenderer],
-		["bash", bashToolRenderer as ToolRenderer],
-		["python", pythonToolRenderer as ToolRenderer],
-		["calc", calculatorToolRenderer as ToolRenderer],
-		["edit", editToolRenderer as ToolRenderer],
-		["find", findToolRenderer as ToolRenderer],
-		["grep", grepToolRenderer as ToolRenderer],
-		["lsp", lspToolRenderer as ToolRenderer],
-		["notebook", notebookToolRenderer as ToolRenderer],
-		["read", readToolRenderer as ToolRenderer],
-		["ssh", sshToolRenderer as ToolRenderer],
-		["task", taskToolRenderer as ToolRenderer],
-		["todo_write", todoWriteToolRenderer as ToolRenderer],
-		["undo_edit", undoEditToolRenderer as ToolRenderer],
-		["fetch", fetchToolRenderer as ToolRenderer],
-		["web_search", webSearchToolRenderer as ToolRenderer],
-		["write", writeToolRenderer as ToolRenderer],
+	const builtins: Array<[string, ToolRendererInput]> = [
+		["ask", askToolRenderer],
+		["bash", bashToolRenderer],
+		["python", pythonToolRenderer],
+		["calc", calculatorToolRenderer],
+		["edit", editToolRenderer],
+		["find", findToolRenderer],
+		["grep", grepToolRenderer],
+		["lsp", lspToolRenderer],
+		["notebook", notebookToolRenderer],
+		["read", readToolRenderer],
+		["ssh", sshToolRenderer],
+		["task", taskToolRenderer],
+		["todo_write", todoWriteToolRenderer],
+		["undo_edit", undoEditToolRenderer],
+		["fetch", fetchToolRenderer],
+		["web_search", webSearchToolRenderer],
+		["write", writeToolRenderer],
 	];
 
 	for (const [name, renderer] of builtins) {
-		rendererMap.set(name, renderer);
+		rendererMap.set(name, renderer as ToolRenderer);
 	}
 
 	for (const config of subagentConfigs) {
@@ -215,8 +235,8 @@ registerBuiltins();
 /**
  * Register a renderer for a tool. Overwrites any existing renderer for that name.
  */
-export function registerRenderer(name: string, renderer: ToolRenderer): void {
-	rendererMap.set(name, renderer);
+export function registerRenderer(name: string, renderer: ToolRendererInput): void {
+	rendererMap.set(name, renderer as ToolRenderer);
 }
 
 /**

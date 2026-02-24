@@ -114,6 +114,10 @@ export interface RenderResultOptions {
 	isPartial: boolean;
 	/** Current spinner frame index for animated elements (0-9, only provided during partial results) */
 	spinnerFrame?: number;
+	/** Tool display label (used by default renderer) */
+	label?: string;
+	/** Extra rendering context from ToolExecutionComponent (bash output, edit diff, etc.) */
+	renderContext?: Record<string, unknown>;
 }
 
 export type CustomToolResult<TDetails = any> = AgentToolResult<TDetails>;

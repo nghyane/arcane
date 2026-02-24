@@ -20,18 +20,17 @@ import {
 } from "../tools/json-tree";
 import { formatExpandHint, truncateToWidth } from "../tools/render-utils";
 import { renderStatusLine } from "../tui";
-import type { MCPToolDetails } from "./tool-bridge";
 
 /**
  * Render MCP tool call.
  */
-export function renderMCPCall(args: Record<string, unknown>, theme: Theme, label: string): Component {
+export function renderMCPCall(args: unknown, theme: Theme, label: string): Component {
 	const lines: string[] = [];
 	lines.push(renderStatusLine({ icon: "pending", title: label }, theme));
 
-	if (args && typeof args === "object" && Object.keys(args).length > 0) {
-		// Show args inline preview
-		const preview = formatArgsInline(args, 70);
+	const argsRecord = args !== null && typeof args === "object" ? (args as Record<string, unknown>) : null;
+	if (argsRecord && Object.keys(argsRecord).length > 0) {
+		const preview = formatArgsInline(argsRecord, 70);
 		if (preview) {
 			lines.push(` ${theme.fg("dim", theme.tree.last)} ${theme.fg("dim", preview)}`);
 		}
@@ -44,10 +43,10 @@ export function renderMCPCall(args: Record<string, unknown>, theme: Theme, label
  * Render MCP tool result.
  */
 export function renderMCPResult(
-	result: { content: Array<{ type: string; text?: string }>; details?: MCPToolDetails; isError?: boolean },
+	result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
 	options: RenderResultOptions,
 	theme: Theme,
-	args?: Record<string, unknown>,
+	args?: unknown,
 ): Component {
 	const { expanded } = options;
 	const lines: string[] = [];
@@ -128,7 +127,7 @@ export function renderMCPResult(
 export function createMCPRenderer(label: string) {
 	return {
 		renderCall(args: unknown, _options: RenderResultOptions, theme: Theme) {
-			return renderMCPCall((args ?? {}) as Record<string, unknown>, theme, label);
+			return renderMCPCall(args ?? {}, theme, label);
 		},
 		renderResult(
 			result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
@@ -136,12 +135,7 @@ export function createMCPRenderer(label: string) {
 			theme: Theme,
 			args?: unknown,
 		) {
-			return renderMCPResult(
-				{ ...result, details: result.details as MCPToolDetails },
-				options,
-				theme,
-				(args ?? {}) as Record<string, unknown>,
-			);
+			return renderMCPResult(result, options, theme, args);
 		},
 	};
 }
