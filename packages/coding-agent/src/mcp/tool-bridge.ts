@@ -6,16 +6,11 @@
 import type { AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import type { TSchema } from "@sinclair/typebox";
 import type { SourceMeta } from "../capability/types";
-import type {
-	CustomTool,
-	CustomToolContext,
-	CustomToolResult,
-	RenderResultOptions,
-} from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
+import type { CustomTool, CustomToolContext, CustomToolResult } from "../extensibility/custom-tools/types";
+import { registerRenderer } from "../tools/renderers";
 import { ToolAbortError, throwIfAborted } from "../tools/tool-errors";
 import { callTool } from "./client";
-import { renderMCPCall, renderMCPResult } from "./render";
+import { createMCPRenderer } from "./render";
 import type { MCPContent, MCPServerConnection, MCPToolDefinition } from "./types";
 
 function withAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
@@ -196,14 +191,7 @@ export class MCPTool implements CustomTool<TSchema, MCPToolDetails> {
 		this.parameters = convertSchema(tool.inputSchema);
 		this.mcpToolName = tool.name;
 		this.mcpServerName = connection.name;
-	}
-
-	renderCall(args: unknown, _options: RenderResultOptions, theme: Theme) {
-		return renderMCPCall((args ?? {}) as Record<string, unknown>, theme, this.label);
-	}
-
-	renderResult(result: CustomToolResult<MCPToolDetails>, options: RenderResultOptions, theme: Theme, args?: unknown) {
-		return renderMCPResult(result, options, theme, (args ?? {}) as Record<string, unknown>);
+		registerRenderer(this.name, createMCPRenderer(this.label));
 	}
 
 	async execute(
@@ -302,14 +290,7 @@ export class DeferredMCPTool implements CustomTool<TSchema, MCPToolDetails> {
 		this.mcpServerName = serverName;
 		this.#fallbackProvider = source?.provider;
 		this.#fallbackProviderName = source?.providerName;
-	}
-
-	renderCall(args: unknown, _options: RenderResultOptions, theme: Theme) {
-		return renderMCPCall((args ?? {}) as Record<string, unknown>, theme, this.label);
-	}
-
-	renderResult(result: CustomToolResult<MCPToolDetails>, options: RenderResultOptions, theme: Theme, args?: unknown) {
-		return renderMCPResult(result, options, theme, (args ?? {}) as Record<string, unknown>);
+		registerRenderer(this.name, createMCPRenderer(this.label));
 	}
 
 	async execute(

@@ -121,3 +121,27 @@ export function renderMCPResult(
 
 	return new Text(lines.join("\n"), 0, 0);
 }
+
+/**
+ * Create a ToolRenderer for an MCP tool.
+ */
+export function createMCPRenderer(label: string) {
+	return {
+		renderCall(args: unknown, _options: RenderResultOptions, theme: Theme) {
+			return renderMCPCall((args ?? {}) as Record<string, unknown>, theme, label);
+		},
+		renderResult(
+			result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
+			options: RenderResultOptions,
+			theme: Theme,
+			args?: unknown,
+		) {
+			return renderMCPResult(
+				{ ...result, details: result.details as MCPToolDetails },
+				options,
+				theme,
+				(args ?? {}) as Record<string, unknown>,
+			);
+		},
+	};
+}

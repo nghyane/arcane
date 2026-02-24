@@ -1,8 +1,9 @@
 /**
- * TUI renderers for built-in tools.
+ * TUI renderers for all tools.
  *
- * These provide rich visualization for tool calls and results in the TUI.
- * All tools — including subagent tools — render through this single registry.
+ * Single registry for tool rendering. Every tool — built-in, subagent, MCP,
+ * extension — renders through this registry. Tools without an explicit
+ * renderer get the default generic renderer.
  */
 import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
@@ -20,12 +21,22 @@ import { exploreConfig } from "./explore";
 import { fetchToolRenderer } from "./fetch";
 import { findToolRenderer } from "./find";
 import { grepToolRenderer } from "./grep";
+import {
+	formatArgsInline,
+	JSON_TREE_MAX_DEPTH_COLLAPSED,
+	JSON_TREE_MAX_DEPTH_EXPANDED,
+	JSON_TREE_MAX_LINES_COLLAPSED,
+	JSON_TREE_MAX_LINES_EXPANDED,
+	JSON_TREE_SCALAR_LEN_COLLAPSED,
+	JSON_TREE_SCALAR_LEN_EXPANDED,
+	renderJsonTreeLines,
+} from "./json-tree";
 import { librarianConfig } from "./librarian";
 import { notebookToolRenderer } from "./notebook";
 import { oracleConfig } from "./oracle";
 import { pythonToolRenderer } from "./python";
 import { readToolRenderer } from "./read";
-import { replaceTabs, truncateToWidth } from "./render-utils";
+import { formatExpandHint, replaceTabs, truncateToWidth } from "./render-utils";
 import { reviewerConfig } from "./reviewer-tool";
 import { sshToolRenderer } from "./ssh";
 import type { SubagentConfig } from "./subagent-tool";
@@ -33,7 +44,7 @@ import { todoWriteToolRenderer } from "./todo-write";
 import { undoEditToolRenderer } from "./undo-edit";
 import { writeToolRenderer } from "./write";
 
-type ToolRenderer = {
+export type ToolRenderer = {
 	renderCall: (args: unknown, options: RenderResultOptions, theme: Theme) => Component;
 	renderResult: (
 		result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
@@ -44,6 +55,111 @@ type ToolRenderer = {
 	mergeCallAndResult?: boolean;
 	/** Render without background box, inline in the response flow */
 	inline?: boolean;
+};
+
+/**
+ * Default renderer for tools without a custom renderer.
+ * Shows status line with args preview, JSON tree for structured output.
+ */
+const defaultRenderer: ToolRenderer = {
+	renderCall(args: unknown, options: RenderResultOptions, theme: Theme): Component {
+		const label = (options as { label?: string }).label ?? "Tool";
+		const lines: string[] = [];
+		lines.push(renderStatusLine({ icon: "pending", title: label }, theme));
+
+		const argsObject = args && typeof args === "object" ? (args as Record<string, unknown>) : null;
+		if (argsObject && Object.keys(argsObject).length > 0) {
+			const preview = formatArgsInline(argsObject, 70);
+			if (preview) {
+				lines.push(` ${theme.fg("dim", theme.tree.last)} ${theme.fg("dim", preview)}`);
+			}
+		}
+		return new Text(lines.join("\n"), 0, 0);
+	},
+
+	renderResult(
+		result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
+		options: RenderResultOptions & { renderContext?: Record<string, unknown> },
+		theme: Theme,
+		args?: unknown,
+	): Component {
+		const { expanded = false, isPartial = false } = options;
+		const label = (options as { label?: string }).label ?? "Tool";
+		const lines: string[] = [];
+		const icon = isPartial ? "pending" : result.isError ? "error" : "success";
+		lines.push(renderStatusLine({ icon, title: label }, theme));
+
+		// Args preview
+		const argsObject = args && typeof args === "object" ? (args as Record<string, unknown>) : null;
+		if (!expanded && argsObject && Object.keys(argsObject).length > 0) {
+			const preview = formatArgsInline(argsObject, 70);
+			if (preview) {
+				lines.push(` ${theme.fg("dim", theme.tree.last)} ${theme.fg("dim", preview)}`);
+			}
+		}
+
+		if (expanded && args !== undefined) {
+			lines.push("");
+			lines.push(theme.fg("dim", "Args"));
+			const tree = renderJsonTreeLines(
+				args,
+				theme,
+				JSON_TREE_MAX_DEPTH_EXPANDED,
+				JSON_TREE_MAX_LINES_EXPANDED,
+				JSON_TREE_SCALAR_LEN_EXPANDED,
+			);
+			lines.push(...tree.lines);
+			if (tree.truncated) {
+				lines.push(theme.fg("dim", "…"));
+			}
+			lines.push("");
+		}
+
+		// Output
+		const textContent = (result.content?.find(c => c.type === "text")?.text ?? "").trimEnd();
+		if (!textContent) {
+			lines.push(theme.fg("dim", "(no output)"));
+			return new Text(lines.join("\n"), 0, 0);
+		}
+
+		// Try JSON tree
+		if (textContent.startsWith("{") || textContent.startsWith("[")) {
+			try {
+				const parsed = JSON.parse(textContent);
+				const maxDepth = expanded ? JSON_TREE_MAX_DEPTH_EXPANDED : JSON_TREE_MAX_DEPTH_COLLAPSED;
+				const maxLines = expanded ? JSON_TREE_MAX_LINES_EXPANDED : JSON_TREE_MAX_LINES_COLLAPSED;
+				const maxScalarLen = expanded ? JSON_TREE_SCALAR_LEN_EXPANDED : JSON_TREE_SCALAR_LEN_COLLAPSED;
+				const tree = renderJsonTreeLines(parsed, theme, maxDepth, maxLines, maxScalarLen);
+				if (tree.lines.length > 0) {
+					lines.push(...tree.lines);
+					if (!expanded) {
+						lines.push(formatExpandHint(theme, expanded, true));
+					} else if (tree.truncated) {
+						lines.push(theme.fg("dim", "…"));
+					}
+					return new Text(lines.join("\n"), 0, 0);
+				}
+			} catch {
+				// Fall through to raw output
+			}
+		}
+
+		// Raw output
+		const outputLines = textContent.split("\n");
+		const maxOutputLines = expanded ? 12 : 4;
+		const displayLines = outputLines.slice(0, maxOutputLines);
+		for (const line of displayLines) {
+			lines.push(theme.fg("toolOutput", truncateToWidth(line, 80)));
+		}
+		if (outputLines.length > maxOutputLines) {
+			const remaining = outputLines.length - maxOutputLines;
+			lines.push(`${theme.fg("dim", `… ${remaining} more lines`)} ${formatExpandHint(theme, expanded, true)}`);
+		} else if (!expanded) {
+			lines.push(formatExpandHint(theme, expanded, true));
+		}
+
+		return new Text(lines.join("\n"), 0, 0);
+	},
 };
 
 function createSubagentRenderer(config: SubagentConfig): ToolRenderer {
@@ -60,27 +176,87 @@ function createSubagentRenderer(config: SubagentConfig): ToolRenderer {
 
 const subagentConfigs: SubagentConfig[] = [exploreConfig, librarianConfig, oracleConfig, reviewerConfig];
 
-const subagentRenderers: Record<string, ToolRenderer> = Object.fromEntries(
-	subagentConfigs.map(c => [c.name, createSubagentRenderer(c)]),
-);
+// --- Registry ---
 
-export const toolRenderers: Record<string, ToolRenderer> = {
-	ask: askToolRenderer as ToolRenderer,
-	bash: bashToolRenderer as ToolRenderer,
-	python: pythonToolRenderer as ToolRenderer,
-	calc: calculatorToolRenderer as ToolRenderer,
-	edit: editToolRenderer as ToolRenderer,
-	find: findToolRenderer as ToolRenderer,
-	grep: grepToolRenderer as ToolRenderer,
-	lsp: lspToolRenderer as ToolRenderer,
-	notebook: notebookToolRenderer as ToolRenderer,
-	read: readToolRenderer as ToolRenderer,
-	ssh: sshToolRenderer as ToolRenderer,
-	task: taskToolRenderer as ToolRenderer,
-	todo_write: todoWriteToolRenderer as ToolRenderer,
-	undo_edit: undoEditToolRenderer as ToolRenderer,
-	fetch: fetchToolRenderer as ToolRenderer,
-	web_search: webSearchToolRenderer as ToolRenderer,
-	write: writeToolRenderer as ToolRenderer,
-	...subagentRenderers,
-};
+const rendererMap = new Map<string, ToolRenderer>();
+
+function registerBuiltins(): void {
+	const builtins: Array<[string, ToolRenderer]> = [
+		["ask", askToolRenderer as ToolRenderer],
+		["bash", bashToolRenderer as ToolRenderer],
+		["python", pythonToolRenderer as ToolRenderer],
+		["calc", calculatorToolRenderer as ToolRenderer],
+		["edit", editToolRenderer as ToolRenderer],
+		["find", findToolRenderer as ToolRenderer],
+		["grep", grepToolRenderer as ToolRenderer],
+		["lsp", lspToolRenderer as ToolRenderer],
+		["notebook", notebookToolRenderer as ToolRenderer],
+		["read", readToolRenderer as ToolRenderer],
+		["ssh", sshToolRenderer as ToolRenderer],
+		["task", taskToolRenderer as ToolRenderer],
+		["todo_write", todoWriteToolRenderer as ToolRenderer],
+		["undo_edit", undoEditToolRenderer as ToolRenderer],
+		["fetch", fetchToolRenderer as ToolRenderer],
+		["web_search", webSearchToolRenderer as ToolRenderer],
+		["write", writeToolRenderer as ToolRenderer],
+	];
+
+	for (const [name, renderer] of builtins) {
+		rendererMap.set(name, renderer);
+	}
+
+	for (const config of subagentConfigs) {
+		rendererMap.set(config.name, createSubagentRenderer(config));
+	}
+}
+
+registerBuiltins();
+
+/**
+ * Register a renderer for a tool. Overwrites any existing renderer for that name.
+ */
+export function registerRenderer(name: string, renderer: ToolRenderer): void {
+	rendererMap.set(name, renderer);
+}
+
+/**
+ * Unregister a renderer for a tool.
+ */
+export function unregisterRenderer(name: string): void {
+	rendererMap.delete(name);
+}
+
+/**
+ * Get the renderer for a tool. Returns the default renderer if none registered.
+ */
+export function getRenderer(name: string): ToolRenderer {
+	return rendererMap.get(name) ?? defaultRenderer;
+}
+
+/**
+ * Check if a tool has a custom (non-default) renderer registered.
+ */
+export function hasRenderer(name: string): boolean {
+	return rendererMap.has(name);
+}
+
+/**
+ * @deprecated Use getRenderer() instead. Kept temporarily for migration.
+ */
+export const toolRenderers: Record<string, ToolRenderer> = new Proxy({} as Record<string, ToolRenderer>, {
+	get(_target, prop: string) {
+		return rendererMap.get(prop);
+	},
+	has(_target, prop: string) {
+		return rendererMap.has(prop);
+	},
+	ownKeys() {
+		return [...rendererMap.keys()];
+	},
+	getOwnPropertyDescriptor(_target, prop: string) {
+		if (rendererMap.has(prop)) {
+			return { configurable: true, enumerable: true, value: rendererMap.get(prop) };
+		}
+		return undefined;
+	},
+});

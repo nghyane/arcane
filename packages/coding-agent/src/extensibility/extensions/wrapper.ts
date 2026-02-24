@@ -3,8 +3,10 @@
  */
 import type { AgentTool, AgentToolContext, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import type { ImageContent, TextContent } from "@nghyane/arcane-ai";
+import { Text } from "@nghyane/arcane-tui";
 import type { Static, TSchema } from "@sinclair/typebox";
 import type { Theme } from "../../modes/theme/theme";
+import { registerRenderer } from "../../tools/renderers";
 import { applyToolProxy } from "../tool-proxy";
 import type { ExtensionRunner } from "./runner";
 import type { RegisteredTool, ToolCallEventResult } from "./types";
@@ -18,31 +20,33 @@ export class RegisteredToolAdapter implements AgentTool<any, any, any> {
 	declare parameters: any;
 	declare label: string;
 
-	renderCall?: (args: any, options: any, theme: any) => any;
-	renderResult?: (result: any, options: any, theme: any, args?: any) => any;
-
 	constructor(
 		private registeredTool: RegisteredTool,
 		private runner: ExtensionRunner,
 	) {
 		applyToolProxy(registeredTool.definition, this);
 
-		// Only define render methods when the underlying definition provides them.
-		// If these exist unconditionally on the prototype, ToolExecutionComponent
-		// enters the custom-renderer path, gets undefined back, and silently
-		// discards tool result text (extensions without renderers show blank).
-		if (registeredTool.definition.renderCall) {
-			this.renderCall = (args: any, options: any, theme: any) =>
-				registeredTool.definition.renderCall!(args, options, theme as Theme);
-		}
-		if (registeredTool.definition.renderResult) {
-			this.renderResult = (result: any, options: any, theme: any, args?: any) =>
-				registeredTool.definition.renderResult!(
-					result,
-					{ expanded: options.expanded, isPartial: options.isPartial, spinnerFrame: options.spinnerFrame },
-					theme as Theme,
-					args,
-				);
+		const def = registeredTool.definition;
+		if (def.renderCall || def.renderResult) {
+			const noop = () => new Text("", 0, 0);
+			registerRenderer(this.name, {
+				renderCall: def.renderCall
+					? (args: any, options: any, theme: any) => def.renderCall!(args, options, theme as Theme)
+					: noop,
+				renderResult: def.renderResult
+					? (result: any, options: any, theme: any, args?: any) =>
+							def.renderResult!(
+								result,
+								{
+									expanded: options.expanded,
+									isPartial: options.isPartial,
+									spinnerFrame: options.spinnerFrame,
+								},
+								theme as Theme,
+								args,
+							)
+					: noop,
+			});
 		}
 	}
 

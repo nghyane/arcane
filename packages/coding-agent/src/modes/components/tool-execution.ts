@@ -15,7 +15,6 @@ import {
 } from "@nghyane/arcane-tui";
 import { logger } from "@nghyane/arcane-utils";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
-import type { Theme } from "../../modes/theme/theme";
 import { theme } from "../../modes/theme/theme";
 import {
 	computeEditDiff,
@@ -25,20 +24,8 @@ import {
 	type EditDiffResult,
 } from "../../patch";
 import { BASH_DEFAULT_PREVIEW_LINES } from "../../tools/bash";
-import {
-	formatArgsInline,
-	JSON_TREE_MAX_DEPTH_COLLAPSED,
-	JSON_TREE_MAX_DEPTH_EXPANDED,
-	JSON_TREE_MAX_LINES_COLLAPSED,
-	JSON_TREE_MAX_LINES_EXPANDED,
-	JSON_TREE_SCALAR_LEN_COLLAPSED,
-	JSON_TREE_SCALAR_LEN_EXPANDED,
-	renderJsonTreeLines,
-} from "../../tools/json-tree";
 import { PYTHON_DEFAULT_PREVIEW_LINES } from "../../tools/python";
-import { formatExpandHint, truncateToWidth } from "../../tools/render-utils";
-import { toolRenderers } from "../../tools/renderers";
-import { renderStatusLine } from "../../tui";
+import { getRenderer } from "../../tools/renderers";
 import { convertToPng } from "../../utils/image-convert";
 import { renderDiff } from "./diff";
 
@@ -85,7 +72,6 @@ export interface ToolExecutionHandle {
  */
 export class ToolExecutionComponent extends Container {
 	#contentBox: Box; // Used for custom tools and bash visual truncation
-	#contentText: Text; // For built-in tools (with its own padding/bg)
 	#imageComponents: Image[] = [];
 	#imageSpacers: Spacer[] = [];
 	#toolName: string;
@@ -97,7 +83,6 @@ export class ToolExecutionComponent extends Container {
 	#editAllowFuzzy: boolean | undefined;
 	#isPartial = true;
 	#compact: boolean;
-	#tool?: AgentTool;
 	#ui: TUI;
 	#cwd: string;
 	#result?: {
@@ -119,6 +104,7 @@ export class ToolExecutionComponent extends Container {
 		spinnerFrame: number;
 		expanded: boolean;
 		isPartial: boolean;
+		label?: string;
 		renderContext?: Record<string, unknown>;
 	} = {
 		spinnerFrame: 0,
@@ -143,7 +129,6 @@ export class ToolExecutionComponent extends Container {
 		this.#editFuzzyThreshold = options.editFuzzyThreshold;
 		this.#editAllowFuzzy = options.editAllowFuzzy;
 		this.#compact = compact;
-		this.#tool = tool;
 		this.#ui = ui;
 		this.#cwd = cwd;
 
@@ -151,21 +136,11 @@ export class ToolExecutionComponent extends Container {
 			this.addChild(new Spacer(1));
 		}
 
-		// Always create both - contentBox for custom tools/bash/tools with renderers, contentText for other built-ins
 		const px = compact ? 0 : 1;
 		const py = compact ? 0 : 1;
 		const initialBg = compact ? undefined : (text: string) => theme.bg("toolPendingBg", text);
 		this.#contentBox = new Box(px, py, initialBg);
-		this.#contentText = new Text("", px, py, initialBg);
-
-		// Use Box for custom tools or built-in tools that have renderers
-		const hasRenderer = toolName in toolRenderers;
-		const hasCustomRenderer = !!(tool?.renderCall || tool?.renderResult);
-		if (hasCustomRenderer || hasRenderer) {
-			this.addChild(this.#contentBox);
-		} else {
-			this.addChild(this.#contentText);
-		}
+		this.addChild(this.#contentBox);
 
 		this.#updateDisplay();
 	}
@@ -388,125 +363,51 @@ export class ToolExecutionComponent extends Container {
 		this.#renderState.isPartial = this.#isPartial;
 		this.#renderState.spinnerFrame = this.#spinnerFrame;
 
-		// Check for custom tool rendering
-		if (this.#tool && (this.#tool.renderCall || this.#tool.renderResult)) {
-			const tool = this.#tool;
-			const mergeCallAndResult = Boolean((tool as { mergeCallAndResult?: boolean }).mergeCallAndResult);
-			// Custom tools use Box for flexible component rendering
-			const inline = Boolean((tool as { inline?: boolean }).inline);
-			this.#contentBox.setBgFn(inline ? undefined : bgFn);
-			this.#contentBox.clear();
+		const renderer = getRenderer(this.#toolName);
+		this.#contentBox.setBgFn(renderer.inline ? undefined : bgFn);
+		this.#contentBox.clear();
 
-			// Render call component
-			const shouldRenderCall = !this.#result || !mergeCallAndResult;
-			if (shouldRenderCall && tool.renderCall) {
-				try {
-					const callComponent = tool.renderCall(this.#getCallArgsForRender(), this.#renderState, theme);
-					if (callComponent) {
-						this.#contentBox.addChild(ensureInvalidate(callComponent));
-					}
-				} catch (err) {
-					logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
-					// Fall back to default on error
-					this.#contentBox.addChild(new Text(theme.fg("toolTitle", theme.bold(this.#toolLabel)), 0, 0));
+		// Pass label for default renderer
+		this.#renderState.label = this.#toolLabel;
+
+		const shouldRenderCall = !this.#result || !renderer.mergeCallAndResult;
+		if (shouldRenderCall) {
+			try {
+				const callComponent = renderer.renderCall(this.#getCallArgsForRender(), this.#renderState, theme);
+				if (callComponent) {
+					this.#contentBox.addChild(ensureInvalidate(callComponent));
 				}
-			} else {
-				// No custom renderCall, show tool name
+			} catch (err) {
+				logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
 				this.#contentBox.addChild(new Text(theme.fg("toolTitle", theme.bold(this.#toolLabel)), 0, 0));
 			}
+		}
 
-			// Render result component if we have a result
-			if (this.#result && tool.renderResult) {
-				try {
-					const renderResult = tool.renderResult as (
-						result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
-						options: { expanded: boolean; isPartial: boolean; spinnerFrame?: number },
-						theme: Theme,
-						args?: unknown,
-					) => Component;
-					const resultComponent = renderResult(
-						{
-							content: this.#result.content as any,
-							details: this.#result.details,
-							isError: this.#result.isError,
-						},
-						this.#renderState,
-						theme,
-						this.#args,
-					);
-					if (resultComponent) {
-						this.#contentBox.addChild(ensureInvalidate(resultComponent));
-					}
-				} catch (err) {
-					logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
-					// Fall back to showing raw output on error
-					const output = this.#getTextOutput();
-					if (output) {
-						this.#contentBox.addChild(new Text(theme.fg("toolOutput", output), 0, 0));
-					}
+		if (this.#result) {
+			try {
+				const renderContext = this.#buildRenderContext();
+				this.#renderState.renderContext = renderContext;
+
+				const resultComponent = renderer.renderResult(
+					{
+						content: this.#result.content as any,
+						details: this.#result.details,
+						isError: this.#result.isError,
+					},
+					this.#renderState,
+					theme,
+					this.#args,
+				);
+				if (resultComponent) {
+					this.#contentBox.addChild(ensureInvalidate(resultComponent));
 				}
-			} else if (this.#result) {
-				// Has result but no custom renderResult
+			} catch (err) {
+				logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
 				const output = this.#getTextOutput();
 				if (output) {
 					this.#contentBox.addChild(new Text(theme.fg("toolOutput", output), 0, 0));
 				}
 			}
-		} else if (this.#toolName in toolRenderers) {
-			// Built-in tools with renderers
-			const renderer = toolRenderers[this.#toolName];
-			// Inline renderers skip background styling
-			this.#contentBox.setBgFn(renderer.inline ? undefined : bgFn);
-			this.#contentBox.clear();
-
-			const shouldRenderCall = !this.#result || !renderer.mergeCallAndResult;
-			if (shouldRenderCall) {
-				// Render call component
-				try {
-					const callComponent = renderer.renderCall(this.#getCallArgsForRender(), this.#renderState, theme);
-					if (callComponent) {
-						this.#contentBox.addChild(ensureInvalidate(callComponent));
-					}
-				} catch (err) {
-					logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
-					// Fall back to default on error
-					this.#contentBox.addChild(new Text(theme.fg("toolTitle", theme.bold(this.#toolLabel)), 0, 0));
-				}
-			}
-
-			// Render result component if we have a result
-			if (this.#result) {
-				try {
-					// Build render context for tools that need extra state
-					const renderContext = this.#buildRenderContext();
-					this.#renderState.renderContext = renderContext;
-
-					const resultComponent = renderer.renderResult(
-						{
-							content: this.#result.content as any,
-							details: this.#result.details,
-							isError: this.#result.isError,
-						},
-						this.#renderState,
-						theme,
-						this.#args, // Pass args for tools that need them
-					);
-					if (resultComponent) {
-						this.#contentBox.addChild(ensureInvalidate(resultComponent));
-					}
-				} catch (err) {
-					logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
-					// Fall back to showing raw output on error
-					const output = this.#getTextOutput();
-					if (output) {
-						this.#contentBox.addChild(new Text(theme.fg("toolOutput", output), 0, 0));
-					}
-				}
-			}
-		} else {
-			// Other built-in tools: use Text directly with caching
-			this.#contentText.setCustomBgFn(bgFn);
-			this.#contentText.setText(this.#formatToolExecution());
 		}
 
 		// Handle images (same for both custom and built-in)
@@ -616,88 +517,5 @@ export class ToolExecutionComponent extends Container {
 		}
 
 		return output;
-	}
-
-	/**
-	 * Format a generic tool execution (fallback for tools without custom renderers)
-	 */
-	#formatToolExecution(): string {
-		const lines: string[] = [];
-		const icon = this.#isPartial ? "pending" : this.#result?.isError ? "error" : "success";
-		lines.push(renderStatusLine({ icon, title: this.#toolLabel }, theme));
-
-		const argsObject = this.#args && typeof this.#args === "object" ? (this.#args as Record<string, unknown>) : null;
-		if (!this.#expanded && argsObject && Object.keys(argsObject).length > 0) {
-			const preview = formatArgsInline(argsObject, 70);
-			if (preview) {
-				lines.push(` ${theme.fg("dim", theme.tree.last)} ${theme.fg("dim", preview)}`);
-			}
-		}
-
-		if (this.#expanded && this.#args !== undefined) {
-			lines.push("");
-			lines.push(theme.fg("dim", "Args"));
-			const tree = renderJsonTreeLines(
-				this.#args,
-				theme,
-				JSON_TREE_MAX_DEPTH_EXPANDED,
-				JSON_TREE_MAX_LINES_EXPANDED,
-				JSON_TREE_SCALAR_LEN_EXPANDED,
-			);
-			lines.push(...tree.lines);
-			if (tree.truncated) {
-				lines.push(theme.fg("dim", "…"));
-			}
-			lines.push("");
-		}
-
-		if (!this.#result) {
-			return lines.join("\n");
-		}
-
-		const textContent = this.#getTextOutput().trimEnd();
-		if (!textContent) {
-			lines.push(theme.fg("dim", "(no output)"));
-			return lines.join("\n");
-		}
-
-		if (textContent.startsWith("{") || textContent.startsWith("[")) {
-			try {
-				const parsed = JSON.parse(textContent);
-				const maxDepth = this.#expanded ? JSON_TREE_MAX_DEPTH_EXPANDED : JSON_TREE_MAX_DEPTH_COLLAPSED;
-				const maxLines = this.#expanded ? JSON_TREE_MAX_LINES_EXPANDED : JSON_TREE_MAX_LINES_COLLAPSED;
-				const maxScalarLen = this.#expanded ? JSON_TREE_SCALAR_LEN_EXPANDED : JSON_TREE_SCALAR_LEN_COLLAPSED;
-				const tree = renderJsonTreeLines(parsed, theme, maxDepth, maxLines, maxScalarLen);
-
-				if (tree.lines.length > 0) {
-					lines.push(...tree.lines);
-					if (!this.#expanded) {
-						lines.push(formatExpandHint(theme, this.#expanded, true));
-					} else if (tree.truncated) {
-						lines.push(theme.fg("dim", "…"));
-					}
-					return lines.join("\n");
-				}
-			} catch {
-				// Fall through to raw output
-			}
-		}
-
-		const outputLines = textContent.split("\n");
-		const maxOutputLines = this.#expanded ? 12 : 4;
-		const displayLines = outputLines.slice(0, maxOutputLines);
-
-		for (const line of displayLines) {
-			lines.push(theme.fg("toolOutput", truncateToWidth(line, 80)));
-		}
-
-		if (outputLines.length > maxOutputLines) {
-			const remaining = outputLines.length - maxOutputLines;
-			lines.push(`${theme.fg("dim", `… ${remaining} more lines`)} ${formatExpandHint(theme, this.#expanded, true)}`);
-		} else if (!this.#expanded) {
-			lines.push(formatExpandHint(theme, this.#expanded, true));
-		}
-
-		return lines.join("\n");
 	}
 }
