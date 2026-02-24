@@ -16,6 +16,7 @@ import type { Theme } from "../modes/theme/theme";
 import { getBundledAgent } from "../task/agents";
 import { runAgent } from "../task/executor";
 import { AgentOutputManager } from "../task/output-manager";
+import { renderResult } from "../task/render";
 import type { AgentProgress, TaskToolDetails } from "../task/types";
 
 export interface SubagentToolConfig<T extends TProperties> {
@@ -63,6 +64,7 @@ export function createSubagentTool<T extends TProperties>(
 		readonly label = label;
 		readonly parameters = schema;
 		description = config.toolDescription ?? "";
+		readonly renderResult = renderResult;
 
 		constructor(private readonly session: ToolSession) {}
 
