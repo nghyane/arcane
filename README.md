@@ -62,7 +62,9 @@ async () => {
 
 **Heavily improved TUI** — Surgical differential rendering with double buffering, bundled theme presets (Nord Frost), Nerd Font detection, mouse text selection, transparent status line, and numerous UX refinements over upstream.
 
-**Subagent architecture** — Task delegation with fan-out, todo-based completion tracking.
+**Redesigned task system** — Complete overhaul of the task/subagent mechanism with fan-out delegation and todo-based completion tracking.
+
+**New tools** — Finder (semantic codebase exploration) and Oracle (planning/review advisor), inspired by Amp Code's agentic tool design.
 
 ## Inherited from upstream
 
