@@ -3,6 +3,7 @@
 </p>
 
 <h3 align="center">A coding agent that builds itself.</h3>
+<p align="center"><em>Fork of <a href="https://github.com/anthropics/claude-code">Claude Code</a> by <a href="https://github.com/can1357">Can Boluk</a>, with a new Code Mode engine and rewritten TUI.</em></p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@nghyane/arcane"><img src="https://img.shields.io/npm/v/%40nghyane%2Farcane?style=flat&colorA=222222&label=%40nghyane%2Farcane" alt="npm"></a>
@@ -35,9 +36,13 @@ bun link --cwd packages/coding-agent
 
 </details>
 
-## What makes it different
+## Why fork?
 
-**Code as tool call** — Each turn, the LLM writes a full async program: parallel reads, conditional edits, subagent fan-out. Work that takes 3-4 turns with sequential tool-calling finishes in one.
+Code Mode replaces the core agent loop — instead of calling tools one at a time, the LLM writes a JavaScript program that orchestrates everything in a single turn. This is an architectural change too large for an upstream PR, so Arcane lives as its own project.
+
+## What's new in Arcane
+
+**Code Mode engine** — Each turn, the LLM writes a full async program: parallel reads, conditional edits, subagent fan-out. Work that takes 3-4 turns with sequential tool-calling finishes in one.
 
 ```javascript
 async () => {
@@ -55,11 +60,15 @@ async () => {
 }
 ```
 
+**Rewritten TUI** — Differential rendering, theming, Nerd Font support. No Electron, no browser.
+
+## Inherited from upstream
+
 **Hashline editing** — Edits anchor to content-derived hash tags, not line numbers. They survive concurrent modification, formatting, and reordering.
 
-**Terminal-native TUI** — Differential rendering, theming, Nerd Font support. No Electron, no browser.
-
 **TypeScript + Rust** — Bun for the runtime, Rust for performance-critical text and grep operations.
+
+**Multi-provider LLM client** — 25+ providers through OAuth or API keys.
 
 ## Providers
 
