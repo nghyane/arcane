@@ -175,8 +175,6 @@ export interface ToolSession {
 	artifactManager?: ArtifactManager;
 	/** Get artifacts directory for artifact:// URLs and $ARTIFACTS env var */
 	getArtifactsDir?: () => string | null;
-	/** Get session spawns */
-	getSessionSpawns: () => string | null;
 	/** Get resolved model string if explicitly set for this session */
 	getModelString?: () => string | undefined;
 	/** Get the current session model string, regardless of how it was chosen */

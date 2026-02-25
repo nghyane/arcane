@@ -22,6 +22,7 @@ import type { OutputMeta } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { resolveToCwd } from "./path-utils";
 import { formatBytes, replaceTabs, wrapBrackets } from "./render-utils";
+import { registerRenderer } from "./renderers";
 import { ToolAbortError, ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 
@@ -341,3 +342,5 @@ export const bashToolRenderer = {
 	mergeCallAndResult: true,
 	inline: true,
 };
+
+registerRenderer("bash", bashToolRenderer);

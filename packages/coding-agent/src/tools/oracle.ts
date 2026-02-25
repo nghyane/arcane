@@ -1,4 +1,6 @@
 import { Type } from "@sinclair/typebox";
+import { createUnifiedSubagentRenderer } from "../task/render";
+import { buildSubagentRenderConfig, registerRenderer } from "./renderers";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -35,6 +37,15 @@ export const oracleConfig: SubagentConfig<typeof schema.properties> = {
 	tmpPrefix: "arc-oracle-",
 	buildTask,
 	buildDescription: p => (p.task as string).slice(0, 80),
+	buildContextLine: p => {
+		const parts: string[] = [];
+		if (p.context) parts.push(`Context: ${String(p.context).split("\n")[0].slice(0, 40)}`);
+		const files = p.files as string[] | undefined;
+		if (files?.length) parts.push(`${files.length} file${files.length > 1 ? "s" : ""}`);
+		return parts.length > 0 ? parts.join(" · ") : null;
+	},
 	toolDescription: "Strategic advisor for planning, debugging strategy, and design review — read-only, no changes",
 	allowedTools: ["read", "grep", "find", "lsp"],
 };
+
+registerRenderer(oracleConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(oracleConfig)));

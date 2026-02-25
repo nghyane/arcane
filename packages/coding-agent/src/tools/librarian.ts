@@ -1,4 +1,6 @@
 import { Type } from "@sinclair/typebox";
+import { createUnifiedSubagentRenderer } from "../task/render";
+import { buildSubagentRenderConfig, registerRenderer } from "./renderers";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -29,5 +31,11 @@ export const librarianConfig: SubagentConfig<typeof schema.properties> = {
 	tmpPrefix: "arc-librarian-",
 	buildTask,
 	buildDescription: p => (p.query as string).slice(0, 80),
+	buildContextLine: p => {
+		if (!p.context) return null;
+		return `Context: ${String(p.context).split("\n")[0].slice(0, 60)}`;
+	},
 	toolDescription: "Explore remote GitHub repositories — cross-repo architecture, code search, history",
 };
+
+registerRenderer(librarianConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(librarianConfig)));

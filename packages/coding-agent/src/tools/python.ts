@@ -18,6 +18,7 @@ import type { OutputMeta } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { resolveToCwd } from "./path-utils";
 import { replaceTabs, shortenPath, ToolUIKit, truncateToWidth } from "./render-utils";
+import { registerRenderer } from "./renderers";
 import { ToolAbortError, ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 
@@ -1087,3 +1088,5 @@ export const pythonToolRenderer = {
 	mergeCallAndResult: true,
 	inline: true,
 };
+
+registerRenderer("python", pythonToolRenderer);

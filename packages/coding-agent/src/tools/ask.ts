@@ -23,6 +23,7 @@ import { type Theme, theme } from "../modes/theme/theme";
 import { renderStatusLine } from "../tui";
 import type { ToolSession } from ".";
 import { ToolUIKit } from "./render-utils";
+import { registerRenderer } from "./renderers";
 
 // =============================================================================
 // Types
@@ -517,3 +518,5 @@ export const askToolRenderer = {
 		return new Text(text, 0, 0);
 	},
 };
+
+registerRenderer("ask", askToolRenderer);

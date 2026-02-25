@@ -30,6 +30,7 @@ import { applyListLimit } from "./list-limit";
 import type { OutputMeta } from "./output-meta";
 import { resolveReadPath, resolveToCwd } from "./path-utils";
 import { formatAge, shortenPath, wrapBrackets } from "./render-utils";
+import { registerRenderer } from "./renderers";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
 import { toolResult } from "./tool-result";
 
@@ -1183,3 +1184,5 @@ export const readToolRenderer = {
 	},
 	mergeCallAndResult: true,
 };
+
+registerRenderer("read", readToolRenderer);

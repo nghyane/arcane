@@ -1,4 +1,6 @@
 import { Type } from "@sinclair/typebox";
+import { createUnifiedSubagentRenderer } from "../task/render";
+import { buildSubagentRenderConfig, registerRenderer } from "./renderers";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -36,6 +38,15 @@ export const reviewerConfig: SubagentConfig<typeof schema.properties> = {
 	tmpPrefix: "arc-review-",
 	buildTask,
 	buildDescription: p => (p.diff_description as string).slice(0, 80),
+	buildContextLine: p => {
+		const parts: string[] = [];
+		const files = p.files as string[] | undefined;
+		if (files?.length) parts.push(`${files.length} file${files.length > 1 ? "s" : ""}`);
+		if (p.instructions) parts.push(String(p.instructions).slice(0, 50));
+		return parts.length > 0 ? parts.join(" · ") : null;
+	},
 	toolDescription: "Review code changes for correctness, style, and potential issues",
 	allowedTools: ["read", "grep", "find", "lsp", "bash", "github"],
 };
+
+registerRenderer(reviewerConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(reviewerConfig)));

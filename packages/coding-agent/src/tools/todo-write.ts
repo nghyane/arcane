@@ -11,6 +11,7 @@ import type { Theme } from "../modes/theme/theme";
 import type { ToolSession } from "../sdk";
 import { renderStatusLine, renderTreeList } from "../tui";
 import { PREVIEW_LIMITS } from "./render-utils";
+import { registerRenderer } from "./renderers";
 
 const todoWriteSchema = Type.Object({
 	todos: Type.Array(
@@ -212,3 +213,5 @@ export const todoWriteToolRenderer = {
 	},
 	mergeCallAndResult: true,
 };
+
+registerRenderer("todo_write", todoWriteToolRenderer);

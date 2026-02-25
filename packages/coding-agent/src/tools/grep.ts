@@ -1,6 +1,5 @@
 import * as path from "node:path";
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
-
 import { type GrepResult, grep } from "@nghyane/arcane-natives";
 import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
@@ -16,6 +15,7 @@ import type { ToolSession } from ".";
 import type { OutputMeta } from "./output-meta";
 import { resolveToCwd } from "./path-utils";
 import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "./render-utils";
+import { registerRenderer } from "./renderers";
 import { ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 
@@ -479,3 +479,5 @@ export const grepToolRenderer = {
 	},
 	mergeCallAndResult: true,
 };
+
+registerRenderer("grep", grepToolRenderer);

@@ -1,4 +1,6 @@
 import { Type } from "@sinclair/typebox";
+import { createUnifiedSubagentRenderer } from "../task/render";
+import { buildSubagentRenderConfig, registerRenderer } from "./renderers";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -21,3 +23,5 @@ export const exploreConfig: SubagentConfig<typeof schema.properties> = {
 	passContext: false,
 	allowedTools: ["read", "grep", "find", "lsp", "bash"],
 };
+
+registerRenderer(exploreConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(exploreConfig)));

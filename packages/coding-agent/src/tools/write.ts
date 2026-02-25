@@ -26,6 +26,7 @@ import {
 	shortenPath,
 	ToolUIKit,
 } from "./render-utils";
+import { registerRenderer } from "./renderers";
 
 const writeSchema = Type.Object({
 	path: Type.String({ description: "Path to the file to write (relative or absolute)" }),
@@ -269,3 +270,5 @@ export const writeToolRenderer = {
 	},
 	mergeCallAndResult: true,
 };
+
+registerRenderer("write", writeToolRenderer);

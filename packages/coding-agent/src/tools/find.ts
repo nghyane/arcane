@@ -24,6 +24,7 @@ import { applyListLimit } from "./list-limit";
 import type { OutputMeta } from "./output-meta";
 import { resolveToCwd } from "./path-utils";
 import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "./render-utils";
+import { registerRenderer } from "./renderers";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
 import { toolResult } from "./tool-result";
 
@@ -535,3 +536,5 @@ export const findToolRenderer = {
 	},
 	mergeCallAndResult: true,
 };
+
+registerRenderer("find", findToolRenderer);

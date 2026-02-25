@@ -9,19 +9,9 @@ import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import { logger } from "@nghyane/arcane-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import { lspToolRenderer } from "../lsp/render";
 import type { Theme } from "../modes/theme/theme";
-import { editToolRenderer } from "../patch";
-import { renderResult as renderTaskResult, taskToolRenderer } from "../task/render";
+import type { SubagentRenderConfig } from "../task/render";
 import { renderStatusLine } from "../tui";
-import { webSearchToolRenderer } from "../web/search/render";
-import { askToolRenderer } from "./ask";
-import { bashToolRenderer } from "./bash";
-import { calculatorToolRenderer } from "./calculator";
-import { exploreConfig } from "./explore";
-import { fetchToolRenderer } from "./fetch";
-import { findToolRenderer } from "./find";
-import { grepToolRenderer } from "./grep";
 import { BUILTIN_TOOLS } from "./index";
 import {
 	formatArgsInline,
@@ -33,18 +23,8 @@ import {
 	JSON_TREE_SCALAR_LEN_EXPANDED,
 	renderJsonTreeLines,
 } from "./json-tree";
-import { librarianConfig } from "./librarian";
-import { notebookToolRenderer } from "./notebook";
-import { oracleConfig } from "./oracle";
-import { pythonToolRenderer } from "./python";
-import { readToolRenderer } from "./read";
-import { formatExpandHint, replaceTabs, truncateToWidth } from "./render-utils";
-import { reviewerConfig } from "./reviewer-tool";
-import { sshToolRenderer } from "./ssh";
+import { formatExpandHint, truncateToWidth } from "./render-utils";
 import type { SubagentConfig } from "./subagent-tool";
-import { todoWriteToolRenderer } from "./todo-write";
-import { undoEditToolRenderer } from "./undo-edit";
-import { writeToolRenderer } from "./write";
 
 export type ToolRenderer = {
 	renderCall: (args: unknown, options: RenderResultOptions, theme: Theme) => Component;
@@ -175,55 +155,17 @@ const defaultRenderer: ToolRenderer = {
 	},
 };
 
-function createSubagentRenderer(config: SubagentConfig): ToolRendererInput {
+export function buildSubagentRenderConfig(config: SubagentConfig): SubagentRenderConfig {
 	return {
-		renderCall(args: unknown, _options: RenderResultOptions, theme: Theme): Component {
-			const params = (args ?? {}) as Record<string, unknown>;
-			const desc = truncateToWidth(replaceTabs(config.buildDescription(params)), 80);
-			return new Text(renderStatusLine({ icon: "pending", title: config.label, description: desc }, theme), 0, 0);
-		},
-		renderResult: renderTaskResult,
-		mergeCallAndResult: true,
+		label: config.label,
+		getDescription: args => config.buildDescription(args),
+		getContextLine: config.buildContextLine ? args => config.buildContextLine!(args) : undefined,
 	};
 }
-
-const subagentConfigs: SubagentConfig[] = [exploreConfig, librarianConfig, oracleConfig, reviewerConfig];
 
 // --- Registry ---
 
 const rendererMap = new Map<string, ToolRenderer>();
-
-function registerBuiltins(): void {
-	const builtins: Array<[string, ToolRendererInput]> = [
-		["ask", askToolRenderer],
-		["bash", bashToolRenderer],
-		["python", pythonToolRenderer],
-		["calc", calculatorToolRenderer],
-		["edit", editToolRenderer],
-		["find", findToolRenderer],
-		["grep", grepToolRenderer],
-		["lsp", lspToolRenderer],
-		["notebook", notebookToolRenderer],
-		["read", readToolRenderer],
-		["ssh", sshToolRenderer],
-		["task", taskToolRenderer],
-		["todo_write", todoWriteToolRenderer],
-		["undo_edit", undoEditToolRenderer],
-		["fetch", fetchToolRenderer],
-		["web_search", webSearchToolRenderer],
-		["write", writeToolRenderer],
-	];
-
-	for (const [name, renderer] of builtins) {
-		rendererMap.set(name, renderer as ToolRenderer);
-	}
-
-	for (const config of subagentConfigs) {
-		rendererMap.set(config.name, createSubagentRenderer(config));
-	}
-}
-
-registerBuiltins();
 
 function validateRendererCoverage(): void {
 	if (process.env.NODE_ENV === "production") return;

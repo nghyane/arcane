@@ -17,6 +17,7 @@ import type { ToolSession } from ".";
 import type { OutputMeta } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { formatBytes, wrapBrackets } from "./render-utils";
+import { registerRenderer } from "./renderers";
 import { ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 
@@ -319,3 +320,5 @@ export const sshToolRenderer = {
 	},
 	mergeCallAndResult: true,
 };
+
+registerRenderer("ssh", sshToolRenderer);

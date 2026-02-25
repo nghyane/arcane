@@ -21,6 +21,7 @@ import { applyListLimit } from "./list-limit";
 import type { OutputMeta } from "./output-meta";
 import { allocateOutputArtifact } from "./output-utils";
 import { formatExpandHint } from "./render-utils";
+import { registerRenderer } from "./renderers";
 import { ToolAbortError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 
@@ -1085,3 +1086,5 @@ export const fetchToolRenderer = {
 	renderResult: renderFetchResult,
 	mergeCallAndResult: true,
 };
+
+registerRenderer("fetch", fetchToolRenderer);

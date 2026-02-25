@@ -15,6 +15,7 @@ import type { ToolSession } from ".";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
 import { resolveToCwd } from "./path-utils";
 import { getDiffStats, replaceTabs, shortenPath, ToolUIKit } from "./render-utils";
+import { registerRenderer } from "./renderers";
 import { ToolError } from "./tool-errors";
 import { popUndo } from "./undo-history";
 
@@ -139,3 +140,5 @@ export const undoEditToolRenderer = {
 		};
 	},
 };
+
+registerRenderer("undo_edit", undoEditToolRenderer);

@@ -7,6 +7,7 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, renderTreeList, truncateToWidth } from "../tui";
 import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS, TRUNCATE_LENGTHS } from "./render-utils";
+import { registerRenderer } from "./renderers";
 
 // =============================================================================
 // Token Types
@@ -528,3 +529,5 @@ export const calculatorToolRenderer = {
 	},
 	mergeCallAndResult: true,
 };
+
+registerRenderer("calc", calculatorToolRenderer);
