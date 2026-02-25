@@ -18,7 +18,6 @@ function createSession(
 		cwd,
 		hasUI: false,
 		getSessionFile: () => sessionFile,
-		getSessionSpawns: () => null,
 		settings: Settings.isolated({ "python.toolMode": "ipy-only", ...overrides }),
 	};
 }

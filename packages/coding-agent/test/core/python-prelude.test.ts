@@ -46,7 +46,6 @@ describe.skipIf(!shouldRun)("PYTHON_PRELUDE integration", () => {
 			cwd: getProjectDir(),
 			hasUI: false,
 			getSessionFile: () => null,
-			getSessionSpawns: () => null,
 			settings: Settings.isolated({
 				"lsp.diagnosticsOnWrite": false,
 				"python.toolMode": "ipy-only",

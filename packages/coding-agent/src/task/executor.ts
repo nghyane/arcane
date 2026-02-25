@@ -279,12 +279,9 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 
 	const settings = options.settings ?? Settings.isolated();
 	// Sub-agents never get the task tool — no recursive nesting
-	let toolNames: string[] | undefined;
-	if (agent.tools && agent.tools.length > 0) {
-		toolNames = agent.tools.filter(name => name !== "task");
-	}
+	let toolNames = agent.tools.filter(name => name !== "task");
 	const pythonToolMode = settings.get("python.toolMode") ?? "both";
-	if (toolNames?.includes("exec")) {
+	if (toolNames.includes("exec")) {
 		const expanded = toolNames.filter(name => name !== "exec");
 		if (pythonToolMode === "bash-only") {
 			expanded.push("bash");
@@ -693,7 +690,6 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 					}),
 				sessionManager,
 				hasUI: false,
-				spawns: "",
 				isSubagent: true,
 				parentTaskPrefix: id,
 				enableLsp: lspEnabled,

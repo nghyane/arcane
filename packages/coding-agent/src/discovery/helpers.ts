@@ -10,6 +10,7 @@ import { readFile } from "../capability/fs";
 import { parseRuleConditionAndScope, type Rule, type RuleFrontmatter } from "../capability/rule";
 import type { Skill, SkillFrontmatter } from "../capability/skill";
 import type { LoadContext, LoadResult, SourceMeta } from "../capability/types";
+import type { AgentKind } from "../task/types";
 import { parseFrontmatter } from "../utils/frontmatter";
 import type { IgnoreMatcher } from "../utils/ignore-files";
 
@@ -215,9 +216,17 @@ export function parseModelList(value: unknown): string[] | undefined {
 export interface ParsedAgentFields {
 	name: string;
 	description: string;
-	tools?: string[];
+	tools: string[];
 	model?: string[];
 	thinkingLevel?: ThinkingLevel;
+	kind?: AgentKind;
+}
+
+const VALID_AGENT_KINDS: readonly string[] = ["local", "remote", "hybrid", "reasoning"];
+
+function parseAgentKind(value: unknown): AgentKind | undefined {
+	if (typeof value === "string" && VALID_AGENT_KINDS.includes(value)) return value as AgentKind;
+	return undefined;
 }
 
 /**
@@ -232,12 +241,13 @@ export function parseAgentFields(frontmatter: Record<string, unknown>): ParsedAg
 		return null;
 	}
 
-	const tools = parseArrayOrCSV(frontmatter.tools);
+	const tools = parseArrayOrCSV(frontmatter.tools) ?? [];
 
 	const model = parseModelList(frontmatter.model);
 	const thinkingLevel = parseThinkingLevel(frontmatter);
+	const kind = parseAgentKind(frontmatter.kind);
 
-	return { name, description, tools, model, thinkingLevel };
+	return { name, description, tools, model, thinkingLevel, kind };
 }
 
 async function globIf(

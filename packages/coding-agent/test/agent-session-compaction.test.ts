@@ -51,7 +51,6 @@ describe.skipIf(!e2eApiKey("ANTHROPIC_API_KEY"))("AgentSession compaction e2e", 
 			cwd: tempDir,
 			hasUI: false,
 			getSessionFile: () => null,
-			getSessionSpawns: () => "*",
 			settings: Settings.isolated(),
 		};
 		const tools = await createTools(toolSession);

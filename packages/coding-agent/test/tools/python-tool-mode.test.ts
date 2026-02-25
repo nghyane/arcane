@@ -7,7 +7,6 @@ function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
 		cwd: "/tmp/test",
 		hasUI: false,
 		getSessionFile: () => null,
-		getSessionSpawns: () => "*",
 		settings: Settings.isolated({
 			"lsp.formatOnWrite": true,
 			"bashInterceptor.enabled": true,

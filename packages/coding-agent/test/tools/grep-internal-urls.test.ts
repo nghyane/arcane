@@ -34,7 +34,6 @@ describe("GrepTool internal URL resolution", () => {
 			cwd: tmpDir,
 			hasUI: false,
 			getSessionFile: () => null,
-			getSessionSpawns: () => "*",
 			settings: Settings.isolated(),
 			...overrides,
 		};

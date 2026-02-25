@@ -6,6 +6,9 @@ import { type Static, Type } from "@sinclair/typebox";
 /** Source of an agent definition */
 export type AgentSource = "bundled" | "user" | "project";
 
+/** Discriminant for agent capability profile */
+export type AgentKind = "local" | "remote" | "hybrid" | "reasoning";
+
 const parseNumber = (value: string | undefined, defaultValue: number): number => {
 	if (!value) return defaultValue;
 	const number = Number.parseInt(value, 10);
@@ -56,6 +59,13 @@ export const taskSchema = Type.Object({
 			description: "Skill names to preload into the subagent.",
 		}),
 	),
+	complexity: Type.Optional(
+		Type.Union([Type.Literal("low"), Type.Literal("high")], {
+			description:
+				"Task complexity. 'low' for mechanical/rote changes (rename, add import, update config). 'high' for changes requiring reasoning (refactors, bug fixes, new features). Default: high.",
+			default: "high",
+		}),
+	),
 });
 
 export type TaskSchema = typeof taskSchema;
@@ -63,10 +73,11 @@ export type TaskParams = Static<TaskSchema>;
 
 /** Agent definition (bundled or discovered) */
 export interface AgentDefinition {
+	kind: AgentKind;
 	name: string;
 	description: string;
 	systemPrompt: string;
-	tools?: string[];
+	tools: string[];
 	model?: string[];
 	thinkingLevel?: ThinkingLevel;
 	source: AgentSource;

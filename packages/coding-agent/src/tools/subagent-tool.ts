@@ -45,6 +45,8 @@ export interface SubagentConfig<T extends TProperties = TProperties> {
 	allowedTools: string[];
 	/** One-line tool description for model context */
 	toolDescription?: string;
+	/** Build optional context line for TUI display (shown below header). Return null to hide. */
+	buildContextLine?: (params: Record<string, unknown>) => string | null;
 }
 
 export class SubagentTool<T extends TProperties = TProperties>

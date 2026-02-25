@@ -10,7 +10,6 @@ function createSession(cwd: string): ToolSession {
 		cwd,
 		hasUI: false,
 		getSessionFile: () => `${cwd}/session-file.jsonl`,
-		getSessionSpawns: () => "*",
 		settings: Settings.isolated({
 			"lsp.formatOnWrite": true,
 			"bashInterceptor.enabled": true,

@@ -29,7 +29,6 @@ function createTestToolSession(cwd: string): ToolSession {
 		cwd,
 		hasUI: false,
 		getSessionFile: () => sessionFile,
-		getSessionSpawns: () => "*",
 		settings: Settings.isolated(),
 	};
 }

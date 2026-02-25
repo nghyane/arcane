@@ -18,9 +18,10 @@ import type { AgentDefinition, AgentSource } from "./types";
 interface AgentFrontmatter {
 	name: string;
 	description: string;
-	tools?: string[];
+	tools: string[];
 	model?: string | string[];
 	thinkingLevel?: string;
+	kind?: "local" | "remote" | "hybrid" | "reasoning";
 }
 
 interface EmbeddedAgentDef {
@@ -46,6 +47,7 @@ const EMBEDDED_AGENT_DEFS: EmbeddedAgentDef[] = [
 			name: "task",
 			description: "General-purpose subagent with full capabilities for delegated multi-step tasks",
 			model: "default",
+			kind: "hybrid",
 			tools: [
 				"ask",
 				"bash",
@@ -67,36 +69,6 @@ const EMBEDDED_AGENT_DEFS: EmbeddedAgentDef[] = [
 				"web_search",
 			],
 			thinkingLevel: "medium",
-		},
-		template: taskMd,
-	},
-	{
-		fileName: "quick_task.md",
-		frontmatter: {
-			name: "quick_task",
-			description: "Low-reasoning agent for strictly mechanical updates or data collection only",
-			model: "arcane/fast",
-			tools: [
-				"ask",
-				"bash",
-				"puppeteer",
-				"calc",
-				"fetch",
-				"github",
-				"grep",
-				"notebook",
-				"python",
-				"ssh",
-				"todo_write",
-				"undo_edit",
-				"write",
-				"read",
-				"find",
-				"edit",
-				"lsp",
-				"web_search",
-			],
-			thinkingLevel: "minimal",
 		},
 		template: taskMd,
 	},
@@ -149,6 +121,7 @@ export function parseAgent(
 	}
 	return {
 		...fields,
+		kind: fields.kind ?? "hybrid",
 		systemPrompt: body,
 		source,
 		filePath,

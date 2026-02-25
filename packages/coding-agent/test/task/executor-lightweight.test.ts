@@ -84,9 +84,11 @@ describe("runAgent lightweight fork", () => {
 
 	const baseAgent: AgentDefinition = {
 		name: "task",
+		kind: "hybrid",
 		description: "test",
 		systemPrompt: "test",
 		source: "bundled",
+		tools: [],
 	};
 
 	const baseOptions = {

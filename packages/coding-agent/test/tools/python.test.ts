@@ -27,7 +27,6 @@ function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
 		cwd: tempDir.path(),
 		hasUI: false,
 		getSessionFile: () => null,
-		getSessionSpawns: () => "*",
 		settings: Settings.isolated(),
 		...overrides,
 	};

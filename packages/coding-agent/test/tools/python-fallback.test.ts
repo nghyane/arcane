@@ -8,7 +8,6 @@ function createTestSession(overrides: Partial<ToolSession> = {}): ToolSession {
 		cwd: "/tmp/test",
 		hasUI: false,
 		getSessionFile: () => null,
-		getSessionSpawns: () => "*",
 		settings: Settings.isolated({}),
 		...overrides,
 	};

@@ -43,7 +43,6 @@ describe("AgentSession newSession clears todo artifacts", () => {
 			cwd: tempDir,
 			hasUI: false,
 			getSessionFile: () => sessionManager.getSessionFile() ?? null,
-			getSessionSpawns: () => "*",
 			settings,
 		};
 
@@ -84,7 +83,6 @@ describe("AgentSession newSession clears todo artifacts", () => {
 			cwd: tempDir,
 			hasUI: false,
 			getSessionFile: () => sessionManager.getSessionFile() ?? null,
-			getSessionSpawns: () => "*",
 			settings: session.settings,
 		});
 

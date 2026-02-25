@@ -81,7 +81,6 @@ export async function createTestSession(options: TestSessionOptions = {}): Promi
 		cwd: tempDir,
 		hasUI: false,
 		getSessionFile: () => null,
-		getSessionSpawns: () => "*",
 		settings: Settings.isolated(options.settingsOverrides),
 	};
 	const tools = await createTools(toolSession);
