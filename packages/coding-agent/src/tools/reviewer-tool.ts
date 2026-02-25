@@ -46,7 +46,6 @@ export const reviewerConfig: SubagentConfig<typeof schema.properties> = {
 		return parts.length > 0 ? parts.join(" · ") : null;
 	},
 	toolDescription: "Review code changes for correctness, style, and potential issues",
-	allowedTools: ["read", "grep", "find", "lsp", "bash", "github"],
 };
 
 registerRenderer(reviewerConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(reviewerConfig)));

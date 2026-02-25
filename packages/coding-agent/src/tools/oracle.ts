@@ -45,7 +45,6 @@ export const oracleConfig: SubagentConfig<typeof schema.properties> = {
 		return parts.length > 0 ? parts.join(" · ") : null;
 	},
 	toolDescription: "Strategic advisor for planning, debugging strategy, and design review — read-only, no changes",
-	allowedTools: ["read", "grep", "find", "lsp"],
 };
 
 registerRenderer(oracleConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(oracleConfig)));
