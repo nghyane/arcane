@@ -551,16 +551,6 @@ export const SETTINGS_SCHEMA = {
 	// ─────────────────────────────────────────────────────────────────────────
 	// Task tool settings
 	// ─────────────────────────────────────────────────────────────────────────
-	"task.maxConcurrency": {
-		type: "number",
-		default: 32,
-		ui: {
-			tab: "tools",
-			label: "Task max concurrency",
-			description: "Concurrent limit for subagents",
-			submenu: true,
-		},
-	},
 	"task.disabledAgents": {
 		type: "array",
 		default: [] as string[],

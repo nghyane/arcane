@@ -40,7 +40,6 @@ export function createCommitTools(options: CommitToolOptions): Array<CustomTool<
 				authStorage: options.authStorage,
 				modelRegistry: options.modelRegistry,
 				settings: options.settings,
-				spawns: options.spawns,
 				state: options.state,
 			}),
 		);

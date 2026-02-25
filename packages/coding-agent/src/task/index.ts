@@ -20,12 +20,6 @@ import { type AgentProgress, type TaskParams, type TaskSchema, type TaskToolDeta
 
 // Re-export types and utilities
 export { loadBundledAgents as BUNDLED_AGENTS } from "./agents";
-export {
-	type BatchOptions,
-	type BatchResult,
-	type BatchTask,
-	runTaskBatch,
-} from "./batch";
 export { discoverAgents, getAgent } from "./discovery";
 export { AgentOutputManager } from "./output-manager";
 export type {

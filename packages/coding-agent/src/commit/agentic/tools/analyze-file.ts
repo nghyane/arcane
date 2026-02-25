@@ -7,11 +7,11 @@ import { renderPromptTemplate } from "../../../config/prompt-templates";
 import type { Settings } from "../../../config/settings";
 import type { CustomTool } from "../../../extensibility/custom-tools/types";
 import type { AuthStorage } from "../../../session/auth-storage";
-import { runTaskBatch } from "../../../task/batch";
-import { getFilePriority } from "./git-file-diff";
+import { getBundledAgent } from "../../../task/agents";
+import { runAgent } from "../../../task/executor";
 
 const analyzeFileSchema = Type.Object({
-	files: Type.Array(Type.String({ description: "File path" }), { minItems: 1 }),
+	file: Type.String({ description: "File path to analyze" }),
 	goal: Type.Optional(Type.String({ description: "Optional analysis focus" })),
 });
 
@@ -20,54 +20,55 @@ export function createAnalyzeFileTool(options: {
 	authStorage: AuthStorage;
 	modelRegistry: ModelRegistry;
 	settings: Settings;
-	spawns: string;
 	state: CommitAgentState;
 }): CustomTool<typeof analyzeFileSchema> {
 	return {
-		name: "analyze_files",
-		label: "Analyze Files",
-		description: "Spawn quick_task agents to analyze files.",
+		name: "analyze_file",
+		label: "Analyze File",
+		description: "Spawn a quick_task agent to analyze a single file.",
 		parameters: analyzeFileSchema,
 		async execute(_toolCallId, params, _onUpdate, ctx, signal) {
 			const numstat = options.state.overview?.numstat ?? [];
-			const tasks = params.files.map((file, index) => {
-				const relatedFiles = formatRelatedFiles(params.files, file, numstat);
-				const prompt = renderPromptTemplate(analyzeFilePrompt, {
-					file,
-					goal: params.goal,
-					related_files: relatedFiles,
-				});
-				return {
-					id: `AnalyzeFile${index + 1}`,
-					description: `Analyze ${file}`,
-					task: prompt,
-				};
+			const relatedFiles = buildRelatedFiles(params.file, numstat);
+			const prompt = renderPromptTemplate(analyzeFilePrompt, {
+				file: params.file,
+				goal: params.goal,
+				related_files: relatedFiles,
 			});
 
+			const agent = getBundledAgent("quick_task");
+			if (!agent) {
+				return {
+					content: [{ type: "text", text: "quick_task agent not found." }],
+					details: {},
+				};
+			}
+
 			try {
-				const { results } = await runTaskBatch({
+				const result = await runAgent({
 					cwd: options.cwd,
-					agentName: "quick_task",
-					tasks,
+					agent,
+					task: prompt,
+					description: `Analyze ${params.file}`,
+					index: 0,
+					id: "AnalyzeFile",
 					sessionFile: ctx.sessionManager.getSessionFile() ?? null,
+					persistArtifacts: false,
+					enableLsp: false,
+					isSubagent: true,
 					signal,
 					authStorage: options.authStorage,
 					modelRegistry: options.modelRegistry,
 					settings: options.settings,
 				});
 
-				const output = results
-					.filter(Boolean)
-					.map(r => r!.output.trim())
-					.filter(Boolean)
-					.join("\n\n---\n\n");
-
+				const output = result.output.trim();
 				return {
 					content: [{ type: "text", text: output || "(no output)" }],
 					details: {},
 				};
 			} catch (err) {
-				const message = err instanceof Error ? err.message : "Task batch failed";
+				const message = err instanceof Error ? err.message : "Analysis failed";
 				return {
 					content: [{ type: "text", text: message }],
 					details: {},
@@ -77,42 +78,14 @@ export function createAnalyzeFileTool(options: {
 	};
 }
 
-function inferFileType(path: string): string {
-	const priority = getFilePriority(path);
-	const lowerPath = path.toLowerCase();
-
-	if (priority === -100) return "binary file";
-	if (priority === 10) return "test file";
-	if (lowerPath.endsWith(".md") || lowerPath.endsWith(".txt")) return "documentation";
-	if (
-		lowerPath.endsWith(".json") ||
-		lowerPath.endsWith(".yaml") ||
-		lowerPath.endsWith(".yml") ||
-		lowerPath.endsWith(".toml")
-	)
-		return "configuration";
-	if (priority === 70) return "dependency manifest";
-	if (priority === 80) return "script";
-	if (priority === 100) return "implementation";
-
-	return "source file";
-}
-
-function formatRelatedFiles(files: string[], currentFile: string, numstat: NumstatEntry[]): string | undefined {
-	const others = files.filter(file => file !== currentFile);
+function buildRelatedFiles(currentFile: string, numstat: NumstatEntry[]): string | undefined {
+	const others = numstat.filter(e => e.path !== currentFile);
 	if (others.length === 0) return undefined;
 
-	const numstatMap = new Map(numstat.map(entry => [entry.path, entry]));
-
-	const lines = others.map(file => {
-		const entry = numstatMap.get(file);
-		const fileType = inferFileType(file);
-		if (entry) {
-			const lineCount = entry.additions + entry.deletions;
-			return `- ${file} (${lineCount} lines): ${fileType}`;
-		}
-		return `- ${file}: ${fileType}`;
+	const lines = others.map(e => {
+		const changes = e.additions + e.deletions;
+		return changes > 0 ? `- ${e.path} (+${e.additions}/-${e.deletions})` : `- ${e.path}`;
 	});
 
-	return `OTHER FILES IN THIS CHANGE:\n${lines.join("\n")}`;
+	return lines.join("\n");
 }
