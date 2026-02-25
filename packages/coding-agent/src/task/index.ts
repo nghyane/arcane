@@ -76,7 +76,10 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 			};
 		}
 
-		const modelOverride = this.session.getActiveModelString?.() ?? this.session.getModelString?.();
+		const isLowComplexity = params.complexity === "low";
+		const modelOverride = isLowComplexity
+			? "arcane/fast"
+			: (this.session.getActiveModelString?.() ?? this.session.getModelString?.());
 		const sessionFile = this.session.getSessionFile();
 		const artifactsDir = sessionFile ? sessionFile.slice(0, -6) : null;
 		const tempArtifactsDir = artifactsDir ? null : path.join(os.tmpdir(), `arcane-task-${Snowflake.next()}`);
@@ -175,6 +178,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				id: uniqueId,
 				isSubagent: true,
 				modelOverride,
+				thinkingLevel: isLowComplexity ? "minimal" : undefined,
 				sessionFile,
 				persistArtifacts: !!artifactsDir,
 				artifactsDir: effectiveArtifactsDir,
