@@ -7,6 +7,7 @@
  */
 import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
+import { logger } from "@nghyane/arcane-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { lspToolRenderer } from "../lsp/render";
 import type { Theme } from "../modes/theme/theme";
@@ -21,6 +22,7 @@ import { exploreConfig } from "./explore";
 import { fetchToolRenderer } from "./fetch";
 import { findToolRenderer } from "./find";
 import { grepToolRenderer } from "./grep";
+import { BUILTIN_TOOLS } from "./index";
 import {
 	formatArgsInline,
 	JSON_TREE_MAX_DEPTH_COLLAPSED,
@@ -222,6 +224,17 @@ function registerBuiltins(): void {
 }
 
 registerBuiltins();
+
+function validateRendererCoverage(): void {
+	if (process.env.NODE_ENV === "production") return;
+	const toolNames = Object.keys(BUILTIN_TOOLS);
+	const missing = toolNames.filter(name => !rendererMap.has(name));
+	if (missing.length > 0) {
+		logger.warn("Tools without custom renderers (using default)", { tools: missing });
+	}
+}
+
+queueMicrotask(validateRendererCoverage);
 
 /**
  * Register a renderer for a tool. Overwrites any existing renderer for that name.

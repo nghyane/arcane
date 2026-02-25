@@ -41,6 +41,8 @@ export interface SubagentConfig<T extends TProperties = TProperties> {
 	buildDescription: (params: Record<string, unknown>) => string;
 	/** Whether to pass compact conversation context to subagent (default: true) */
 	passContext?: boolean;
+	/** Allowlist of tool names this subagent can use */
+	allowedTools: string[];
 	/** One-line tool description for model context */
 	toolDescription?: string;
 }
@@ -125,7 +127,7 @@ export class SubagentTool<T extends TProperties = TProperties>
 
 			const result = await runAgent({
 				cwd: session.cwd,
-				agent,
+				agent: { ...agent, tools: this.#config.allowedTools },
 				task,
 				description: buildDescription(params),
 				index: 0,

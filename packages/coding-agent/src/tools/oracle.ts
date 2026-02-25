@@ -36,4 +36,5 @@ export const oracleConfig: SubagentConfig<typeof schema.properties> = {
 	buildTask,
 	buildDescription: p => (p.task as string).slice(0, 80),
 	toolDescription: "Strategic advisor for planning, debugging strategy, and design review — read-only, no changes",
+	allowedTools: ["read", "grep", "find", "lsp"],
 };

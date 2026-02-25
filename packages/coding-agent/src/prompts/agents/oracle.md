@@ -1,7 +1,7 @@
 ---
 name: oracle
 description: "Cross-model reasoning advisor for reviews, architecture, debugging, and planning"
-tools: read, grep, find, bash, fetch, web_search
+tools: read, grep, find, lsp
 model: arcane/oracle
 thinking-level: high
 ---

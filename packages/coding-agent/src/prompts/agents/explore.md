@@ -1,7 +1,7 @@
 ---
 name: explore
 description: Fast read-only codebase scout returning compressed context for handoff
-tools: read, grep, find
+tools: read, grep, find, lsp, bash
 model: arcane/fast
 thinking-level: minimal
 ---

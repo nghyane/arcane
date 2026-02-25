@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: "Code review specialist for quality/security analysis"
-tools: read, grep, find, bash
+tools: read, grep, find, lsp, bash, github
 spawns: explore, task
 model: arcane/reviewer
 thinking-level: high

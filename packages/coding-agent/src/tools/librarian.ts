@@ -25,6 +25,7 @@ export const librarianConfig: SubagentConfig<typeof schema.properties> = {
 	agent: "librarian",
 	schema,
 	progressText: "Exploring repositories...",
+	allowedTools: ["github", "web_search", "fetch"],
 	tmpPrefix: "arc-librarian-",
 	buildTask,
 	buildDescription: p => (p.query as string).slice(0, 80),

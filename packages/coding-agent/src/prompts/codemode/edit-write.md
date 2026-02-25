@@ -1,0 +1,4 @@
+### Edit & Write
+{{#if IS_HASHLINE_MODE}} **edit**: hashline mode — use `tag` from read output as line address. Ops: `set` (single line), `replace` (range first→last), `append`/`prepend`/`insert`. Content `null` = delete. Copy tags verbatim; do NOT include `LINE#HASH:` prefixes in replacement content. Batch changes to same file in one call.{{/if}}
+ **write**: new files only — use edit for existing files
+

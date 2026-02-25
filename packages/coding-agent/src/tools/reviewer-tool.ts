@@ -37,4 +37,5 @@ export const reviewerConfig: SubagentConfig<typeof schema.properties> = {
 	buildTask,
 	buildDescription: p => (p.diff_description as string).slice(0, 80),
 	toolDescription: "Review code changes for correctness, style, and potential issues",
+	allowedTools: ["read", "grep", "find", "lsp", "bash", "github"],
 };

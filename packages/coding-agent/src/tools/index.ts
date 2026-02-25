@@ -10,7 +10,7 @@ import { getPreludeDocs, warmPythonEnvironment } from "../ipy/executor";
 import { checkPythonKernelAvailability } from "../ipy/kernel";
 import { LspTool } from "../lsp";
 import { EditTool } from "../patch";
-import guidanceTemplate from "../prompts/codemode/guidance.md" with { type: "text" };
+import { guidance as guidanceTemplate } from "../prompts/codemode/guidance.js";
 import type { ArtifactManager } from "../session/artifacts";
 import { TaskTool } from "../task";
 import type { AgentOutputManager } from "../task/output-manager";
