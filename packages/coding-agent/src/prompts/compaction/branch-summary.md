@@ -21,10 +21,13 @@ Use EXACT format:
 ### Blocked
 - [Issues preventing progress]
 
+### Abandoned Approaches
+- [Approach tried and why it failed — prevents re-trying dead ends]
+
 ## Key Decisions
 - **[Decision]**: [Brief rationale]
 
 ## Next Steps
 1. [What should happen next to continue]
 
-Keep sections concise. Preserve exact file paths, function names, error messages.
+Prioritize recent work over older context. Keep sections concise. Preserve exact file paths, function names, error messages.

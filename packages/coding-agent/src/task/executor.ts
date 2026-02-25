@@ -468,23 +468,27 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 				break;
 
 			case "tool_execution_start": {
-				// Skip Code Mode sub-tool events — they inflate toolCount and corrupt currentTool tracking
-				if (event.parentToolCallId) break;
-				progress.toolCount++;
-				progress.currentTool = event.toolName;
-				progress.currentToolArgs = extractToolArgsPreview(
+				const isSubTool = !!event.parentToolCallId;
+				const toolArgs = extractToolArgsPreview(
 					(event as { toolArgs?: Record<string, unknown> }).toolArgs || event.args || {},
 				);
-				progress.currentToolStartMs = now;
-				const intent = event.intent?.trim();
-				if (intent) {
-					progress.lastIntent = intent;
+
+				if (!isSubTool) {
+					progress.toolCount++;
+					progress.currentTool = event.toolName;
+					progress.currentToolArgs = toolArgs;
+					progress.currentToolStartMs = now;
+					const intent = event.intent?.trim();
+					if (intent) {
+						progress.lastIntent = intent;
+					}
 				}
-				// Add running entry to history (capped at 50)
-				if (progress.toolHistory.length < 50) {
+
+				// Add to history — skip the "code" wrapper, only show actual tools
+				if (event.toolName !== "code" && progress.toolHistory.length < 50) {
 					progress.toolHistory.push({
 						tool: event.toolName,
-						args: progress.currentToolArgs,
+						args: toolArgs,
 						status: "running",
 					});
 				}
@@ -492,45 +496,47 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 			}
 
 			case "tool_execution_end": {
-				// Skip Code Mode sub-tool events
-				if (event.parentToolCallId) break;
+				const isSubTool = !!event.parentToolCallId;
 				const isError = !!(event as { isError?: boolean }).isError;
-				if (progress.currentTool) {
-					progress.recentTools.unshift({
-						tool: progress.currentTool,
-						args: progress.currentToolArgs || "",
-						endMs: now,
-					});
-					if (progress.recentTools.length > 5) {
-						progress.recentTools.pop();
-					}
-					// Update the last running entry in history to final status
-					for (let i = progress.toolHistory.length - 1; i >= 0; i--) {
-						if (progress.toolHistory[i].status === "running") {
-							progress.toolHistory[i].status = isError ? "error" : "success";
-							break;
-						}
+
+				// Update the last running entry in history to final status
+				for (let i = progress.toolHistory.length - 1; i >= 0; i--) {
+					if (progress.toolHistory[i].status === "running") {
+						progress.toolHistory[i].status = isError ? "error" : "success";
+						break;
 					}
 				}
-				progress.currentTool = undefined;
-				progress.currentToolArgs = undefined;
-				progress.currentToolStartMs = undefined;
 
-				// Check for registered subagent tool handler
-				const handler = subprocessToolRegistry.getHandler(event.toolName);
-				const eventArgs = (event as { args?: Record<string, unknown> }).args ?? {};
-				if (handler) {
-					// Check if handler wants to terminate the session
-					if (
-						handler.shouldTerminate?.({
-							toolName: event.toolName,
-							toolCallId: event.toolCallId,
-							args: eventArgs,
-							result: event.result,
-							isError: event.isError,
-						})
-					) {
-						requestAbort("terminate");
+				if (!isSubTool) {
+					if (progress.currentTool) {
+						progress.recentTools.unshift({
+							tool: progress.currentTool,
+							args: progress.currentToolArgs || "",
+							endMs: now,
+						});
+						if (progress.recentTools.length > 5) {
+							progress.recentTools.pop();
+						}
+					}
+					progress.currentTool = undefined;
+					progress.currentToolArgs = undefined;
+					progress.currentToolStartMs = undefined;
+
+					// Check for registered subagent tool handler
+					const handler = subprocessToolRegistry.getHandler(event.toolName);
+					const eventArgs = (event as { args?: Record<string, unknown> }).args ?? {};
+					if (handler) {
+						if (
+							handler.shouldTerminate?.({
+								toolName: event.toolName,
+								toolCallId: event.toolCallId,
+								args: eventArgs,
+								result: event.result,
+								isError: event.isError,
+							})
+						) {
+							requestAbort("terminate");
+						}
 					}
 				}
 				flushProgress = true;
