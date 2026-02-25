@@ -19,7 +19,6 @@ import {
 import type { InteractiveModeContext } from "../../modes/types";
 import { SessionManager } from "../../session/session-manager";
 import { setPreferredImageProvider, setPreferredSearchProvider } from "../../tools";
-import { AgentDashboard } from "../components/agent-dashboard";
 import { AssistantMessageComponent } from "../components/assistant-message";
 import { ExtensionDashboard } from "../components/extensions";
 import { HistorySearchComponent } from "../components/history-search";
@@ -160,28 +159,6 @@ export class SelectorController {
 	}
 
 	/**
-	 * Show the Agent Control Center dashboard.
-	 */
-	async showAgentsDashboard(): Promise<void> {
-		const activeModel = this.ctx.session.model;
-		const activeModelPattern = activeModel ? `${activeModel.provider}/${activeModel.id}` : undefined;
-		const defaultModelPattern = this.ctx.settings.getModelRole("default");
-		const dashboard = await AgentDashboard.create(getProjectDir(), this.ctx.settings, this.ctx.ui.terminal.rows, {
-			modelRegistry: this.ctx.session.modelRegistry,
-			activeModelPattern,
-			defaultModelPattern,
-		});
-		this.showSelector(done => {
-			dashboard.onClose = () => {
-				done();
-				this.ctx.ui.requestRender();
-			};
-			dashboard.onRequestRender = () => {
-				this.ctx.ui.requestRender();
-			};
-			return { component: dashboard, focus: dashboard };
-		});
-	}
 
 	/**
 	 * Handle setting changes from the settings selector.

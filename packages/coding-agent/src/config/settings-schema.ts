@@ -551,14 +551,6 @@ export const SETTINGS_SCHEMA = {
 	// ─────────────────────────────────────────────────────────────────────────
 	// Task tool settings
 	// ─────────────────────────────────────────────────────────────────────────
-	"task.disabledAgents": {
-		type: "array",
-		default: [] as string[],
-	},
-	"task.agentModelOverrides": {
-		type: "record",
-		default: {} as Record<string, string>,
-	},
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// Startup settings
@@ -952,16 +944,6 @@ export const SETTINGS_SCHEMA = {
 			submenu: true,
 		},
 	},
-
-	// ─────────────────────────────────────────────────────────────────────────
-	// Commit settings (no UI - advanced)
-	// ─────────────────────────────────────────────────────────────────────────
-	"commit.mapReduceEnabled": { type: "boolean", default: true },
-	"commit.mapReduceMinFiles": { type: "number", default: 4 },
-	"commit.mapReduceMaxFileTokens": { type: "number", default: 50000 },
-	"commit.mapReduceTimeoutMs": { type: "number", default: 120000 },
-	"commit.mapReduceMaxConcurrency": { type: "number", default: 5 },
-	"commit.changelogMaxDiffChars": { type: "number", default: 120000 },
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// Thinking budgets (no UI - advanced)
