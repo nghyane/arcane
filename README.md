@@ -42,6 +42,15 @@ bun link --cwd packages/coding-agent
 
 Code Mode replaces the core agent loop — instead of calling tools one at a time, the LLM writes a JavaScript program that orchestrates everything in a single turn. This is an architectural change too large for an upstream PR, so Arcane lives as its own project.
 
+## Design philosophy
+
+Arcane is a **lightweight coding agent**, not a general-purpose AI platform.
+
+- **Fixed tool set** — Five bundled subagents (explore, librarian, oracle, reviewer, task) cover the coding workflow. No plugin marketplace, no custom agent definitions.
+- **Code Mode over tool-calling** — The LLM writes a JS program each turn instead of calling tools sequentially. Parallelism is native, not bolted on.
+- **Depth over breadth** — Every feature serves code editing, search, or review. Features that don't earn their keep get cut.
+- **Single-turn efficiency** — Minimize round-trips. Fan out reads, edits, and subagents in one program. Task complexity (`low`/`high`) routes to the right model automatically.
+
 ## What's new in Arcane
 
 **Code Mode engine** — Each turn, the LLM writes a full async program: parallel reads, conditional edits, subagent fan-out. Work that takes 3-4 turns with sequential tool-calling finishes in one.
@@ -79,8 +88,6 @@ Arcane is built on top of [oh-my-pi](https://github.com/can1357/oh-my-pi) by Can
 **Extension system** — Themes, skills, hooks, and custom tools.
 
 **Sessions** — Branching, context compaction, and autonomous memory.
-
-**Commit tool** — AI-powered conventional commits with hunk-level staging and split commits.
 
 **TypeScript + Rust** — Bun for the runtime, Rust for performance-critical text and grep operations.
 

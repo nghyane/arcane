@@ -6,6 +6,14 @@ This repo contains multiple packages, but **`packages/coding-agent/`** is the pr
 
 **Terminology**: When the user says "agent" or asks "why is agent doing X", they mean the **coding-agent package implementation**, not you (the assistant). The coding-agent is a CLI tool that uses Claude—questions about its behavior refer to the code in `packages/coding-agent/`, not your current session.
 
+### Design Philosophy
+
+Arcane is a lightweight coding agent. Decisions follow these principles:
+
+- **Fixed subagent set** — explore (local search), librarian (remote search), oracle (reasoning), reviewer (code review), task (delegation). No custom agent discovery or user-defined agents. New capabilities go into existing agents or new bundled ones.
+- **Single source of truth** — Agent tool allowlists live in frontmatter `.md` files. No runtime overrides, no dual config.
+- **Cut what doesn't earn its keep** — If a feature adds complexity without clear value for coding workflows, remove it. Prefer removing code over adding abstraction.
+
 ### Package Structure
 
 | Package                 | Description                                          |
