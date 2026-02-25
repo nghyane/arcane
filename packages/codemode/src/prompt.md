@@ -18,14 +18,14 @@ Execute JavaScript code to accomplish tasks. Instead of calling tools individual
 - Handle errors with try/catch when needed
 - Browser and notebook are stateful singletons — call actions sequentially, not in parallel
 - Prefer smaller parallel edits over one massive sequential operation — fan out when targets are disjoint
+- Always read a file before editing it — never edit blind
 
 ## Tool Precedence
 
 - **read/grep/find/edit/write over bash** — never shell out for file operations
 - **lsp over grep** for semantic queries: definitions, references, type info, rename
 - **grep over bash** for text search
-- **explore/task over grep** for multi-round or conceptual searches
-- **librarian over explore** for architecture understanding across repos
+- **explore over grep** when you need to chain multiple greps or search by concept
 - **oracle** for planning, debugging strategy, design review — does not make changes
 
 {{guidance}}
