@@ -15,7 +15,8 @@ export type SearchProviderId =
 	| "perplexity"
 	| "gemini"
 	| "codex"
-	| "synthetic";
+	| "synthetic"
+	| "grep";
 
 /** Source returned by search (all providers) */
 export interface SearchSource {

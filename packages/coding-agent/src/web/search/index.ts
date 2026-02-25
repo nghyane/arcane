@@ -1,8 +1,8 @@
 /**
  * Unified Web Search Tool
  *
- * Single tool supporting Anthropic, Perplexity, Exa, Brave, Jina, Kimi, Gemini, Codex, Z.AI, and Synthetic
- * providers with provider-specific parameters exposed conditionally.
+ * Single tool supporting Anthropic, Perplexity, Exa, Brave, Jina, Kimi, Gemini, Codex, Z.AI, Synthetic,
+ * and grep.app providers with provider-specific parameters exposed conditionally.
  *
  * When EXA_API_KEY is available, additional specialized tools are exposed:
  * - web_search_deep: Natural language web search with synthesized results
@@ -31,7 +31,20 @@ export const webSearchSchema = Type.Object({
 	query: Type.String({ description: "Search query" }),
 	provider: Type.Optional(
 		StringEnum(
-			["auto", "exa", "brave", "jina", "kimi", "zai", "anthropic", "perplexity", "gemini", "codex", "synthetic"],
+			[
+				"auto",
+				"exa",
+				"brave",
+				"jina",
+				"kimi",
+				"zai",
+				"anthropic",
+				"perplexity",
+				"gemini",
+				"codex",
+				"synthetic",
+				"grep",
+			],
 			{
 				description: "Search provider (default: auto)",
 			},
@@ -58,7 +71,8 @@ export type SearchParams = {
 		| "perplexity"
 		| "gemini"
 		| "codex"
-		| "synthetic";
+		| "synthetic"
+		| "grep";
 	recency?: "day" | "week" | "month" | "year";
 	limit?: number;
 	/** Maximum output tokens. Defaults to 4096. */

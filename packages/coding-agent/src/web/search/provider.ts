@@ -4,6 +4,7 @@ import { BraveProvider } from "./providers/brave";
 import { CodexProvider } from "./providers/codex";
 import { ExaProvider } from "./providers/exa";
 import { GeminiProvider } from "./providers/gemini";
+import { GrepAppProvider } from "./providers/grep";
 import { JinaProvider } from "./providers/jina";
 import { KimiProvider } from "./providers/kimi";
 import { PerplexityProvider } from "./providers/perplexity";
@@ -25,6 +26,7 @@ const SEARCH_PROVIDERS: Record<SearchProviderId, SearchProvider> = {
 	gemini: new GeminiProvider(),
 	codex: new CodexProvider(),
 	synthetic: new SyntheticProvider(),
+	grep: new GrepAppProvider(),
 } as const;
 
 export const SEARCH_PROVIDER_ORDER: SearchProviderId[] = [
@@ -38,6 +40,7 @@ export const SEARCH_PROVIDER_ORDER: SearchProviderId[] = [
 	"codex",
 	"zai",
 	"synthetic",
+	"grep",
 ];
 
 export function getSearchProvider(provider: SearchProviderId): SearchProvider {
