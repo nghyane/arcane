@@ -389,6 +389,29 @@ export const SETTINGS_SCHEMA = {
 	"retry.baseDelayMs": { type: "number", default: 2000 },
 
 	// ─────────────────────────────────────────────────────────────────────────
+	// Verification loop settings
+	// ─────────────────────────────────────────────────────────────────────────
+	"verification.autoCheck": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "agent",
+			label: "Auto-verify changes",
+			description: "Automatically remind agent to verify changes before completing",
+		},
+	},
+	"verification.maxReminders": {
+		type: "number",
+		default: 2,
+		ui: {
+			tab: "agent",
+			label: "Verification max reminders",
+			description: "Maximum verification reminders before giving up",
+			submenu: true,
+		},
+	},
+
+	// ─────────────────────────────────────────────────────────────────────────
 	// Todo completion settings
 	// ─────────────────────────────────────────────────────────────────────────
 	"todo.reminders": {

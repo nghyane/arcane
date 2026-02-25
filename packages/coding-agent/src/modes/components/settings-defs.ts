@@ -85,6 +85,12 @@ const OPTION_PROVIDERS: Partial<Record<SettingPath, OptionProvider>> = {
 		{ value: "32", label: "32 tasks" },
 		{ value: "64", label: "64 tasks" },
 	],
+	// Verification max reminders
+	"verification.maxReminders": [
+		{ value: "1", label: "1 reminder" },
+		{ value: "2", label: "2 reminders" },
+		{ value: "3", label: "3 reminders" },
+	],
 	// Todo max reminders
 	"todo.reminders.max": [
 		{ value: "1", label: "1 reminder" },

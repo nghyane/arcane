@@ -83,6 +83,7 @@ import { executePython as executePythonCommand, type PythonResult } from "../ipy
 import { getCurrentThemeName, theme } from "../modes/theme/theme";
 import { normalizeDiff, normalizeToLF, ParseError, previewPatch, stripBom } from "../patch";
 import ttsrInterruptTemplate from "../prompts/system/ttsr-interrupt.md" with { type: "text" };
+import verificationReminderTemplate from "../prompts/system/verification-reminder.md" with { type: "text" };
 import type { SecretObfuscator } from "../secrets/obfuscator";
 import { closeAllConnections } from "../ssh/connection-manager";
 import { unmountAll } from "../ssh/sshfs-mount";
@@ -316,6 +317,10 @@ export class AgentSession {
 
 	// Todo completion reminder state
 	#todoReminderCount = 0;
+
+	// Verification loop state
+	#verificationReminderCount = 0;
+	#turnHasFileModifications = false;
 
 	// Bash execution state
 	#bashAbortController: AbortController | undefined = undefined;
@@ -616,6 +621,10 @@ export class AgentSession {
 				if (toolName === "edit" && details?.path) {
 					this.#invalidateFileCacheForPath(details.path);
 				}
+				// Track file modifications for auto-verification
+				if ((toolName === "edit" || toolName === "write") && !isError) {
+					this.#turnHasFileModifications = true;
+				}
 				if (toolName === "todo_write" && isError) {
 					const errorText = content?.find(part => part.type === "text")?.text;
 					const reminderText = [
@@ -655,6 +664,12 @@ export class AgentSession {
 			}
 
 			await this.#checkCompaction(msg);
+
+			// Check verification (if agent modified files without verifying)
+			if (msg.stopReason !== "error" && msg.stopReason !== "aborted") {
+				const didRemind = await this.#checkVerification();
+				if (didRemind) return;
+			}
 
 			// Check for incomplete todos (unless there was an error or abort)
 			if (msg.stopReason !== "error" && msg.stopReason !== "aborted") {
@@ -1579,6 +1594,8 @@ export class AgentSession {
 
 			// Reset todo reminder count on new user prompt
 			this.#todoReminderCount = 0;
+			this.#verificationReminderCount = 0;
+			this.#turnHasFileModifications = false;
 
 			// Validate model
 			if (!this.model) {
@@ -2867,6 +2884,72 @@ Be thorough - include exact file paths, function names, error messages, and tech
 			}
 		}
 	}
+	/**
+	 * Check if agent stopped after modifying files without running verification.
+	 * If so, inject a reminder to verify and continue the conversation.
+	 */
+	async #checkVerification(): Promise<boolean> {
+		if (!this.settings.get("verification.autoCheck")) {
+			this.#verificationReminderCount = 0;
+			return false;
+		}
+
+		if (!this.#turnHasFileModifications) {
+			return false;
+		}
+
+		const maxReminders = this.settings.get("verification.maxReminders");
+		if (this.#verificationReminderCount >= maxReminders) {
+			logger.debug("Verification: max reminders reached", { count: this.#verificationReminderCount });
+			return false;
+		}
+
+		if (this.#turnHasVerificationCommand()) {
+			this.#verificationReminderCount = 0;
+			this.#turnHasFileModifications = false;
+			return false;
+		}
+
+		this.#verificationReminderCount++;
+		const reminder = renderPromptTemplate(verificationReminderTemplate, {
+			attempt: this.#verificationReminderCount,
+			maxAttempts: maxReminders,
+		});
+
+		logger.debug("Verification: sending reminder", {
+			attempt: this.#verificationReminderCount,
+		});
+
+		this.agent.appendMessage({
+			role: "user",
+			content: [{ type: "text", text: reminder }],
+			timestamp: Date.now(),
+		});
+		this.agent.continue().catch(() => {});
+		return true;
+	}
+
+	/**
+	 * Check if the current turn included a bash command that looks like a verification step.
+	 */
+	#turnHasVerificationCommand(): boolean {
+		const messages = this.agent.state.messages;
+		for (let i = messages.length - 1; i >= 0; i--) {
+			const msg = messages[i];
+			if (msg.role === "user") break;
+			if (msg.role !== "assistant") continue;
+			const assistant = msg as AssistantMessage;
+			for (const block of assistant.content) {
+				if (block.type !== "toolCall" || block.name !== "bash") continue;
+				const cmd = (block.arguments as { command?: string })?.command ?? "";
+				if (/\b(check|lint|fmt|format|test|typecheck|tsc|biome|eslint|clippy)\b/.test(cmd)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Check if agent stopped with incomplete todos and prompt to continue.
 	 */
