@@ -10,7 +10,6 @@ import {
 	type ToolUIColor,
 	truncateToWidth,
 } from "../tools/render-utils";
-import { registerRenderer } from "../tools/renderers";
 import { Ellipsis, Hasher, type RenderCache } from "../tui";
 import { subprocessToolRegistry } from "./subprocess-tool-registry";
 import type { AgentProgress, SingleResult, TaskParams, TaskToolDetails } from "./types";
@@ -569,10 +568,3 @@ subprocessToolRegistry.register<TaskToolDetails>("explore", taskSubprocessHandle
 subprocessToolRegistry.register<TaskToolDetails>("librarian", taskSubprocessHandler);
 subprocessToolRegistry.register<TaskToolDetails>("oracle", taskSubprocessHandler);
 subprocessToolRegistry.register<TaskToolDetails>("code_review", taskSubprocessHandler);
-
-export const taskToolRenderer = {
-	renderCall,
-	renderResult,
-};
-
-registerRenderer("task", taskToolRenderer);

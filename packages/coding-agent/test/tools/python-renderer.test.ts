@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import { getThemeByName } from "@nghyane/arcane/modes/theme/theme";
-import { pythonToolRenderer } from "@nghyane/arcane/tools/python";
+import { PythonTool } from "@nghyane/arcane/tools/python";
 import { sanitizeText } from "@nghyane/arcane-natives";
 
-describe("pythonToolRenderer", () => {
+describe("PythonTool renderResult", () => {
 	it("renders truncated output when collapsed and full output when expanded", async () => {
 		const theme = await getThemeByName("dark");
 		expect(theme).toBeDefined();
@@ -27,7 +27,8 @@ describe("pythonToolRenderer", () => {
 			},
 		};
 
-		const collapsed = pythonToolRenderer.renderResult(
+		const collapsed = PythonTool.prototype.renderResult.call(
+			null,
 			result,
 			{ expanded: false, isPartial: false, renderContext: { previewLines: 2 } },
 			uiTheme,
@@ -37,7 +38,12 @@ describe("pythonToolRenderer", () => {
 		expect(collapsedLines).not.toContain("line 1");
 		expect(collapsedLines).toContain("more lines");
 
-		const expanded = pythonToolRenderer.renderResult(result, { expanded: true, isPartial: false }, uiTheme);
+		const expanded = PythonTool.prototype.renderResult.call(
+			null,
+			result,
+			{ expanded: true, isPartial: false },
+			uiTheme,
+		);
 		const expandedLines = sanitizeText(expanded.render(80).join("\n"));
 		expect(expandedLines).toContain("line 1");
 		expect(expandedLines).toContain("line 4");

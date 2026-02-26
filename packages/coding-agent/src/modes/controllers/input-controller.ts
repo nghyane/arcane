@@ -52,6 +52,8 @@ export class InputController {
 				this.ctx.editor.setText("");
 				this.ctx.isPythonMode = false;
 				this.ctx.updateEditorBorderColor();
+			} else if (this.ctx.session.isStreaming) {
+				this.ctx.agent.abort();
 			} else if (!this.ctx.editor.getText().trim()) {
 				// Double-escape with empty editor triggers /tree, /branch, or nothing based on setting
 				const action = settings.get("doubleEscapeAction");

@@ -236,6 +236,14 @@ export interface AgentTool<TParameters extends TSchema = TSchema, TDetails = any
 	 * - "exclusive": runs alone; other tools wait until it finishes
 	 */
 	concurrency?: "shared" | "exclusive";
+	/** Merge call and result into single visual block (default: false) */
+	mergeCallAndResult?: boolean;
+	/** Render without background box, inline in response flow (default: false) */
+	inline?: boolean;
+	/** Format args into 1-line preview for collapsed display */
+	formatArgs?: (args: Static<TParameters>) => string;
+	/** Extract display lines from result for default renderer */
+	formatResult?: (result: AgentToolResult<TDetails, TParameters>) => string | string[];
 	execute: AgentToolExecFn<TParameters, TDetails, TTheme>;
 
 	/** Optional custom rendering for tool call display (returns UI component) */
@@ -246,6 +254,7 @@ export interface AgentTool<TParameters extends TSchema = TSchema, TDetails = any
 		result: AgentToolResult<TDetails, TParameters>,
 		options: RenderResultOptions,
 		theme: TTheme,
+		args?: Static<TParameters>,
 	) => unknown;
 }
 

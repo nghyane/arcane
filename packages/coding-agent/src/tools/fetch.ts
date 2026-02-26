@@ -18,12 +18,10 @@ import { finalizeOutput, loadPage, MAX_OUTPUT_CHARS } from "../web/scrapers/type
 import { convertWithMarkitdown, fetchBinary } from "../web/scrapers/utils";
 import type { ToolSession } from ".";
 import { applyListLimit } from "./list-limit";
-import type { OutputMeta } from "./output-meta";
+import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact } from "./output-utils";
 import { formatExpandHint } from "./render-utils";
-import { registerRenderer } from "./renderers";
 import { ToolAbortError } from "./tool-errors";
-import { toolResult } from "./tool-result";
 
 // =============================================================================
 // Types and Constants
@@ -851,7 +849,7 @@ export interface FetchToolDetails {
 	meta?: OutputMeta;
 }
 
-export class FetchTool implements AgentTool<typeof fetchSchema, FetchToolDetails> {
+export class FetchTool implements AgentTool<typeof fetchSchema, FetchToolDetails, Theme> {
 	readonly name = "fetch";
 	readonly label = "Fetch";
 	description = "Fetch a URL and return its content";
@@ -933,11 +931,10 @@ export class FetchTool implements AgentTool<typeof fetchSchema, FetchToolDetails
 
 		return resultBuilder.done();
 	}
-}
 
-// =============================================================================
-// TUI Rendering
-// =============================================================================
+	renderCall = renderFetchCall;
+	renderResult = renderFetchResult;
+}
 
 /** Truncate text to max length with ellipsis */
 function truncate(text: string, maxLen: number, ellipsis: string): string {
@@ -962,7 +959,7 @@ function countNonEmptyLines(text: string): number {
 }
 
 /** Render fetch call (URL preview) */
-export function renderFetchCall(
+function renderFetchCall(
 	args: { url?: string; timeout?: number; raw?: boolean },
 	_options: RenderResultOptions,
 	uiTheme: Theme = theme,
@@ -979,7 +976,7 @@ export function renderFetchCall(
 }
 
 /** Render fetch result with tree-based layout */
-export function renderFetchResult(
+function renderFetchResult(
 	result: { content: Array<{ type: string; text?: string }>; details?: FetchToolDetails },
 	options: RenderResultOptions,
 	uiTheme: Theme = theme,
@@ -1080,11 +1077,3 @@ export function renderFetchResult(
 		},
 	};
 }
-
-export const fetchToolRenderer = {
-	renderCall: renderFetchCall,
-	renderResult: renderFetchResult,
-	mergeCallAndResult: true,
-};
-
-registerRenderer("fetch", fetchToolRenderer);

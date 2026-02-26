@@ -46,7 +46,7 @@ export type SourceMeta =
 /**
  * LSP diagnostic info (for edit/write tools).
  */
-export interface DiagnosticMeta {
+interface DiagnosticMeta {
 	summary: string;
 	messages: string[];
 }
@@ -82,13 +82,13 @@ export interface TruncationOptions {
 	artifactId?: string;
 }
 
-export interface TruncationSummaryOptions {
+interface TruncationSummaryOptions {
 	direction: "head" | "tail";
 	startLine?: number;
 	totalFileLines?: number;
 }
 
-export interface TruncationTextOptions {
+interface TruncationTextOptions {
 	direction: "head" | "tail";
 	totalLines?: number;
 	totalBytes?: number;
@@ -107,7 +107,7 @@ export interface TruncationTextOptions {
  *   .get();
  * ```
  */
-export class OutputMetaBuilder {
+class OutputMetaBuilder {
 	#meta: OutputMeta = {};
 
 	/** Add truncation info from TruncationResult. No-op if not truncated. */
@@ -306,6 +306,91 @@ export class OutputMetaBuilder {
 /** Create a new OutputMetaBuilder. */
 export function outputMeta(): OutputMetaBuilder {
 	return new OutputMetaBuilder();
+}
+
+// =============================================================================
+// ToolResultBuilder - Fluent API for building AgentToolResult with OutputMeta
+// =============================================================================
+
+type ToolContent = Array<TextContent | ImageContent>;
+
+type DetailsWithMeta = { meta?: OutputMeta };
+
+class ToolResultBuilder<TDetails extends DetailsWithMeta> {
+	#details: TDetails;
+	#meta = new OutputMetaBuilder();
+	#content: ToolContent = [];
+
+	constructor(details?: TDetails) {
+		this.#details = details ?? ({} as TDetails);
+	}
+
+	text(text: string): this {
+		this.#content = [{ type: "text", text }];
+		return this;
+	}
+
+	content(content: ToolContent): this {
+		this.#content = content;
+		return this;
+	}
+
+	truncation(result: TruncationResult, options: TruncationOptions): this {
+		this.#meta.truncation(result, options);
+		return this;
+	}
+
+	truncationFromSummary(summary: OutputSummary, options: TruncationSummaryOptions): this {
+		this.#meta.truncationFromSummary(summary, options);
+		return this;
+	}
+
+	truncationFromText(text: string, options: TruncationTextOptions): this {
+		this.#meta.truncationFromText(text, options);
+		return this;
+	}
+
+	limits(limits: { matchLimit?: number; resultLimit?: number; headLimit?: number; columnMax?: number }): this {
+		this.#meta.limits(limits);
+		return this;
+	}
+
+	sourceUrl(value: string): this {
+		this.#meta.sourceUrl(value);
+		return this;
+	}
+
+	sourcePath(value: string): this {
+		this.#meta.sourcePath(value);
+		return this;
+	}
+
+	sourceInternal(value: string): this {
+		this.#meta.sourceInternal(value);
+		return this;
+	}
+
+	diagnostics(summary: string, messages: string[]): this {
+		this.#meta.diagnostics(summary, messages);
+		return this;
+	}
+
+	done(): AgentToolResult<TDetails> {
+		const meta = this.#meta.get();
+		if (meta) {
+			this.#details.meta = meta;
+		}
+		const hasDetails = Object.entries(this.#details).some(([, value]) => value !== undefined);
+
+		return {
+			content: this.#content,
+			details: hasDetails ? this.#details : undefined,
+		};
+	}
+}
+
+export function toolResult<TDetails extends DetailsWithMeta>(details?: TDetails): ToolResultBuilder<TDetails> {
+	return new ToolResultBuilder(details);
 }
 
 // =============================================================================

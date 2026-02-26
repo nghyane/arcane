@@ -3,8 +3,7 @@ import { type Static, Type } from "@sinclair/typebox";
 import type { Theme } from "../modes/theme/theme";
 import { type GitHubResponse, githubClient } from "../web/github-client";
 import type { ToolSession } from ".";
-import type { OutputMeta } from "./output-meta";
-import { toolResult } from "./tool-result";
+import { type OutputMeta, toolResult } from "./output-meta";
 
 // =============================================================================
 // Schema
@@ -14,7 +13,6 @@ const ActionEnum = Type.Union([
 	Type.Literal("get_repo"),
 	Type.Literal("get_file"),
 	Type.Literal("get_tree"),
-	Type.Literal("search_code"),
 	Type.Literal("search_repos"),
 	Type.Literal("get_issue"),
 	Type.Literal("list_issues"),
@@ -168,23 +166,6 @@ function formatCommitMinimal(c: any): string {
 	return `${sha} ${msg} (${author}, ${date})`;
 }
 
-function formatSearchCodeResult(data: any): string {
-	const items = data.items ?? [];
-	const lines = [`Found ${data.total_count} results (showing ${items.length}):`, ""];
-	for (const item of items) {
-		lines.push(`${item.repository?.full_name}: ${item.path}`);
-		if (item.text_matches?.length) {
-			for (const match of item.text_matches) {
-				if (match.fragment) {
-					lines.push(`  > ${match.fragment.trim().split("\n").join("\n  > ")}`);
-				}
-			}
-		}
-		lines.push("");
-	}
-	return lines.join("\n");
-}
-
 function formatSearchReposResult(data: any): string {
 	const items = data.items ?? [];
 	const lines = [`Found ${data.total_count} repositories (showing ${items.length}):`, ""];
@@ -274,17 +255,6 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			return {
 				text: `# ${owner}/${repo}/${treePath}\n\n${entries.map(formatTreeEntry).join("\n")}`,
 			};
-		}
-
-		case "search_code": {
-			const q = input.query ? `${input.query} repo:${owner}/${repo}` : `repo:${owner}/${repo}`;
-			const perPage = Math.min(input.limit ?? 30, 100);
-			const res = await githubClient.request<any>(`/search/code?q=${encodeURIComponent(q)}&per_page=${perPage}`, {
-				...opts,
-				accept: "application/vnd.github.text-match+json",
-			});
-			if (!res.ok) return error(res, "code search");
-			return { text: formatSearchCodeResult(res.data) };
 		}
 
 		case "search_repos": {
@@ -455,7 +425,7 @@ export class GitHubTool implements AgentTool<typeof schema, GitHubToolDetails, T
 	readonly name = "github";
 	readonly label = "GitHub";
 	readonly parameters = schema;
-	description = "Interact with GitHub API: repos, issues, PRs, code search";
+	description = "Interact with GitHub API: repos, issues, PRs, commits";
 
 	constructor(readonly _session: ToolSession) {}
 

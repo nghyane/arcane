@@ -1,6 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import { createUnifiedSubagentRenderer } from "../task/render";
-import { buildSubagentRenderConfig, registerRenderer } from "./renderers";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -22,5 +20,3 @@ export const exploreConfig: SubagentConfig<typeof schema.properties> = {
 	toolDescription: "Search local codebase by concept or behavior — spawns a read-only scout agent",
 	passContext: false,
 };
-
-registerRenderer(exploreConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(exploreConfig)));

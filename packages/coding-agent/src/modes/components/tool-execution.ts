@@ -24,8 +24,8 @@ import {
 	type EditDiffResult,
 } from "../../patch";
 import { BASH_DEFAULT_PREVIEW_LINES } from "../../tools/bash";
+import { defaultRenderer } from "../../tools/default-renderer";
 import { PYTHON_DEFAULT_PREVIEW_LINES } from "../../tools/python";
-import { getRenderer } from "../../tools/renderers";
 import { convertToPng } from "../../utils/image-convert";
 import { renderDiff } from "./diff";
 
@@ -76,6 +76,7 @@ export class ToolExecutionComponent extends Container {
 	#imageSpacers: Spacer[] = [];
 	#toolName: string;
 	#toolLabel: string;
+	#tool: AgentTool | undefined;
 	#args: any;
 	#expanded = false;
 	#showImages: boolean;
@@ -124,6 +125,7 @@ export class ToolExecutionComponent extends Container {
 		super();
 		this.#toolName = toolName;
 		this.#toolLabel = tool?.label ?? toolName;
+		this.#tool = tool;
 		this.#args = cloneToolArgs(args);
 		this.#showImages = options.showImages ?? true;
 		this.#editFuzzyThreshold = options.editFuzzyThreshold;
@@ -306,7 +308,7 @@ export class ToolExecutionComponent extends Container {
 	#updateSpinnerAnimation(): void {
 		// Spinner for: task tool with partial result, or edit/write while args streaming
 		const isStreamingArgs = !this.#argsComplete && (this.#toolName === "edit" || this.#toolName === "write");
-		const isPartialTask = this.#isPartial && getRenderer(this.#toolName).mergeCallAndResult === true;
+		const isPartialTask = this.#isPartial && this.#tool?.mergeCallAndResult === true;
 		const needsSpinner = isStreamingArgs || isPartialTask;
 		if (needsSpinner && !this.#spinnerInterval) {
 			this.#spinnerInterval = setInterval(() => {
@@ -363,17 +365,22 @@ export class ToolExecutionComponent extends Container {
 		this.#renderState.isPartial = this.#isPartial;
 		this.#renderState.spinnerFrame = this.#spinnerFrame;
 
-		const renderer = getRenderer(this.#toolName);
-		this.#contentBox.setBgFn(renderer.inline ? undefined : bgFn);
+		const isInline = this.#tool?.inline ?? false;
+		const mergeCallAndResult = this.#tool?.mergeCallAndResult ?? false;
+		this.#contentBox.setBgFn(isInline ? undefined : bgFn);
 		this.#contentBox.clear();
 
 		// Pass label for default renderer
 		this.#renderState.label = this.#toolLabel;
 
-		const shouldRenderCall = !this.#result || !renderer.mergeCallAndResult;
+		const shouldRenderCall = !this.#result || !mergeCallAndResult;
 		if (shouldRenderCall) {
 			try {
-				const callComponent = renderer.renderCall(this.#getCallArgsForRender(), this.#renderState, theme);
+				const callComponent = (this.#tool?.renderCall ?? defaultRenderer.renderCall)(
+					this.#getCallArgsForRender(),
+					this.#renderState,
+					theme,
+				);
 				if (callComponent) {
 					this.#contentBox.addChild(ensureInvalidate(callComponent));
 				}
@@ -388,7 +395,7 @@ export class ToolExecutionComponent extends Container {
 				const renderContext = this.#buildRenderContext();
 				this.#renderState.renderContext = renderContext;
 
-				const resultComponent = renderer.renderResult(
+				const resultComponent = (this.#tool?.renderResult ?? defaultRenderer.renderResult)(
 					{
 						content: this.#result.content as any,
 						details: this.#result.details,

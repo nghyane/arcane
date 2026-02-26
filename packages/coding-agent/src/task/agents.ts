@@ -7,7 +7,6 @@ import { renderPromptTemplate } from "../config/prompt-templates";
 import { parseAgentFields } from "../discovery/helpers";
 import exploreMd from "../prompts/agents/explore.md" with { type: "text" };
 // Embed agent markdown files at build time
-import agentFrontmatterTemplate from "../prompts/agents/frontmatter.md" with { type: "text" };
 import librarianMd from "../prompts/agents/librarian.md" with { type: "text" };
 import oracleMd from "../prompts/agents/oracle.md" with { type: "text" };
 import reviewerMd from "../prompts/agents/reviewer.md" with { type: "text" };
@@ -15,25 +14,13 @@ import taskMd from "../prompts/agents/task.md" with { type: "text" };
 import { parseFrontmatter } from "../utils/frontmatter";
 import type { AgentDefinition, AgentSource } from "./types";
 
-interface AgentFrontmatter {
-	name: string;
-	description: string;
-	tools: string[];
-	model?: string | string[];
-	thinkingLevel?: string;
-	kind?: "local" | "remote" | "hybrid" | "reasoning";
-}
-
 interface EmbeddedAgentDef {
 	fileName: string;
-	frontmatter?: AgentFrontmatter;
 	template: string;
 }
 
 function buildAgentContent(def: EmbeddedAgentDef): string {
-	const body = renderPromptTemplate(def.template);
-	if (!def.frontmatter) return body;
-	return renderPromptTemplate(agentFrontmatterTemplate, { ...def.frontmatter, body });
+	return renderPromptTemplate(def.template);
 }
 
 const EMBEDDED_AGENT_DEFS: EmbeddedAgentDef[] = [
@@ -41,37 +28,7 @@ const EMBEDDED_AGENT_DEFS: EmbeddedAgentDef[] = [
 	{ fileName: "librarian.md", template: librarianMd },
 	{ fileName: "oracle.md", template: oracleMd },
 	{ fileName: "reviewer.md", template: reviewerMd },
-	{
-		fileName: "task.md",
-		frontmatter: {
-			name: "task",
-			description: "General-purpose subagent with full capabilities for delegated multi-step tasks",
-			model: "default",
-			kind: "hybrid",
-			tools: [
-				"ask",
-				"bash",
-				"puppeteer",
-				"calc",
-				"fetch",
-				"github",
-				"grep",
-				"notebook",
-				"python",
-				"ssh",
-				"todo_write",
-				"undo_edit",
-				"write",
-				"read",
-				"find",
-				"edit",
-				"lsp",
-				"web_search",
-			],
-			thinkingLevel: "medium",
-		},
-		template: taskMd,
-	},
+	{ fileName: "task.md", template: taskMd },
 ];
 
 const EMBEDDED_AGENTS: { name: string; content: string }[] = EMBEDDED_AGENT_DEFS.map(def => ({

@@ -1,8 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { Settings } from "@nghyane/arcane/config/settings";
-import * as pythonExecutor from "@nghyane/arcane/ipy/executor";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 import { PythonTool } from "@nghyane/arcane/tools/python";
+import type { CodeAgentTool } from "@nghyane/arcane-codemode";
 import { TempDir } from "@nghyane/arcane-utils";
 
 let previousSkipCheck: string | undefined;
@@ -40,6 +40,11 @@ function createSettings(toolMode: "ipy-only" | "bash-only" | "both"): Settings {
 	});
 }
 
+function getWrappedNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
+	const codeTool = tools.find(t => t.name === "code") as CodeAgentTool | undefined;
+	return codeTool ? [...codeTool.wrappedToolMap.keys()] : [];
+}
+
 describe("python tool schema", () => {
 	it("exposes expected parameters", () => {
 		const tool = new PythonTool(createSession());
@@ -58,35 +63,10 @@ describe("python tool schema", () => {
 	});
 });
 
-describe("python tool docs template", () => {
-	it("renders dynamic helper docs", () => {
-		const docs = [
-			{
-				name: "read",
-				signature: "(path)",
-				docstring: "Read file contents.",
-				category: "File I/O",
-			},
-		];
-		const spy = vi.spyOn(pythonExecutor, "getPreludeDocs").mockReturnValue(docs);
-
+describe("python tool description", () => {
+	it("has a static description", () => {
 		const tool = new PythonTool(createSession());
-
-		expect(tool.description).toContain("### File I/O");
-		expect(tool.description).toContain("read(path)");
-		expect(tool.description).toContain("Read file contents.");
-
-		spy.mockRestore();
-	});
-
-	it("renders fallback when docs are unavailable", () => {
-		const spy = vi.spyOn(pythonExecutor, "getPreludeDocs").mockReturnValue([]);
-
-		const tool = new PythonTool(createSession());
-
-		expect(tool.description).toContain("Documentation unavailable — Python kernel failed to start");
-
-		spy.mockRestore();
+		expect(tool.description).toBe("Execute Python code in a persistent kernel");
 	});
 });
 
@@ -94,7 +74,7 @@ describe("python tool exposure", () => {
 	it("includes python only in ipy-only mode", async () => {
 		const session = createSession({ settings: createSettings("ipy-only") });
 		const tools = await createTools(session);
-		const names = tools.map(tool => tool.name);
+		const names = getWrappedNames(tools);
 		expect(names).toContain("python");
 		expect(names).not.toContain("bash");
 	});
@@ -102,7 +82,7 @@ describe("python tool exposure", () => {
 	it("includes bash only in bash-only mode", async () => {
 		const session = createSession({ settings: createSettings("bash-only") });
 		const tools = await createTools(session);
-		const names = tools.map(tool => tool.name);
+		const names = getWrappedNames(tools);
 		expect(names).toContain("bash");
 		expect(names).not.toContain("python");
 	});
@@ -110,7 +90,7 @@ describe("python tool exposure", () => {
 	it("includes bash and python in both mode", async () => {
 		const session = createSession({ settings: createSettings("both") });
 		const tools = await createTools(session);
-		const names = tools.map(tool => tool.name);
+		const names = getWrappedNames(tools);
 		expect(names).toContain("bash");
 		expect(names).toContain("python");
 	});

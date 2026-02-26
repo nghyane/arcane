@@ -14,12 +14,10 @@ import { executeSSH } from "../ssh/ssh-executor";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
 import type { ToolSession } from ".";
-import type { OutputMeta } from "./output-meta";
+import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { formatBytes, wrapBrackets } from "./render-utils";
-import { registerRenderer } from "./renderers";
 import { ToolError } from "./tool-errors";
-import { toolResult } from "./tool-result";
 
 const sshSchema = Type.Object({
 	host: Type.String({ description: "Host name from managed SSH config or discovered ssh.json files" }),
@@ -115,11 +113,12 @@ async function loadHosts(session: ToolSession): Promise<{
 
 type SshToolParams = Static<typeof sshSchema>;
 
-export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails> {
+export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails, Theme> {
 	readonly name = "ssh";
 	readonly label = "SSH";
 	readonly parameters = sshSchema;
 	readonly concurrency = "exclusive";
+	readonly mergeCallAndResult = true;
 
 	readonly #allowedHosts: Set<string>;
 
@@ -189,48 +188,13 @@ export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails> {
 
 		return resultBuilder.done();
 	}
-}
 
-export async function loadSshTool(session: ToolSession): Promise<SshTool | null> {
-	const { hostNames, hostsByName } = await loadHosts(session);
-	if (hostNames.length === 0) {
-		return null;
-	}
-
-	const descriptionHosts = hostNames
-		.map(name => hostsByName.get(name))
-		.filter((host): host is SSHHost => host !== undefined);
-	const description = await formatDescription(descriptionHosts);
-
-	return new SshTool(session, hostNames, hostsByName, description);
-}
-
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface SshRenderArgs {
-	host?: string;
-	command?: string;
-	timeout?: number;
-}
-
-interface SshRenderContext {
-	/** Visual lines for truncated output (pre-computed by tool-execution) */
-	visualLines?: string[];
-	/** Number of lines skipped */
-	skippedCount?: number;
-	/** Total visual lines */
-	totalVisualLines?: number;
-}
-
-export const sshToolRenderer = {
 	renderCall(args: SshRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const host = args.host || "…";
 		const command = args.command || "…";
 		const text = renderStatusLine({ icon: "pending", title: "SSH", description: `[${host}] $ ${command}` }, uiTheme);
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: {
@@ -317,8 +281,34 @@ export const sshToolRenderer = {
 				outputBlock.invalidate();
 			},
 		};
-	},
-	mergeCallAndResult: true,
-};
+	}
+}
 
-registerRenderer("ssh", sshToolRenderer);
+export async function loadSshTool(session: ToolSession): Promise<SshTool | null> {
+	const { hostNames, hostsByName } = await loadHosts(session);
+	if (hostNames.length === 0) {
+		return null;
+	}
+
+	const descriptionHosts = hostNames
+		.map(name => hostsByName.get(name))
+		.filter((host): host is SSHHost => host !== undefined);
+	const description = await formatDescription(descriptionHosts);
+
+	return new SshTool(session, hostNames, hostsByName, description);
+}
+
+interface SshRenderArgs {
+	host?: string;
+	command?: string;
+	timeout?: number;
+}
+
+interface SshRenderContext {
+	/** Visual lines for truncated output (pre-computed by tool-execution) */
+	visualLines?: string[];
+	/** Number of lines skipped */
+	skippedCount?: number;
+	/** Total visual lines */
+	totalVisualLines?: number;
+}

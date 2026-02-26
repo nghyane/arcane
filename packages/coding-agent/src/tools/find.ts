@@ -21,12 +21,10 @@ import {
 } from "../tui";
 import type { ToolSession } from ".";
 import { applyListLimit } from "./list-limit";
-import type { OutputMeta } from "./output-meta";
+import { type OutputMeta, toolResult } from "./output-meta";
 import { resolveToCwd } from "./path-utils";
 import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "./render-utils";
-import { registerRenderer } from "./renderers";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
-import { toolResult } from "./tool-result";
 
 const findSchema = Type.Object({
 	pattern: Type.String({ description: "Glob pattern, e.g. '*.ts', 'src/**/*.json', 'lib/*.tsx'" }),
@@ -121,7 +119,7 @@ export interface FindToolOptions {
 	operations?: FindOperations;
 }
 
-export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
+export class FindTool implements AgentTool<typeof findSchema, FindToolDetails, Theme> {
 	readonly name = "find";
 	readonly label = "Find";
 	description = "Find files by glob pattern";
@@ -390,21 +388,7 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 			return resultBuilder.done();
 		});
 	}
-}
 
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface FindRenderArgs {
-	pattern: string;
-	limit?: number;
-}
-
-const COLLAPSED_LIST_LIMIT = PREVIEW_LIMITS.COLLAPSED_ITEMS;
-
-export const findToolRenderer = {
-	inline: true,
 	renderCall(args: FindRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const meta: string[] = [];
 		if (args.limit !== undefined) meta.push(`limit:${args.limit}`);
@@ -414,7 +398,7 @@ export const findToolRenderer = {
 			uiTheme,
 		);
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: FindToolDetails; isError?: boolean },
@@ -533,8 +517,12 @@ export const findToolRenderer = {
 				cached = undefined;
 			},
 		};
-	},
-	mergeCallAndResult: true,
-};
+	}
+}
 
-registerRenderer("find", findToolRenderer);
+interface FindRenderArgs {
+	pattern: string;
+	limit?: number;
+}
+
+const COLLAPSED_LIST_LIMIT = PREVIEW_LIMITS.COLLAPSED_ITEMS;

@@ -15,7 +15,6 @@ import type { ToolSession } from ".";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
 import { resolveToCwd } from "./path-utils";
 import { getDiffStats, replaceTabs, shortenPath, ToolUIKit } from "./render-utils";
-import { registerRenderer } from "./renderers";
 import { ToolError } from "./tool-errors";
 import { popUndo } from "./undo-history";
 
@@ -27,13 +26,18 @@ export interface UndoEditToolDetails {
 	diff: string;
 }
 
-export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditToolDetails> {
+interface UndoEditRenderArgs {
+	path?: string;
+}
+
+export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditToolDetails, Theme> {
 	readonly name = "undo_edit";
 	readonly label = "Undo";
 	description = "Undo the last edit to a file";
 	readonly parameters = undoEditSchema;
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";
+	readonly mergeCallAndResult = true;
 
 	constructor(private readonly session: ToolSession) {}
 
@@ -71,25 +75,13 @@ export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditTo
 			};
 		});
 	}
-}
-
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface UndoEditRenderArgs {
-	path?: string;
-}
-
-export const undoEditToolRenderer = {
-	mergeCallAndResult: true,
 
 	renderCall(args: UndoEditRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const filePath = shortenPath(args.path ?? "");
 		const pathDisplay = filePath ? uiTheme.fg("accent", filePath) : uiTheme.fg("toolOutput", "…");
 		const text = renderStatusLine({ icon: "pending", title: "Undo", description: pathDisplay }, uiTheme);
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: UndoEditToolDetails; isError?: boolean },
@@ -138,7 +130,5 @@ export const undoEditToolRenderer = {
 				cached = undefined;
 			},
 		};
-	},
-};
-
-registerRenderer("undo_edit", undoEditToolRenderer);
+	}
+}

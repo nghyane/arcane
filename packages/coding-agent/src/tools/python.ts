@@ -14,17 +14,15 @@ import type { Theme } from "../modes/theme/theme";
 import { DEFAULT_MAX_BYTES, OutputSink, type OutputSummary } from "../session/streaming-output";
 import { getTreeBranch, getTreeContinuePrefix, renderCodeCell } from "../tui";
 import type { ToolSession } from ".";
-import type { OutputMeta } from "./output-meta";
+import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { resolveToCwd } from "./path-utils";
 import { replaceTabs, shortenPath, ToolUIKit, truncateToWidth } from "./render-utils";
-import { registerRenderer } from "./renderers";
 import { ToolAbortError, ToolError } from "./tool-errors";
-import { toolResult } from "./tool-result";
 
 export const PYTHON_DEFAULT_PREVIEW_LINES = 10;
 
-export const pythonSchema = Type.Object({
+const pythonSchema = Type.Object({
 	cells: Type.Array(
 		Type.Object({
 			code: Type.String({ description: "Python code to execute" }),
@@ -36,16 +34,16 @@ export const pythonSchema = Type.Object({
 	cwd: Type.Optional(Type.String({ description: "Working directory (default: cwd)" })),
 	reset: Type.Optional(Type.Boolean({ description: "Restart kernel before execution" })),
 });
-export type PythonToolParams = Static<typeof pythonSchema>;
+type PythonToolParams = Static<typeof pythonSchema>;
 
-export type PythonToolResult = {
+type PythonToolResult = {
 	content: Array<{ type: "text"; text: string }>;
 	details: PythonToolDetails | undefined;
 };
 
-export type PythonProxyExecutor = (params: PythonToolParams, signal?: AbortSignal) => Promise<PythonToolResult>;
+type PythonProxyExecutor = (params: PythonToolParams, signal?: AbortSignal) => Promise<PythonToolResult>;
 
-export interface PythonCellResult {
+interface PythonCellResult {
 	index: number;
 	title?: string;
 	code: string;
@@ -115,12 +113,14 @@ export interface PythonToolOptions {
 	proxyExecutor?: PythonProxyExecutor;
 }
 
-export class PythonTool implements AgentTool<typeof pythonSchema> {
+export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 	readonly name = "python";
 	readonly label = "Python";
 	description = "Execute Python code in a persistent kernel";
 	readonly parameters = pythonSchema;
 	readonly concurrency = "exclusive";
+	readonly mergeCallAndResult = true;
+	readonly inline = true;
 
 	readonly #proxyExecutor?: PythonProxyExecutor;
 
@@ -451,6 +451,287 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 				} catch {}
 			}
 		}
+	}
+
+	renderCall(args: PythonRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+		const ui = new ToolUIKit(uiTheme);
+		const cells = args.cells ?? [];
+		const cwd = getProjectDir();
+		let displayWorkdir = args.cwd;
+
+		if (displayWorkdir) {
+			const resolvedCwd = path.resolve(cwd);
+			const resolvedWorkdir = path.resolve(displayWorkdir);
+			if (resolvedWorkdir === resolvedCwd) {
+				displayWorkdir = undefined;
+			} else {
+				const relativePath = path.relative(resolvedCwd, resolvedWorkdir);
+				const isWithinCwd =
+					relativePath && !relativePath.startsWith("..") && !relativePath.startsWith(`..${path.sep}`);
+				if (isWithinCwd) {
+					displayWorkdir = relativePath;
+				}
+			}
+		}
+
+		const workdirLabel = displayWorkdir ? `cd ${displayWorkdir}` : undefined;
+		if (cells.length === 0) {
+			const prompt = uiTheme.fg("accent", ">>>");
+			const prefix = workdirLabel ? `${uiTheme.fg("dim", `${workdirLabel} && `)}` : "";
+			const text = ui.title(`${prompt} ${prefix}…`);
+			return new Text(text, 0, 0);
+		}
+
+		// Cache state - cells don't change, only width varies
+		let cached: { width: number; result: string[] } | undefined;
+
+		return {
+			render: (width: number): string[] => {
+				if (cached && cached.width === width) {
+					return cached.result;
+				}
+
+				const lines: string[] = [];
+				for (let i = 0; i < cells.length; i++) {
+					const cell = cells[i];
+					const cellTitle = cell.title;
+					const combinedTitle =
+						cellTitle && workdirLabel ? `${workdirLabel} · ${cellTitle}` : (cellTitle ?? workdirLabel);
+					const cellLines = renderCodeCell(
+						{
+							code: cell.code,
+							language: "python",
+							index: i,
+							total: cells.length,
+							title: combinedTitle,
+							status: "pending",
+							width,
+							codeMaxLines: PYTHON_DEFAULT_PREVIEW_LINES,
+							expanded: true,
+						},
+						uiTheme,
+					);
+					lines.push(...cellLines);
+					if (i < cells.length - 1) {
+						lines.push("");
+					}
+				}
+				cached = { width, result: lines };
+				return lines;
+			},
+			invalidate: () => {
+				cached = undefined;
+			},
+		};
+	}
+
+	renderResult(
+		result: { content: Array<{ type: string; text?: string }>; details?: PythonToolDetails },
+		options: RenderResultOptions & { renderContext?: PythonRenderContext },
+		uiTheme: Theme,
+	): Component {
+		const ui = new ToolUIKit(uiTheme);
+		const details = result.details;
+
+		const output =
+			options.renderContext?.output ?? (result.content?.find(c => c.type === "text")?.text ?? "").trimEnd();
+
+		const jsonOutputs = details?.jsonOutputs ?? [];
+		const jsonLines = jsonOutputs.flatMap((value, index) => {
+			const header = `JSON output ${index + 1}`;
+			const treeLines = renderJsonTree(value, uiTheme, options.renderContext?.expanded ?? options.expanded);
+			return [header, ...treeLines];
+		});
+
+		const truncation = details?.meta?.truncation;
+		const timeoutSeconds = options.renderContext?.timeout;
+		const timeoutLine =
+			typeof timeoutSeconds === "number"
+				? uiTheme.fg("dim", ui.wrapBrackets(`Timeout: ${timeoutSeconds}s`))
+				: undefined;
+		let warningLine: string | undefined;
+		if (truncation) {
+			const warnings: string[] = [];
+			if (truncation.artifactId) {
+				warnings.push(`Full output: artifact://${truncation.artifactId}`);
+			}
+			if (truncation.truncatedBy === "lines") {
+				warnings.push(`Truncated: showing ${truncation.outputLines} of ${truncation.totalLines} lines`);
+			} else {
+				warnings.push(
+					`Truncated: ${truncation.outputLines} lines shown (${ui.formatBytes(truncation.outputBytes)} limit)`,
+				);
+			}
+			if (warnings.length > 0) {
+				warningLine = uiTheme.fg("warning", ui.wrapBrackets(warnings.join(". ")));
+			}
+		}
+
+		const cellResults = details?.cells;
+		if (cellResults && cellResults.length > 0) {
+			// Cache state following Box pattern
+			let cached: { key: string; width: number; result: string[] } | undefined;
+
+			return {
+				render: (width: number): string[] => {
+					// Read mutable state at render time
+					const expanded = options.renderContext?.expanded ?? options.expanded;
+					const previewLines = options.renderContext?.previewLines ?? PYTHON_DEFAULT_PREVIEW_LINES;
+					const key = `${expanded}|${previewLines}|${options.spinnerFrame}`;
+					if (cached && cached.key === key && cached.width === width) {
+						return cached.result;
+					}
+
+					const lines: string[] = [];
+					for (let i = 0; i < cellResults.length; i++) {
+						const cell = cellResults[i];
+						const statusLines = renderStatusEvents(cell.statusEvents ?? [], uiTheme, expanded);
+						const outputContent = formatCellOutputLines(cell, expanded, previewLines, uiTheme);
+						const outputLines = [...outputContent.lines];
+						if (!expanded && outputContent.hiddenCount > 0) {
+							outputLines.push(
+								uiTheme.fg("dim", `… ${outputContent.hiddenCount} more lines (ctrl+o to expand)`),
+							);
+						}
+						if (statusLines.length > 0) {
+							if (outputLines.length > 0) {
+								outputLines.push(uiTheme.fg("dim", "Status"));
+							}
+							outputLines.push(...statusLines);
+						}
+						const cellLines = renderCodeCell(
+							{
+								code: cell.code,
+								language: "python",
+								index: i,
+								total: cellResults.length,
+								title: cell.title,
+								status: cell.status,
+								spinnerFrame: options.spinnerFrame,
+								duration: cell.durationMs,
+								output: outputLines.length > 0 ? outputLines.join("\n") : undefined,
+								outputMaxLines: outputLines.length,
+								codeMaxLines: expanded ? Number.POSITIVE_INFINITY : PYTHON_DEFAULT_PREVIEW_LINES,
+								expanded,
+								width,
+							},
+							uiTheme,
+						);
+						lines.push(...cellLines);
+						if (i < cellResults.length - 1) {
+							lines.push("");
+						}
+					}
+					if (jsonLines.length > 0) {
+						if (lines.length > 0) {
+							lines.push("");
+						}
+						lines.push(...jsonLines);
+					}
+					if (timeoutLine) {
+						lines.push(timeoutLine);
+					}
+					if (warningLine) {
+						lines.push(warningLine);
+					}
+					cached = { key, width, result: lines };
+					return lines;
+				},
+				invalidate: () => {
+					cached = undefined;
+				},
+			};
+		}
+
+		const displayOutput = output;
+		const combinedOutput = [displayOutput, ...jsonLines].filter(Boolean).join("\n");
+
+		const statusEvents = details?.statusEvents ?? [];
+		const statusLines = renderStatusEvents(
+			statusEvents,
+			uiTheme,
+			options.renderContext?.expanded ?? options.expanded,
+		);
+
+		if (!combinedOutput && statusLines.length === 0) {
+			const lines = [timeoutLine, warningLine].filter(Boolean) as string[];
+			return new Text(lines.join("\n"), 0, 0);
+		}
+
+		if (!combinedOutput && statusLines.length > 0) {
+			const lines = [uiTheme.fg("dim", "Status"), ...statusLines, timeoutLine, warningLine].filter(
+				Boolean,
+			) as string[];
+			return new Text(lines.join("\n"), 0, 0);
+		}
+
+		if (options.renderContext?.expanded ?? options.expanded) {
+			const styledOutput = combinedOutput
+				.split("\n")
+				.map(line => uiTheme.fg("toolOutput", line))
+				.join("\n");
+			const lines = [
+				styledOutput,
+				...(statusLines.length > 0 ? [uiTheme.fg("dim", "Status"), ...statusLines] : []),
+				timeoutLine,
+				warningLine,
+			].filter(Boolean) as string[];
+			return new Text(lines.join("\n"), 0, 0);
+		}
+
+		const styledOutput = combinedOutput
+			.split("\n")
+			.map(line => uiTheme.fg("toolOutput", line))
+			.join("\n");
+		const textContent = `\n${styledOutput}`;
+
+		let cachedWidth: number | undefined;
+		let cachedLines: string[] | undefined;
+		let cachedSkipped: number | undefined;
+		let cachedPreviewLines: number | undefined;
+
+		return {
+			render: (width: number): string[] => {
+				// Read mutable state at render time
+				const previewLines = options.renderContext?.previewLines ?? PYTHON_DEFAULT_PREVIEW_LINES;
+				if (cachedLines === undefined || cachedWidth !== width || cachedPreviewLines !== previewLines) {
+					const result = truncateToVisualLines(textContent, previewLines, width);
+					cachedLines = result.visualLines;
+					cachedSkipped = result.skippedCount;
+					cachedWidth = width;
+					cachedPreviewLines = previewLines;
+				}
+				const outputLines: string[] = [];
+				if (cachedSkipped && cachedSkipped > 0) {
+					outputLines.push("");
+					const skippedLine = uiTheme.fg(
+						"dim",
+						`… (${cachedSkipped} earlier lines, showing ${cachedLines.length} of ${cachedSkipped + cachedLines.length}) (ctrl+o to expand)`,
+					);
+					outputLines.push(truncateToWidth(skippedLine, width));
+				}
+				outputLines.push(...cachedLines);
+				if (statusLines.length > 0) {
+					outputLines.push(truncateToWidth(uiTheme.fg("dim", "Status"), width));
+					for (const statusLine of statusLines) {
+						outputLines.push(truncateToWidth(statusLine, width));
+					}
+				}
+				if (timeoutLine) {
+					outputLines.push(truncateToWidth(timeoutLine, width));
+				}
+				if (warningLine) {
+					outputLines.push(truncateToWidth(warningLine, width));
+				}
+				return outputLines;
+			},
+			invalidate: () => {
+				cachedWidth = undefined;
+				cachedLines = undefined;
+				cachedSkipped = undefined;
+				cachedPreviewLines = undefined;
+			},
+		};
 	}
 }
 
@@ -803,290 +1084,3 @@ function formatCellOutputLines(
 
 	return { lines: outputLines, hiddenCount };
 }
-
-export const pythonToolRenderer = {
-	renderCall(args: PythonRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
-		const ui = new ToolUIKit(uiTheme);
-		const cells = args.cells ?? [];
-		const cwd = getProjectDir();
-		let displayWorkdir = args.cwd;
-
-		if (displayWorkdir) {
-			const resolvedCwd = path.resolve(cwd);
-			const resolvedWorkdir = path.resolve(displayWorkdir);
-			if (resolvedWorkdir === resolvedCwd) {
-				displayWorkdir = undefined;
-			} else {
-				const relativePath = path.relative(resolvedCwd, resolvedWorkdir);
-				const isWithinCwd =
-					relativePath && !relativePath.startsWith("..") && !relativePath.startsWith(`..${path.sep}`);
-				if (isWithinCwd) {
-					displayWorkdir = relativePath;
-				}
-			}
-		}
-
-		const workdirLabel = displayWorkdir ? `cd ${displayWorkdir}` : undefined;
-		if (cells.length === 0) {
-			const prompt = uiTheme.fg("accent", ">>>");
-			const prefix = workdirLabel ? `${uiTheme.fg("dim", `${workdirLabel} && `)}` : "";
-			const text = ui.title(`${prompt} ${prefix}…`);
-			return new Text(text, 0, 0);
-		}
-
-		// Cache state - cells don't change, only width varies
-		let cached: { width: number; result: string[] } | undefined;
-
-		return {
-			render: (width: number): string[] => {
-				if (cached && cached.width === width) {
-					return cached.result;
-				}
-
-				const lines: string[] = [];
-				for (let i = 0; i < cells.length; i++) {
-					const cell = cells[i];
-					const cellTitle = cell.title;
-					const combinedTitle =
-						cellTitle && workdirLabel ? `${workdirLabel} · ${cellTitle}` : (cellTitle ?? workdirLabel);
-					const cellLines = renderCodeCell(
-						{
-							code: cell.code,
-							language: "python",
-							index: i,
-							total: cells.length,
-							title: combinedTitle,
-							status: "pending",
-							width,
-							codeMaxLines: PYTHON_DEFAULT_PREVIEW_LINES,
-							expanded: true,
-						},
-						uiTheme,
-					);
-					lines.push(...cellLines);
-					if (i < cells.length - 1) {
-						lines.push("");
-					}
-				}
-				cached = { width, result: lines };
-				return lines;
-			},
-			invalidate: () => {
-				cached = undefined;
-			},
-		};
-	},
-
-	renderResult(
-		result: { content: Array<{ type: string; text?: string }>; details?: PythonToolDetails },
-		options: RenderResultOptions & { renderContext?: PythonRenderContext },
-		uiTheme: Theme,
-	): Component {
-		const ui = new ToolUIKit(uiTheme);
-		const details = result.details;
-
-		const output =
-			options.renderContext?.output ?? (result.content?.find(c => c.type === "text")?.text ?? "").trimEnd();
-
-		const jsonOutputs = details?.jsonOutputs ?? [];
-		const jsonLines = jsonOutputs.flatMap((value, index) => {
-			const header = `JSON output ${index + 1}`;
-			const treeLines = renderJsonTree(value, uiTheme, options.renderContext?.expanded ?? options.expanded);
-			return [header, ...treeLines];
-		});
-
-		const truncation = details?.meta?.truncation;
-		const timeoutSeconds = options.renderContext?.timeout;
-		const timeoutLine =
-			typeof timeoutSeconds === "number"
-				? uiTheme.fg("dim", ui.wrapBrackets(`Timeout: ${timeoutSeconds}s`))
-				: undefined;
-		let warningLine: string | undefined;
-		if (truncation) {
-			const warnings: string[] = [];
-			if (truncation.artifactId) {
-				warnings.push(`Full output: artifact://${truncation.artifactId}`);
-			}
-			if (truncation.truncatedBy === "lines") {
-				warnings.push(`Truncated: showing ${truncation.outputLines} of ${truncation.totalLines} lines`);
-			} else {
-				warnings.push(
-					`Truncated: ${truncation.outputLines} lines shown (${ui.formatBytes(truncation.outputBytes)} limit)`,
-				);
-			}
-			if (warnings.length > 0) {
-				warningLine = uiTheme.fg("warning", ui.wrapBrackets(warnings.join(". ")));
-			}
-		}
-
-		const cellResults = details?.cells;
-		if (cellResults && cellResults.length > 0) {
-			// Cache state following Box pattern
-			let cached: { key: string; width: number; result: string[] } | undefined;
-
-			return {
-				render: (width: number): string[] => {
-					// Read mutable state at render time
-					const expanded = options.renderContext?.expanded ?? options.expanded;
-					const previewLines = options.renderContext?.previewLines ?? PYTHON_DEFAULT_PREVIEW_LINES;
-					const key = `${expanded}|${previewLines}|${options.spinnerFrame}`;
-					if (cached && cached.key === key && cached.width === width) {
-						return cached.result;
-					}
-
-					const lines: string[] = [];
-					for (let i = 0; i < cellResults.length; i++) {
-						const cell = cellResults[i];
-						const statusLines = renderStatusEvents(cell.statusEvents ?? [], uiTheme, expanded);
-						const outputContent = formatCellOutputLines(cell, expanded, previewLines, uiTheme);
-						const outputLines = [...outputContent.lines];
-						if (!expanded && outputContent.hiddenCount > 0) {
-							outputLines.push(
-								uiTheme.fg("dim", `… ${outputContent.hiddenCount} more lines (ctrl+o to expand)`),
-							);
-						}
-						if (statusLines.length > 0) {
-							if (outputLines.length > 0) {
-								outputLines.push(uiTheme.fg("dim", "Status"));
-							}
-							outputLines.push(...statusLines);
-						}
-						const cellLines = renderCodeCell(
-							{
-								code: cell.code,
-								language: "python",
-								index: i,
-								total: cellResults.length,
-								title: cell.title,
-								status: cell.status,
-								spinnerFrame: options.spinnerFrame,
-								duration: cell.durationMs,
-								output: outputLines.length > 0 ? outputLines.join("\n") : undefined,
-								outputMaxLines: outputLines.length,
-								codeMaxLines: expanded ? Number.POSITIVE_INFINITY : PYTHON_DEFAULT_PREVIEW_LINES,
-								expanded,
-								width,
-							},
-							uiTheme,
-						);
-						lines.push(...cellLines);
-						if (i < cellResults.length - 1) {
-							lines.push("");
-						}
-					}
-					if (jsonLines.length > 0) {
-						if (lines.length > 0) {
-							lines.push("");
-						}
-						lines.push(...jsonLines);
-					}
-					if (timeoutLine) {
-						lines.push(timeoutLine);
-					}
-					if (warningLine) {
-						lines.push(warningLine);
-					}
-					cached = { key, width, result: lines };
-					return lines;
-				},
-				invalidate: () => {
-					cached = undefined;
-				},
-			};
-		}
-
-		const displayOutput = output;
-		const combinedOutput = [displayOutput, ...jsonLines].filter(Boolean).join("\n");
-
-		const statusEvents = details?.statusEvents ?? [];
-		const statusLines = renderStatusEvents(
-			statusEvents,
-			uiTheme,
-			options.renderContext?.expanded ?? options.expanded,
-		);
-
-		if (!combinedOutput && statusLines.length === 0) {
-			const lines = [timeoutLine, warningLine].filter(Boolean) as string[];
-			return new Text(lines.join("\n"), 0, 0);
-		}
-
-		if (!combinedOutput && statusLines.length > 0) {
-			const lines = [uiTheme.fg("dim", "Status"), ...statusLines, timeoutLine, warningLine].filter(
-				Boolean,
-			) as string[];
-			return new Text(lines.join("\n"), 0, 0);
-		}
-
-		if (options.renderContext?.expanded ?? options.expanded) {
-			const styledOutput = combinedOutput
-				.split("\n")
-				.map(line => uiTheme.fg("toolOutput", line))
-				.join("\n");
-			const lines = [
-				styledOutput,
-				...(statusLines.length > 0 ? [uiTheme.fg("dim", "Status"), ...statusLines] : []),
-				timeoutLine,
-				warningLine,
-			].filter(Boolean) as string[];
-			return new Text(lines.join("\n"), 0, 0);
-		}
-
-		const styledOutput = combinedOutput
-			.split("\n")
-			.map(line => uiTheme.fg("toolOutput", line))
-			.join("\n");
-		const textContent = `\n${styledOutput}`;
-
-		let cachedWidth: number | undefined;
-		let cachedLines: string[] | undefined;
-		let cachedSkipped: number | undefined;
-		let cachedPreviewLines: number | undefined;
-
-		return {
-			render: (width: number): string[] => {
-				// Read mutable state at render time
-				const previewLines = options.renderContext?.previewLines ?? PYTHON_DEFAULT_PREVIEW_LINES;
-				if (cachedLines === undefined || cachedWidth !== width || cachedPreviewLines !== previewLines) {
-					const result = truncateToVisualLines(textContent, previewLines, width);
-					cachedLines = result.visualLines;
-					cachedSkipped = result.skippedCount;
-					cachedWidth = width;
-					cachedPreviewLines = previewLines;
-				}
-				const outputLines: string[] = [];
-				if (cachedSkipped && cachedSkipped > 0) {
-					outputLines.push("");
-					const skippedLine = uiTheme.fg(
-						"dim",
-						`… (${cachedSkipped} earlier lines, showing ${cachedLines.length} of ${cachedSkipped + cachedLines.length}) (ctrl+o to expand)`,
-					);
-					outputLines.push(truncateToWidth(skippedLine, width));
-				}
-				outputLines.push(...cachedLines);
-				if (statusLines.length > 0) {
-					outputLines.push(truncateToWidth(uiTheme.fg("dim", "Status"), width));
-					for (const statusLine of statusLines) {
-						outputLines.push(truncateToWidth(statusLine, width));
-					}
-				}
-				if (timeoutLine) {
-					outputLines.push(truncateToWidth(timeoutLine, width));
-				}
-				if (warningLine) {
-					outputLines.push(truncateToWidth(warningLine, width));
-				}
-				return outputLines;
-			},
-			invalidate: () => {
-				cachedWidth = undefined;
-				cachedLines = undefined;
-				cachedSkipped = undefined;
-				cachedPreviewLines = undefined;
-			},
-		};
-	},
-	mergeCallAndResult: true,
-	inline: true,
-};
-
-registerRenderer("python", pythonToolRenderer);

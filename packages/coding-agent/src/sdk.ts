@@ -96,8 +96,6 @@ export interface CreateAgentSessionOptions {
 	cwd?: string;
 	/** Global config directory. Default: ~/.arcane/agent */
 	agentDir?: string;
-	/** Spawns to allow. Default: "*" */
-	spawns?: string;
 
 	/** Auth storage for credentials. Default: discoverAuthStorage(agentDir) */
 	authStorage?: AuthStorage;
@@ -721,7 +719,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		isSubagent: options.isSubagent ?? false,
 		getSessionFile: () => sessionManager.getSessionFile() ?? null,
 		getSessionId: () => sessionManager.getSessionId?.() ?? null,
-		getSessionSpawns: () => options.spawns ?? "*",
 		getModelString: () => (hasExplicitModel && model ? formatModelString(model) : undefined),
 		getActiveModelString: () => {
 			const activeModel = agent?.state.model;

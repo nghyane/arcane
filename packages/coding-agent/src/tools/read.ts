@@ -27,12 +27,10 @@ import { formatDimensionNote, resizeImage } from "../utils/image-resize";
 import { detectSupportedImageMimeTypeFromFile } from "../utils/mime";
 import { ensureTool } from "../utils/tools-manager";
 import { applyListLimit } from "./list-limit";
-import type { OutputMeta } from "./output-meta";
+import { type OutputMeta, toolResult } from "./output-meta";
 import { resolveReadPath, resolveToCwd } from "./path-utils";
 import { formatAge, shortenPath, wrapBrackets } from "./render-utils";
-import { registerRenderer } from "./renderers";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
-import { toolResult } from "./tool-result";
 
 // Document types convertible via markitdown
 const CONVERTIBLE_EXTENSIONS = new Set([".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".rtf", ".epub"]);
@@ -533,7 +531,7 @@ type ReadParams = ReadToolInput;
  * Reads files with support for images, documents (via markitdown), and text.
  * Directories return a formatted listing with modification times.
  */
-export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails> {
+export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails, Theme> {
 	readonly name = "read";
 	readonly label = "Read";
 	description = "Read file contents, list directories, or view images";
@@ -1056,20 +1054,7 @@ export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails> {
 
 		return resultBuilder.done();
 	}
-}
 
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface ReadRenderArgs {
-	path?: string;
-	file_path?: string;
-	offset?: number;
-	limit?: number;
-}
-
-export const readToolRenderer = {
 	renderCall(args: ReadRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const rawPath = args.file_path || args.path || "";
 		const filePath = shortenPath(rawPath);
@@ -1085,7 +1070,7 @@ export const readToolRenderer = {
 
 		const text = renderStatusLine({ icon: "pending", title: "Read", description: pathDisplay }, uiTheme);
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: ReadToolDetails },
@@ -1181,8 +1166,12 @@ export const readToolRenderer = {
 				cachedLines = undefined;
 			},
 		};
-	},
-	mergeCallAndResult: true,
-};
+	}
+}
 
-registerRenderer("read", readToolRenderer);
+interface ReadRenderArgs {
+	path?: string;
+	file_path?: string;
+	offset?: number;
+	limit?: number;
+}

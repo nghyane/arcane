@@ -1,7 +1,7 @@
 import { ArtifactManager } from "../session/artifacts";
 import type { ToolSession } from ".";
 
-export interface TailBuffer {
+interface TailBuffer {
 	append(chunk: string): void;
 	text(): string;
 	bytes(): number;
@@ -35,7 +35,7 @@ export function createTailBuffer(maxBytes: number): TailBuffer {
 	};
 }
 
-export function getArtifactManager(session: ToolSession): ArtifactManager | null {
+function getArtifactManager(session: ToolSession): ArtifactManager | null {
 	if (session.artifactManager) {
 		return session.artifactManager;
 	}

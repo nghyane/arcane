@@ -19,7 +19,7 @@ import type {
 import type { ToolSession } from "../sdk";
 import { formatDimensionNote, resizeImage } from "../utils/image-resize";
 import { htmlToBasicMarkdown } from "../web/scrapers/types";
-import type { OutputMeta } from "./output-meta";
+import { type OutputMeta, toolResult } from "./output-meta";
 import stealthTamperingScript from "./puppeteer/00_stealth_tampering.txt" with { type: "text" };
 import stealthActivityScript from "./puppeteer/01_stealth_activity.txt" with { type: "text" };
 import stealthHairlineScript from "./puppeteer/02_stealth_hairline.txt" with { type: "text" };
@@ -35,7 +35,6 @@ import stealthHardwareScript from "./puppeteer/11_stealth_hardware.txt" with { t
 import stealthCodecsScript from "./puppeteer/12_stealth_codecs.txt" with { type: "text" };
 import stealthWorkerScript from "./puppeteer/13_stealth_worker.txt" with { type: "text" };
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
-import { toolResult } from "./tool-result";
 
 /**
  * Lazy-import puppeteer from a safe CWD so cosmiconfig doesn't choke
@@ -398,7 +397,7 @@ const browserSchema = Type.Object({
 });
 
 /** Input schema for the Puppeteer tool. */
-export type BrowserParams = Static<typeof browserSchema>;
+type BrowserParams = Static<typeof browserSchema>;
 
 /** Details describing a Puppeteer tool execution result. */
 export interface BrowserToolDetails {
@@ -416,7 +415,7 @@ export interface BrowserToolDetails {
 	meta?: OutputMeta;
 }
 
-export interface ObservationEntry {
+interface ObservationEntry {
 	id: number;
 	role: string;
 	name?: string;
@@ -426,7 +425,7 @@ export interface ObservationEntry {
 	states: string[];
 }
 
-export interface Observation {
+interface Observation {
 	url: string;
 	title?: string;
 	viewport: { width: number; height: number; deviceScaleFactor?: number };
@@ -441,7 +440,7 @@ export interface Observation {
 	elements: ObservationEntry[];
 }
 
-export interface ReadableResult {
+interface ReadableResult {
 	url: string;
 	title?: string;
 	byline?: string;

@@ -62,9 +62,11 @@ export async function executeSwarmAgent(
 
 	const agentDef: AgentDefinition = {
 		name: agent.name,
+		kind: "hybrid",
 		description: `Swarm agent: ${agent.role}`,
 		systemPrompt: buildSystemPrompt(agent),
 		source: "project" as AgentSource,
+		tools: [],
 	};
 
 	await stateTracker.updateAgent(agent.name, {

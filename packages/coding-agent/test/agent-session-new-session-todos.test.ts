@@ -9,7 +9,7 @@ import { AuthStorage } from "@nghyane/arcane/session/auth-storage";
 import { SessionManager } from "@nghyane/arcane/session/session-manager";
 import type { ToolSession } from "@nghyane/arcane/tools";
 import { TodoWriteTool } from "@nghyane/arcane/tools";
-import { Agent } from "@nghyane/arcane-agent";
+import { Agent, type AgentTool } from "@nghyane/arcane-agent";
 import { getBundledModel } from "@nghyane/arcane-ai";
 import { Snowflake } from "@nghyane/arcane-utils";
 
@@ -51,7 +51,7 @@ describe("AgentSession newSession clears todo artifacts", () => {
 			initialState: {
 				model,
 				systemPrompt: "test",
-				tools: [new TodoWriteTool(toolSession)],
+				tools: [new TodoWriteTool(toolSession) as AgentTool],
 			},
 		});
 

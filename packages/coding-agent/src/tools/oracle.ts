@@ -1,6 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import { createUnifiedSubagentRenderer } from "../task/render";
-import { buildSubagentRenderConfig, registerRenderer } from "./renderers";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -46,5 +44,3 @@ export const oracleConfig: SubagentConfig<typeof schema.properties> = {
 	},
 	toolDescription: "Strategic advisor for planning, debugging strategy, and design review — read-only, no changes",
 };
-
-registerRenderer(oracleConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(oracleConfig)));

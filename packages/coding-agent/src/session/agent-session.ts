@@ -14,7 +14,6 @@
  */
 
 import * as fs from "node:fs";
-import * as path from "node:path";
 
 import {
 	type Agent,
@@ -32,17 +31,13 @@ import type {
 	Model,
 	ProviderSessionState,
 	TextContent,
-	ToolCall,
 	ToolChoice,
-	Usage,
 	UsageReport,
 } from "@nghyane/arcane-ai";
-import { isContextOverflow, modelsAreEqual, supportsXhigh } from "@nghyane/arcane-ai";
+import { isContextOverflow, modelsAreEqual } from "@nghyane/arcane-ai";
 import { abortableSleep, isEnoent, logger } from "@nghyane/arcane-utils";
 import { getAgentDbPath } from "@nghyane/arcane-utils/dirs";
-import type { Rule } from "../capability/rule";
-import { MODEL_ROLE_IDS, type ModelRegistry, type ModelRole } from "../config/model-registry";
-import { expandRoleAlias, parseModelString } from "../config/model-resolver";
+import type { ModelRegistry, ModelRole } from "../config/model-registry";
 import {
 	expandPromptTemplate,
 	type PromptTemplate,
@@ -51,7 +46,6 @@ import {
 } from "../config/prompt-templates";
 import type { Settings, SkillsSettings } from "../config/settings";
 import { type BashResult, executeBash as executeBashCommand } from "../exec/bash-executor";
-import { exportSessionToHtml } from "../export/html";
 import type { TtsrManager, TtsrMatchContext } from "../export/ttsr";
 import type { LoadedCustomCommand } from "../extensibility/custom-commands";
 import type { CustomTool, CustomToolContext } from "../extensibility/custom-tools/types";
@@ -80,15 +74,12 @@ import type { HookCommandContext } from "../extensibility/hooks/types";
 import type { Skill, SkillWarning } from "../extensibility/skills";
 import { expandSlashCommand, type FileSlashCommand } from "../extensibility/slash-commands";
 import { executePython as executePythonCommand, type PythonResult } from "../ipy/executor";
-import { getCurrentThemeName, theme } from "../modes/theme/theme";
-import { normalizeDiff, normalizeToLF, ParseError, previewPatch, stripBom } from "../patch";
-import ttsrInterruptTemplate from "../prompts/system/ttsr-interrupt.md" with { type: "text" };
+import { theme } from "../modes/theme/theme";
 import verificationReminderTemplate from "../prompts/system/verification-reminder.md" with { type: "text" };
 import type { SecretObfuscator } from "../secrets/obfuscator";
 import { closeAllConnections } from "../ssh/connection-manager";
 import { unmountAll } from "../ssh/sshfs-mount";
 import { outputMeta } from "../tools/output-meta";
-import { resolveToCwd } from "../tools/path-utils";
 import type { TodoItem } from "../tools/todo-write";
 import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import { extractFileMentions, generateFileMentionMessages } from "../utils/file-mentions";
@@ -97,134 +88,58 @@ import {
 	calculateContextTokens,
 	collectEntriesForBranchSummary,
 	compact,
-	estimateTokens,
 	generateBranchSummary,
 	prepareCompaction,
 	shouldCompact,
 } from "./compaction";
 import { DEFAULT_PRUNE_CONFIG, pruneToolOutputs } from "./compaction/pruning";
-import {
-	type BashExecutionMessage,
-	type BranchSummaryMessage,
-	bashExecutionToText,
-	type CompactionSummaryMessage,
-	type CustomMessage,
-	type FileMentionMessage,
-	type HookMessage,
-	type PythonExecutionMessage,
-	pythonExecutionToText,
-} from "./messages";
+import type { BashExecutionMessage, CustomMessage, PythonExecutionMessage } from "./messages";
+import { ModelController } from "./model-controller";
+import { isRetryableErrorMessage, isUsageLimitErrorMessage, parseRetryAfterMs } from "./retry-utils";
 import type { BranchSummaryEntry, CompactionEntry, NewSessionOptions, SessionManager } from "./session-manager";
 import { getLatestCompactionEntry } from "./session-manager";
+import type {
+	AgentSessionConfig,
+	AgentSessionEvent,
+	AgentSessionEventListener,
+	HandoffResult,
+	ModelCycleResult,
+	PromptOptions,
+	RoleModelCycleResult,
+	SessionStats,
+} from "./session-types";
+import * as sessionStats from "./stats";
+import {
+	createStreamingEditState,
+	invalidateFileCacheForPath,
+	maybeAbortStreamingEdit,
+	preCacheStreamingEditFile,
+	resetStreamingEditState,
+	rewriteToolCallArgs,
+} from "./streaming-edit";
+import {
+	addPendingTtsrInjections,
+	createTtsrState,
+	extractTtsrRuleNames,
+	findTtsrAssistantIndex,
+	getTtsrInjectionContent,
+	getTtsrToolMatchContext,
+	markTtsrInjected,
+	queueDeferredTtsrInjectionIfNeeded,
+	shouldInterruptForTtsrMatch,
+} from "./ttsr";
 
-/** Session-specific events that extend the core AgentEvent */
-export type AgentSessionEvent =
-	| AgentEvent
-	| { type: "auto_compaction_start"; reason: "threshold" | "overflow" }
-	| {
-			type: "auto_compaction_end";
-			result: CompactionResult | undefined;
-			aborted: boolean;
-			willRetry: boolean;
-			errorMessage?: string;
-	  }
-	| { type: "auto_retry_start"; attempt: number; maxAttempts: number; delayMs: number; errorMessage: string }
-	| { type: "auto_retry_end"; success: boolean; attempt: number; finalError?: string }
-	| { type: "ttsr_triggered"; rules: Rule[] }
-	| { type: "todo_reminder"; todos: TodoItem[]; attempt: number; maxAttempts: number };
-
-/** Listener function for agent session events */
-export type AgentSessionEventListener = (event: AgentSessionEvent) => void;
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface AgentSessionConfig {
-	agent: Agent;
-	sessionManager: SessionManager;
-	settings: Settings;
-	/** Models to cycle through with Ctrl+P (from --models flag) */
-	scopedModels?: Array<{ model: Model; thinkingLevel: ThinkingLevel }>;
-	/** Prompt templates for expansion */
-	promptTemplates?: PromptTemplate[];
-	/** File-based slash commands for expansion */
-	slashCommands?: FileSlashCommand[];
-	/** Extension runner (created in main.ts with wrapped tools) */
-	extensionRunner?: ExtensionRunner;
-	/** Loaded skills (already discovered by SDK) */
-	skills?: Skill[];
-	/** Skill loading warnings (already captured by SDK) */
-	skillWarnings?: SkillWarning[];
-	/** Custom commands (TypeScript slash commands) */
-	customCommands?: LoadedCustomCommand[];
-	skillsSettings?: Required<SkillsSettings>;
-	/** Model registry for API key resolution and model discovery */
-	modelRegistry: ModelRegistry;
-	/** Tool registry for LSP and settings */
-	toolRegistry?: Map<string, AgentTool>;
-	/** System prompt builder that can consider tool availability */
-	rebuildSystemPrompt?: (toolNames: string[], tools: Map<string, AgentTool>) => Promise<string>;
-	/** TTSR manager for time-traveling stream rules */
-	ttsrManager?: TtsrManager;
-	/** Force X-Initiator: agent for GitHub Copilot model selections in this session. */
-	forceCopilotAgentInitiator?: boolean;
-	/** Secret obfuscator for deobfuscating streaming edit content */
-	obfuscator?: SecretObfuscator;
-}
-
-/** Options for AgentSession.prompt() */
-export interface PromptOptions {
-	/** Whether to expand file-based prompt templates (default: true) */
-	expandPromptTemplates?: boolean;
-	/** Image attachments */
-	images?: ImageContent[];
-	/** When streaming, how to queue the message: "steer" (interrupt) or "followUp" (wait). */
-	streamingBehavior?: "steer" | "followUp";
-	/** Optional tool choice override for the next LLM call. */
-	toolChoice?: ToolChoice;
-	/** Mark the user message as synthetic (system-injected). */
-	synthetic?: boolean;
-}
-
-/** Result from cycleModel() */
-export interface ModelCycleResult {
-	model: Model;
-	thinkingLevel: ThinkingLevel;
-	/** Whether cycling through scoped models (--models flag) or all available */
-	isScoped: boolean;
-}
-
-/** Result from cycleRoleModels() */
-export interface RoleModelCycleResult {
-	model: Model;
-	thinkingLevel: ThinkingLevel;
-	role: ModelRole;
-}
-
-/** Session statistics for /session command */
-export interface SessionStats {
-	sessionFile: string | undefined;
-	sessionId: string;
-	userMessages: number;
-	assistantMessages: number;
-	toolCalls: number;
-	toolResults: number;
-	totalMessages: number;
-	tokens: {
-		input: number;
-		output: number;
-		cacheRead: number;
-		cacheWrite: number;
-		total: number;
-	};
-	cost: number;
-}
-
-/** Result from handoff() */
-export interface HandoffResult {
-	document: string;
-}
+// Re-export types for downstream consumers
+export type {
+	AgentSessionConfig,
+	AgentSessionEvent,
+	AgentSessionEventListener,
+	HandoffResult,
+	ModelCycleResult,
+	PromptOptions,
+	RoleModelCycleResult,
+	SessionStats,
+};
 
 /** Internal marker for hook messages queued through the agent loop */
 // ============================================================================
@@ -232,10 +147,6 @@ export interface HandoffResult {
 // ============================================================================
 
 /** Standard thinking levels */
-const THINKING_LEVELS: ThinkingLevel[] = ["off", "minimal", "low", "medium", "high"];
-
-/** Thinking levels including xhigh (for supported models) */
-const THINKING_LEVELS_WITH_XHIGH: ThinkingLevel[] = ["off", "minimal", "low", "medium", "high", "xhigh"];
 
 const noOpUIContext: ExtensionUIContext = {
 	select: async (_title, _options, _dialogOptions) => undefined,
@@ -283,7 +194,7 @@ export class AgentSession {
 	readonly sessionManager: SessionManager;
 	readonly settings: Settings;
 
-	#scopedModels: Array<{ model: Model; thinkingLevel: ThinkingLevel }>;
+	#model: ModelController;
 	#promptTemplates: PromptTemplate[];
 	#slashCommands: FileSlashCommand[];
 
@@ -342,34 +253,28 @@ export class AgentSession {
 
 	#skillsSettings: Required<SkillsSettings> | undefined;
 
-	// Model registry for API key resolution
-	#modelRegistry: ModelRegistry;
-
 	// Tool registry and prompt builder for extensions
 	#toolRegistry: Map<string, AgentTool>;
 	#rebuildSystemPrompt: ((toolNames: string[], tools: Map<string, AgentTool>) => Promise<string>) | undefined;
 	#baseSystemPrompt: string;
-	#forceCopilotAgentInitiator = false;
 
 	// TTSR manager for time-traveling stream rules
 	#ttsrManager: TtsrManager | undefined = undefined;
-	#pendingTtsrInjections: Rule[] = [];
-	#ttsrAbortPending = false;
-	#ttsrRetryToken = 0;
+	#ttsr = createTtsrState();
 
-	#streamingEditAbortTriggered = false;
-	#streamingEditCheckedLineCounts = new Map<string, number>();
-	#streamingEditFileCache = new Map<string, string>();
+	#streamingEdit = createStreamingEditState();
 	#promptInFlight = false;
 	#obfuscator: SecretObfuscator | undefined;
 	#promptGeneration = 0;
-	#providerSessionState = new Map<string, ProviderSessionState>();
 
 	constructor(config: AgentSessionConfig) {
 		this.agent = config.agent;
 		this.sessionManager = config.sessionManager;
 		this.settings = config.settings;
-		this.#scopedModels = config.scopedModels ?? [];
+		this.#model = new ModelController(config.agent, config.settings, config.sessionManager, config.modelRegistry, {
+			scopedModels: config.scopedModels,
+			forceCopilotAgentInitiator: config.forceCopilotAgentInitiator,
+		});
 		this.#promptTemplates = config.promptTemplates ?? [];
 		this.#slashCommands = config.slashCommands ?? [];
 		this.#extensionRunner = config.extensionRunner;
@@ -377,14 +282,12 @@ export class AgentSession {
 		this.#skillWarnings = config.skillWarnings ?? [];
 		this.#customCommands = config.customCommands ?? [];
 		this.#skillsSettings = config.skillsSettings;
-		this.#modelRegistry = config.modelRegistry;
 		this.#toolRegistry = config.toolRegistry ?? new Map();
 		this.#rebuildSystemPrompt = config.rebuildSystemPrompt;
 		this.#baseSystemPrompt = this.agent.state.systemPrompt;
 		this.#ttsrManager = config.ttsrManager;
-		this.#forceCopilotAgentInitiator = config.forceCopilotAgentInitiator ?? false;
 		this.#obfuscator = config.obfuscator;
-		this.agent.providerSessionState = this.#providerSessionState;
+		this.agent.providerSessionState = this.#model.providerSessionState;
 
 		// Always subscribe to agent events for internal handling
 		// (session persistence, hooks, auto-compaction, retry logic)
@@ -393,12 +296,12 @@ export class AgentSession {
 
 	/** Model registry for API key resolution and model discovery */
 	get modelRegistry(): ModelRegistry {
-		return this.#modelRegistry;
+		return this.#model.registry;
 	}
 
 	/** Provider-scoped mutable state store for transport/session caches. */
 	get providerSessionState(): Map<string, ProviderSessionState> {
-		return this.#providerSessionState;
+		return this.#model.providerSessionState;
 	}
 
 	/** TTSR manager for time-traveling stream rules */
@@ -408,7 +311,7 @@ export class AgentSession {
 
 	/** Whether a TTSR abort is pending (stream was aborted to inject rules) */
 	get isTtsrAbortPending(): boolean {
-		return this.#ttsrAbortPending;
+		return this.#ttsr.abortPending;
 	}
 
 	// =========================================================================
@@ -456,7 +359,7 @@ export class AgentSession {
 		await this.#emitSessionEvent(event);
 
 		if (event.type === "turn_start") {
-			this.#resetStreamingEditState();
+			resetStreamingEditState(this.#streamingEdit);
 			// TTSR: Reset buffer on turn start
 			this.#ttsrManager?.resetBuffer();
 		}
@@ -476,7 +379,11 @@ export class AgentSession {
 			} else if (assistantEvent.type === "thinking_delta") {
 				matchContext = { source: "thinking" };
 			} else if (assistantEvent.type === "toolcall_delta") {
-				matchContext = this.#getTtsrToolMatchContext(event.message, assistantEvent.contentIndex);
+				matchContext = getTtsrToolMatchContext(
+					event.message,
+					assistantEvent.contentIndex,
+					this.sessionManager.getCwd(),
+				);
 			}
 
 			if (matchContext && "delta" in assistantEvent) {
@@ -484,42 +391,45 @@ export class AgentSession {
 				if (matches.length > 0) {
 					// Queue rules for injection; mark as injected only after successful enqueue.
 
-					this.#addPendingTtsrInjections(matches);
+					addPendingTtsrInjections(this.#ttsr, matches);
 
-					if (this.#shouldInterruptForTtsrMatch(matchContext)) {
+					if (shouldInterruptForTtsrMatch(this.#ttsrManager, matchContext)) {
 						// Abort the stream immediately — do not gate on extension callbacks
-						this.#ttsrAbortPending = true;
+						this.#ttsr.abortPending = true;
 						this.agent.abort();
 						// Notify extensions (fire-and-forget, does not block abort)
 						this.#emitSessionEvent({ type: "ttsr_triggered", rules: matches }).catch(() => {});
 						// Schedule retry after a short delay
-						const retryToken = ++this.#ttsrRetryToken;
+						const retryToken = ++this.#ttsr.retryToken;
 						const generation = this.#promptGeneration;
 						const targetMessageTimestamp =
 							event.message.role === "assistant" ? event.message.timestamp : undefined;
 						setTimeout(async () => {
-							if (this.#ttsrRetryToken !== retryToken) {
+							if (this.#ttsr.retryToken !== retryToken) {
 								return;
 							}
 
-							const targetAssistantIndex = this.#findTtsrAssistantIndex(targetMessageTimestamp);
+							const targetAssistantIndex = findTtsrAssistantIndex(
+								this.agent.state.messages,
+								targetMessageTimestamp,
+							);
 							if (
-								!this.#ttsrAbortPending ||
+								!this.#ttsr.abortPending ||
 								this.#promptGeneration !== generation ||
 								targetAssistantIndex === -1
 							) {
-								this.#ttsrAbortPending = false;
-								this.#pendingTtsrInjections = [];
+								this.#ttsr.abortPending = false;
+								this.#ttsr.pendingInjections = [];
 								return;
 							}
-							this.#ttsrAbortPending = false;
+							this.#ttsr.abortPending = false;
 							const ttsrSettings = this.#ttsrManager?.getSettings();
 							if (ttsrSettings?.contextMode === "discard") {
 								// Remove the partial/aborted assistant turn from agent state
 								this.agent.replaceMessages(this.agent.state.messages.slice(0, targetAssistantIndex));
 							}
 							// Inject TTSR rules as system reminder before retry
-							const injection = this.#getTtsrInjectionContent();
+							const injection = getTtsrInjectionContent(this.#ttsr);
 							if (injection) {
 								const details = { rules: injection.rules.map(rule => rule.name) };
 								this.agent.appendMessage({
@@ -536,7 +446,7 @@ export class AgentSession {
 									false,
 									details,
 								);
-								this.#markTtsrInjected(details.rules);
+								markTtsrInjected(this.#ttsrManager, this.sessionManager, details.rules);
 							}
 							this.agent.continue().catch(() => {});
 						}, 50);
@@ -547,14 +457,21 @@ export class AgentSession {
 		}
 
 		if (event.type === "message_update" && event.assistantMessageEvent.type === "toolcall_start") {
-			this.#preCacheStreamingEditFile(event);
+			preCacheStreamingEditFile(event, this.#streamingEdit, this.settings, this.sessionManager.getCwd());
 		}
 
 		if (
 			event.type === "message_update" &&
 			(event.assistantMessageEvent.type === "toolcall_end" || event.assistantMessageEvent.type === "toolcall_delta")
 		) {
-			this.#maybeAbortStreamingEdit(event);
+			maybeAbortStreamingEdit(
+				event,
+				this.#streamingEdit,
+				this.settings,
+				this.agent,
+				this.sessionManager.getCwd(),
+				this.#obfuscator,
+			);
 		}
 
 		// Handle session persistence
@@ -569,7 +486,7 @@ export class AgentSession {
 					event.message.details,
 				);
 				if (event.message.role === "custom" && event.message.customType === "ttsr-injection") {
-					this.#markTtsrInjected(this.#extractTtsrRuleNames(event.message.details));
+					markTtsrInjected(this.#ttsrManager, this.sessionManager, extractTtsrRuleNames(event.message.details));
 				}
 			} else if (
 				event.message.role === "user" ||
@@ -586,7 +503,7 @@ export class AgentSession {
 			if (event.message.role === "assistant") {
 				this.#lastAssistantMessage = event.message;
 				const assistantMsg = event.message as AssistantMessage;
-				this.#queueDeferredTtsrInjectionIfNeeded(assistantMsg);
+				queueDeferredTtsrInjectionIfNeeded(this.#ttsr, this.agent, assistantMsg);
 				if (this.#handoffAbortController) {
 					this.#skipPostTurnMaintenanceAssistantTimestamp = assistantMsg.timestamp;
 				}
@@ -615,11 +532,11 @@ export class AgentSession {
 					content?: Array<TextContent | ImageContent>;
 				};
 				if ($normative && toolCallId && this.settings.get("normativeRewrite")) {
-					await this.#rewriteToolCallArgs(toolCallId, $normative);
+					await rewriteToolCallArgs(this.agent, this.sessionManager, toolCallId, $normative);
 				}
 				// Invalidate streaming edit cache when edit tool completes to prevent stale data
 				if (toolName === "edit" && details?.path) {
-					this.#invalidateFileCacheForPath(details.path);
+					invalidateFileCacheForPath(this.#streamingEdit, details.path, this.sessionManager.getCwd());
 				}
 				// Track file modifications for auto-verification
 				if ((toolName === "edit" || toolName === "write") && !isError) {
@@ -686,186 +603,6 @@ export class AgentSession {
 			this.#retryPromise = undefined;
 		}
 	}
-
-	/** Get TTSR injection payload and clear pending injections. */
-	#getTtsrInjectionContent(): { content: string; rules: Rule[] } | undefined {
-		if (this.#pendingTtsrInjections.length === 0) return undefined;
-		const rules = this.#pendingTtsrInjections;
-		const content = rules
-			.map(r => renderPromptTemplate(ttsrInterruptTemplate, { name: r.name, path: r.path, content: r.content }))
-			.join("\n\n");
-		this.#pendingTtsrInjections = [];
-		return { content, rules };
-	}
-
-	#addPendingTtsrInjections(rules: Rule[]): void {
-		const seen = new Set(this.#pendingTtsrInjections.map(rule => rule.name));
-		for (const rule of rules) {
-			if (seen.has(rule.name)) continue;
-			this.#pendingTtsrInjections.push(rule);
-			seen.add(rule.name);
-		}
-	}
-
-	#extractTtsrRuleNames(details: unknown): string[] {
-		if (!details || typeof details !== "object" || Array.isArray(details)) {
-			return [];
-		}
-		const rules = (details as { rules?: unknown }).rules;
-		if (!Array.isArray(rules)) {
-			return [];
-		}
-		return rules.filter((ruleName): ruleName is string => typeof ruleName === "string");
-	}
-
-	#markTtsrInjected(ruleNames: string[]): void {
-		const uniqueRuleNames = Array.from(
-			new Set(ruleNames.map(ruleName => ruleName.trim()).filter(ruleName => ruleName.length > 0)),
-		);
-		if (uniqueRuleNames.length === 0) {
-			return;
-		}
-		this.#ttsrManager?.markInjectedByNames(uniqueRuleNames);
-		this.sessionManager.appendTtsrInjection(uniqueRuleNames);
-	}
-
-	#findTtsrAssistantIndex(targetTimestamp: number | undefined): number {
-		const messages = this.agent.state.messages;
-		for (let i = messages.length - 1; i >= 0; i--) {
-			const message = messages[i];
-			if (message.role !== "assistant") {
-				continue;
-			}
-			if (targetTimestamp === undefined || message.timestamp === targetTimestamp) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	#shouldInterruptForTtsrMatch(matchContext: TtsrMatchContext): boolean {
-		const mode = this.#ttsrManager?.getSettings().interruptMode ?? "always";
-		if (mode === "never") {
-			return false;
-		}
-		if (mode === "prose-only") {
-			return matchContext.source === "text" || matchContext.source === "thinking";
-		}
-		if (mode === "tool-only") {
-			return matchContext.source === "tool";
-		}
-		return true;
-	}
-
-	#queueDeferredTtsrInjectionIfNeeded(assistantMsg: AssistantMessage): void {
-		if (this.#ttsrAbortPending || this.#pendingTtsrInjections.length === 0) {
-			return;
-		}
-		if (assistantMsg.stopReason === "aborted" || assistantMsg.stopReason === "error") {
-			this.#pendingTtsrInjections = [];
-			return;
-		}
-
-		const injection = this.#getTtsrInjectionContent();
-		if (!injection) {
-			return;
-		}
-		this.agent.followUp({
-			role: "custom",
-			customType: "ttsr-injection",
-			content: injection.content,
-			display: false,
-			details: { rules: injection.rules.map(rule => rule.name) },
-			timestamp: Date.now(),
-		});
-		// Mark as injected after this custom message is delivered and persisted (handled in message_end).
-		// followUp() only enqueues; resume on the next tick once streaming settles.
-		setTimeout(() => {
-			if (this.agent.state.isStreaming || !this.agent.hasQueuedMessages()) {
-				return;
-			}
-			this.agent.continue().catch(() => {});
-		}, 0);
-	}
-
-	/** Build TTSR match context for tool call argument deltas. */
-	#getTtsrToolMatchContext(message: AgentMessage, contentIndex: number): TtsrMatchContext {
-		const context: TtsrMatchContext = { source: "tool" };
-		if (message.role !== "assistant") {
-			return context;
-		}
-
-		const content = message.content;
-		if (!Array.isArray(content) || contentIndex < 0 || contentIndex >= content.length) {
-			return context;
-		}
-
-		const block = content[contentIndex];
-		if (!block || typeof block !== "object" || block.type !== "toolCall") {
-			return context;
-		}
-
-		const toolCall = block as ToolCall;
-		context.toolName = toolCall.name;
-		context.streamKey = toolCall.id ? `toolcall:${toolCall.id}` : `tool:${toolCall.name}:${contentIndex}`;
-		context.filePaths = this.#extractTtsrFilePathsFromArgs(toolCall.arguments);
-		return context;
-	}
-
-	/** Extract path-like arguments from tool call payload for TTSR glob matching. */
-	#extractTtsrFilePathsFromArgs(args: unknown): string[] | undefined {
-		if (!args || typeof args !== "object" || Array.isArray(args)) {
-			return undefined;
-		}
-
-		const rawPaths: string[] = [];
-		for (const [key, value] of Object.entries(args)) {
-			const normalizedKey = key.toLowerCase();
-			if (typeof value === "string" && (normalizedKey === "path" || normalizedKey.endsWith("path"))) {
-				rawPaths.push(value);
-				continue;
-			}
-			if (Array.isArray(value) && (normalizedKey === "paths" || normalizedKey.endsWith("paths"))) {
-				for (const candidate of value) {
-					if (typeof candidate === "string") {
-						rawPaths.push(candidate);
-					}
-				}
-			}
-		}
-
-		const normalizedPaths = rawPaths.flatMap(pathValue => this.#normalizeTtsrPathCandidates(pathValue));
-		if (normalizedPaths.length === 0) {
-			return undefined;
-		}
-
-		return Array.from(new Set(normalizedPaths));
-	}
-
-	/** Convert a path argument into stable relative/absolute candidates for glob checks. */
-	#normalizeTtsrPathCandidates(rawPath: string): string[] {
-		const trimmed = rawPath.trim();
-		if (trimmed.length === 0) {
-			return [];
-		}
-
-		const normalizedInput = trimmed.replaceAll("\\", "/");
-		const candidates = new Set<string>([normalizedInput]);
-		if (normalizedInput.startsWith("./")) {
-			candidates.add(normalizedInput.slice(2));
-		}
-
-		const cwd = this.sessionManager.getCwd();
-		const absolutePath = path.isAbsolute(trimmed) ? path.normalize(trimmed) : path.resolve(cwd, trimmed);
-		candidates.add(absolutePath.replaceAll("\\", "/"));
-
-		const relativePath = path.relative(cwd, absolutePath).replaceAll("\\", "/");
-		if (relativePath && relativePath !== "." && !relativePath.startsWith("../") && relativePath !== "..") {
-			candidates.add(relativePath);
-		}
-
-		return Array.from(candidates);
-	}
 	/** Extract text content from a message */
 	#getUserMessageText(message: Message): string {
 		if (message.role !== "user") return "";
@@ -888,216 +625,6 @@ export class AgentSession {
 			}
 		}
 		return undefined;
-	}
-
-	#resetStreamingEditState(): void {
-		this.#streamingEditAbortTriggered = false;
-		this.#streamingEditCheckedLineCounts.clear();
-		this.#streamingEditFileCache.clear();
-	}
-
-	async #preCacheStreamingEditFile(event: AgentEvent): Promise<void> {
-		if (!this.settings.get("edit.streamingAbort")) return;
-		if (event.type !== "message_update") return;
-		const assistantEvent = event.assistantMessageEvent;
-		if (assistantEvent.type !== "toolcall_start") return;
-		if (event.message.role !== "assistant") return;
-
-		const contentIndex = assistantEvent.contentIndex;
-		const messageContent = event.message.content;
-		if (!Array.isArray(messageContent) || contentIndex >= messageContent.length) return;
-		const toolCall = messageContent[contentIndex] as ToolCall;
-		if (toolCall.name !== "edit") return;
-
-		const args = toolCall.arguments;
-		if (!args || typeof args !== "object" || Array.isArray(args)) return;
-		if ("old_text" in args || "new_text" in args) return;
-
-		const path = typeof args.path === "string" ? args.path : undefined;
-		if (!path) return;
-
-		const resolvedPath = resolveToCwd(path, this.sessionManager.getCwd());
-		this.#ensureFileCache(resolvedPath);
-	}
-
-	#ensureFileCache(resolvedPath: string): void {
-		if (this.#streamingEditFileCache.has(resolvedPath)) return;
-
-		try {
-			const rawText = fs.readFileSync(resolvedPath, "utf-8");
-			const { text } = stripBom(rawText);
-			this.#streamingEditFileCache.set(resolvedPath, normalizeToLF(text));
-		} catch {
-			// Don't cache on read errors (including ENOENT) - let the edit tool handle them
-		}
-	}
-
-	/** Invalidate cache for a file after an edit completes to prevent stale data */
-	#invalidateFileCacheForPath(path: string): void {
-		const resolvedPath = resolveToCwd(path, this.sessionManager.getCwd());
-		this.#streamingEditFileCache.delete(resolvedPath);
-	}
-
-	#maybeAbortStreamingEdit(event: AgentEvent): void {
-		if (!this.settings.get("edit.streamingAbort")) return;
-		if (this.#streamingEditAbortTriggered) return;
-		if (event.type !== "message_update") return;
-		const assistantEvent = event.assistantMessageEvent;
-		if (assistantEvent.type !== "toolcall_end" && assistantEvent.type !== "toolcall_delta") return;
-		if (event.message.role !== "assistant") return;
-
-		const contentIndex = assistantEvent.contentIndex;
-		const messageContent = event.message.content;
-		if (!Array.isArray(messageContent) || contentIndex >= messageContent.length) return;
-		const toolCall = messageContent[contentIndex] as ToolCall;
-		if (toolCall.name !== "edit" || !toolCall.id) return;
-
-		const args = toolCall.arguments;
-		if (!args || typeof args !== "object" || Array.isArray(args)) return;
-		if ("old_text" in args || "new_text" in args) return;
-
-		const path = typeof args.path === "string" ? args.path : undefined;
-		const diff = typeof args.diff === "string" ? args.diff : undefined;
-		const op = typeof args.op === "string" ? args.op : undefined;
-		if (!path || !diff) return;
-		if (op && op !== "update") return;
-
-		if (!diff.includes("\n")) return;
-		const lastNewlineIndex = diff.lastIndexOf("\n");
-		if (lastNewlineIndex < 0) return;
-		const diffForCheck = diff.endsWith("\n") ? diff : diff.slice(0, lastNewlineIndex + 1);
-		if (diffForCheck.trim().length === 0) return;
-
-		let normalizedDiff = normalizeDiff(diffForCheck.replace(/\r/g, ""));
-		if (!normalizedDiff) return;
-		// Deobfuscate the diff so removed lines match real file content
-		if (this.#obfuscator) normalizedDiff = this.#obfuscator.deobfuscate(normalizedDiff);
-		if (!normalizedDiff) return;
-		const lines = normalizedDiff.split("\n");
-		const hasChangeLine = lines.some(line => line.startsWith("+") || line.startsWith("-"));
-		if (!hasChangeLine) return;
-
-		const lineCount = lines.length;
-		const lastChecked = this.#streamingEditCheckedLineCounts.get(toolCall.id);
-		if (lastChecked !== undefined && lineCount <= lastChecked) return;
-		this.#streamingEditCheckedLineCounts.set(toolCall.id, lineCount);
-
-		const rename = typeof args.rename === "string" ? args.rename : undefined;
-
-		const removedLines = lines
-			.filter(line => line.startsWith("-") && !line.startsWith("--- "))
-			.map(line => line.slice(1));
-		if (removedLines.length > 0) {
-			const resolvedPath = resolveToCwd(path, this.sessionManager.getCwd());
-			let cachedContent = this.#streamingEditFileCache.get(resolvedPath);
-			if (cachedContent === undefined) {
-				this.#ensureFileCache(resolvedPath);
-				cachedContent = this.#streamingEditFileCache.get(resolvedPath);
-			}
-			if (cachedContent !== undefined) {
-				const missing = removedLines.find(line => !cachedContent.includes(normalizeToLF(line)));
-				if (missing) {
-					this.#streamingEditAbortTriggered = true;
-					logger.warn("Streaming edit aborted due to patch preview failure", {
-						toolCallId: toolCall.id,
-						path,
-						error: `Failed to find expected lines in ${path}:\n${missing}`,
-					});
-					this.agent.abort();
-				}
-				return;
-			}
-			if (assistantEvent.type === "toolcall_delta") return;
-			void this.#checkRemovedLinesAsync(toolCall.id, path, resolvedPath, removedLines);
-			return;
-		}
-
-		if (assistantEvent.type === "toolcall_delta") return;
-		void this.#checkPreviewPatchAsync(toolCall.id, path, rename, normalizedDiff);
-	}
-
-	async #checkRemovedLinesAsync(
-		toolCallId: string,
-		path: string,
-		resolvedPath: string,
-		removedLines: string[],
-	): Promise<void> {
-		if (this.#streamingEditAbortTriggered) return;
-		try {
-			const { text } = stripBom(await Bun.file(resolvedPath).text());
-			const normalizedContent = normalizeToLF(text);
-			const missing = removedLines.find(line => !normalizedContent.includes(normalizeToLF(line)));
-			if (missing) {
-				this.#streamingEditAbortTriggered = true;
-				logger.warn("Streaming edit aborted due to patch preview failure", {
-					toolCallId,
-					path,
-					error: `Failed to find expected lines in ${path}:\n${missing}`,
-				});
-				this.agent.abort();
-			}
-		} catch (err) {
-			// Ignore ENOENT (file not found) - let the edit tool handle missing files
-			// Also ignore other errors during async fallback
-			if (!isEnoent(err)) {
-				// Log unexpected errors but don't abort
-			}
-		}
-	}
-
-	async #checkPreviewPatchAsync(
-		toolCallId: string,
-		path: string,
-		rename: string | undefined,
-		normalizedDiff: string,
-	): Promise<void> {
-		if (this.#streamingEditAbortTriggered) return;
-		try {
-			await previewPatch(
-				{ path, op: "update", rename, diff: normalizedDiff },
-				{
-					cwd: this.sessionManager.getCwd(),
-					allowFuzzy: this.settings.get("edit.fuzzyMatch"),
-					fuzzyThreshold: this.settings.get("edit.fuzzyThreshold"),
-				},
-			);
-		} catch (error) {
-			if (error instanceof ParseError) return;
-			this.#streamingEditAbortTriggered = true;
-			logger.warn("Streaming edit aborted due to patch preview failure", {
-				toolCallId,
-				path,
-				error: error instanceof Error ? error.message : String(error),
-			});
-			this.agent.abort();
-		}
-	}
-
-	/** Rewrite tool call arguments in agent state and persisted session history. */
-	async #rewriteToolCallArgs(toolCallId: string, args: Record<string, unknown>): Promise<void> {
-		let updated = false;
-		const messages = this.agent.state.messages;
-		for (let i = messages.length - 1; i >= 0; i--) {
-			const msg = messages[i];
-			if (msg.role !== "assistant") continue;
-			const assistantMsg = msg as AssistantMessage;
-			if (!Array.isArray(assistantMsg.content)) continue;
-			for (const block of assistantMsg.content) {
-				if (typeof block !== "object" || block === null) continue;
-				if (!("type" in block) || (block as { type?: string }).type !== "toolCall") continue;
-				const toolCall = block as { id?: string; arguments?: Record<string, unknown> };
-				if (toolCall.id === toolCallId) {
-					toolCall.arguments = args;
-					updated = true;
-					break;
-				}
-			}
-			if (updated) break;
-		}
-
-		if (updated) {
-			await this.sessionManager.rewriteAssistantToolCallArgs(toolCallId, args);
-		}
 	}
 
 	/** Emit extension events based on session events */
@@ -1252,10 +779,10 @@ export class AgentSession {
 	async dispose(): Promise<void> {
 		await this.sessionManager.flush();
 		await cleanupSshResources();
-		for (const state of this.#providerSessionState.values()) {
+		for (const state of this.#model.providerSessionState.values()) {
 			state.close();
 		}
-		this.#providerSessionState.clear();
+		this.#model.providerSessionState.clear();
 		this.#disconnectFromAgent();
 		this.#eventListeners = [];
 	}
@@ -1273,20 +800,6 @@ export class AgentSession {
 	get model(): Model | undefined {
 		return this.agent.state.model;
 	}
-
-	#applySessionModelOverrides(model: Model): Model {
-		if (!this.#forceCopilotAgentInitiator || model.provider !== "github-copilot") {
-			return model;
-		}
-		return {
-			...model,
-			headers: {
-				...model.headers,
-				"X-Initiator": "agent",
-			},
-		};
-	}
-
 	/** Current thinking level */
 	get thinkingLevel(): ThinkingLevel {
 		return this.agent.state.thinkingLevel;
@@ -1382,7 +895,7 @@ export class AgentSession {
 
 		const getCustomToolContext = (): CustomToolContext => ({
 			sessionManager: this.sessionManager,
-			modelRegistry: this.#modelRegistry,
+			modelRegistry: this.#model.registry,
 			model: this.model,
 			isIdle: () => !this.isStreaming,
 			hasQueuedMessages: () => this.queuedMessageCount > 0,
@@ -1455,11 +968,11 @@ export class AgentSession {
 
 	/** Scoped models for cycling (from --models flag) */
 	get scopedModels(): ReadonlyArray<{ model: Model; thinkingLevel: ThinkingLevel }> {
-		return this.#scopedModels;
+		return this.#model.scopedModels;
 	}
 
 	resolveRoleModel(role: ModelRole): Model | undefined {
-		return this.#resolveRoleModel(role, this.#modelRegistry.getAvailable(), this.model);
+		return this.#model.resolveRoleModel(role);
 	}
 
 	get promptTemplates(): ReadonlyArray<PromptTemplate> {
@@ -1607,7 +1120,7 @@ export class AgentSession {
 			}
 
 			// Validate API key
-			const apiKey = await this.#modelRegistry.getApiKey(this.model, this.sessionId);
+			const apiKey = await this.#model.registry.getApiKey(this.model, this.sessionId);
 			if (!apiKey) {
 				throw new Error(
 					`No API key found for ${this.model.provider}.\n\n` +
@@ -1729,7 +1242,7 @@ export class AgentSession {
 			hasUI: false,
 			cwd: this.sessionManager.getCwd(),
 			sessionManager: this.sessionManager,
-			modelRegistry: this.#modelRegistry,
+			modelRegistry: this.#model.registry,
 			model: this.model ?? undefined,
 			isIdle: () => !this.isStreaming,
 			abort: () => {
@@ -2181,278 +1694,47 @@ export class AgentSession {
 	// Model Management
 	// =========================================================================
 
-	/**
-	 * Set model directly.
-	 * Validates API key, saves to session and settings.
-	 * @throws Error if no API key available for the model
-	 */
 	async setModel(model: Model, role: ModelRole = "default"): Promise<void> {
-		const apiKey = await this.#modelRegistry.getApiKey(model, this.sessionId);
-		if (!apiKey) {
-			throw new Error(`No API key for ${model.provider}/${model.id}`);
-		}
-
-		this.#setModelWithProviderSessionReset(model);
-		this.sessionManager.appendModelChange(`${model.provider}/${model.id}`, role);
-		this.settings.setModelRole(role, `${model.provider}/${model.id}`);
-		this.settings.getStorage()?.recordModelUsage(`${model.provider}/${model.id}`);
-
-		// Re-clamp thinking level for new model's capabilities without persisting settings
-		this.setThinkingLevel(this.thinkingLevel);
+		return this.#model.setModel(model, role);
 	}
 
-	/**
-	 * Set model temporarily (for this session only).
-	 * Validates API key, saves to session log but NOT to settings.
-	 * @throws Error if no API key available for the model
-	 */
 	async setModelTemporary(model: Model): Promise<void> {
-		const apiKey = await this.#modelRegistry.getApiKey(model, this.sessionId);
-		if (!apiKey) {
-			throw new Error(`No API key for ${model.provider}/${model.id}`);
-		}
-
-		this.#setModelWithProviderSessionReset(model);
-		this.sessionManager.appendModelChange(`${model.provider}/${model.id}`, "temporary");
-		this.settings.getStorage()?.recordModelUsage(`${model.provider}/${model.id}`);
-
-		// Re-clamp thinking level for new model's capabilities without persisting settings
-		this.setThinkingLevel(this.thinkingLevel);
+		return this.#model.setModelTemporary(model);
 	}
 
-	/**
-	 * Cycle to next/previous model.
-	 * Uses scoped models (from --models flag) if available, otherwise all available models.
-	 * @param direction - "forward" (default) or "backward"
-	 * @returns The new model info, or undefined if only one model available
-	 */
 	async cycleModel(direction: "forward" | "backward" = "forward"): Promise<ModelCycleResult | undefined> {
-		if (this.#scopedModels.length > 0) {
-			return this.#cycleScopedModel(direction);
-		}
-		return this.#cycleAvailableModel(direction);
+		return this.#model.cycleModel(direction);
 	}
 
-	/**
-	 * Cycle through configured role models in a fixed order.
-	 * Skips missing roles.
-	 * @param roleOrder - Order of roles to cycle through (e.g., ["oracle", "default", "fast"])
-	 * @param options - Optional settings: `temporary` to not persist to settings
-	 */
 	async cycleRoleModels(
 		roleOrder: readonly ModelRole[],
 		options?: { temporary?: boolean },
 	): Promise<RoleModelCycleResult | undefined> {
-		const availableModels = this.#modelRegistry.getAvailable();
-		if (availableModels.length === 0) return undefined;
-
-		const currentModel = this.model;
-		if (!currentModel) return undefined;
-		const roleModels: Array<{ role: ModelRole; model: Model }> = [];
-
-		for (const role of roleOrder) {
-			const roleModelStr =
-				role === "default"
-					? (this.settings.getModelRole("default") ?? `${currentModel.provider}/${currentModel.id}`)
-					: this.settings.getModelRole(role);
-			if (!roleModelStr) continue;
-
-			const expandedRoleModelStr = expandRoleAlias(roleModelStr, this.settings);
-			const parsed = parseModelString(expandedRoleModelStr);
-			let match: Model | undefined;
-			if (parsed) {
-				match = availableModels.find(m => m.provider === parsed.provider && m.id === parsed.id);
-			}
-			if (!match) {
-				match = availableModels.find(m => m.id.toLowerCase() === expandedRoleModelStr.toLowerCase());
-			}
-			if (!match) continue;
-
-			roleModels.push({ role, model: match });
-		}
-
-		if (roleModels.length <= 1) return undefined;
-
-		const lastRole = this.sessionManager.getLastModelChangeRole();
-		let currentIndex = lastRole
-			? roleModels.findIndex(entry => entry.role === lastRole)
-			: roleModels.findIndex(entry => modelsAreEqual(entry.model, currentModel));
-		if (currentIndex === -1) currentIndex = 0;
-
-		const nextIndex = (currentIndex + 1) % roleModels.length;
-		const next = roleModels[nextIndex];
-
-		if (options?.temporary) {
-			await this.setModelTemporary(next.model);
-		} else {
-			await this.setModel(next.model, next.role);
-		}
-
-		return { model: next.model, thinkingLevel: this.thinkingLevel, role: next.role };
+		return this.#model.cycleRoleModels(roleOrder, options);
 	}
 
-	async #getScopedModelsWithApiKey(): Promise<Array<{ model: Model; thinkingLevel: ThinkingLevel }>> {
-		const apiKeysByProvider = new Map<string, string | undefined>();
-		const result: Array<{ model: Model; thinkingLevel: ThinkingLevel }> = [];
-
-		for (const scoped of this.#scopedModels) {
-			const provider = scoped.model.provider;
-			let apiKey: string | undefined;
-			if (apiKeysByProvider.has(provider)) {
-				apiKey = apiKeysByProvider.get(provider);
-			} else {
-				apiKey = await this.#modelRegistry.getApiKeyForProvider(provider, this.sessionId);
-				apiKeysByProvider.set(provider, apiKey);
-			}
-
-			if (apiKey) {
-				result.push(scoped);
-			}
-		}
-
-		return result;
-	}
-
-	async #cycleScopedModel(direction: "forward" | "backward"): Promise<ModelCycleResult | undefined> {
-		const scopedModels = await this.#getScopedModelsWithApiKey();
-		if (scopedModels.length <= 1) return undefined;
-
-		const currentModel = this.model;
-		let currentIndex = scopedModels.findIndex(sm => modelsAreEqual(sm.model, currentModel));
-
-		if (currentIndex === -1) currentIndex = 0;
-		const len = scopedModels.length;
-		const nextIndex = direction === "forward" ? (currentIndex + 1) % len : (currentIndex - 1 + len) % len;
-		const next = scopedModels[nextIndex];
-
-		// Apply model
-		this.#setModelWithProviderSessionReset(next.model);
-		this.sessionManager.appendModelChange(`${next.model.provider}/${next.model.id}`);
-		this.settings.setModelRole("default", `${next.model.provider}/${next.model.id}`);
-		this.settings.getStorage()?.recordModelUsage(`${next.model.provider}/${next.model.id}`);
-
-		// Apply thinking level (setThinkingLevel clamps to model capabilities)
-		this.setThinkingLevel(next.thinkingLevel);
-
-		return { model: next.model, thinkingLevel: this.thinkingLevel, isScoped: true };
-	}
-
-	async #cycleAvailableModel(direction: "forward" | "backward"): Promise<ModelCycleResult | undefined> {
-		const availableModels = this.#modelRegistry.getAvailable();
-		if (availableModels.length <= 1) return undefined;
-
-		const currentModel = this.model;
-		let currentIndex = availableModels.findIndex(m => modelsAreEqual(m, currentModel));
-
-		if (currentIndex === -1) currentIndex = 0;
-		const len = availableModels.length;
-		const nextIndex = direction === "forward" ? (currentIndex + 1) % len : (currentIndex - 1 + len) % len;
-		const nextModel = availableModels[nextIndex];
-
-		const apiKey = await this.#modelRegistry.getApiKey(nextModel, this.sessionId);
-		if (!apiKey) {
-			throw new Error(`No API key for ${nextModel.provider}/${nextModel.id}`);
-		}
-
-		this.#setModelWithProviderSessionReset(nextModel);
-		this.sessionManager.appendModelChange(`${nextModel.provider}/${nextModel.id}`);
-		this.settings.setModelRole("default", `${nextModel.provider}/${nextModel.id}`);
-		this.settings.getStorage()?.recordModelUsage(`${nextModel.provider}/${nextModel.id}`);
-
-		// Re-clamp thinking level for new model's capabilities without persisting settings
-		this.setThinkingLevel(this.thinkingLevel);
-
-		return { model: nextModel, thinkingLevel: this.thinkingLevel, isScoped: false };
-	}
-
-	/**
-	 * Get all available models with valid API keys.
-	 */
 	getAvailableModels(): Model[] {
-		return this.#modelRegistry.getAvailable();
+		return this.#model.getAvailableModels();
 	}
 
-	// =========================================================================
-	// Thinking Level Management
-	// =========================================================================
-
-	/**
-	 * Set thinking level.
-	 * Clamps to model capabilities based on available thinking levels.
-	 * Saves to session and settings only if the level actually changes.
-	 */
-	setThinkingLevel(level: ThinkingLevel, persist: boolean = false): void {
-		const availableLevels = this.getAvailableThinkingLevels();
-		const effectiveLevel = availableLevels.includes(level) ? level : this.#clampThinkingLevel(level, availableLevels);
-
-		// Only persist if actually changing
-		const isChanging = effectiveLevel !== this.agent.state.thinkingLevel;
-
-		this.agent.setThinkingLevel(effectiveLevel);
-
-		if (isChanging) {
-			this.sessionManager.appendThinkingLevelChange(effectiveLevel);
-			if (persist) {
-				this.settings.set("defaultThinkingLevel", effectiveLevel);
-			}
-		}
+	setThinkingLevel(level: ThinkingLevel, persist = false): void {
+		this.#model.setThinkingLevel(level, persist);
 	}
 
-	/**
-	 * Cycle to next thinking level.
-	 * @returns New level, or undefined if model doesn't support thinking
-	 */
 	cycleThinkingLevel(): ThinkingLevel | undefined {
-		if (!this.supportsThinking()) return undefined;
-
-		const levels = this.getAvailableThinkingLevels();
-		const currentIndex = levels.indexOf(this.thinkingLevel);
-		const nextIndex = (currentIndex + 1) % levels.length;
-		const nextLevel = levels[nextIndex];
-
-		this.setThinkingLevel(nextLevel);
-		return nextLevel;
+		return this.#model.cycleThinkingLevel();
 	}
 
-	/**
-	 * Get available thinking levels for current model.
-	 * The provider will clamp to what the specific model supports internally.
-	 */
 	getAvailableThinkingLevels(): ThinkingLevel[] {
-		if (!this.supportsThinking()) return ["off"];
-		return this.supportsXhighThinking() ? THINKING_LEVELS_WITH_XHIGH : THINKING_LEVELS;
+		return this.#model.getAvailableThinkingLevels();
 	}
 
-	/**
-	 * Check if current model supports xhigh thinking level.
-	 */
 	supportsXhighThinking(): boolean {
-		return this.model ? supportsXhigh(this.model) : false;
+		return this.#model.supportsXhighThinking();
 	}
 
-	/**
-	 * Check if current model supports thinking/reasoning.
-	 */
 	supportsThinking(): boolean {
-		return !!this.model?.reasoning;
-	}
-
-	#clampThinkingLevel(level: ThinkingLevel, availableLevels: ThinkingLevel[]): ThinkingLevel {
-		const ordered = THINKING_LEVELS_WITH_XHIGH;
-		const available = new Set(availableLevels);
-		const requestedIndex = ordered.indexOf(level);
-		if (requestedIndex === -1) {
-			return availableLevels[0] ?? "off";
-		}
-		for (let i = requestedIndex; i < ordered.length; i++) {
-			const candidate = ordered[i];
-			if (available.has(candidate)) return candidate;
-		}
-		for (let i = requestedIndex - 1; i >= 0; i--) {
-			const candidate = ordered[i];
-			if (available.has(candidate)) return candidate;
-		}
-		return availableLevels[0] ?? "off";
+		return this.#model.supportsThinking();
 	}
 
 	// =========================================================================
@@ -2500,7 +1782,7 @@ export class AgentSession {
 		await this.sessionManager.rewriteEntries();
 		const sessionContext = this.sessionManager.buildSessionContext();
 		this.agent.replaceMessages(sessionContext.messages);
-		this.#closeCodexProviderSessionsForHistoryRewrite();
+		this.#model.closeCodexProviderSessionsForHistoryRewrite();
 		return result;
 	}
 
@@ -2522,7 +1804,7 @@ export class AgentSession {
 
 			const compactionSettings = this.settings.getGroup("compaction");
 			const compactionModel = this.model;
-			const apiKey = await this.#modelRegistry.getApiKey(compactionModel, this.sessionId);
+			const apiKey = await this.#model.registry.getApiKey(compactionModel, this.sessionId);
 			if (!apiKey) {
 				throw new Error(`No API key for ${compactionModel.provider}`);
 			}
@@ -2624,7 +1906,7 @@ export class AgentSession {
 			const newEntries = this.sessionManager.getEntries();
 			const sessionContext = this.sessionManager.buildSessionContext();
 			this.agent.replaceMessages(sessionContext.messages);
-			this.#closeCodexProviderSessionsForHistoryRewrite();
+			this.#model.closeCodexProviderSessionsForHistoryRewrite();
 
 			// Get the saved compaction entry for the hook
 			const savedCompactionEntry = newEntries.find(e => e.type === "compaction" && e.summary === summary) as
@@ -3057,20 +2339,20 @@ Be thorough - include exact file paths, function names, error messages, and tech
 	}
 
 	async #resolveContextPromotionTarget(currentModel: Model, contextWindow: number): Promise<Model | undefined> {
-		const availableModels = this.#modelRegistry.getAvailable();
+		const availableModels = this.#model.registry.getAvailable();
 		if (availableModels.length === 0) return undefined;
 
 		const candidates: Model[] = [];
 		const seen = new Set<string>();
 		const addCandidate = (candidate: Model | undefined): void => {
 			if (!candidate) return;
-			const key = this.#getModelKey(candidate);
+			const key = this.#model.getModelKey(candidate);
 			if (seen.has(key)) return;
 			seen.add(key);
 			candidates.push(candidate);
 		};
 
-		addCandidate(this.#resolveContextPromotionConfiguredTarget(currentModel, availableModels));
+		addCandidate(this.#model.resolveContextPromotionTarget(currentModel, availableModels));
 
 		const sameProviderLarger = [...availableModels]
 			.filter(
@@ -3081,109 +2363,13 @@ Be thorough - include exact file paths, function names, error messages, and tech
 		for (const candidate of candidates) {
 			if (modelsAreEqual(candidate, currentModel)) continue;
 			if (candidate.contextWindow <= contextWindow) continue;
-			const apiKey = await this.#modelRegistry.getApiKey(candidate, this.sessionId);
+			const apiKey = await this.#model.registry.getApiKey(candidate, this.sessionId);
 			if (!apiKey) continue;
 			return candidate;
 		}
 
 		return undefined;
 	}
-
-	#setModelWithProviderSessionReset(model: Model): void {
-		const currentModel = this.model;
-		if (currentModel) {
-			this.#closeProviderSessionsForModelSwitch(currentModel, model);
-		}
-		this.agent.setModel(this.#applySessionModelOverrides(model));
-	}
-
-	#closeCodexProviderSessionsForHistoryRewrite(): void {
-		const currentModel = this.model;
-		if (!currentModel || currentModel.api !== "openai-codex-responses") return;
-		this.#closeProviderSessionsForModelSwitch(currentModel, currentModel);
-	}
-
-	#closeProviderSessionsForModelSwitch(currentModel: Model, nextModel: Model): void {
-		if (currentModel.api !== "openai-codex-responses" && nextModel.api !== "openai-codex-responses") return;
-
-		const providerKey = "openai-codex-responses";
-		const state = this.#providerSessionState.get(providerKey);
-		if (!state) return;
-
-		try {
-			state.close();
-		} catch (error) {
-			logger.warn("Failed to close provider session state during model switch", {
-				providerKey,
-				error: String(error),
-			});
-		}
-
-		this.#providerSessionState.delete(providerKey);
-	}
-
-	#getModelKey(model: Model): string {
-		return `${model.provider}/${model.id}`;
-	}
-
-	#resolveContextPromotionConfiguredTarget(currentModel: Model, availableModels: Model[]): Model | undefined {
-		const configuredTarget = currentModel.contextPromotionTarget?.trim();
-		if (!configuredTarget) return undefined;
-
-		const parsed = parseModelString(configuredTarget);
-		if (parsed) {
-			const explicitModel = availableModels.find(m => m.provider === parsed.provider && m.id === parsed.id);
-			if (explicitModel) return explicitModel;
-		}
-
-		return availableModels.find(m => m.provider === currentModel.provider && m.id === configuredTarget);
-	}
-
-	#resolveRoleModel(role: ModelRole, availableModels: Model[], currentModel: Model | undefined): Model | undefined {
-		const roleModelStr =
-			role === "default"
-				? (this.settings.getModelRole("default") ??
-					(currentModel ? `${currentModel.provider}/${currentModel.id}` : undefined))
-				: this.settings.getModelRole(role);
-
-		if (!roleModelStr) return undefined;
-
-		const parsed = parseModelString(roleModelStr);
-		if (parsed) {
-			return availableModels.find(m => m.provider === parsed.provider && m.id === parsed.id);
-		}
-		const roleLower = roleModelStr.toLowerCase();
-		return availableModels.find(m => m.id.toLowerCase() === roleLower);
-	}
-
-	#getCompactionModelCandidates(availableModels: Model[]): Model[] {
-		const candidates: Model[] = [];
-		const seen = new Set<string>();
-
-		const addCandidate = (model: Model | undefined): void => {
-			if (!model) return;
-			const key = this.#getModelKey(model);
-			if (seen.has(key)) return;
-			seen.add(key);
-			candidates.push(model);
-		};
-
-		const currentModel = this.model;
-		for (const role of MODEL_ROLE_IDS) {
-			addCandidate(this.#resolveRoleModel(role, availableModels, currentModel));
-		}
-
-		const sortedByContext = [...availableModels].sort((a, b) => b.contextWindow - a.contextWindow);
-		for (const model of sortedByContext) {
-			if (!seen.has(this.#getModelKey(model))) {
-				addCandidate(model);
-				break;
-			}
-		}
-
-		return candidates;
-	}
-
 	/**
 	 * Internal: Run auto-compaction with events.
 	 */
@@ -3208,7 +2394,7 @@ Be thorough - include exact file paths, function names, error messages, and tech
 				return;
 			}
 
-			const availableModels = this.#modelRegistry.getAvailable();
+			const availableModels = this.#model.registry.getAvailable();
 			if (availableModels.length === 0) {
 				await this.#emitSessionEvent({
 					type: "auto_compaction_end",
@@ -3291,13 +2477,13 @@ Be thorough - include exact file paths, function names, error messages, and tech
 				details = hookCompaction.details;
 				preserveData ??= hookCompaction.preserveData;
 			} else {
-				const candidates = this.#getCompactionModelCandidates(availableModels);
+				const candidates = this.#model.getCompactionModelCandidates(availableModels);
 				const retrySettings = this.settings.getGroup("retry");
 				let compactResult: CompactionResult | undefined;
 				let lastError: unknown;
 
 				for (const candidate of candidates) {
-					const apiKey = await this.#modelRegistry.getApiKey(candidate, this.sessionId);
+					const apiKey = await this.#model.registry.getApiKey(candidate, this.sessionId);
 					if (!apiKey) continue;
 
 					let attempt = 0;
@@ -3318,11 +2504,11 @@ Be thorough - include exact file paths, function names, error messages, and tech
 							}
 
 							const message = error instanceof Error ? error.message : String(error);
-							const retryAfterMs = this.#parseRetryAfterMsFromError(message);
+							const retryAfterMs = parseRetryAfterMs(message);
 							const shouldRetry =
 								retrySettings.enabled &&
 								attempt < retrySettings.maxRetries &&
-								(retryAfterMs !== undefined || this.#isRetryableErrorMessage(message));
+								(retryAfterMs !== undefined || isRetryableErrorMessage(message));
 							if (!shouldRetry) {
 								lastError = error;
 								break;
@@ -3402,7 +2588,7 @@ Be thorough - include exact file paths, function names, error messages, and tech
 			const newEntries = this.sessionManager.getEntries();
 			const sessionContext = this.sessionManager.buildSessionContext();
 			this.agent.replaceMessages(sessionContext.messages);
-			this.#closeCodexProviderSessionsForHistoryRewrite();
+			this.#model.closeCodexProviderSessionsForHistoryRewrite();
 
 			// Get the saved compaction entry for the hook
 			const savedCompactionEntry = newEntries.find(e => e.type === "compaction" && e.summary === summary) as
@@ -3505,65 +2691,8 @@ Be thorough - include exact file paths, function names, error messages, and tech
 		if (isContextOverflow(message, contextWindow)) return false;
 
 		const err = message.errorMessage;
-		return this.#isRetryableErrorMessage(err);
+		return isRetryableErrorMessage(err);
 	}
-
-	#isRetryableErrorMessage(errorMessage: string): boolean {
-		// Match: overloaded_error, rate limit, usage limit, 429, 500, 502, 503, 504, service unavailable, connection error, fetch failed, retry delay exceeded
-		return /overloaded|rate.?limit|usage.?limit|too many requests|429|500|502|503|504|service.?unavailable|server error|internal error|connection.?error|unable to connect|fetch failed|retry delay/i.test(
-			errorMessage,
-		);
-	}
-
-	#isUsageLimitErrorMessage(errorMessage: string): boolean {
-		return /usage.?limit|usage_limit_reached|limit_reached/i.test(errorMessage);
-	}
-
-	#parseRetryAfterMsFromError(errorMessage: string): number | undefined {
-		const now = Date.now();
-		const retryAfterMsMatch = /retry-after-ms\s*[:=]\s*(\d+)/i.exec(errorMessage);
-		if (retryAfterMsMatch) {
-			return Math.max(0, Number(retryAfterMsMatch[1]));
-		}
-
-		const retryAfterMatch = /retry-after\s*[:=]\s*([^\s,;]+)/i.exec(errorMessage);
-		if (retryAfterMatch) {
-			const value = retryAfterMatch[1];
-			const seconds = Number(value);
-			if (!Number.isNaN(seconds)) {
-				return Math.max(0, seconds * 1000);
-			}
-			const dateMs = Date.parse(value);
-			if (!Number.isNaN(dateMs)) {
-				return Math.max(0, dateMs - now);
-			}
-		}
-
-		const resetMsMatch = /x-ratelimit-reset-ms\s*[:=]\s*(\d+)/i.exec(errorMessage);
-		if (resetMsMatch) {
-			const resetMs = Number(resetMsMatch[1]);
-			if (!Number.isNaN(resetMs)) {
-				if (resetMs > 1_000_000_000_000) {
-					return Math.max(0, resetMs - now);
-				}
-				return Math.max(0, resetMs);
-			}
-		}
-
-		const resetMatch = /x-ratelimit-reset\s*[:=]\s*(\d+)/i.exec(errorMessage);
-		if (resetMatch) {
-			const resetSeconds = Number(resetMatch[1]);
-			if (!Number.isNaN(resetSeconds)) {
-				if (resetSeconds > 1_000_000_000) {
-					return Math.max(0, resetSeconds * 1000 - now);
-				}
-				return Math.max(0, resetSeconds * 1000);
-			}
-		}
-
-		return undefined;
-	}
-
 	/**
 	 * Handle retryable errors with exponential backoff.
 	 * @returns true if retry was initiated, false if max retries exceeded or disabled
@@ -3598,9 +2727,9 @@ Be thorough - include exact file paths, function names, error messages, and tech
 		const errorMessage = message.errorMessage || "Unknown error";
 		let delayMs = retrySettings.baseDelayMs * 2 ** (this.#retryAttempt - 1);
 
-		if (this.model && this.#isUsageLimitErrorMessage(errorMessage)) {
-			const retryAfterMs = this.#parseRetryAfterMsFromError(errorMessage);
-			const switched = await this.#modelRegistry.authStorage.markUsageLimitReached(
+		if (this.model && isUsageLimitErrorMessage(errorMessage)) {
+			const retryAfterMs = parseRetryAfterMs(errorMessage);
+			const switched = await this.#model.registry.authStorage.markUsageLimitReached(
 				this.model.provider,
 				this.sessionId,
 				{
@@ -3982,10 +3111,10 @@ Be thorough - include exact file paths, function names, error messages, and tech
 			if (slashIdx > 0) {
 				const provider = defaultModelStr.slice(0, slashIdx);
 				const modelId = defaultModelStr.slice(slashIdx + 1);
-				const availableModels = this.#modelRegistry.getAvailable();
+				const availableModels = this.#model.registry.getAvailable();
 				const match = availableModels.find(m => m.provider === provider && m.id === modelId);
 				if (match) {
-					this.#setModelWithProviderSessionReset(match);
+					this.#model.setModelDirect(match);
 				}
 			}
 		}
@@ -4000,7 +3129,7 @@ Be thorough - include exact file paths, function names, error messages, and tech
 			const availableLevels = this.getAvailableThinkingLevels();
 			const effectiveLevel = availableLevels.includes(defaultThinkingLevel)
 				? defaultThinkingLevel
-				: this.#clampThinkingLevel(defaultThinkingLevel, availableLevels);
+				: this.#model.clampThinkingLevel(defaultThinkingLevel, availableLevels);
 			this.agent.setThinkingLevel(effectiveLevel);
 			this.sessionManager.appendThinkingLevelChange(effectiveLevel);
 		}
@@ -4152,7 +3281,7 @@ Be thorough - include exact file paths, function names, error messages, and tech
 		let summaryDetails: unknown;
 		if (options.summarize && entriesToSummarize.length > 0 && !hookSummary) {
 			const model = this.model!;
-			const apiKey = await this.#modelRegistry.getApiKey(model, this.sessionId);
+			const apiKey = await this.#model.registry.getApiKey(model, this.sessionId);
 			if (!apiKey) {
 				throw new Error(`No API key for ${model.provider}`);
 			}
@@ -4269,456 +3398,31 @@ Be thorough - include exact file paths, function names, error messages, and tech
 		return "";
 	}
 
-	/**
-	 * Get session statistics.
-	 */
 	getSessionStats(): SessionStats {
-		const state = this.state;
-		const userMessages = state.messages.filter(m => m.role === "user").length;
-		const assistantMessages = state.messages.filter(m => m.role === "assistant").length;
-		const toolResults = state.messages.filter(m => m.role === "toolResult").length;
-
-		let toolCalls = 0;
-		let totalInput = 0;
-		let totalOutput = 0;
-		let totalCacheRead = 0;
-		let totalCacheWrite = 0;
-		let totalCost = 0;
-
-		const getTaskToolUsage = (details: unknown): Usage | undefined => {
-			if (!details || typeof details !== "object") return undefined;
-			const record = details as Record<string, unknown>;
-			const usage = record.usage;
-			if (!usage || typeof usage !== "object") return undefined;
-			return usage as Usage;
-		};
-
-		for (const message of state.messages) {
-			if (message.role === "assistant") {
-				const assistantMsg = message as AssistantMessage;
-				toolCalls += assistantMsg.content.filter(c => c.type === "toolCall").length;
-				totalInput += assistantMsg.usage.input;
-				totalOutput += assistantMsg.usage.output;
-				totalCacheRead += assistantMsg.usage.cacheRead;
-				totalCacheWrite += assistantMsg.usage.cacheWrite;
-				totalCost += assistantMsg.usage.cost.total;
-			}
-
-			if (message.role === "toolResult" && message.toolName === "task") {
-				const usage = getTaskToolUsage(message.details);
-				if (usage) {
-					totalInput += usage.input;
-					totalOutput += usage.output;
-					totalCacheRead += usage.cacheRead;
-					totalCacheWrite += usage.cacheWrite;
-					totalCost += usage.cost.total;
-				}
-			}
-		}
-
-		return {
-			sessionFile: this.sessionFile,
-			sessionId: this.sessionId,
-			userMessages,
-			assistantMessages,
-			toolCalls,
-			toolResults,
-			totalMessages: state.messages.length,
-			tokens: {
-				input: totalInput,
-				output: totalOutput,
-				cacheRead: totalCacheRead,
-				cacheWrite: totalCacheWrite,
-				total: totalInput + totalOutput + totalCacheRead + totalCacheWrite,
-			},
-			cost: totalCost,
-		};
+		return sessionStats.getSessionStats(this.messages, this.sessionFile, this.sessionId);
 	}
 
-	/**
-	 * Get current context usage statistics.
-	 * Uses the last assistant message's usage data when available,
-	 * otherwise estimates tokens for all messages.
-	 */
 	getContextUsage(): ContextUsage | undefined {
-		const model = this.model;
-		if (!model) return undefined;
-
-		const contextWindow = model.contextWindow ?? 0;
-		if (contextWindow <= 0) return undefined;
-
-		// After compaction, the last assistant usage reflects pre-compaction context size.
-		// We can only trust usage from an assistant that responded after the latest compaction.
-		// If no such assistant exists, context token count is unknown until the next LLM response.
-		const branchEntries = this.sessionManager.getBranch();
-		const latestCompaction = getLatestCompactionEntry(branchEntries);
-
-		if (latestCompaction) {
-			// Check if there's a valid assistant usage after the compaction boundary
-			const compactionIndex = branchEntries.lastIndexOf(latestCompaction);
-			let hasPostCompactionUsage = false;
-			for (let i = branchEntries.length - 1; i > compactionIndex; i--) {
-				const entry = branchEntries[i];
-				if (entry.type === "message" && entry.message.role === "assistant") {
-					const assistant = entry.message;
-					if (assistant.stopReason !== "aborted" && assistant.stopReason !== "error") {
-						const contextTokens = calculateContextTokens(assistant.usage);
-						if (contextTokens > 0) {
-							hasPostCompactionUsage = true;
-						}
-						break;
-					}
-				}
-			}
-
-			if (!hasPostCompactionUsage) {
-				return { tokens: null, contextWindow, percent: null };
-			}
-		}
-
-		const estimate = this.#estimateContextTokens();
-		const percent = (estimate.tokens / contextWindow) * 100;
-
-		return {
-			tokens: estimate.tokens,
-			contextWindow,
-			percent,
-		};
+		return sessionStats.getContextUsage(this.model, this.messages, this.sessionManager);
 	}
 
 	async fetchUsageReports(): Promise<UsageReport[] | null> {
-		const authStorage = this.#modelRegistry.authStorage;
-		if (!authStorage.fetchUsageReports) return null;
-		return authStorage.fetchUsageReports({
-			baseUrlResolver: provider => this.#modelRegistry.getProviderBaseUrl?.(provider),
-		});
+		return sessionStats.fetchUsageReports(this.#model.registry) ?? null;
 	}
-
-	/**
-	 * Estimate context tokens from messages, using the last assistant usage when available.
-	 */
-	#estimateContextTokens(): {
-		tokens: number;
-	} {
-		const messages = this.messages;
-
-		// Find last assistant message with usage
-		let lastUsageIndex: number | null = null;
-		let lastUsage: Usage | undefined;
-		for (let i = messages.length - 1; i >= 0; i--) {
-			const msg = messages[i];
-			if (msg.role === "assistant") {
-				const assistantMsg = msg as AssistantMessage;
-				if (assistantMsg.usage) {
-					lastUsage = assistantMsg.usage;
-					lastUsageIndex = i;
-					break;
-				}
-			}
-		}
-
-		if (!lastUsage || lastUsageIndex === null) {
-			// No usage data - estimate all messages
-			let estimated = 0;
-			for (const message of messages) {
-				estimated += estimateTokens(message);
-			}
-			return {
-				tokens: estimated,
-			};
-		}
-
-		const usageTokens = calculateContextTokens(lastUsage);
-		let trailingTokens = 0;
-		for (let i = lastUsageIndex + 1; i < messages.length; i++) {
-			trailingTokens += estimateTokens(messages[i]);
-		}
-
-		return {
-			tokens: usageTokens + trailingTokens,
-		};
-	}
-
-	/**
-	 * Export session to HTML.
-	 * @param outputPath Optional output path (defaults to session directory)
-	 * @returns Path to exported file
-	 */
 	async exportToHtml(outputPath?: string): Promise<string> {
-		const themeName = getCurrentThemeName();
-		return exportSessionToHtml(this.sessionManager, this.state, { outputPath, themeName });
+		return sessionStats.exportToHtml(this.sessionManager, this.state, outputPath);
 	}
 
-	// =========================================================================
-	// Utilities
-	// =========================================================================
-
-	/**
-	 * Get text content of last assistant message.
-	 * Useful for /copy command.
-	 * @returns Text content, or undefined if no assistant message exists
-	 */
 	getLastAssistantText(): string | undefined {
-		const lastAssistant = this.messages
-			.slice()
-			.reverse()
-			.find(m => {
-				if (m.role !== "assistant") return false;
-				const msg = m as AssistantMessage;
-				// Skip aborted messages with no content
-				if (msg.stopReason === "aborted" && msg.content.length === 0) return false;
-				return true;
-			});
-
-		if (!lastAssistant) return undefined;
-
-		let text = "";
-		for (const content of (lastAssistant as AssistantMessage).content) {
-			if (content.type === "text") {
-				text += content.text;
-			}
-		}
-
-		return text.trim() || undefined;
+		return sessionStats.getLastAssistantText(this.messages);
 	}
 
-	/**
-	 * Format the entire session as plain text for clipboard export.
-	 * Includes user messages, assistant text, thinking blocks, tool calls, and tool results.
-	 */
 	formatSessionAsText(): string {
-		const lines: string[] = [];
-
-		/** Serialize an object as XML parameter elements, one per key. */
-		function formatArgsAsXml(args: Record<string, unknown>, indent = "\t"): string {
-			const parts: string[] = [];
-			for (const [key, value] of Object.entries(args)) {
-				const text = typeof value === "string" ? value : JSON.stringify(value);
-				parts.push(`${indent}<parameter name="${key}">${text}</parameter>`);
-			}
-			return parts.join("\n");
-		}
-
-		// Include system prompt at the beginning
-		const systemPrompt = this.agent.state.systemPrompt;
-		if (systemPrompt) {
-			lines.push("## System Prompt\n");
-			lines.push(systemPrompt);
-			lines.push("\n");
-		}
-
-		// Include model and thinking level
-		const model = this.agent.state.model;
-		const thinkingLevel = this.agent.state.thinkingLevel;
-		lines.push("## Configuration\n");
-		lines.push(`Model: ${model.provider}/${model.id}`);
-		lines.push(`Thinking Level: ${thinkingLevel}`);
-		lines.push("\n");
-
-		// Include available tools
-		const tools = this.agent.state.tools;
-
-		// Recursively strip all fields starting with 'TypeBox.' from an object
-		function stripTypeBoxFields(obj: any): any {
-			if (Array.isArray(obj)) {
-				return obj.map(stripTypeBoxFields);
-			}
-			if (obj && typeof obj === "object") {
-				const result: Record<string, any> = {};
-				for (const [k, v] of Object.entries(obj)) {
-					if (!k.startsWith("TypeBox.")) {
-						result[k] = stripTypeBoxFields(v);
-					}
-				}
-				return result;
-			}
-			return obj;
-		}
-
-		if (tools.length > 0) {
-			lines.push("## Available Tools\n");
-			for (const tool of tools) {
-				lines.push(`<tool name="${tool.name}">`);
-				lines.push(tool.description);
-				const parametersClean = stripTypeBoxFields(tool.parameters);
-				lines.push(`\nParameters:\n${formatArgsAsXml(parametersClean as Record<string, unknown>)}`);
-				lines.push("<" + "/tool>\n");
-			}
-			lines.push("\n");
-		}
-
-		for (const msg of this.messages) {
-			if (msg.role === "user") {
-				lines.push("## User\n");
-				if (typeof msg.content === "string") {
-					lines.push(msg.content);
-				} else {
-					for (const c of msg.content) {
-						if (c.type === "text") {
-							lines.push(c.text);
-						} else if (c.type === "image") {
-							lines.push("[Image]");
-						}
-					}
-				}
-				lines.push("\n");
-			} else if (msg.role === "assistant") {
-				const assistantMsg = msg as AssistantMessage;
-				lines.push("## Assistant\n");
-
-				for (const c of assistantMsg.content) {
-					if (c.type === "text") {
-						lines.push(c.text);
-					} else if (c.type === "thinking") {
-						lines.push("<thinking>");
-						lines.push(c.thinking);
-						lines.push("</thinking>\n");
-					} else if (c.type === "toolCall") {
-						lines.push(`<invoke name="${c.name}">`);
-						if (c.arguments && typeof c.arguments === "object") {
-							lines.push(formatArgsAsXml(c.arguments as Record<string, unknown>));
-						}
-						lines.push("<" + "/invoke>\n");
-					}
-				}
-				lines.push("");
-			} else if (msg.role === "toolResult") {
-				lines.push(`### Tool Result: ${msg.toolName}`);
-				if (msg.isError) {
-					lines.push("(error)");
-				}
-				for (const c of msg.content) {
-					if (c.type === "text") {
-						lines.push("```");
-						lines.push(c.text);
-						lines.push("```");
-					} else if (c.type === "image") {
-						lines.push("[Image output]");
-					}
-				}
-				lines.push("");
-			} else if (msg.role === "bashExecution") {
-				const bashMsg = msg as BashExecutionMessage;
-				if (!bashMsg.excludeFromContext) {
-					lines.push("## Bash Execution\n");
-					lines.push(bashExecutionToText(bashMsg));
-					lines.push("\n");
-				}
-			} else if (msg.role === "pythonExecution") {
-				const pythonMsg = msg as PythonExecutionMessage;
-				if (!pythonMsg.excludeFromContext) {
-					lines.push("## Python Execution\n");
-					lines.push(pythonExecutionToText(pythonMsg));
-					lines.push("\n");
-				}
-			} else if (msg.role === "custom" || msg.role === "hookMessage") {
-				const customMsg = msg as CustomMessage | HookMessage;
-				lines.push(`## ${customMsg.customType}\n`);
-				if (typeof customMsg.content === "string") {
-					lines.push(customMsg.content);
-				} else {
-					for (const c of customMsg.content) {
-						if (c.type === "text") {
-							lines.push(c.text);
-						} else if (c.type === "image") {
-							lines.push("[Image]");
-						}
-					}
-				}
-				lines.push("\n");
-			} else if (msg.role === "branchSummary") {
-				const branchMsg = msg as BranchSummaryMessage;
-				lines.push("## Branch Summary\n");
-				lines.push(`(from branch: ${branchMsg.fromId})\n`);
-				lines.push(branchMsg.summary);
-				lines.push("\n");
-			} else if (msg.role === "compactionSummary") {
-				const compactMsg = msg as CompactionSummaryMessage;
-				lines.push("## Compaction Summary\n");
-				lines.push(`(${compactMsg.tokensBefore} tokens before compaction)\n`);
-				lines.push(compactMsg.summary);
-				lines.push("\n");
-			} else if (msg.role === "fileMention") {
-				const fileMsg = msg as FileMentionMessage;
-				lines.push("## File Mention\n");
-				for (const file of fileMsg.files) {
-					lines.push(`<file path="${file.path}">`);
-					if (file.content) {
-						lines.push(file.content);
-					}
-					if (file.image) {
-						lines.push("[Image attached]");
-					}
-					lines.push("</file>\n");
-				}
-				lines.push("\n");
-			}
-		}
-
-		return lines.join("\n").trim();
+		return sessionStats.formatSessionAsText(this.state);
 	}
 
-	/**
-	 * Format the conversation as compact context for subagents.
-	 * Includes only user messages and assistant text responses.
-	 * Excludes: system prompt, tool definitions, tool calls/results, thinking blocks.
-	 */
 	formatCompactContext(): string {
-		const lines: string[] = [];
-		lines.push("# Conversation Context");
-		lines.push("");
-		lines.push(
-			"This is a summary of the parent conversation. Read this if you need additional context about what was discussed or decided.",
-		);
-		lines.push("");
-
-		for (const msg of this.messages) {
-			if (msg.role === "user") {
-				lines.push("## User");
-				lines.push("");
-				if (typeof msg.content === "string") {
-					lines.push(msg.content);
-				} else {
-					for (const c of msg.content) {
-						if (c.type === "text") {
-							lines.push(c.text);
-						} else if (c.type === "image") {
-							lines.push("[Image attached]");
-						}
-					}
-				}
-				lines.push("");
-			} else if (msg.role === "assistant") {
-				const assistantMsg = msg as AssistantMessage;
-				// Only include text content, skip tool calls and thinking
-				const textParts: string[] = [];
-				for (const c of assistantMsg.content) {
-					if (c.type === "text" && c.text.trim()) {
-						textParts.push(c.text);
-					}
-				}
-				if (textParts.length > 0) {
-					lines.push("## Assistant");
-					lines.push("");
-					lines.push(textParts.join("\n\n"));
-					lines.push("");
-				}
-			} else if (msg.role === "fileMention") {
-				const fileMsg = msg as FileMentionMessage;
-				const paths = fileMsg.files.map(f => f.path).join(", ");
-				lines.push(`[Files referenced: ${paths}]`);
-				lines.push("");
-			} else if (msg.role === "compactionSummary") {
-				const compactMsg = msg as CompactionSummaryMessage;
-				lines.push("## Earlier Context (Summarized)");
-				lines.push("");
-				lines.push(compactMsg.summary);
-				lines.push("");
-			}
-			// Skip: toolResult, bashExecution, pythonExecution, branchSummary, custom, hookMessage
-		}
-
-		return lines.join("\n").trim();
+		return sessionStats.formatCompactContext(this.messages);
 	}
 
 	// =========================================================================

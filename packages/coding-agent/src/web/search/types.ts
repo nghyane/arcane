@@ -15,8 +15,7 @@ export type SearchProviderId =
 	| "perplexity"
 	| "gemini"
 	| "codex"
-	| "synthetic"
-	| "grep";
+	| "synthetic";
 
 /** Source returned by search (all providers) */
 export interface SearchSource {
@@ -49,7 +48,7 @@ export interface SearchUsage {
 
 /** Unified response across providers */
 export interface SearchResponse {
-	provider: SearchProviderId | "none";
+	provider: SearchProviderId | "grep" | "none";
 	/** Synthesized answer text (anthropic, perplexity) */
 	answer?: string;
 	/** Search result sources */

@@ -113,9 +113,9 @@ const baseImageSchema = Type.Object(
 	{ additionalProperties: false },
 );
 
-export const geminiImageSchema = baseImageSchema;
-export type GeminiImageParams = Static<typeof geminiImageSchema>;
-export type GeminiResponseModality = Static<typeof responseModalitySchema>;
+const geminiImageSchema = baseImageSchema;
+type GeminiImageParams = Static<typeof geminiImageSchema>;
+type GeminiResponseModality = Static<typeof responseModalitySchema>;
 
 /**
  * Assembles a structured prompt from the provided parameters.
@@ -610,7 +610,7 @@ async function parseAntigravitySseForImage(response: Response, signal?: AbortSig
 	return { images, text: textParts, usage };
 }
 
-export const geminiImageTool: CustomTool<typeof geminiImageSchema, GeminiImageToolDetails> = {
+const geminiImageTool: CustomTool<typeof geminiImageSchema, GeminiImageToolDetails> = {
 	name: "generate_image",
 	label: "GenerateImage",
 	description: "",
@@ -892,14 +892,6 @@ export async function getGeminiImageTools(): Promise<
 	Array<CustomTool<typeof geminiImageSchema, GeminiImageToolDetails>>
 > {
 	const apiKey = await findImageApiKey();
-	if (!apiKey) return [];
-	return [geminiImageTool];
-}
-
-export async function getGeminiImageToolsWithRegistry(
-	modelRegistry: ModelRegistry,
-): Promise<Array<CustomTool<typeof geminiImageSchema, GeminiImageToolDetails>>> {
-	const apiKey = await findImageApiKey(modelRegistry);
 	if (!apiKey) return [];
 	return [geminiImageTool];
 }

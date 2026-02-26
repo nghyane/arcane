@@ -23,7 +23,6 @@ import { type Theme, theme } from "../modes/theme/theme";
 import { renderStatusLine } from "../tui";
 import type { ToolSession } from ".";
 import { ToolUIKit } from "./render-utils";
-import { registerRenderer } from "./renderers";
 
 // =============================================================================
 // Types
@@ -45,10 +44,10 @@ const askSchema = Type.Object({
 	questions: Type.Array(QuestionItem, { description: "Questions to ask", minItems: 1 }),
 });
 
-export type AskToolInput = Static<typeof askSchema>;
+type AskToolInput = Static<typeof askSchema>;
 
 /** Result for a single question */
-export interface QuestionResult {
+interface QuestionResult {
 	id: string;
 	question: string;
 	options: string[];
@@ -242,11 +241,12 @@ type AskParams = AskToolInput;
  * Allows gathering user preferences, clarifying instructions, and getting decisions
  * on implementation choices as the agent works.
  */
-export class AskTool implements AgentTool<typeof askSchema, AskToolDetails> {
+export class AskTool implements AgentTool<typeof askSchema, AskToolDetails, Theme> {
 	readonly name = "ask";
 	readonly label = "Ask";
 	description = "Ask the user a question when genuinely blocked";
 	readonly parameters = askSchema;
+	readonly mergeCallAndResult = true;
 
 	constructor(private readonly session: ToolSession) {}
 
@@ -355,25 +355,7 @@ export class AskTool implements AgentTool<typeof askSchema, AskToolDetails> {
 
 		return { content: [{ type: "text" as const, text: responseText }], details };
 	}
-}
 
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface AskRenderArgs {
-	question?: string;
-	options?: Array<{ label: string }>;
-	multi?: boolean;
-	questions?: Array<{
-		id: string;
-		question: string;
-		options: Array<{ label: string }>;
-		multi?: boolean;
-	}>;
-}
-
-export const askToolRenderer = {
 	renderCall(args: AskRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const ui = new ToolUIKit(uiTheme);
 		const label = ui.title("Ask");
@@ -430,7 +412,7 @@ export const askToolRenderer = {
 		}
 
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: AskToolDetails },
@@ -516,7 +498,17 @@ export const askToolRenderer = {
 		}
 
 		return new Text(text, 0, 0);
-	},
-};
+	}
+}
 
-registerRenderer("ask", askToolRenderer);
+interface AskRenderArgs {
+	question?: string;
+	options?: Array<{ label: string }>;
+	multi?: boolean;
+	questions?: Array<{
+		id: string;
+		question: string;
+		options: Array<{ label: string }>;
+		multi?: boolean;
+	}>;
+}

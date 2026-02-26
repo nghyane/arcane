@@ -12,12 +12,10 @@ import { DEFAULT_MAX_COLUMN, type TruncationResult, truncateHead } from "../sess
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, renderTreeList, truncateToWidth } from "../tui";
 import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import type { ToolSession } from ".";
-import type { OutputMeta } from "./output-meta";
+import { type OutputMeta, toolResult } from "./output-meta";
 import { resolveToCwd } from "./path-utils";
 import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "./render-utils";
-import { registerRenderer } from "./renderers";
 import { ToolError } from "./tool-errors";
-import { toolResult } from "./tool-result";
 
 const grepSchema = Type.Object({
 	pattern: Type.String({ description: "Regex pattern to search for" }),
@@ -53,7 +51,7 @@ export interface GrepToolDetails {
 
 type GrepParams = Static<typeof grepSchema>;
 
-export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails> {
+export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails, Theme> {
 	readonly name = "grep";
 	readonly label = "Grep";
 	description = "Search file contents with regex";
@@ -278,29 +276,7 @@ export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails> {
 			return resultBuilder.done();
 		});
 	}
-}
 
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface GrepRenderArgs {
-	pattern: string;
-	path?: string;
-	glob?: string;
-	type?: string;
-	i?: boolean;
-	pre?: number;
-	post?: number;
-	multiline?: boolean;
-	limit?: number;
-	offset?: number;
-}
-
-const COLLAPSED_TEXT_LIMIT = PREVIEW_LIMITS.COLLAPSED_LINES * 2;
-
-export const grepToolRenderer = {
-	inline: true,
 	renderCall(args: GrepRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const meta: string[] = [];
 		if (args.path) meta.push(`in ${args.path}`);
@@ -322,7 +298,7 @@ export const grepToolRenderer = {
 			uiTheme,
 		);
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: GrepToolDetails; isError?: boolean },
@@ -476,8 +452,20 @@ export const grepToolRenderer = {
 				cached = undefined;
 			},
 		};
-	},
-	mergeCallAndResult: true,
-};
+	}
+}
 
-registerRenderer("grep", grepToolRenderer);
+interface GrepRenderArgs {
+	pattern: string;
+	path?: string;
+	glob?: string;
+	type?: string;
+	i?: boolean;
+	pre?: number;
+	post?: number;
+	multiline?: boolean;
+	limit?: number;
+	offset?: number;
+}
+
+const COLLAPSED_TEXT_LIMIT = PREVIEW_LIMITS.COLLAPSED_LINES * 2;

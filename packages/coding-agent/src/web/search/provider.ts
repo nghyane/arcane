@@ -4,7 +4,6 @@ import { BraveProvider } from "./providers/brave";
 import { CodexProvider } from "./providers/codex";
 import { ExaProvider } from "./providers/exa";
 import { GeminiProvider } from "./providers/gemini";
-import { GrepAppProvider } from "./providers/grep";
 import { JinaProvider } from "./providers/jina";
 import { KimiProvider } from "./providers/kimi";
 import { PerplexityProvider } from "./providers/perplexity";
@@ -26,7 +25,6 @@ const SEARCH_PROVIDERS: Record<SearchProviderId, SearchProvider> = {
 	gemini: new GeminiProvider(),
 	codex: new CodexProvider(),
 	synthetic: new SyntheticProvider(),
-	grep: new GrepAppProvider(),
 } as const;
 
 export const SEARCH_PROVIDER_ORDER: SearchProviderId[] = [
@@ -40,7 +38,6 @@ export const SEARCH_PROVIDER_ORDER: SearchProviderId[] = [
 	"codex",
 	"zai",
 	"synthetic",
-	"grep",
 ];
 
 export function getSearchProvider(provider: SearchProviderId): SearchProvider {
@@ -59,22 +56,17 @@ export function setPreferredSearchProvider(provider: SearchProviderId | "auto"):
 export async function resolveProviderChain(
 	preferredProvider: SearchProviderId | "auto" = preferredProvId,
 ): Promise<SearchProvider[]> {
-	const providers: SearchProvider[] = [];
+	const order: SearchProviderId[] =
+		preferredProvider !== "auto"
+			? [preferredProvider, ...SEARCH_PROVIDER_ORDER.filter(id => id !== preferredProvider)]
+			: SEARCH_PROVIDER_ORDER;
 
-	if (preferredProvider !== "auto") {
-		if (await getSearchProvider(preferredProvider).isAvailable()) {
-			providers.push(getSearchProvider(preferredProvider));
-		}
-	}
+	const checks = await Promise.all(
+		order.map(async id => ({
+			provider: getSearchProvider(id),
+			available: await getSearchProvider(id).isAvailable(),
+		})),
+	);
 
-	for (const id of SEARCH_PROVIDER_ORDER) {
-		if (id === preferredProvider) continue;
-
-		const provider = getSearchProvider(id);
-		if (await provider.isAvailable()) {
-			providers.push(provider);
-		}
-	}
-
-	return providers;
+	return checks.filter(c => c.available).map(c => c.provider);
 }

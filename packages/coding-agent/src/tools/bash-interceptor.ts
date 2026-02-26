@@ -7,7 +7,7 @@
  */
 import type { BashInterceptorRule } from "../config/settings-schema";
 
-export const DEFAULT_BASH_INTERCEPTOR_RULES: BashInterceptorRule[] = [
+const DEFAULT_BASH_INTERCEPTOR_RULES: BashInterceptorRule[] = [
 	{
 		pattern: "^\\s*(cat|head|tail|less|more)\\s+",
 		tool: "read",
@@ -45,7 +45,7 @@ export const DEFAULT_BASH_INTERCEPTOR_RULES: BashInterceptorRule[] = [
 	},
 ];
 
-export interface InterceptionResult {
+interface InterceptionResult {
 	/** If true, the bash command should be blocked */
 	block: boolean;
 	/** Error message to return instead of executing */

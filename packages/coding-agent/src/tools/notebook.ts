@@ -10,7 +10,6 @@ import type { ToolSession } from "../sdk";
 import { Hasher, type RenderCache, renderCodeCell, renderStatusLine } from "../tui";
 import { resolveToCwd } from "./path-utils";
 import { formatCount, formatErrorMessage, PREVIEW_LIMITS } from "./render-utils";
-import { registerRenderer } from "./renderers";
 
 const notebookSchema = Type.Object({
 	action: StringEnum(["edit", "insert", "delete"], {
@@ -60,13 +59,14 @@ function splitIntoLines(content: string): string[] {
 
 type NotebookParams = Static<typeof notebookSchema>;
 
-export class NotebookTool implements AgentTool<typeof notebookSchema, NotebookToolDetails> {
+export class NotebookTool implements AgentTool<typeof notebookSchema, NotebookToolDetails, Theme> {
 	readonly name = "notebook";
 	readonly label = "Notebook";
 	readonly description =
 		"Completely replaces the contents of a specific cell in a Jupyter notebook (.ipynb file) with new source. Jupyter notebooks are interactive documents that combine code, text, and visualizations, commonly used for data analysis and scientific computing. The notebook_path parameter must be an absolute path, not a relative path. The cell_number is 0-indexed. Use edit_mode=insert to add a new cell at the index specified by cell_number. Use edit_mode=delete to delete the cell at the index specified by cell_number.";
 	readonly parameters = notebookSchema;
 	readonly concurrency = "exclusive";
+	readonly mergeCallAndResult = true;
 
 	constructor(private readonly session: ToolSession) {}
 
@@ -184,26 +184,7 @@ export class NotebookTool implements AgentTool<typeof notebookSchema, NotebookTo
 			};
 		});
 	}
-}
 
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface NotebookRenderArgs {
-	action: string;
-	notebookPath?: string;
-	notebook_path?: string;
-	cellNumber?: number;
-	cell_index?: number;
-	cellType?: string;
-	cell_type?: string;
-	content?: string;
-}
-
-const COLLAPSED_TEXT_LIMIT = PREVIEW_LIMITS.COLLAPSED_LINES * 2;
-
-export const notebookToolRenderer = {
 	renderCall(args: NotebookRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const meta: string[] = [];
 		const notebookPath = args.notebookPath ?? args.notebook_path;
@@ -218,7 +199,7 @@ export const notebookToolRenderer = {
 			uiTheme,
 		);
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: NotebookToolDetails },
@@ -283,8 +264,18 @@ export const notebookToolRenderer = {
 				cached = undefined;
 			},
 		};
-	},
-	mergeCallAndResult: true,
-};
+	}
+}
 
-registerRenderer("notebook", notebookToolRenderer);
+interface NotebookRenderArgs {
+	action: string;
+	notebookPath?: string;
+	notebook_path?: string;
+	cellNumber?: number;
+	cell_index?: number;
+	cellType?: string;
+	cell_type?: string;
+	content?: string;
+}
+
+const COLLAPSED_TEXT_LIMIT = PREVIEW_LIMITS.COLLAPSED_LINES * 2;

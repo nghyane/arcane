@@ -20,7 +20,7 @@ interface InternalUrlResolver {
 	resolve(input: string): Promise<InternalResource>;
 }
 
-export interface InternalUrlExpansionOptions {
+interface InternalUrlExpansionOptions {
 	skills: readonly Skill[];
 	internalRouter?: InternalUrlResolver;
 }
@@ -29,7 +29,7 @@ export interface InternalUrlExpansionOptions {
  * Resolve a single skill:// URL to its absolute filesystem path.
  * Does NOT read file content or verify existence.
  */
-export function resolveSkillUrlToPath(url: string, skills: readonly Skill[]): string {
+function resolveSkillUrlToPath(url: string, skills: readonly Skill[]): string {
 	const parsed = /^skill:\/\/([^/?#]+)(\/[^?#]*)?(?:[?#].*)?$/.exec(url);
 	if (!parsed) {
 		throw new ToolError(`Invalid skill:// URL: ${url}`);

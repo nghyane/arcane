@@ -11,7 +11,6 @@ import type { Theme } from "../modes/theme/theme";
 import type { ToolSession } from "../sdk";
 import { renderStatusLine, renderTreeList } from "../tui";
 import { PREVIEW_LIMITS } from "./render-utils";
-import { registerRenderer } from "./renderers";
 
 const todoWriteSchema = Type.Object({
 	todos: Type.Array(
@@ -113,14 +112,17 @@ function formatTodoLine(item: TodoItem, uiTheme: Theme, prefix: string): string 
 
 // =============================================================================
 // Tool Class
-// =============================================================================
+interface TodoWriteRenderArgs {
+	todos?: Array<{ id?: string; content?: string; status?: string }>;
+}
 
-export class TodoWriteTool implements AgentTool<typeof todoWriteSchema, TodoWriteToolDetails> {
+export class TodoWriteTool implements AgentTool<typeof todoWriteSchema, TodoWriteToolDetails, Theme> {
 	readonly name = "todo_write";
 	readonly label = "Todo Write";
 	description = "Update the task/todo list";
 	readonly parameters = todoWriteSchema;
 	readonly concurrency = "exclusive";
+	readonly mergeCallAndResult = true;
 
 	constructor(private readonly session: ToolSession) {}
 
@@ -163,23 +165,13 @@ export class TodoWriteTool implements AgentTool<typeof todoWriteSchema, TodoWrit
 			details: { todos: merged, updatedAt, storage: "session" },
 		};
 	}
-}
 
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface TodoWriteRenderArgs {
-	todos?: Array<{ id?: string; content?: string; status?: string }>;
-}
-
-export const todoWriteToolRenderer = {
 	renderCall(args: TodoWriteRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const count = args.todos?.length ?? 0;
 		const meta = count > 0 ? [`${count} items`] : ["empty"];
 		const text = renderStatusLine({ icon: "pending", title: "Todo Write", meta }, uiTheme);
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: TodoWriteToolDetails },
@@ -210,8 +202,5 @@ export const todoWriteToolRenderer = {
 		);
 		const text = [header, ...treeLines].join("\n");
 		return new Text(text, 0, 0);
-	},
-	mergeCallAndResult: true,
-};
-
-registerRenderer("todo_write", todoWriteToolRenderer);
+	}
+}

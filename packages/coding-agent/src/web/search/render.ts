@@ -113,7 +113,8 @@ export function renderSearchResult(
 		: [];
 	const totalAnswerLines = answerLines.length;
 
-	const providerLabel = provider !== "none" ? getSearchProvider(provider).label : "None";
+	const providerLabel =
+		provider === "none" ? "None" : provider === "grep" ? "grep.app" : getSearchProvider(provider).label;
 	const queryPreview = args?.query
 		? truncateToWidth(args.query, 80)
 		: searchQueries[0]
@@ -291,9 +292,3 @@ export function renderSearchCall(
 	const text = renderStatusLine({ icon: "pending", title: "Web Search", description: query, meta: [provider] }, theme);
 	return new Text(text, 0, 0);
 }
-
-export const webSearchToolRenderer = {
-	renderCall: renderSearchCall,
-	renderResult: renderSearchResult,
-	mergeCallAndResult: true,
-};

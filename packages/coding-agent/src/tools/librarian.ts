@@ -1,6 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import { createUnifiedSubagentRenderer } from "../task/render";
-import { buildSubagentRenderConfig, registerRenderer } from "./renderers";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -36,5 +34,3 @@ export const librarianConfig: SubagentConfig<typeof schema.properties> = {
 	},
 	toolDescription: "Explore remote GitHub repositories — cross-repo architecture, code search, history",
 };
-
-registerRenderer(librarianConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(librarianConfig)));

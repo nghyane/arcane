@@ -47,7 +47,7 @@ export const TRUNCATE_LENGTHS = {
 } as const;
 
 /** Standard expand hint text */
-export const EXPAND_HINT = "(Ctrl+O for more)";
+const EXPAND_HINT = "(Ctrl+O for more)";
 
 // =============================================================================
 // Text Truncation Utilities
@@ -195,15 +195,15 @@ export function formatMoreItems(remaining: number, itemType: string): string {
 	return `… ${safeRemaining} more ${pluralize(itemType, safeRemaining)}`;
 }
 
-export function formatMeta(meta: string[], theme: Theme): string {
+function formatMeta(meta: string[], theme: Theme): string {
 	return meta.length > 0 ? ` ${theme.fg("muted", meta.join(theme.sep.dot))}` : "";
 }
 
-export function formatScope(scopePath: string | undefined, theme: Theme): string {
+function formatScope(scopePath: string | undefined, theme: Theme): string {
 	return scopePath ? ` ${theme.fg("muted", `in ${scopePath}`)}` : "";
 }
 
-export function formatTruncationSuffix(truncated: boolean, theme: Theme): string {
+function formatTruncationSuffix(truncated: boolean, theme: Theme): string {
 	return truncated ? theme.fg("warning", " (truncated)") : "";
 }
 
@@ -220,10 +220,10 @@ export function formatEmptyMessage(message: string, theme: Theme): string {
 // Tool UI Kit
 // =============================================================================
 
-export type ToolUIStatus = "success" | "error" | "warning" | "info" | "pending" | "running" | "aborted";
+type ToolUIStatus = "success" | "error" | "warning" | "info" | "pending" | "running" | "aborted";
 export type ToolUIColor = "success" | "error" | "warning" | "accent" | "muted";
 
-export interface ToolUITitleOptions {
+interface ToolUITitleOptions {
 	bold?: boolean;
 }
 

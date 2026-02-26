@@ -6,7 +6,7 @@
  * - `| tail -n N` / `| tail -N` - extracted to tailLines
  */
 
-export interface NormalizedCommand {
+interface NormalizedCommand {
 	/** Cleaned command with patterns stripped */
 	command: string;
 	/** Extracted head line count, if any */

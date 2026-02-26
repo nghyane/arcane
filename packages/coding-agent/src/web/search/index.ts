@@ -31,20 +31,7 @@ export const webSearchSchema = Type.Object({
 	query: Type.String({ description: "Search query" }),
 	provider: Type.Optional(
 		StringEnum(
-			[
-				"auto",
-				"exa",
-				"brave",
-				"jina",
-				"kimi",
-				"zai",
-				"anthropic",
-				"perplexity",
-				"gemini",
-				"codex",
-				"synthetic",
-				"grep",
-			],
+			["auto", "exa", "brave", "jina", "kimi", "zai", "anthropic", "perplexity", "gemini", "codex", "synthetic"],
 			{
 				description: "Search provider (default: auto)",
 			},
@@ -71,8 +58,7 @@ export type SearchParams = {
 		| "perplexity"
 		| "gemini"
 		| "codex"
-		| "synthetic"
-		| "grep";
+		| "synthetic";
 	recency?: "day" | "week" | "month" | "year";
 	limit?: number;
 	/** Maximum output tokens. Defaults to 4096. */
@@ -271,11 +257,14 @@ export async function runSearchQuery(params: SearchParams): Promise<{
  * Supports Anthropic, Perplexity, Exa, Brave, Jina, Kimi, Gemini, Codex, Z.AI, and Synthetic providers with automatic fallback.
  * Session is accepted for interface consistency but not used.
  */
-export class SearchTool implements AgentTool<typeof webSearchSchema, SearchRenderDetails> {
+export class SearchTool implements AgentTool<typeof webSearchSchema, SearchRenderDetails, Theme> {
 	readonly name = "web_search";
 	readonly label = "Web Search";
 	readonly description = "Search the web";
 	readonly parameters = webSearchSchema;
+	readonly mergeCallAndResult = true;
+	readonly renderCall = renderSearchCall;
+	readonly renderResult = renderSearchResult;
 
 	async execute(
 		_toolCallId: string,

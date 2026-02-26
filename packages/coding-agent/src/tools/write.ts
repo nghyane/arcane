@@ -26,7 +26,6 @@ import {
 	shortenPath,
 	ToolUIKit,
 } from "./render-utils";
-import { registerRenderer } from "./renderers";
 
 const writeSchema = Type.Object({
 	path: Type.String({ description: "Path to the file to write (relative or absolute)" }),
@@ -68,13 +67,14 @@ type WriteParams = WriteToolInput;
  *
  * Creates or overwrites files with optional LSP formatting and diagnostics.
  */
-export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails> {
+export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails, Theme> {
 	readonly name = "write";
 	readonly label = "Write";
 	description = "Create a new file";
 	readonly parameters = writeSchema;
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";
+	readonly mergeCallAndResult = true;
 
 	readonly #writethrough: WritethroughCallback;
 
@@ -120,71 +120,7 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 			};
 		});
 	}
-}
 
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface WriteRenderArgs {
-	path?: string;
-	file_path?: string;
-	content?: string;
-}
-
-const WRITE_PREVIEW_LINES = 6;
-const WRITE_STREAMING_PREVIEW_LINES = 12;
-
-function countLines(text: string): number {
-	if (!text) return 0;
-	return text.split("\n").length;
-}
-
-function formatMetadataLine(lineCount: number | null, language: string | undefined, uiTheme: Theme): string {
-	const icon = uiTheme.getLangIcon(language);
-	if (lineCount !== null) {
-		return uiTheme.fg("dim", `${icon} ${lineCount} lines`);
-	}
-	return uiTheme.fg("dim", `${icon}`);
-}
-
-function formatStreamingContent(content: string, uiTheme: Theme, ui: ToolUIKit): string {
-	if (!content) return "";
-	const lines = content.split("\n");
-	const displayLines = lines.slice(-WRITE_STREAMING_PREVIEW_LINES);
-	const hidden = lines.length - displayLines.length;
-
-	let text = "\n\n";
-	if (hidden > 0) {
-		text += uiTheme.fg("dim", `… (${hidden} earlier lines)\n`);
-	}
-	for (const line of displayLines) {
-		text += `${uiTheme.fg("toolOutput", ui.truncate(replaceTabs(line), 80))}\n`;
-	}
-	text += uiTheme.fg("dim", `… (streaming)`);
-	return text;
-}
-
-function renderContentPreview(content: string, expanded: boolean, uiTheme: Theme, ui: ToolUIKit): string {
-	if (!content) return "";
-	const lines = content.split("\n");
-	const maxLines = expanded ? lines.length : Math.min(lines.length, WRITE_PREVIEW_LINES);
-	const displayLines = expanded ? lines : lines.slice(-maxLines);
-	const hidden = lines.length - displayLines.length;
-
-	let text = "\n\n";
-	for (const line of displayLines) {
-		text += `${uiTheme.fg("toolOutput", ui.truncate(replaceTabs(line), 80))}\n`;
-	}
-	if (!expanded && hidden > 0) {
-		const hint = formatExpandHint(uiTheme, expanded, hidden > 0);
-		const moreLine = `${formatMoreItems(hidden, "line")}${hint ? ` ${hint}` : ""}`;
-		text += uiTheme.fg("dim", moreLine);
-	}
-	return text;
-}
-
-export const writeToolRenderer = {
 	renderCall(args: WriteRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const ui = new ToolUIKit(uiTheme);
 		const rawPath = args.file_path || args.path || "";
@@ -205,7 +141,7 @@ export const writeToolRenderer = {
 		text += formatStreamingContent(args.content, uiTheme, ui);
 
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: WriteToolDetails },
@@ -267,8 +203,63 @@ export const writeToolRenderer = {
 				cached = undefined;
 			},
 		};
-	},
-	mergeCallAndResult: true,
-};
+	}
+}
 
-registerRenderer("write", writeToolRenderer);
+interface WriteRenderArgs {
+	path?: string;
+	file_path?: string;
+	content?: string;
+}
+
+const WRITE_PREVIEW_LINES = 6;
+const WRITE_STREAMING_PREVIEW_LINES = 12;
+
+function countLines(text: string): number {
+	if (!text) return 0;
+	return text.split("\n").length;
+}
+
+function formatMetadataLine(lineCount: number | null, language: string | undefined, uiTheme: Theme): string {
+	const icon = uiTheme.getLangIcon(language);
+	if (lineCount !== null) {
+		return uiTheme.fg("dim", `${icon} ${lineCount} lines`);
+	}
+	return uiTheme.fg("dim", `${icon}`);
+}
+
+function formatStreamingContent(content: string, uiTheme: Theme, ui: ToolUIKit): string {
+	if (!content) return "";
+	const lines = content.split("\n");
+	const displayLines = lines.slice(-WRITE_STREAMING_PREVIEW_LINES);
+	const hidden = lines.length - displayLines.length;
+
+	let text = "\n\n";
+	if (hidden > 0) {
+		text += uiTheme.fg("dim", `… (${hidden} earlier lines)\n`);
+	}
+	for (const line of displayLines) {
+		text += `${uiTheme.fg("toolOutput", ui.truncate(replaceTabs(line), 80))}\n`;
+	}
+	text += uiTheme.fg("dim", `… (streaming)`);
+	return text;
+}
+
+function renderContentPreview(content: string, expanded: boolean, uiTheme: Theme, ui: ToolUIKit): string {
+	if (!content) return "";
+	const lines = content.split("\n");
+	const maxLines = expanded ? lines.length : Math.min(lines.length, WRITE_PREVIEW_LINES);
+	const displayLines = expanded ? lines : lines.slice(-maxLines);
+	const hidden = lines.length - displayLines.length;
+
+	let text = "\n\n";
+	for (const line of displayLines) {
+		text += `${uiTheme.fg("toolOutput", ui.truncate(replaceTabs(line), 80))}\n`;
+	}
+	if (!expanded && hidden > 0) {
+		const hint = formatExpandHint(uiTheme, expanded, hidden > 0);
+		const moreLine = `${formatMoreItems(hidden, "line")}${hint ? ` ${hint}` : ""}`;
+		text += uiTheme.fg("dim", moreLine);
+	}
+	return text;
+}

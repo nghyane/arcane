@@ -18,13 +18,11 @@ import { type BashInteractiveResult, runInteractiveBashPty } from "./bash-intera
 import { checkBashInterception } from "./bash-interceptor";
 import { applyHeadTail } from "./bash-normalize";
 import { expandInternalUrls } from "./bash-skill-urls";
-import type { OutputMeta } from "./output-meta";
+import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { resolveToCwd } from "./path-utils";
 import { formatBytes, replaceTabs, wrapBrackets } from "./render-utils";
-import { registerRenderer } from "./renderers";
 import { ToolAbortError, ToolError } from "./tool-errors";
-import { toolResult } from "./tool-result";
 
 export const BASH_DEFAULT_PREVIEW_LINES = 10;
 
@@ -56,12 +54,14 @@ function isInteractiveResult(result: BashResult | BashInteractiveResult): result
  *
  * Executes bash commands with optional timeout and working directory.
  */
-export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails> {
+export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, Theme> {
 	readonly name = "bash";
 	readonly label = "Bash";
 	description = "Execute a shell command";
 	readonly parameters = bashSchema;
 	readonly concurrency = "exclusive";
+	readonly mergeCallAndResult = true;
+	readonly inline = true;
 
 	constructor(private readonly session: ToolSession) {}
 
@@ -180,64 +180,12 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails> {
 
 		return resultBuilder.done();
 	}
-}
 
-// =============================================================================
-// TUI Renderer
-// =============================================================================
-
-interface BashRenderArgs {
-	command?: string;
-	timeout?: number;
-	cwd?: string;
-}
-
-interface BashRenderContext {
-	/** Raw output text */
-	output?: string;
-	/** Whether output came from artifact storage */
-	isFullOutput?: boolean;
-	/** Whether output is expanded */
-	expanded?: boolean;
-	/** Number of preview lines when collapsed */
-	previewLines?: number;
-	/** Timeout in seconds */
-	timeout?: number;
-}
-
-function formatBashCommand(args: BashRenderArgs, _uiTheme: Theme): string {
-	const command = args.command || "…";
-	const prompt = "$";
-	const cwd = getProjectDir();
-	let displayWorkdir = args.cwd;
-
-	if (displayWorkdir) {
-		const resolvedCwd = path.resolve(cwd);
-		const resolvedWorkdir = path.resolve(displayWorkdir);
-		if (resolvedWorkdir === resolvedCwd) {
-			displayWorkdir = undefined;
-		} else {
-			const relativePath = path.relative(resolvedCwd, resolvedWorkdir);
-			const isWithinCwd =
-				relativePath && !relativePath.startsWith("..") && !relativePath.startsWith(`..${path.sep}`);
-			if (isWithinCwd) {
-				displayWorkdir = relativePath;
-			}
-		}
-	}
-
-	return displayWorkdir ? `${prompt} cd ${displayWorkdir} && ${command}` : `${prompt} ${command}`;
-}
-
-// Preview line limit when not expanded (matches tool-execution behavior)
-export const BASH_PREVIEW_LINES = 10;
-
-export const bashToolRenderer = {
 	renderCall(args: BashRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const cmdText = formatBashCommand(args, uiTheme);
 		const text = renderStatusLine({ icon: "pending", title: "Bash", description: cmdText }, uiTheme);
 		return new Text(text, 0, 0);
-	},
+	}
 
 	renderResult(
 		result: {
@@ -338,9 +286,48 @@ export const bashToolRenderer = {
 				outputBlock.invalidate();
 			},
 		};
-	},
-	mergeCallAndResult: true,
-	inline: true,
-};
+	}
+}
 
-registerRenderer("bash", bashToolRenderer);
+interface BashRenderArgs {
+	command?: string;
+	timeout?: number;
+	cwd?: string;
+}
+
+interface BashRenderContext {
+	/** Raw output text */
+	output?: string;
+	/** Whether output came from artifact storage */
+	isFullOutput?: boolean;
+	/** Whether output is expanded */
+	expanded?: boolean;
+	/** Number of preview lines when collapsed */
+	previewLines?: number;
+	/** Timeout in seconds */
+	timeout?: number;
+}
+
+function formatBashCommand(args: BashRenderArgs, _uiTheme: Theme): string {
+	const command = args.command || "…";
+	const prompt = "$";
+	const cwd = getProjectDir();
+	let displayWorkdir = args.cwd;
+
+	if (displayWorkdir) {
+		const resolvedCwd = path.resolve(cwd);
+		const resolvedWorkdir = path.resolve(displayWorkdir);
+		if (resolvedWorkdir === resolvedCwd) {
+			displayWorkdir = undefined;
+		} else {
+			const relativePath = path.relative(resolvedCwd, resolvedWorkdir);
+			const isWithinCwd =
+				relativePath && !relativePath.startsWith("..") && !relativePath.startsWith(`..${path.sep}`);
+			if (isWithinCwd) {
+				displayWorkdir = relativePath;
+			}
+		}
+	}
+
+	return displayWorkdir ? `${prompt} cd ${displayWorkdir} && ${command}` : `${prompt} ${command}`;
+}

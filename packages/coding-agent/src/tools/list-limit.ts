@@ -1,12 +1,12 @@
 import type { LimitsMeta } from "./output-meta";
 
-export interface ListLimitResult<T> {
+interface ListLimitResult<T> {
 	items: T[];
 	limitReached?: number;
 	meta: Partial<LimitsMeta>;
 }
 
-export interface ListLimitOptions {
+interface ListLimitOptions {
 	limit?: number;
 	headLimit?: number;
 	limitType?: "match" | "result";

@@ -5,21 +5,23 @@
  * share identical execution logic. Each tool is a config object;
  * SubagentTool is the single class that runs them.
  *
- * Rendering is handled externally via the renderer registry (see renderers.ts),
- * not on the tool class itself.
+ * Rendering is assigned to the tool instance via createUnifiedSubagentRenderer.
  */
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import type { Component } from "@nghyane/arcane-tui";
 import { Snowflake } from "@nghyane/arcane-utils";
 import type { TObject, TProperties } from "@sinclair/typebox";
 import type { ToolSession } from "..";
 import { isDefaultModelAlias } from "../config/model-resolver";
+import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import { getBundledAgent } from "../task/agents";
 import { runAgent } from "../task/executor";
 import { AgentOutputManager } from "../task/output-manager";
+import { createUnifiedSubagentRenderer } from "../task/render";
 import type { AgentProgress, TaskToolDetails } from "../task/types";
 
 export interface SubagentConfig<T extends TProperties = TProperties> {
@@ -54,6 +56,14 @@ export class SubagentTool<T extends TProperties = TProperties>
 	readonly label: string;
 	readonly parameters: TObject<T>;
 	description: string;
+	readonly mergeCallAndResult = true;
+	declare renderCall: (args: unknown, options: RenderResultOptions, theme: Theme) => Component;
+	declare renderResult: (
+		result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
+		options: RenderResultOptions,
+		theme: Theme,
+		args?: unknown,
+	) => Component;
 
 	#config: SubagentConfig<T>;
 	#session: ToolSession;
@@ -65,6 +75,13 @@ export class SubagentTool<T extends TProperties = TProperties>
 		this.label = config.label;
 		this.parameters = config.schema;
 		this.description = config.toolDescription ?? "";
+		const renderer = createUnifiedSubagentRenderer({
+			label: config.label,
+			getDescription: args => config.buildDescription(args),
+			getContextLine: config.buildContextLine ? args => config.buildContextLine!(args) : undefined,
+		});
+		this.renderCall = renderer.renderCall;
+		this.renderResult = renderer.renderResult;
 	}
 
 	async execute(

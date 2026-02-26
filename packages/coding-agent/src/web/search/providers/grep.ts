@@ -5,25 +5,35 @@
  * No API key required. Supports regex and language filtering.
  */
 
-import type { SearchResponse, SearchSource } from "../types";
-import { SearchProviderError } from "../types";
-import type { SearchParams } from "./base";
-import { SearchProvider } from "./base";
+import type { SearchSource } from "../types";
 
 const GREP_APP_URL = "https://grep.app/api/search";
 
 interface GrepAppHit {
 	repo: string;
 	path: string;
+	branch?: string;
+	total_matches?: string;
 	content?: {
 		snippet?: string;
 	};
 }
 
+interface GrepAppFacetBucket {
+	val: string;
+	count: number;
+}
+
 interface GrepAppResponse {
+	time?: number;
 	hits?: {
 		total?: number;
 		hits?: GrepAppHit[];
+	};
+	facets?: {
+		lang?: { buckets?: GrepAppFacetBucket[] };
+		repo?: { buckets?: GrepAppFacetBucket[] };
+		path?: { buckets?: GrepAppFacetBucket[] };
 	};
 }
 
@@ -40,20 +50,54 @@ function stripHtml(html: string): string {
 		.trim();
 }
 
-function extractSnippet(hit: GrepAppHit): string {
+function extractSnippet(hit: GrepAppHit): { lines: string[]; lineNumbers: number[] } {
 	const raw = hit.content?.snippet ?? "";
-	if (!raw) return "";
-	const table = raw.match(/<table[^>]*>(.*?)<\/table>/s);
-	if (!table) return stripHtml(raw);
-	const rows = table[1].matchAll(/<tr[^>]*>.*?<td><div class="highlight"><pre>(.*?)<\/pre><\/div><\/td><\/tr>/gs);
+	if (!raw) return { lines: [], lineNumbers: [] };
+
 	const lines: string[] = [];
-	for (const row of rows) {
-		lines.push(stripHtml(row[1]));
+	const lineNumbers: number[] = [];
+
+	const table = raw.match(/<table[^>]*>(.*?)<\/table>/s);
+	if (!table) {
+		return { lines: [stripHtml(raw)], lineNumbers: [] };
 	}
-	return lines.join("\n");
+
+	const trBlocks = table[1].split(/<\/tr>/);
+	for (const tr of trBlocks) {
+		const lineMatch = tr.match(/data-line="(\d+)"/);
+		if (lineMatch) lineNumbers.push(Number.parseInt(lineMatch[1], 10));
+
+		const preMatch = tr.match(/<pre>(.*?)<\/pre>/s);
+		if (preMatch) lines.push(stripHtml(preMatch[1]));
+	}
+	return { lines, lineNumbers };
 }
 
-export class GrepAppProvider extends SearchProvider {
+export interface SearchCodeParams {
+	query: string;
+	regexp?: boolean;
+	language?: string;
+	repo?: string;
+	limit?: number;
+	signal?: AbortSignal;
+}
+
+export interface SearchCodeSource extends SearchSource {
+	branch?: string;
+	lineNumbers?: number[];
+	matchCount?: number;
+}
+
+export interface SearchCodeResponse {
+	provider: "grep";
+	sources: SearchCodeSource[];
+	total?: number;
+	timeMs?: number;
+	topLanguages?: GrepAppFacetBucket[];
+	topRepos?: GrepAppFacetBucket[];
+}
+
+export class GrepAppProvider {
 	readonly id = "grep";
 	readonly label = "grep.app";
 
@@ -61,11 +105,17 @@ export class GrepAppProvider extends SearchProvider {
 		return true;
 	}
 
-	async search(params: SearchParams): Promise<SearchResponse> {
+	async search(params: SearchCodeParams): Promise<SearchCodeResponse> {
 		const url = new URL(GREP_APP_URL);
 		url.searchParams.set("q", params.query);
-		url.searchParams.set("regexp", "false");
+		url.searchParams.set("regexp", params.regexp ? "true" : "false");
 		url.searchParams.set("case", "false");
+		if (params.language) {
+			url.searchParams.set("l", params.language);
+		}
+		if (params.repo) {
+			url.searchParams.set("r", params.repo);
+		}
 
 		const response = await fetch(url.toString(), {
 			signal: params.signal,
@@ -74,26 +124,37 @@ export class GrepAppProvider extends SearchProvider {
 
 		if (!response.ok) {
 			const text = await response.text();
-			throw new SearchProviderError("grep", `grep.app error (${response.status}): ${text}`, response.status);
+			throw new Error(`grep.app error (${response.status}): ${text}`);
 		}
 
 		const data = (await response.json()) as GrepAppResponse;
 		const hits = data.hits?.hits ?? [];
 		const limit = params.limit ?? 10;
-		const sources: SearchSource[] = [];
+		const sources: SearchCodeSource[] = [];
 
 		for (const hit of hits.slice(0, limit)) {
-			const snippet = extractSnippet(hit);
+			const { lines, lineNumbers } = extractSnippet(hit);
+			const branch = hit.branch ?? "HEAD";
+			const startLine = lineNumbers[0];
+			const lineAnchor = startLine ? `#L${startLine}` : "";
+
 			sources.push({
 				title: `${hit.repo}: ${hit.path}`,
-				url: `https://github.com/${hit.repo}/blob/HEAD/${hit.path}`,
-				snippet: snippet || undefined,
+				url: `https://github.com/${hit.repo}/blob/${branch}/${hit.path}${lineAnchor}`,
+				snippet: lines.length > 0 ? lines.join("\n") : undefined,
+				branch,
+				lineNumbers: lineNumbers.length > 0 ? lineNumbers : undefined,
+				matchCount: hit.total_matches ? Number.parseInt(hit.total_matches, 10) : undefined,
 			});
 		}
 
 		return {
 			provider: "grep",
 			sources,
+			total: data.hits?.total,
+			timeMs: data.time,
+			topLanguages: data.facets?.lang?.buckets?.slice(0, 5),
+			topRepos: data.facets?.repo?.buckets?.slice(0, 5),
 		};
 	}
 }

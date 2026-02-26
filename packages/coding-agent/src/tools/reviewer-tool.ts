@@ -1,6 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import { createUnifiedSubagentRenderer } from "../task/render";
-import { buildSubagentRenderConfig, registerRenderer } from "./renderers";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
@@ -47,5 +45,3 @@ export const reviewerConfig: SubagentConfig<typeof schema.properties> = {
 	},
 	toolDescription: "Review code changes for correctness, style, and potential issues",
 };
-
-registerRenderer(reviewerConfig.name, createUnifiedSubagentRenderer(buildSubagentRenderConfig(reviewerConfig)));
