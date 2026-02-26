@@ -1,6 +1,6 @@
 import { Box, Container, Spacer, Text } from "@nghyane/arcane-tui";
 import type { Rule } from "../../capability/rule";
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 
 /**
  * Component that renders a TTSR (Time Traveling Stream Rules) notification.

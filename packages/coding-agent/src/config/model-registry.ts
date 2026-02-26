@@ -25,8 +25,8 @@ import {
 import { logger } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type ConfigError, ConfigFile } from "../config";
-import type { ThemeColor } from "../modes/theme/theme";
 import type { AuthStorage, OAuthCredential } from "../session/auth-storage";
+import type { ThemeColor } from "../theme/theme";
 
 export const kNoAuth = "N/A";
 

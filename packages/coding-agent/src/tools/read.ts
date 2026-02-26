@@ -9,7 +9,6 @@ import { ptree, untilAborted } from "@nghyane/arcane-utils";
 import { getRemoteDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
 import { computeLineHash } from "../patch/hashline";
 import type { ToolSession } from "../sdk";
 import {
@@ -20,8 +19,10 @@ import {
 	truncateHead,
 	truncateStringToBytesFromStart,
 } from "../session/streaming-output";
+import { getLanguageFromPath, type Theme } from "../theme/theme";
 import { renderCodeCell, renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
+import { formatAge, shortenPath, wrapBrackets } from "../ui/render-utils";
 import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import { formatDimensionNote, resizeImage } from "../utils/image-resize";
 import { detectSupportedImageMimeTypeFromFile } from "../utils/mime";
@@ -29,7 +30,6 @@ import { ensureTool } from "../utils/tools-manager";
 import { applyListLimit } from "./list-limit";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { resolveReadPath, resolveToCwd } from "./path-utils";
-import { formatAge, shortenPath, wrapBrackets } from "./render-utils";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
 
 // Document types convertible via markitdown

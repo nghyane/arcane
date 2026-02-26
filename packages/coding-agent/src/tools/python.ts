@@ -10,14 +10,14 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { executePython, type PythonExecutorOptions } from "../ipy/executor";
 import type { PythonStatusEvent } from "../ipy/kernel";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";
-import type { Theme } from "../modes/theme/theme";
 import { DEFAULT_MAX_BYTES, OutputSink, type OutputSummary } from "../session/streaming-output";
+import type { Theme } from "../theme/theme";
 import { getTreeBranch, getTreeContinuePrefix, renderCodeCell } from "../tui";
+import { replaceTabs, shortenPath, ToolUIKit, truncateToWidth } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { resolveToCwd } from "./path-utils";
-import { replaceTabs, shortenPath, ToolUIKit, truncateToWidth } from "./render-utils";
 import { ToolAbortError, ToolError } from "./tool-errors";
 
 export const PYTHON_DEFAULT_PREVIEW_LINES = 10;

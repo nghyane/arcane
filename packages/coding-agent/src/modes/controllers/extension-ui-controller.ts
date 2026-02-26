@@ -14,8 +14,8 @@ import type {
 import { HookEditorComponent } from "../../modes/components/hook-editor";
 import { HookInputComponent } from "../../modes/components/hook-input";
 import { HookSelectorComponent } from "../../modes/components/hook-selector";
-import { getAvailableThemesWithPaths, getThemeByName, setTheme, type Theme, theme } from "../../modes/theme/theme";
 import type { InteractiveModeContext } from "../../modes/types";
+import { getAvailableThemesWithPaths, getThemeByName, setTheme, type Theme, theme } from "../../theme/theme";
 import { setTerminalTitle } from "../../utils/title-generator";
 
 export class ExtensionUiController {

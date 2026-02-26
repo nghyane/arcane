@@ -8,8 +8,8 @@ import { getProjectDir, getSSHConfigPath } from "@nghyane/arcane-utils/dirs";
 import { type SSHHost, sshCapability } from "../../capability/ssh";
 import { loadCapability } from "../../discovery";
 import { addSSHHost, readSSHConfigFile, removeSSHHost, type SSHHostConfig } from "../../ssh/config-writer";
+import { theme } from "../../theme/theme";
 import { DynamicBorder } from "../components/dynamic-border";
-import { theme } from "../theme/theme";
 import type { InteractiveModeContext } from "../types";
 
 function parseCommandArgs(argsString: string): string[] {

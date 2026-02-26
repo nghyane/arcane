@@ -5,7 +5,7 @@
  */
 import * as path from "node:path";
 import { AssistantMessageComponent } from "@nghyane/arcane/modes/components/assistant-message";
-import { initTheme } from "@nghyane/arcane/modes/theme/theme";
+import { initTheme } from "@nghyane/arcane/theme/theme";
 import type { AssistantMessage } from "@nghyane/arcane-ai";
 import { ProcessTerminal, TUI } from "@nghyane/arcane-tui";
 import { sleep } from "bun";

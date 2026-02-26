@@ -1,6 +1,6 @@
 import { Box, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
-import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import type { BranchSummaryMessage } from "../../session/messages";
+import { getMarkdownTheme, theme } from "../../theme/theme";
 
 /**
  * Component that renders a branch summary message with collapsed/expanded state.

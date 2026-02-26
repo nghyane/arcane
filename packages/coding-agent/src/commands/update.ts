@@ -3,7 +3,7 @@
  */
 import { Command, Flags } from "@nghyane/arcane-utils/cli";
 import { runUpdateCommand } from "../cli/update-cli";
-import { initTheme } from "../modes/theme/theme";
+import { initTheme } from "../theme/theme";
 
 export default class Update extends Command {
 	static description = "Check for and install updates";

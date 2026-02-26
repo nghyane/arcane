@@ -1,4 +1,4 @@
-import { initTheme, theme } from "@nghyane/arcane/modes/theme/theme";
+import { initTheme, theme } from "@nghyane/arcane/theme/theme";
 
 // Initialize with dark theme explicitly
 Bun.env.COLORTERM = "truecolor";

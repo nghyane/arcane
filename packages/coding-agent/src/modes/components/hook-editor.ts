@@ -3,7 +3,7 @@
  * Supports Ctrl+G for external editor.
  */
 import { Container, Editor, matchesKey, Spacer, Text, type TUI } from "@nghyane/arcane-tui";
-import { getEditorTheme, theme } from "../../modes/theme/theme";
+import { getEditorTheme, theme } from "../../theme/theme";
 import { getEditorCommand, openInEditor } from "../../utils/external-editor";
 import { DynamicBorder } from "./dynamic-border";
 

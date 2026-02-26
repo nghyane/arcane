@@ -141,17 +141,6 @@ export {
 	UserMessageSelectorComponent,
 	type VisualTruncateResult,
 } from "./modes/components";
-// Theme utilities for custom tools
-export {
-	getLanguageFromPath,
-	getMarkdownTheme,
-	getSelectListTheme,
-	getSettingsListTheme,
-	highlightCode,
-	initTheme,
-	Theme,
-	type ThemeColor,
-} from "./modes/theme/theme";
 export { computeLineHash } from "./patch/hashline";
 // SDK for programmatic usage
 export {
@@ -249,6 +238,17 @@ export type {
 	SingleResult,
 	TaskParams,
 } from "./task/types";
+// Theme utilities for custom tools
+export {
+	getLanguageFromPath,
+	getMarkdownTheme,
+	getSelectListTheme,
+	getSettingsListTheme,
+	highlightCode,
+	initTheme,
+	Theme,
+	type ThemeColor,
+} from "./theme/theme";
 // Tools (detail types and utilities)
 export {
 	type BashToolDetails,

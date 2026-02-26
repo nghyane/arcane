@@ -6,17 +6,17 @@ import type { SSHHost } from "../capability/ssh";
 import { sshCapability } from "../capability/ssh";
 import { loadCapability } from "../discovery";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
 import { DEFAULT_MAX_BYTES } from "../session/streaming-output";
 import type { SSHHostInfo } from "../ssh/connection-manager";
 import { ensureHostInfo, getHostInfoForHost } from "../ssh/connection-manager";
 import { executeSSH } from "../ssh/ssh-executor";
+import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
+import { formatBytes, wrapBrackets } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
-import { formatBytes, wrapBrackets } from "./render-utils";
 import { ToolError } from "./tool-errors";
 
 const sshSchema = Type.Object({

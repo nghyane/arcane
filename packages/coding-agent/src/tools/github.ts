@@ -1,6 +1,6 @@
 import type { AgentTool, AgentToolResult } from "@nghyane/arcane-agent";
 import { type Static, Type } from "@sinclair/typebox";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 import { type GitHubResponse, githubClient } from "../web/github-client";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";

@@ -1,8 +1,8 @@
 import type { AssistantMessage } from "@nghyane/arcane-ai";
 import { Container, Markdown, Spacer, TERMINAL, Text } from "@nghyane/arcane-tui";
 import { logger } from "@nghyane/arcane-utils";
-import { hasPendingMermaid, prerenderMermaid } from "../../modes/theme/mermaid-cache";
-import { getMarkdownTheme, theme } from "../../modes/theme/theme";
+import { hasPendingMermaid, prerenderMermaid } from "../../theme/mermaid-cache";
+import { getMarkdownTheme, theme } from "../../theme/theme";
 
 /**
  * Component that renders a complete assistant message

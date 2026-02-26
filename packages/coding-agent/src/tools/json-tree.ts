@@ -1,8 +1,8 @@
 /**
  * JSON tree rendering utilities shared across tool renderers.
  */
-import type { Theme } from "../modes/theme/theme";
-import { truncateToWidth } from "./render-utils";
+import type { Theme } from "../theme/theme";
+import { truncateToWidth } from "../ui/render-utils";
 
 /** Max depth for JSON tree rendering */
 export const JSON_TREE_MAX_DEPTH_COLLAPSED = 2;

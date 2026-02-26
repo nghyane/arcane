@@ -1,5 +1,7 @@
 ### Subagents
 
+Prefer doing work yourself — you retain full context. Only delegate when you have 3+ independent, well-scoped units touching different files.
+
 Decision tree:
 - "I need to find code by concept or behavior" → `explore` (local codebase scout)
 - "I need cross-repo code, PRs, issues, or commit history" → `librarian` (remote search)

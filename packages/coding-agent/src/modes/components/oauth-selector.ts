@@ -1,7 +1,7 @@
 import { getOAuthProviders, type OAuthProviderInfo } from "@nghyane/arcane-ai";
 import { Container, matchesKey, Spacer, TruncatedText } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
 import type { AuthStorage } from "../../session/auth-storage";
+import { theme } from "../../theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 /**
  * Component that renders an OAuth provider selector.

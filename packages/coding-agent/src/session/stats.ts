@@ -3,7 +3,7 @@ import type { AssistantMessage, Model, Usage, UsageReport } from "@nghyane/arcan
 import type { ModelRegistry } from "../config/model-registry";
 import { exportSessionToHtml } from "../export/html";
 import type { ContextUsage } from "../extensibility/extensions/types";
-import { getCurrentThemeName } from "../modes/theme/theme";
+import { getCurrentThemeName } from "../theme/theme";
 import { calculateContextTokens, estimateTokens } from "./compaction";
 import type { CompactionSummaryMessage, FileMentionMessage } from "./messages";
 import type { SessionManager } from "./session-manager";

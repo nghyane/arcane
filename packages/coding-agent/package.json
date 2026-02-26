@@ -292,12 +292,24 @@
 			"import": "./src/modes/rpc/*.ts"
 		},
 		"./modes/theme/*": {
-			"types": "./src/modes/theme/*.ts",
-			"import": "./src/modes/theme/*.ts"
+			"types": "./src/theme/*.ts",
+			"import": "./src/theme/*.ts"
 		},
 		"./modes/theme/defaults": {
-			"types": "./src/modes/theme/defaults/index.ts",
-			"import": "./src/modes/theme/defaults/index.ts"
+			"types": "./src/theme/defaults/index.ts",
+			"import": "./src/theme/defaults/index.ts"
+		},
+		"./theme/*": {
+			"types": "./src/theme/*.ts",
+			"import": "./src/theme/*.ts"
+		},
+		"./theme/defaults": {
+			"types": "./src/theme/defaults/index.ts",
+			"import": "./src/theme/defaults/index.ts"
+		},
+		"./ui/*": {
+			"types": "./src/ui/*.ts",
+			"import": "./src/ui/*.ts"
 		},
 		"./modes/utils/*": {
 			"types": "./src/modes/utils/*.ts",

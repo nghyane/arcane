@@ -7,7 +7,7 @@
  * - Provide custom rendering for realtime/final display
  */
 import type { Component } from "@nghyane/arcane-tui";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 
 /** Event from subprocess tool execution (parsed from JSONL) */
 export interface SubprocessToolEvent {

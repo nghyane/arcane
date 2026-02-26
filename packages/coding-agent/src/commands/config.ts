@@ -3,7 +3,7 @@
  */
 import { Args, Command, Flags } from "@nghyane/arcane-utils/cli";
 import { type ConfigAction, type ConfigCommandArgs, runConfigCommand } from "../cli/config-cli";
-import { initTheme } from "../modes/theme/theme";
+import { initTheme } from "../theme/theme";
 
 const ACTIONS: ConfigAction[] = ["list", "get", "set", "reset", "path"];
 

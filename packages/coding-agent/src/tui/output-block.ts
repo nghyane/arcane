@@ -2,7 +2,7 @@
  * Bordered output container with optional header and sections.
  */
 import { padding, visibleWidth } from "@nghyane/arcane-tui";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 import type { State } from "./types";
 import type { RenderCache } from "./utils";
 import { getStateBgColor, Hasher, padToWidth, truncateToWidth } from "./utils";

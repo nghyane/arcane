@@ -8,9 +8,9 @@ import {
 	TruncatedText,
 	truncateToWidth,
 } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
 import type { SessionTreeNode } from "../../session/session-manager";
-import { shortenPath } from "../../tools/render-utils";
+import { theme } from "../../theme/theme";
+import { shortenPath } from "../../ui/render-utils";
 import { DynamicBorder } from "./dynamic-border";
 
 /** Gutter info: position (displayIndent where connector was) and whether to show │ */

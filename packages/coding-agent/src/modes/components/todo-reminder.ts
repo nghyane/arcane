@@ -1,5 +1,5 @@
 import { Box, Container, Spacer, Text } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 import type { TodoItem } from "../../tools/todo-write";
 
 /**

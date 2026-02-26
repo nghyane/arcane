@@ -10,8 +10,8 @@ import {
 	truncateToWidth,
 	visibleWidth,
 } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
 import type { HistoryEntry, HistoryStorage } from "../../session/history-storage";
+import { theme } from "../../theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 
 class HistoryResultsList implements Component {

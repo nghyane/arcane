@@ -1,4 +1,4 @@
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 import type { DoctorCheck } from "./types";
 
 export async function runDoctorChecks(): Promise<DoctorCheck[]> {

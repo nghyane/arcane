@@ -3,7 +3,7 @@ import path from "node:path";
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { logger, once, untilAborted } from "@nghyane/arcane-utils";
 import type { BunFile } from "bun";
-import { type Theme, theme } from "../modes/theme/theme";
+import { type Theme, theme } from "../theme/theme";
 import type { ToolSession } from "../tools";
 import { resolveToCwd } from "../tools/path-utils";
 import { ToolAbortError, throwIfAborted } from "../tools/tool-errors";

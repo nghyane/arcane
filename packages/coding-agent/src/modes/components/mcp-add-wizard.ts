@@ -16,7 +16,7 @@ import {
 import { validateServerName } from "../../mcp/config-writer";
 import { analyzeAuthError, discoverOAuthEndpoints } from "../../mcp/oauth-discovery";
 import type { MCPHttpServerConfig, MCPServerConfig, MCPSseServerConfig, MCPStdioServerConfig } from "../../mcp/types";
-import { theme } from "../theme/theme";
+import { theme } from "../../theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 
 type TransportType = "stdio" | "http" | "sse";

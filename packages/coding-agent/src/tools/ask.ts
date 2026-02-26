@@ -19,10 +19,10 @@ import type { Component } from "@nghyane/arcane-tui";
 import { TERMINAL, Text } from "@nghyane/arcane-tui";
 import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import { type Theme, theme } from "../modes/theme/theme";
+import { type Theme, theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
+import { ToolUIKit } from "../ui/render-utils";
 import type { ToolSession } from ".";
-import { ToolUIKit } from "./render-utils";
 
 // =============================================================================
 // Types

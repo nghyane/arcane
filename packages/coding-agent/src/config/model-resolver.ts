@@ -10,11 +10,16 @@ import {
 	modelsAreEqual,
 } from "@nghyane/arcane-ai";
 import chalk from "chalk";
-import { isValidThinkingLevel } from "../cli/args";
 import MODEL_PRIO from "../priority.json" with { type: "json" };
 import { fuzzyMatch } from "../utils/fuzzy";
 import { MODEL_ROLE_IDS, type ModelRegistry, type ModelRole } from "./model-registry";
 import type { Settings } from "./settings";
+
+const VALID_THINKING_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh"] as const;
+
+export function isValidThinkingLevel(level: string): level is ThinkingLevel {
+	return VALID_THINKING_LEVELS.includes(level as ThinkingLevel);
+}
 
 /** Default model IDs for each known provider */
 export const defaultModelPerProvider: Record<KnownProvider, string> = DEFAULT_MODEL_PER_PROVIDER;
@@ -399,14 +404,22 @@ export function resolveModelOverride(
  * The algorithm tries to match the full pattern first, then progressively
  * strips colon-suffixes to find a match.
  */
-export async function resolveModelScope(
+export interface MatchModelPatternsResult {
+	scopedModels: ScopedModel[];
+	warnings: string[];
+}
+
+/**
+ * Match model patterns against available models (pure — no I/O or logging).
+ */
+export function matchModelPatterns(
 	patterns: string[],
-	modelRegistry: ModelRegistry,
+	availableModels: Model<Api>[],
 	preferences?: ModelMatchPreferences,
-): Promise<ScopedModel[]> {
-	const availableModels = modelRegistry.getAvailable();
+): MatchModelPatternsResult {
 	const context = buildPreferenceContext(availableModels, preferences);
 	const scopedModels: ScopedModel[] = [];
+	const warnings: string[] = [];
 
 	for (const pattern of patterns) {
 		// Check if pattern contains glob characters
@@ -427,7 +440,6 @@ export async function resolveModelScope(
 			}
 
 			// Match against "provider/modelId" format OR just model ID
-			// This allows "*sonnet*" to match without requiring "anthropic/*sonnet*"
 			const matchingModels = availableModels.filter(m => {
 				const fullId = `${m.provider}/${m.id}`;
 				const glob = new Bun.Glob(globPattern.toLowerCase());
@@ -435,7 +447,7 @@ export async function resolveModelScope(
 			});
 
 			if (matchingModels.length === 0) {
-				console.warn(chalk.yellow(`Warning: No models match pattern "${pattern}"`));
+				warnings.push(`No models match pattern "${pattern}"`);
 				continue;
 			}
 
@@ -454,11 +466,11 @@ export async function resolveModelScope(
 		);
 
 		if (warning) {
-			console.warn(chalk.yellow(`Warning: ${warning}`));
+			warnings.push(warning);
 		}
 
 		if (!model) {
-			console.warn(chalk.yellow(`Warning: No models match pattern "${pattern}"`));
+			warnings.push(`No models match pattern "${pattern}"`);
 			continue;
 		}
 
@@ -466,6 +478,21 @@ export async function resolveModelScope(
 		if (!scopedModels.find(sm => modelsAreEqual(sm.model, model))) {
 			scopedModels.push({ model, thinkingLevel, explicitThinkingLevel });
 		}
+	}
+
+	return { scopedModels, warnings };
+}
+
+export async function resolveModelScope(
+	patterns: string[],
+	modelRegistry: ModelRegistry,
+	preferences?: ModelMatchPreferences,
+): Promise<ScopedModel[]> {
+	const availableModels = modelRegistry.getAvailable();
+	const { scopedModels, warnings } = matchModelPatterns(patterns, availableModels, preferences);
+
+	for (const warning of warnings) {
+		console.warn(chalk.yellow(`Warning: ${warning}`));
 	}
 
 	return scopedModels;

@@ -7,10 +7,10 @@ import { logger, Snowflake } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import chalk from "chalk";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
 import type { ToolSession } from "../sdk";
+import type { Theme } from "../theme/theme";
 import { renderStatusLine, renderTreeList } from "../tui";
-import { PREVIEW_LIMITS } from "./render-utils";
+import { PREVIEW_LIMITS } from "../ui/render-utils";
 
 const todoWriteSchema = Type.Object({
 	todos: Type.Array(

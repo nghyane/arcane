@@ -1,8 +1,8 @@
 /**
  * Render a code cell with optional output section.
  */
-import { highlightCode, type Theme } from "../modes/theme/theme";
-import { formatDuration, formatExpandHint, formatMoreItems, replaceTabs } from "../tools/render-utils";
+import { highlightCode, type Theme } from "../theme/theme";
+import { formatDuration, formatExpandHint, formatMoreItems, replaceTabs } from "../ui/render-utils";
 import { renderOutputBlock } from "./output-block";
 import type { State } from "./types";
 import { getStateIcon } from "./utils";

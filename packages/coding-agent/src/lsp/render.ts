@@ -10,7 +10,9 @@
 import type { RenderResultOptions } from "@nghyane/arcane-agent";
 import { type HighlightColors, highlightCode as nativeHighlightCode, supportsLanguage } from "@nghyane/arcane-natives";
 import { type Component, Text } from "@nghyane/arcane-tui";
-import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
+import { getLanguageFromPath, type Theme } from "../theme/theme";
+import { renderStatusLine } from "../tui";
+import { CachedOutputBlock } from "../tui/output-block";
 import {
 	formatExpandHint,
 	formatMoreItems,
@@ -18,9 +20,7 @@ import {
 	shortenPath,
 	TRUNCATE_LENGTHS,
 	truncateToWidth,
-} from "../tools/render-utils";
-import { renderStatusLine } from "../tui";
-import { CachedOutputBlock } from "../tui/output-block";
+} from "../ui/render-utils";
 import type { LspParams, LspToolDetails } from "./types";
 
 // =============================================================================

@@ -4,8 +4,8 @@
 
 import { sanitizeText } from "@nghyane/arcane-natives";
 import { Container, Loader, Spacer, Text, type TUI } from "@nghyane/arcane-tui";
-import { getSymbolTheme, theme } from "../../modes/theme/theme";
 import { formatBytes } from "../../session/streaming-output";
+import { getSymbolTheme, theme } from "../../theme/theme";
 import type { TruncationMeta } from "../../tools/output-meta";
 import { DynamicBorder } from "./dynamic-border";
 import { truncateToVisualLines } from "./visual-truncate";

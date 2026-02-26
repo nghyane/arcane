@@ -6,7 +6,7 @@
  */
 import * as os from "node:os";
 import { type Ellipsis, truncateToWidth } from "@nghyane/arcane-tui";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 
 export { Ellipsis, replaceTabs, truncateToWidth } from "@nghyane/arcane-tui";
 

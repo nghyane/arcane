@@ -3,7 +3,7 @@
  */
 import { Args, Command } from "@nghyane/arcane-utils/cli";
 import { type JupyterAction, type JupyterCommandArgs, runJupyterCommand } from "../cli/jupyter-cli";
-import { initTheme } from "../modes/theme/theme";
+import { initTheme } from "../theme/theme";
 
 const ACTIONS: JupyterAction[] = ["kill", "status"];
 

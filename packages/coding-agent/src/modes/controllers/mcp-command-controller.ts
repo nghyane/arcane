@@ -19,10 +19,10 @@ import {
 import { MCPOAuthFlow } from "../../mcp/oauth-flow";
 import type { MCPServerConfig, MCPServerConnection } from "../../mcp/types";
 import type { OAuthCredential } from "../../session/auth-storage";
+import { theme } from "../../theme/theme";
 import { openPath } from "../../utils/open";
 import { DynamicBorder } from "../components/dynamic-border";
 import { MCPAddWizard } from "../components/mcp-add-wizard";
-import { theme } from "../theme/theme";
 import type { InteractiveModeContext } from "../types";
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {

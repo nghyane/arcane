@@ -18,7 +18,7 @@ import {
 	truncateStringToBytesFromStart,
 } from "../session/streaming-output";
 import { resolveReadPath } from "../tools/path-utils";
-import { formatAge } from "../tools/render-utils";
+import { formatAge } from "../ui/render-utils";
 import { fuzzyMatch } from "./fuzzy";
 import { formatDimensionNote, resizeImage } from "./image-resize";
 import { detectSupportedImageMimeTypeFromFile } from "./mime";

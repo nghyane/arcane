@@ -5,7 +5,7 @@
  */
 import * as os from "node:os";
 import { type Component, truncateToWidth, wrapTextWithAnsi } from "@nghyane/arcane-tui";
-import { theme } from "../../../modes/theme/theme";
+import { theme } from "../../../theme/theme";
 import type { Extension, ExtensionState } from "./types";
 
 export class InspectorPanel implements Component {

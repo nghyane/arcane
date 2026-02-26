@@ -1,14 +1,12 @@
 import type { AgentTool } from "@nghyane/arcane-agent";
 import { createCodeTool } from "@nghyane/arcane-codemode";
 import { $env, logger } from "@nghyane/arcane-utils";
-import { renderPromptTemplate } from "../config/prompt-templates";
 import { getPreludeDocs, warmPythonEnvironment } from "../ipy/executor";
 import { checkPythonKernelAvailability } from "../ipy/kernel";
 import { LspTool } from "../lsp";
 import { EditTool } from "../patch";
 import { guidance as guidanceTemplate } from "../prompts/codemode/guidance.js";
 import { TaskTool } from "../task";
-import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import { time } from "../utils/timings";
 import { SearchTool } from "../web/search";
 import { AskTool } from "./ask";
@@ -185,11 +183,7 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 	);
 	const tools = results.filter((r): r is AgentTool => r !== null);
 
-	const displayMode = resolveFileDisplayMode(session);
-	const guidance = renderPromptTemplate(guidanceTemplate, {
-		IS_HASHLINE_MODE: displayMode.hashLines,
-		IS_LINE_NUMBER_MODE: !displayMode.hashLines && displayMode.lineNumbers,
-	});
+	const guidance = guidanceTemplate;
 	const { codeTool, excludedTools } = createCodeTool(tools, { guidance });
 	return [codeTool as AgentTool, ...(excludedTools as AgentTool[])];
 }

@@ -1,7 +1,7 @@
 import { copyToClipboard, sanitizeText } from "@nghyane/arcane-natives";
 import { type Component, matchesKey, padding, truncateToWidth, visibleWidth } from "@nghyane/arcane-tui";
-import { theme } from "../modes/theme/theme";
-import { replaceTabs } from "../tools/render-utils";
+import { theme } from "../theme/theme";
+import { replaceTabs } from "../ui/render-utils";
 import {
 	formatDebugLogExpandedLines,
 	formatDebugLogLine,

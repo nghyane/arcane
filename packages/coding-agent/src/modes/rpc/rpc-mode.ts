@@ -12,8 +12,8 @@
  */
 import { readJsonl, Snowflake } from "@nghyane/arcane-utils";
 import type { ExtensionUIContext, ExtensionUIDialogOptions } from "../../extensibility/extensions";
-import { type Theme, theme } from "../../modes/theme/theme";
 import type { AgentSession } from "../../session/agent-session";
+import { type Theme, theme } from "../../theme/theme";
 import type {
 	RpcCommand,
 	RpcExtensionUIRequest,

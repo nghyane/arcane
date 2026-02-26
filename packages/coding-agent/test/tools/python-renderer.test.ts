@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { getThemeByName } from "@nghyane/arcane/modes/theme/theme";
+import { getThemeByName } from "@nghyane/arcane/theme/theme";
 import { PythonTool } from "@nghyane/arcane/tools/python";
 import { sanitizeText } from "@nghyane/arcane-natives";
 

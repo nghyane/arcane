@@ -8,7 +8,7 @@ import {
 	writethroughNoop,
 } from "../lsp";
 import { renderDiff } from "../modes/components/diff";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 import type { ToolSession } from "../tools";
 import {
 	invalidateFsScanAfterDelete,

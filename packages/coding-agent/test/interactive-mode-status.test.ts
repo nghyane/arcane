@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test, vi } from "bun:test";
-import { initTheme } from "@nghyane/arcane/modes/theme/theme";
 import { UiHelpers } from "@nghyane/arcane/modes/utils/ui-helpers";
+import { initTheme } from "@nghyane/arcane/theme/theme";
 import { Container } from "@nghyane/arcane-tui";
 
 function renderLastLine(container: Container, width = 120): string {

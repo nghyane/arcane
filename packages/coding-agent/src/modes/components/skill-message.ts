@@ -1,8 +1,8 @@
 import type { TextContent } from "@nghyane/arcane-ai";
 import type { Component } from "@nghyane/arcane-tui";
 import { Box, Container, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
-import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import type { CustomMessage, SkillPromptDetails } from "../../session/messages";
+import { getMarkdownTheme, theme } from "../../theme/theme";
 
 export class SkillMessageComponent extends Container {
 	#box: Box;

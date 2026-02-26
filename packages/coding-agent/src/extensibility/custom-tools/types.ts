@@ -12,9 +12,9 @@ import type { Rule } from "../../capability/rule";
 import type { ModelRegistry } from "../../config/model-registry";
 import type { ExecOptions, ExecResult } from "../../exec/exec";
 import type { HookUIContext } from "../../extensibility/hooks/types";
-import type { Theme } from "../../modes/theme/theme";
 import type { CompactionResult } from "../../session/compaction";
 import type { ReadonlySessionManager } from "../../session/session-manager";
+import type { Theme } from "../../theme/theme";
 import type { TodoItem } from "../../tools/todo-write";
 
 /** Alias for clarity */

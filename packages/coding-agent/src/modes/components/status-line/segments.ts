@@ -1,7 +1,7 @@
 import * as os from "node:os";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
-import { theme } from "../../../modes/theme/theme";
-import { shortenPath } from "../../../tools/render-utils";
+import { theme } from "../../../theme/theme";
+import { shortenPath } from "../../../ui/render-utils";
 import type { RenderedSegment, SegmentContext, StatusLineSegment, StatusLineSegmentId } from "./types";
 
 export type { SegmentContext } from "./types";

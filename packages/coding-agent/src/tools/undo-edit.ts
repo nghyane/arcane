@@ -7,14 +7,14 @@ import { Text } from "@nghyane/arcane-tui";
 import { isEnoent, untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
 import { generateUnifiedDiffString } from "../patch/diff";
 import { normalizeToLF, stripBom } from "../patch/normalize";
+import type { Theme } from "../theme/theme";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
+import { getDiffStats, replaceTabs, shortenPath, ToolUIKit } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
 import { resolveToCwd } from "./path-utils";
-import { getDiffStats, replaceTabs, shortenPath, ToolUIKit } from "./render-utils";
 import { ToolError } from "./tool-errors";
 import { popUndo } from "./undo-history";
 

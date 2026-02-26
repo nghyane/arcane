@@ -2,8 +2,8 @@ import type { TextContent } from "@nghyane/arcane-ai";
 import type { Component } from "@nghyane/arcane-tui";
 import { Box, Container, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 import type { MessageRenderer } from "../../extensibility/extensions/types";
-import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import type { CustomMessage } from "../../session/messages";
+import { getMarkdownTheme, theme } from "../../theme/theme";
 
 /**
  * Component that renders a custom message entry from extensions.

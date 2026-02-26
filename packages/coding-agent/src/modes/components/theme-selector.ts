@@ -1,5 +1,5 @@
 import { Container, type SelectItem, SelectList } from "@nghyane/arcane-tui";
-import { getSelectListTheme } from "../../modes/theme/theme";
+import { getSelectListTheme } from "../../theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 
 /**

@@ -3,7 +3,7 @@ import { sanitizeText } from "@nghyane/arcane-natives";
 import { Box, type Component, Container, Spacer, TERMINAL, Text, type TUI } from "@nghyane/arcane-tui";
 import { logger } from "@nghyane/arcane-utils";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 import { defaultRenderer } from "../../tools/default-renderer";
 import { ToolImageDisplay } from "./tool-image-display";
 

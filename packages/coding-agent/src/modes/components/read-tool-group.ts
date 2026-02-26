@@ -1,6 +1,6 @@
 import { Container, Text } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
-import { shortenPath } from "../../tools/render-utils";
+import { theme } from "../../theme/theme";
+import { shortenPath } from "../../ui/render-utils";
 import type { ToolExecutionHandle } from "./tool-execution";
 
 type ReadRenderArgs = {

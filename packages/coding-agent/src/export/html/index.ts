@@ -2,8 +2,8 @@ import * as path from "node:path";
 import type { AgentState } from "@nghyane/arcane-agent";
 import { isEnoent } from "@nghyane/arcane-utils";
 import { APP_NAME } from "@nghyane/arcane-utils/dirs";
-import { getResolvedThemeColors, getThemeExportColors } from "../../modes/theme/theme";
 import { type SessionEntry, type SessionHeader, SessionManager } from "../../session/session-manager";
+import { getResolvedThemeColors, getThemeExportColors } from "../../theme/theme";
 // Pre-generated template (created by scripts/generate-template.ts at publish time)
 import { TEMPLATE } from "./template.generated";
 

@@ -3,7 +3,7 @@
  */
 import { Args, Command, Flags, renderCommandHelp } from "@nghyane/arcane-utils/cli";
 import { runSetupCommand, type SetupCommandArgs, type SetupComponent } from "../cli/setup-cli";
-import { initTheme } from "../modes/theme/theme";
+import { initTheme } from "../theme/theme";
 
 const COMPONENTS: SetupComponent[] = ["python", "stt"];
 

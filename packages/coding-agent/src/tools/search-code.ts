@@ -1,6 +1,6 @@
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { Type } from "@sinclair/typebox";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 import { GrepAppProvider, type SearchCodeSource } from "../web/search/providers/grep";
 import { renderSearchCall, renderSearchResult, type SearchRenderDetails } from "../web/search/render";
 

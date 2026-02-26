@@ -7,10 +7,11 @@ import { ptree } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { parse as parseHtml } from "node-html-parser";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import { type Theme, theme } from "../modes/theme/theme";
 import { DEFAULT_MAX_BYTES, truncateHead } from "../session/streaming-output";
+import { type Theme, theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
+import { formatExpandHint } from "../ui/render-utils";
 import { ensureTool } from "../utils/tools-manager";
 import { specialHandlers } from "../web/scrapers";
 import type { RenderResult } from "../web/scrapers/types";
@@ -20,7 +21,6 @@ import type { ToolSession } from ".";
 import { applyListLimit } from "./list-limit";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact } from "./output-utils";
-import { formatExpandHint } from "./render-utils";
 import { ToolAbortError } from "./tool-errors";
 
 // =============================================================================

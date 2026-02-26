@@ -1,6 +1,6 @@
 import { getOAuthProviders } from "@nghyane/arcane-ai";
 import { Container, getEditorKeybindings, Input, Spacer, Text, type TUI } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 import { openPath } from "../../utils/open";
 import { DynamicBorder } from "./dynamic-border";
 

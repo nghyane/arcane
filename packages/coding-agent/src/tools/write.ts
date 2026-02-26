@@ -11,12 +11,9 @@ import { untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { createLspWritethrough, type FileDiagnosticsResult, type WritethroughCallback, writethroughNoop } from "../lsp";
-import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
 import type { ToolSession } from "../sdk";
+import { getLanguageFromPath, type Theme } from "../theme/theme";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
-import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
-import { type OutputMeta, outputMeta } from "./output-meta";
-import { resolveToCwd } from "./path-utils";
 import {
 	formatDiagnostics,
 	formatExpandHint,
@@ -25,7 +22,10 @@ import {
 	replaceTabs,
 	shortenPath,
 	ToolUIKit,
-} from "./render-utils";
+} from "../ui/render-utils";
+import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
+import { type OutputMeta, outputMeta } from "./output-meta";
+import { resolveToCwd } from "./path-utils";
 
 const writeSchema = Type.Object({
 	path: Type.String({ description: "Path to the file to write (relative or absolute)" }),

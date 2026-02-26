@@ -10,7 +10,7 @@ import { pipeline } from "node:stream/promises";
 import { isEnoent } from "@nghyane/arcane-utils";
 import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
-import { theme } from "../modes/theme/theme";
+import { theme } from "../theme/theme";
 import { VERSION } from "../version";
 
 /**

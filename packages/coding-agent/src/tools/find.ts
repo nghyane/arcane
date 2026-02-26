@@ -8,8 +8,8 @@ import { isEnoent, untilAborted } from "@nghyane/arcane-utils";
 import type { Static } from "@sinclair/typebox";
 import { Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
 import { type TruncationResult, truncateHead } from "../session/streaming-output";
+import type { Theme } from "../theme/theme";
 import {
 	Ellipsis,
 	Hasher,
@@ -19,11 +19,11 @@ import {
 	renderTreeList,
 	truncateToWidth,
 } from "../tui";
+import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { applyListLimit } from "./list-limit";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { resolveToCwd } from "./path-utils";
-import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "./render-utils";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
 
 const findSchema = Type.Object({

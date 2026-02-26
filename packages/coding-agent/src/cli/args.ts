@@ -5,6 +5,7 @@ import type { ThinkingLevel } from "@nghyane/arcane-agent";
 import { logger } from "@nghyane/arcane-utils";
 import { APP_NAME, CONFIG_DIR_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
+import { isValidThinkingLevel } from "../config/model-resolver";
 import { BUILTIN_TOOLS } from "../tools";
 
 export type Mode = "text" | "json" | "rpc";
@@ -47,12 +48,6 @@ export interface Args {
 	fileArgs: string[];
 	/** Unknown flags (potentially extension flags) - map of flag name to value */
 	unknownFlags: Map<string, boolean | string>;
-}
-
-const VALID_THINKING_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh"] as const;
-
-export function isValidThinkingLevel(level: string): level is ThinkingLevel {
-	return VALID_THINKING_LEVELS.includes(level as ThinkingLevel);
 }
 
 export function parseArgs(args: string[], extensionFlags?: Map<string, { type: "boolean" | "string" }>): Args {
@@ -134,7 +129,7 @@ export function parseArgs(args: string[], extensionFlags?: Map<string, { type: "
 			} else {
 				logger.warn("Invalid thinking level passed to --thinking", {
 					level,
-					validThinkingLevels: [...VALID_THINKING_LEVELS],
+					validThinkingLevels: ["off", "minimal", "low", "medium", "high", "xhigh"],
 				});
 			}
 		} else if (arg === "--print" || arg === "-p") {

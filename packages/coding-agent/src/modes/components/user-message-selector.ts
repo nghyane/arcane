@@ -1,5 +1,5 @@
 import { type Component, Container, matchesKey, Spacer, Text, truncateToWidth } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 
 interface UserMessageItem {

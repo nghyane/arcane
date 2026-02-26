@@ -4,8 +4,8 @@
 import type { AgentMessage } from "@nghyane/arcane-agent";
 import type { Model } from "@nghyane/arcane-ai";
 import type { ModelRegistry } from "../../config/model-registry";
-import { theme } from "../../modes/theme/theme";
 import type { SessionManager } from "../../session/session-manager";
+import { theme } from "../../theme/theme";
 import type {
 	AppendEntryHandler,
 	BranchHandler,

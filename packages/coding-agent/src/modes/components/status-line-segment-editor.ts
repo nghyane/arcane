@@ -10,7 +10,7 @@
  */
 import { Container, matchesKey, padding } from "@nghyane/arcane-tui";
 import type { StatusLineSegmentId } from "../../config/settings-schema";
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 import { ALL_SEGMENT_IDS } from "./status-line/segments";
 
 // Segment display names and short descriptions

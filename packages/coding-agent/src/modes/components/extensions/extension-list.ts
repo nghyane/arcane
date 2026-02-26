@@ -7,7 +7,7 @@
  */
 import { type Component, matchesKey, padding, truncateToWidth, visibleWidth } from "@nghyane/arcane-tui";
 import { isProviderEnabled } from "../../../discovery";
-import { theme } from "../../../modes/theme/theme";
+import { theme } from "../../../theme/theme";
 import { applyFilter } from "./state-manager";
 import type { Extension, ExtensionKind, ExtensionState } from "./types";
 

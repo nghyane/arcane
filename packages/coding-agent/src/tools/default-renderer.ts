@@ -1,8 +1,9 @@
 import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
+import { formatExpandHint, truncateToWidth } from "../ui/render-utils";
 import {
 	formatArgsInline,
 	JSON_TREE_MAX_DEPTH_COLLAPSED,
@@ -13,7 +14,6 @@ import {
 	JSON_TREE_SCALAR_LEN_EXPANDED,
 	renderJsonTreeLines,
 } from "./json-tree";
-import { formatExpandHint, truncateToWidth } from "./render-utils";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
 	if (value !== null && value !== undefined && typeof value === "object") {

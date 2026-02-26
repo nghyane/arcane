@@ -12,10 +12,10 @@ import {
 import type { Terminal as XtermTerminalType } from "@xterm/headless";
 import xterm from "@xterm/headless";
 import { NON_INTERACTIVE_ENV } from "../exec/non-interactive-env";
-import type { Theme } from "../modes/theme/theme";
 import { OutputSink, type OutputSummary } from "../session/streaming-output";
+import type { Theme } from "../theme/theme";
 import { getStateIcon } from "../tui";
-import { replaceTabs } from "./render-utils";
+import { replaceTabs } from "../ui/render-utils";
 
 export interface BashInteractiveResult extends OutputSummary {
 	exitCode: number | undefined;

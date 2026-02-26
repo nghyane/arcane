@@ -3,7 +3,7 @@
  */
 import type { AgentTool, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import type { Static, TSchema } from "@sinclair/typebox";
-import type { Theme } from "../../modes/theme/theme";
+import type { Theme } from "../../theme/theme";
 import { applyToolProxy } from "../tool-proxy";
 import type { CustomTool, CustomToolContext } from "./types";
 

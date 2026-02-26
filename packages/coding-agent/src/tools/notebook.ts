@@ -5,11 +5,11 @@ import { Text } from "@nghyane/arcane-tui";
 import { untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
 import type { ToolSession } from "../sdk";
+import type { Theme } from "../theme/theme";
 import { Hasher, type RenderCache, renderCodeCell, renderStatusLine } from "../tui";
+import { formatCount, formatErrorMessage, PREVIEW_LIMITS } from "../ui/render-utils";
 import { resolveToCwd } from "./path-utils";
-import { formatCount, formatErrorMessage, PREVIEW_LIMITS } from "./render-utils";
 
 const notebookSchema = Type.Object({
 	action: StringEnum(["edit", "insert", "delete"], {

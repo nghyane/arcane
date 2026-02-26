@@ -7,7 +7,7 @@
 import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
 import { PluginManager, parseSettingValue, validateSetting } from "../extensibility/plugins";
-import { theme } from "../modes/theme/theme";
+import { theme } from "../theme/theme";
 
 // =============================================================================
 // Types

@@ -1,5 +1,5 @@
 import { CancellableLoader, Container, Spacer, Text, type TUI } from "@nghyane/arcane-tui";
-import type { Theme } from "../../modes/theme/theme";
+import type { Theme } from "../../theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 
 /** Loader wrapped with borders for hook UI */

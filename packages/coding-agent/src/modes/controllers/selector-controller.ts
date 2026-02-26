@@ -7,6 +7,8 @@ import { MODEL_ROLES } from "../../config/model-registry";
 import { settings } from "../../config/settings";
 import { DebugSelectorComponent } from "../../debug";
 import { disableProvider, enableProvider } from "../../discovery";
+import type { InteractiveModeContext } from "../../modes/types";
+import { SessionManager } from "../../session/session-manager";
 import {
 	getAvailableThemes,
 	getSymbolTheme,
@@ -15,9 +17,7 @@ import {
 	setSymbolPreset,
 	setTheme,
 	theme,
-} from "../../modes/theme/theme";
-import type { InteractiveModeContext } from "../../modes/types";
-import { SessionManager } from "../../session/session-manager";
+} from "../../theme/theme";
 import { setPreferredImageProvider, setPreferredSearchProvider } from "../../tools";
 import { AssistantMessageComponent } from "../components/assistant-message";
 import { ExtensionDashboard } from "../components/extensions";

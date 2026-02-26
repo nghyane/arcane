@@ -7,8 +7,9 @@ import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { FileDiagnosticsResult } from "../lsp";
 import { renderDiff as renderDiffColored } from "../modes/components/diff";
-import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
+import { getLanguageFromPath, type Theme } from "../theme/theme";
 import type { OutputMeta } from "../tools/output-meta";
+import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
 import {
 	formatExpandHint,
 	formatStatusIcon,
@@ -18,8 +19,7 @@ import {
 	shortenPath,
 	ToolUIKit,
 	truncateDiffByHunk,
-} from "../tools/render-utils";
-import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
+} from "../ui/render-utils";
 import type { DiffError, DiffResult, Operation } from "./types";
 
 // ═══════════════════════════════════════════════════════════════════════════

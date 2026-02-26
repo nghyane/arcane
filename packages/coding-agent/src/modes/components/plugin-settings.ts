@@ -19,7 +19,7 @@ import {
 } from "@nghyane/arcane-tui";
 import { PluginManager } from "../../extensibility/plugins/manager";
 import type { InstalledPlugin, PluginSettingSchema } from "../../extensibility/plugins/types";
-import { getSelectListTheme, getSettingsListTheme, theme } from "../../modes/theme/theme";
+import { getSelectListTheme, getSettingsListTheme, theme } from "../../theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 
 // =============================================================================

@@ -7,7 +7,7 @@ import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import { logger } from "@nghyane/arcane-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 import {
 	formatCount,
 	formatExpandHint,
@@ -18,7 +18,7 @@ import {
 	PREVIEW_LIMITS,
 	TRUNCATE_LENGTHS,
 	truncateToWidth,
-} from "../tools/render-utils";
+} from "../ui/render-utils";
 import type { ExaRenderDetails } from "./types";
 
 const COLLAPSED_PREVIEW_LINES = PREVIEW_LIMITS.COLLAPSED_LINES;

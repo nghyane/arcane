@@ -1,8 +1,8 @@
 /**
  * Render file listings with optional icons and metadata.
  */
-import type { Theme } from "../modes/theme/theme";
-import { getLanguageFromPath } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
+import { getLanguageFromPath } from "../theme/theme";
 import { renderTreeList } from "./tree-list";
 
 export interface FileEntry {

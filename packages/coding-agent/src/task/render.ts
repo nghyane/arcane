@@ -1,7 +1,8 @@
 import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme, ThemeColor } from "../modes/theme/theme";
+import type { Theme, ThemeColor } from "../theme/theme";
+import { Ellipsis, Hasher, type RenderCache } from "../tui";
 import {
 	formatBadge,
 	formatDuration,
@@ -9,8 +10,7 @@ import {
 	replaceTabs,
 	type ToolUIColor,
 	truncateToWidth,
-} from "../tools/render-utils";
-import { Ellipsis, Hasher, type RenderCache } from "../tui";
+} from "../ui/render-utils";
 import { subprocessToolRegistry } from "./subprocess-tool-registry";
 import type { AgentProgress, SingleResult, TaskParams, TaskToolDetails } from "./types";
 

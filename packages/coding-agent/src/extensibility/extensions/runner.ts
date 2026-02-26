@@ -6,8 +6,8 @@ import type { ImageContent, Model } from "@nghyane/arcane-ai";
 import type { KeyId } from "@nghyane/arcane-tui";
 import { logger } from "@nghyane/arcane-utils";
 import type { ModelRegistry } from "../../config/model-registry";
-import { type Theme, theme } from "../../modes/theme/theme";
 import type { SessionManager } from "../../session/session-manager";
+import { type Theme, theme } from "../../theme/theme";
 import type {
 	BeforeAgentStartEvent,
 	BeforeAgentStartEventResult,

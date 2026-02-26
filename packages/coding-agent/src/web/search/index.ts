@@ -18,9 +18,9 @@ import { callExaTool, findApiKey as findExaKey, formatSearchResults, isSearchRes
 import { renderExaCall, renderExaResult } from "../../exa/render";
 import type { ExaRenderDetails } from "../../exa/types";
 import type { CustomTool, CustomToolContext, RenderResultOptions } from "../../extensibility/custom-tools/types";
-import type { Theme } from "../../modes/theme/theme";
 import webSearchSystemPrompt from "../../prompts/system/web-search.md" with { type: "text" };
-import { formatAge } from "../../tools/render-utils";
+import type { Theme } from "../../theme/theme";
+import { formatAge } from "../../ui/render-utils";
 import { getSearchProvider, resolveProviderChain, type SearchProvider } from "./provider";
 import { renderSearchCall, renderSearchResult, type SearchRenderDetails } from "./render";
 import type { SearchResponse } from "./types";

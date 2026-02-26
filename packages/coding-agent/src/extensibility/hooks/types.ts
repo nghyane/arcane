@@ -10,7 +10,6 @@ import type { Component, TUI } from "@nghyane/arcane-tui";
 import type { Rule } from "../../capability/rule";
 import type { ModelRegistry } from "../../config/model-registry";
 import type { ExecOptions, ExecResult } from "../../exec/exec";
-import type { Theme } from "../../modes/theme/theme";
 import type { EditToolDetails } from "../../patch";
 import type { CompactionPreparation, CompactionResult } from "../../session/compaction";
 import type { HookMessage } from "../../session/messages";
@@ -21,6 +20,7 @@ import type {
 	SessionEntry,
 	SessionManager,
 } from "../../session/session-manager";
+import type { Theme } from "../../theme/theme";
 import type { BashToolDetails, FindToolDetails, GrepToolDetails, ReadToolDetails } from "../../tools";
 import type { TodoItem } from "../../tools/todo-write";
 

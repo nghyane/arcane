@@ -1,6 +1,6 @@
 import * as Diff from "diff";
-import { theme } from "../../modes/theme/theme";
-import { replaceTabs } from "../../tools/render-utils";
+import { theme } from "../../theme/theme";
+import { replaceTabs } from "../../ui/render-utils";
 
 /** SGR dim on / normal intensity — additive, preserves fg/bg colors. */
 const DIM = "\x1b[2m";

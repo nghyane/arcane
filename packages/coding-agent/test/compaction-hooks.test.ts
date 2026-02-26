@@ -15,10 +15,10 @@ import {
 	type SessionCompactEvent,
 	type SessionEvent,
 } from "@nghyane/arcane/extensibility/hooks";
-import { theme } from "@nghyane/arcane/modes/theme/theme";
 import { AgentSession } from "@nghyane/arcane/session/agent-session";
 import { AuthStorage } from "@nghyane/arcane/session/auth-storage";
 import { SessionManager } from "@nghyane/arcane/session/session-manager";
+import { theme } from "@nghyane/arcane/theme/theme";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 import { Agent } from "@nghyane/arcane-agent";
 import { getBundledModel } from "@nghyane/arcane-ai";

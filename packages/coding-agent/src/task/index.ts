@@ -10,7 +10,7 @@ import * as path from "node:path";
 import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { Snowflake } from "@nghyane/arcane-utils";
 import type { ToolSession } from "..";
-import type { Theme } from "../modes/theme/theme";
+import type { Theme } from "../theme/theme";
 import { getBundledAgent } from "./agents";
 import { runAgent } from "./executor";
 import { AgentOutputManager } from "./output-manager";

@@ -3,7 +3,7 @@
  */
 import { Args, Command, Flags } from "@nghyane/arcane-utils/cli";
 import { type GrepCommandArgs, runGrepCommand } from "../cli/grep-cli";
-import { initTheme } from "../modes/theme/theme";
+import { initTheme } from "../theme/theme";
 
 export default class Grep extends Command {
 	static description = "Test grep tool";

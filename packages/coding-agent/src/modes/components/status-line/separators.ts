@@ -1,4 +1,4 @@
-import type { Theme } from "../../../modes/theme/theme";
+import type { Theme } from "../../../theme/theme";
 import type { SeparatorDef, StatusLineSeparatorStyle } from "./types";
 
 function trimSep(value: string): string {

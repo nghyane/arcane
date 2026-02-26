@@ -2,7 +2,7 @@
  * Shared helpers for tool-rendered UI components.
  */
 import { padding, visibleWidth } from "@nghyane/arcane-tui";
-import type { Theme, ThemeBg } from "../modes/theme/theme";
+import type { Theme, ThemeBg } from "../theme/theme";
 import type { IconType, State } from "./types";
 
 export { Ellipsis, truncateToWidth } from "@nghyane/arcane-tui";

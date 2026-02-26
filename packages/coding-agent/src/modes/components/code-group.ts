@@ -1,9 +1,9 @@
 import type { AgentTool } from "@nghyane/arcane-agent";
 import type { Component, TUI } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
-import { getSymbolTheme, theme } from "../../modes/theme/theme";
-import { shortenPath } from "../../tools/render-utils";
+import { getSymbolTheme, theme } from "../../theme/theme";
 import { getTreeBranch, getTreeContinuePrefix } from "../../tui";
+import { shortenPath } from "../../ui/render-utils";
 import { ToolExecutionComponent, type ToolExecutionHandle, type ToolExecutionOptions } from "./tool-execution";
 
 /** Visible width of the tree prefix added to each sub-tool line. */

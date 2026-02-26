@@ -7,7 +7,9 @@
 import type { Component } from "@nghyane/arcane-tui";
 import { Text, visibleWidth, wrapTextWithAnsi } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../../extensibility/custom-tools/types";
-import type { Theme } from "../../modes/theme/theme";
+import type { Theme } from "../../theme/theme";
+import { renderStatusLine, renderTreeList } from "../../tui";
+import { CachedOutputBlock } from "../../tui/output-block";
 import {
 	formatAge,
 	formatCount,
@@ -19,9 +21,7 @@ import {
 	PREVIEW_LIMITS,
 	TRUNCATE_LENGTHS,
 	truncateToWidth,
-} from "../../tools/render-utils";
-import { renderStatusLine, renderTreeList } from "../../tui";
-import { CachedOutputBlock } from "../../tui/output-block";
+} from "../../ui/render-utils";
 import { getSearchProvider } from "./provider";
 import type { SearchResponse } from "./types";
 

@@ -19,9 +19,9 @@ import { YAML } from "bun";
 import { type Settings as SettingsCapabilityItem, settingsCapability } from "../capability/settings";
 import type { ModelRole } from "../config/model-registry";
 import { loadCapability } from "../discovery";
-import { isLightTheme, setAutoThemeMapping, setColorBlindMode, setSymbolPreset } from "../modes/theme/theme";
 import { type EditMode, normalizeEditMode } from "../patch";
 import { AgentStorage } from "../session/agent-storage";
+import { isLightTheme, setAutoThemeMapping, setColorBlindMode, setSymbolPreset } from "../theme/theme";
 import { withFileLock } from "./file-lock";
 import {
 	type BashInterceptorRule,
@@ -653,14 +653,14 @@ const SETTING_HOOKS: Partial<Record<SettingPath, SettingHook<any>>> = {
 	},
 	symbolPreset: value => {
 		if (typeof value === "string" && (value === "unicode" || value === "nerd" || value === "ascii")) {
-			setSymbolPreset(value).catch(err => {
+			setSymbolPreset(value).catch((err: unknown) => {
 				logger.warn("Settings: symbolPreset hook failed", { preset: value, error: String(err) });
 			});
 		}
 	},
 	colorBlindMode: value => {
 		if (typeof value === "boolean") {
-			setColorBlindMode(value).catch(err => {
+			setColorBlindMode(value).catch((err: unknown) => {
 				logger.warn("Settings: colorBlindMode hook failed", { enabled: value, error: String(err) });
 			});
 		}

@@ -1,6 +1,6 @@
 import { type Component, padding, truncateToWidth, visibleWidth } from "@nghyane/arcane-tui";
 import { APP_NAME } from "@nghyane/arcane-utils/dirs";
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 
 export interface RecentSession {
 	name: string;

@@ -6,15 +6,15 @@ import { Text } from "@nghyane/arcane-tui";
 import { untilAborted } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
 import { computeLineHash } from "../patch/hashline";
 import { DEFAULT_MAX_COLUMN, type TruncationResult, truncateHead } from "../session/streaming-output";
+import type { Theme } from "../theme/theme";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, renderTreeList, truncateToWidth } from "../tui";
+import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "../ui/render-utils";
 import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { resolveToCwd } from "./path-utils";
-import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "./render-utils";
 import { ToolError } from "./tool-errors";
 
 const grepSchema = Type.Object({

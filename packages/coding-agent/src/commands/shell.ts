@@ -3,7 +3,7 @@
  */
 import { Command, Flags } from "@nghyane/arcane-utils/cli";
 import { runShellCommand, type ShellCommandArgs } from "../cli/shell-cli";
-import { initTheme } from "../modes/theme/theme";
+import { initTheme } from "../theme/theme";
 
 export default class Shell extends Command {
 	static description = "Interactive shell console";

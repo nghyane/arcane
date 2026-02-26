@@ -1,5 +1,5 @@
 import { Container, Markdown, Spacer } from "@nghyane/arcane-tui";
-import { getMarkdownTheme, theme } from "../../modes/theme/theme";
+import { getMarkdownTheme, theme } from "../../theme/theme";
 
 /**
  * Component that renders a user message

@@ -1,5 +1,5 @@
 import type { Component } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
+import { theme } from "../../theme/theme";
 
 /**
  * Dynamic border component that adjusts to viewport width.

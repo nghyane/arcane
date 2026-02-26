@@ -1,6 +1,6 @@
 import { Box, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
-import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import type { CompactionSummaryMessage } from "../../session/messages";
+import { getMarkdownTheme, theme } from "../../theme/theme";
 
 /**
  * Component that renders a compaction message with collapsed/expanded state.

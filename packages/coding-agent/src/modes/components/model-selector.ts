@@ -14,7 +14,7 @@ import {
 import { MODEL_ROLE_IDS, MODEL_ROLES, type ModelRegistry, type ModelRole } from "../../config/model-registry";
 import { parseModelString } from "../../config/model-resolver";
 import type { Settings } from "../../config/settings";
-import { type ThemeColor, theme } from "../../modes/theme/theme";
+import { type ThemeColor, theme } from "../../theme/theme";
 import { fuzzyFilter } from "../../utils/fuzzy";
 import { DynamicBorder } from "./dynamic-border";
 

@@ -3,7 +3,7 @@
  */
 import { Args, Command, Flags } from "@nghyane/arcane-utils/cli";
 import { runSSHCommand, type SSHAction, type SSHCommandArgs } from "../cli/ssh-cli";
-import { initTheme } from "../modes/theme/theme";
+import { initTheme } from "../theme/theme";
 
 const ACTIONS: SSHAction[] = ["add", "remove", "list"];
 

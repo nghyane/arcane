@@ -6,7 +6,7 @@
 
 import { APP_NAME } from "@nghyane/arcane-utils/dirs";
 import chalk from "chalk";
-import { initTheme, theme } from "../modes/theme/theme";
+import { initTheme, theme } from "../theme/theme";
 import { runSearchQuery, type SearchParams } from "../web/search/index";
 import { SEARCH_PROVIDER_ORDER } from "../web/search/provider";
 import { renderSearchResult } from "../web/search/render";

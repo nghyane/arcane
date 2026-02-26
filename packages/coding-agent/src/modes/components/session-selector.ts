@@ -9,8 +9,8 @@ import {
 	truncateToWidth,
 	visibleWidth,
 } from "@nghyane/arcane-tui";
-import { theme } from "../../modes/theme/theme";
 import type { SessionInfo } from "../../session/session-manager";
+import { theme } from "../../theme/theme";
 import { fuzzyFilter } from "../../utils/fuzzy";
 import { DynamicBorder } from "./dynamic-border";
 

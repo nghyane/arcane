@@ -1,7 +1,7 @@
 /**
  * Standardized status header rendering for tool output.
  */
-import type { Theme, ThemeColor } from "../modes/theme/theme";
+import type { Theme, ThemeColor } from "../theme/theme";
 import type { IconType } from "./types";
 import { getStateIcon } from "./utils";
 

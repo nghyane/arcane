@@ -17,12 +17,12 @@ import type { TObject, TProperties } from "@sinclair/typebox";
 import type { ToolSession } from "..";
 import { isDefaultModelAlias } from "../config/model-resolver";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import type { Theme } from "../modes/theme/theme";
 import { getBundledAgent } from "../task/agents";
 import { runAgent } from "../task/executor";
 import { AgentOutputManager } from "../task/output-manager";
 import { createUnifiedSubagentRenderer } from "../task/render";
 import type { AgentProgress, TaskToolDetails } from "../task/types";
+import type { Theme } from "../theme/theme";
 
 export interface SubagentConfig<T extends TProperties = TProperties> {
 	/** Tool name exposed to the model */

@@ -7,7 +7,7 @@ import * as path from "node:path";
 import { APP_NAME, getPythonEnvDir } from "@nghyane/arcane-utils/dirs";
 import { $ } from "bun";
 import chalk from "chalk";
-import { theme } from "../modes/theme/theme";
+import { theme } from "../theme/theme";
 
 export type SetupComponent = "python" | "stt";
 

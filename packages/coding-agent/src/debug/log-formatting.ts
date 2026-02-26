@@ -1,5 +1,5 @@
 import { sanitizeText } from "@nghyane/arcane-natives";
-import { replaceTabs, truncateToWidth } from "../tools/render-utils";
+import { replaceTabs, truncateToWidth } from "../ui/render-utils";
 
 export function formatDebugLogLine(line: string, maxWidth: number): string {
 	const sanitized = sanitizeText(line);

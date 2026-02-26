@@ -23,7 +23,7 @@ import {
 } from "@nghyane/arcane-tui";
 import { Settings } from "../../../config/settings";
 import { DynamicBorder } from "../../../modes/components/dynamic-border";
-import { theme } from "../../../modes/theme/theme";
+import { theme } from "../../../theme/theme";
 import { ExtensionList } from "./extension-list";
 import { InspectorPanel } from "./inspector-panel";
 import { applyFilter, createInitialState, filterByProvider, refreshState, toggleProvider } from "./state-manager";

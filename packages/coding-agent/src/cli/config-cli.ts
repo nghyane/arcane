@@ -17,7 +17,7 @@ import {
 	settings,
 } from "../config/settings";
 import { getAllSettingDefs, type SettingDef } from "../modes/components/settings-defs";
-import { theme } from "../modes/theme/theme";
+import { theme } from "../theme/theme";
 
 // =============================================================================
 // Types
