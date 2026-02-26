@@ -1,4 +1,4 @@
-import { INTENT_FIELD } from "@nghyane/arcane-agent";
+import { INTENT_FIELD, toolDetails } from "@nghyane/arcane-agent";
 import { Loader, TERMINAL, Text } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
@@ -8,7 +8,7 @@ import { TodoReminderComponent } from "../../modes/components/todo-reminder";
 import { ToolExecutionComponent } from "../../modes/components/tool-execution";
 import { TtsrNotificationComponent } from "../../modes/components/ttsr-notification";
 import { getSymbolTheme, theme } from "../../modes/theme/theme";
-import type { InteractiveModeContext, TodoItem } from "../../modes/types";
+import type { InteractiveModeContext } from "../../modes/types";
 import type { AgentSessionEvent } from "../../session/agent-session";
 
 export class EventController {
@@ -192,8 +192,6 @@ export class EventController {
 								content.arguments,
 								{
 									showImages: settings.get("terminal.showImages"),
-									editFuzzyThreshold: settings.get("edit.fuzzyThreshold"),
-									editAllowFuzzy: settings.get("edit.fuzzyMatch"),
 								},
 								tool,
 								this.ctx.ui,
@@ -284,8 +282,6 @@ export class EventController {
 							tool,
 							{
 								showImages: settings.get("terminal.showImages"),
-								editFuzzyThreshold: settings.get("edit.fuzzyThreshold"),
-								editAllowFuzzy: settings.get("edit.fuzzyMatch"),
 							},
 							this.ctx.ui,
 							this.ctx.sessionManager.getCwd(),
@@ -312,8 +308,6 @@ export class EventController {
 						event.args,
 						{
 							showImages: settings.get("terminal.showImages"),
-							editFuzzyThreshold: settings.get("edit.fuzzyThreshold"),
-							editAllowFuzzy: settings.get("edit.fuzzyMatch"),
 						},
 						tool,
 						this.ctx.ui,
@@ -347,7 +341,7 @@ export class EventController {
 				if (event.toolName === "code") {
 					const group = this.#codeGroups.get(event.toolCallId);
 					if (group) {
-						const details = event.result.details as { logs?: string[] } | undefined;
+						const details = toolDetails("code", (event.result.details ?? {}) as Record<string, unknown>);
 						if (details?.logs) {
 							group.setLogs(details.logs);
 						}
@@ -358,13 +352,13 @@ export class EventController {
 				}
 				// Update todo display when todo_write tool completes
 				if (event.toolName === "todo_write" && !event.isError) {
-					const details = event.result.details as { todos?: TodoItem[] } | undefined;
+					const details = toolDetails("todo_write", (event.result.details ?? {}) as Record<string, unknown>);
 					if (details?.todos) {
 						this.ctx.setTodos(details.todos);
 					}
 				} else if (event.toolName === "todo_write" && event.isError) {
 					const textContent = event.result.content.find(
-						(content: { type: string; text?: string }) => content.type === "text",
+						(content): content is { type: "text"; text: string } => content.type === "text",
 					)?.text;
 					this.ctx.showWarning(
 						`Todo update failed${textContent ? `: ${textContent}` : ". Progress may be stale until todo_write succeeds."}`,

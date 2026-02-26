@@ -240,8 +240,6 @@ export class UiHelpers {
 						content.arguments,
 						{
 							showImages: settings.get("terminal.showImages"),
-							editFuzzyThreshold: settings.get("edit.fuzzyThreshold"),
-							editAllowFuzzy: settings.get("edit.fuzzyMatch"),
 						},
 						tool,
 						this.ctx.ui,

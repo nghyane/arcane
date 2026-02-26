@@ -466,9 +466,7 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 
 			case "tool_execution_start": {
 				const isSubTool = !!event.parentToolCallId;
-				const toolArgs = extractToolArgsPreview(
-					(event as { toolArgs?: Record<string, unknown> }).toolArgs || event.args || {},
-				);
+				const toolArgs = extractToolArgsPreview(event.args ?? {});
 
 				if (!isSubTool) {
 					progress.toolCount++;

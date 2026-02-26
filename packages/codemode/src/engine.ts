@@ -185,7 +185,6 @@ export function createCodeTool(
 								toolName: event.toolName,
 								result: {
 									content: [{ type: "text" as const, text: event.error ?? "Unknown error" }],
-									isError: true,
 								},
 								isError: true,
 								parentToolCallId: _toolCallId,

@@ -253,7 +253,11 @@ function renderDiffSection(
 export const editToolRenderer = {
 	mergeCallAndResult: true,
 
-	renderCall(args: EditRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(
+		args: EditRenderArgs,
+		options: RenderResultOptions & { renderContext?: EditRenderContext },
+		uiTheme: Theme,
+	): Component {
 		const ui = new ToolUIKit(uiTheme);
 		const rawPath = args.file_path || args.path || "";
 		const filePath = shortenPath(rawPath);
@@ -273,8 +277,13 @@ export const editToolRenderer = {
 		let text = `${ui.title(opTitle)} ${spinner ? `${spinner} ` : ""}${editIcon} ${pathDisplay}`;
 
 		// Show streaming preview of diff/content
-		if (args.previewDiff) {
-			text += formatStreamingDiff(args.previewDiff, rawPath, uiTheme, "preview");
+		const previewDiffText =
+			args.previewDiff ??
+			(options.renderContext?.editDiffPreview && "diff" in options.renderContext.editDiffPreview
+				? options.renderContext.editDiffPreview.diff
+				: undefined);
+		if (previewDiffText) {
+			text += formatStreamingDiff(previewDiffText, rawPath, uiTheme, "preview");
 		} else if (args.diff && args.op) {
 			text += formatStreamingDiff(args.diff, rawPath, uiTheme);
 		} else if (args.edits && args.edits.length > 0) {

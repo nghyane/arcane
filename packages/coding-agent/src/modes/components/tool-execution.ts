@@ -16,18 +16,8 @@ import {
 import { logger } from "@nghyane/arcane-utils";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { theme } from "../../modes/theme/theme";
-import {
-	computeEditDiff,
-	computeHashlineDiff,
-	computePatchDiff,
-	type EditDiffError,
-	type EditDiffResult,
-} from "../../patch";
-import { BASH_DEFAULT_PREVIEW_LINES } from "../../tools/bash";
 import { defaultRenderer } from "../../tools/default-renderer";
-import { PYTHON_DEFAULT_PREVIEW_LINES } from "../../tools/python";
 import { convertToPng } from "../../utils/image-convert";
-import { renderDiff } from "./diff";
 
 function ensureInvalidate(component: unknown): Component {
 	const c = component as { render: Component["render"]; invalidate?: () => void };
@@ -48,8 +38,6 @@ function cloneToolArgs<T>(args: T): T {
 
 export interface ToolExecutionOptions {
 	showImages?: boolean; // default: true (only used if terminal supports images)
-	editFuzzyThreshold?: number;
-	editAllowFuzzy?: boolean;
 }
 
 export interface ToolExecutionHandle {
@@ -80,8 +68,6 @@ export class ToolExecutionComponent extends Container {
 	#args: any;
 	#expanded = false;
 	#showImages: boolean;
-	#editFuzzyThreshold: number | undefined;
-	#editAllowFuzzy: boolean | undefined;
 	#isPartial = true;
 	#compact: boolean;
 	#ui: TUI;
@@ -91,9 +77,9 @@ export class ToolExecutionComponent extends Container {
 		isError?: boolean;
 		details?: any;
 	};
-	// Cached edit diff preview (computed when args arrive, before tool executes)
-	#editDiffPreview?: EditDiffResult | EditDiffError;
-	#editDiffArgsKey?: string; // Track which args the preview is for
+	// Tool-specific state from onArgsComplete (e.g. edit diff preview)
+	#toolState?: unknown;
+	#toolStateKey?: string;
 	// Cached converted images for Kitty protocol (which requires PNG), keyed by index
 	#convertedImages: Map<number, { data: string; mimeType: string }> = new Map();
 	// Spinner animation for partial task results
@@ -128,8 +114,6 @@ export class ToolExecutionComponent extends Container {
 		this.#tool = tool;
 		this.#args = cloneToolArgs(args);
 		this.#showImages = options.showImages ?? true;
-		this.#editFuzzyThreshold = options.editFuzzyThreshold;
-		this.#editAllowFuzzy = options.editAllowFuzzy;
 		this.#compact = compact;
 		this.#ui = ui;
 		this.#cwd = cwd;
@@ -160,76 +144,22 @@ export class ToolExecutionComponent extends Container {
 	setArgsComplete(_toolCallId?: string): void {
 		this.#argsComplete = true;
 		this.#updateSpinnerAnimation();
-		this.#maybeComputeEditDiff();
+		this.#callOnArgsComplete();
 	}
 
 	/**
-	 * Compute edit diff preview when we have complete args.
-	 * This runs async and updates display when done.
+	 * Delegate to tool.onArgsComplete when args are fully streamed.
+	 * Stores result in #toolState for use by buildRenderContext.
 	 */
-	#maybeComputeEditDiff(): void {
-		if (this.#toolName !== "edit") return;
+	#callOnArgsComplete(): void {
+		if (!this.#tool?.onArgsComplete) return;
+		const argsKey = JSON.stringify(this.#args);
+		if (this.#toolStateKey === argsKey) return;
+		this.#toolStateKey = argsKey;
 
-		const path = this.#args?.path;
-		const op = this.#args?.op;
-
-		if (op) {
-			const diff = this.#args?.diff;
-			const rename = this.#args?.rename;
-			if (!path) return;
-
-			const argsKey = JSON.stringify({ path, op, rename, diff });
-			if (this.#editDiffArgsKey === argsKey) return;
-			this.#editDiffArgsKey = argsKey;
-
-			computePatchDiff({ path, op, rename, diff }, this.#cwd, {
-				fuzzyThreshold: this.#editFuzzyThreshold,
-				allowFuzzy: this.#editAllowFuzzy,
-			}).then(result => {
-				if (this.#editDiffArgsKey === argsKey) {
-					this.#editDiffPreview = result;
-					this.#updateDisplay();
-					this.#ui.requestRender();
-				}
-			});
-			return;
-		}
-		const edits = this.#args?.edits;
-		if (path && Array.isArray(edits)) {
-			const argsKey = JSON.stringify({ path, edits });
-			if (this.#editDiffArgsKey === argsKey) return;
-			this.#editDiffArgsKey = argsKey;
-
-			computeHashlineDiff({ path, edits }, this.#cwd).then(result => {
-				if (this.#editDiffArgsKey === argsKey) {
-					this.#editDiffPreview = result;
-					this.#updateDisplay();
-					this.#ui.requestRender();
-				}
-			});
-			return;
-		}
-
-		const oldText = this.#args?.old_text;
-		const newText = this.#args?.new_text;
-		const all = this.#args?.all;
-
-		// Need all three params to compute diff
-		if (!path || oldText === undefined || newText === undefined) return;
-
-		// Create a key to track which args this computation is for
-		const argsKey = JSON.stringify({ path, oldText, newText, all });
-
-		// Skip if we already computed for these exact args
-		if (this.#editDiffArgsKey === argsKey) return;
-
-		this.#editDiffArgsKey = argsKey;
-
-		// Compute diff async
-		computeEditDiff(path, oldText, newText, this.#cwd, true, all, this.#editFuzzyThreshold).then(result => {
-			// Only update if args haven't changed since we started
-			if (this.#editDiffArgsKey === argsKey) {
-				this.#editDiffPreview = result;
+		this.#tool.onArgsComplete(this.#args, this.#cwd).then(state => {
+			if (this.#toolStateKey === argsKey) {
+				this.#toolState = state;
 				this.#updateDisplay();
 				this.#ui.requestRender();
 			}
@@ -460,45 +390,23 @@ export class ToolExecutionComponent extends Container {
 	}
 
 	#getCallArgsForRender(): any {
-		if (this.#toolName !== "edit") {
-			return this.#args;
-		}
-		if (!this.#editDiffPreview || !("diff" in this.#editDiffPreview) || !this.#editDiffPreview.diff) {
-			return this.#args;
-		}
-		return { ...(this.#args as Record<string, unknown>), previewDiff: this.#editDiffPreview.diff };
+		return this.#args;
 	}
 
 	/**
-	 * Build render context for tools that need extra state (bash, python, edit)
+	 * Build render context. Delegates to tool.buildRenderContext if defined.
 	 */
 	#buildRenderContext(): Record<string, unknown> {
-		const context: Record<string, unknown> = {};
-		const normalizeTimeoutSeconds = (value: unknown, maxSeconds: number): number | undefined => {
-			if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
-			return Math.max(1, Math.min(maxSeconds, value));
-		};
-
-		if (this.#toolName === "bash" && this.#result) {
-			// Pass raw output and expanded state - renderer handles width-aware truncation
-			const output = this.#getTextOutput().trimEnd();
-			context.output = output;
-			context.expanded = this.#expanded;
-			context.previewLines = BASH_DEFAULT_PREVIEW_LINES;
-			context.timeout = normalizeTimeoutSeconds(this.#args?.timeout, 3600);
-		} else if (this.#toolName === "python" && this.#result) {
-			const output = this.#getTextOutput().trimEnd();
-			context.output = output;
-			context.expanded = this.#expanded;
-			context.previewLines = PYTHON_DEFAULT_PREVIEW_LINES;
-			context.timeout = normalizeTimeoutSeconds(this.#args?.timeout, 600);
-		} else if (this.#toolName === "edit") {
-			// Edit needs diff preview and renderDiff function
-			context.editDiffPreview = this.#editDiffPreview;
-			context.renderDiff = renderDiff;
+		if (this.#tool?.buildRenderContext) {
+			return this.#tool.buildRenderContext({
+				args: this.#args,
+				result: this.#result as any,
+				toolState: this.#toolState,
+				expanded: this.#expanded,
+				getTextOutput: () => this.#getTextOutput(),
+			});
 		}
-
-		return context;
+		return {};
 	}
 
 	#getTextOutput(): string {

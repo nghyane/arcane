@@ -256,6 +256,18 @@ export interface AgentTool<TParameters extends TSchema = TSchema, TDetails = any
 		theme: TTheme,
 		args?: Static<TParameters>,
 	) => unknown;
+
+	/** Called when tool args are fully streamed. Returns tool-specific state (e.g. edit diff preview). */
+	onArgsComplete?: (args: Static<TParameters>, cwd: string) => Promise<unknown>;
+
+	/** Build tool-specific render context passed to renderCall/renderResult via options.renderContext. */
+	buildRenderContext?: (info: {
+		args: Static<TParameters>;
+		result?: AgentToolResult<TDetails, TParameters>;
+		toolState?: unknown;
+		expanded: boolean;
+		getTextOutput: () => string;
+	}) => Record<string, unknown>;
 }
 
 // AgentContext is like Context but uses AgentTool
@@ -286,7 +298,7 @@ export type AgentEvent =
 			type: "tool_execution_start";
 			toolCallId: string;
 			toolName: string;
-			args: any;
+			args: Record<string, unknown>;
 			intent?: string;
 			tool?: AgentTool;
 			/** Set when this event is a sub-tool call inside a meta-tool (e.g. Code Mode) */
@@ -296,15 +308,71 @@ export type AgentEvent =
 			type: "tool_execution_update";
 			toolCallId: string;
 			toolName: string;
-			args: any;
-			partialResult: any;
+			args: Record<string, unknown>;
+			partialResult: AgentToolResult;
 			parentToolCallId?: string;
 	  }
 	| {
 			type: "tool_execution_end";
 			toolCallId: string;
 			toolName: string;
-			result: any;
+			result: AgentToolResult;
 			isError?: boolean;
 			parentToolCallId?: string;
 	  };
+
+/**
+ * Known tool argument shapes, keyed by tool name.
+ * Grep "ToolArgsMap" to find any tool's arg shape instantly.
+ * Tools not listed here fall back to Record<string, unknown>.
+ */
+export interface ToolArgsMap {
+	edit: {
+		path: string;
+		edits?: unknown[];
+		old_text?: string;
+		new_text?: string;
+		diff?: string;
+		rename?: string;
+		delete?: boolean;
+	};
+	bash: { command: string; timeout?: number; cwd?: string };
+	python: { code: string; timeout?: number };
+	read: { path: string; offset?: number; limit?: number };
+	write: { path: string; content: string };
+	grep: { pattern: string; path?: string; glob?: string; type?: string };
+	find: { pattern: string; hidden?: boolean; limit?: number };
+	ask: { questions: unknown[] };
+	fetch: { url: string; timeout?: number };
+	github: { action: string; owner?: string; repo?: string; path?: string; ref?: string; number?: number };
+	ssh: { command: string; host: string; timeout?: number };
+	browser: { action: string; url?: string; selector?: string; text?: string; value?: string };
+	notebook: { action: string; code?: string; kernel?: string };
+	todo_write: { todos: Array<{ id?: string; content: string; status: string }> };
+	code: { code: string; agent__intent?: string };
+	task: { id: string; description: string; assignment: string; context?: string; complexity?: string };
+	search_code: { query: string; regexp?: boolean; language?: string; repo?: string; limit?: number };
+	undo_edit: { path: string };
+}
+
+/**
+ * Known tool result detail shapes.
+ * Only tools whose details are accessed outside renderResult need entries.
+ */
+export interface ToolDetailsMap {
+	code: { logs?: string[] };
+	todo_write: { todos?: Array<{ id: string; content: string; status: "completed" | "in_progress" | "pending" }> };
+}
+
+/** Narrow event args to a known tool shape. One cast, contained here. */
+export function toolArgs<T extends keyof ToolArgsMap>(_name: T, args: Record<string, unknown>): ToolArgsMap[T] {
+	return args as ToolArgsMap[T];
+}
+
+/** Narrow event result details to a known tool shape. One cast, contained here. */
+export function toolDetails<T extends keyof ToolDetailsMap>(
+	_name: T,
+	details: Record<string, unknown>,
+): ToolDetailsMap[T] {
+	return details as ToolDetailsMap[T];
+}

@@ -181,6 +181,24 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 		return resultBuilder.done();
 	}
 
+	buildRenderContext(info: {
+		args: BashToolInput;
+		result?: AgentToolResult<BashToolDetails>;
+		expanded: boolean;
+		getTextOutput: () => string;
+	}): Record<string, unknown> {
+		const context: Record<string, unknown> = {};
+		if (info.result) {
+			context.output = info.getTextOutput().trimEnd();
+			context.expanded = info.expanded;
+			context.previewLines = BASH_DEFAULT_PREVIEW_LINES;
+			if (typeof info.args.timeout === "number" && Number.isFinite(info.args.timeout)) {
+				context.timeout = Math.max(1, Math.min(3600, info.args.timeout));
+			}
+		}
+		return context;
+	}
+
 	renderCall(args: BashRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const cmdText = formatBashCommand(args, uiTheme);
 		const text = renderStatusLine({ icon: "pending", title: "Bash", description: cmdText }, uiTheme);

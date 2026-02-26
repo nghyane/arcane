@@ -453,6 +453,24 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 		}
 	}
 
+	buildRenderContext(info: {
+		args: PythonToolParams;
+		result?: { content: Array<{ type: string; text?: string }>; details?: PythonToolDetails };
+		expanded: boolean;
+		getTextOutput: () => string;
+	}): Record<string, unknown> {
+		const context: Record<string, unknown> = {};
+		if (info.result) {
+			context.output = info.getTextOutput().trimEnd();
+			context.expanded = info.expanded;
+			context.previewLines = PYTHON_DEFAULT_PREVIEW_LINES;
+			if (typeof info.args.timeout === "number" && Number.isFinite(info.args.timeout)) {
+				context.timeout = Math.max(1, Math.min(600, info.args.timeout));
+			}
+		}
+		return context;
+	}
+
 	renderCall(args: PythonRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const ui = new ToolUIKit(uiTheme);
 		const cells = args.cells ?? [];

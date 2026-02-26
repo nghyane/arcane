@@ -7,6 +7,7 @@ import {
 	type WritethroughCallback,
 	writethroughNoop,
 } from "../lsp";
+import { renderDiff } from "../modes/components/diff";
 import type { Theme } from "../modes/theme/theme";
 import type { ToolSession } from "../tools";
 import {
@@ -18,7 +19,14 @@ import { outputMeta } from "../tools/output-meta";
 import { resolveToCwd } from "../tools/path-utils";
 import { saveForUndo } from "../tools/undo-history";
 import { applyPatch } from "./applicator";
-import { generateDiffString, generateUnifiedDiffString, replaceText } from "./diff";
+import {
+	computeEditDiff,
+	computeHashlineDiff,
+	computePatchDiff,
+	generateDiffString,
+	generateUnifiedDiffString,
+	replaceText,
+} from "./diff";
 import { findMatch } from "./fuzzy";
 import {
 	applyHashlineEdits,
@@ -45,7 +53,7 @@ import {
 	type TInput,
 } from "./schemas";
 import { type EditToolDetails, editToolRenderer, getLspBatchRequest } from "./shared";
-import type { FileSystem, Operation, PatchInput } from "./types";
+import type { DiffError, DiffResult, FileSystem, Operation, PatchInput } from "./types";
 import { EditMatchError } from "./types";
 
 class LspFileSystem implements FileSystem {
@@ -690,6 +698,45 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 				diagnostics,
 				meta,
 			},
+		};
+	}
+
+	async onArgsComplete(args: unknown, cwd: string): Promise<DiffResult | DiffError | undefined> {
+		const a = args as Record<string, unknown>;
+		const path = a.path as string | undefined;
+		if (!path) return undefined;
+
+		const op = a.op as string | undefined;
+		const diff = a.diff as string | undefined;
+		const rename = a.rename as string | undefined;
+		const edits = a.edits as HashlineEdit[] | undefined;
+		const oldText = a.old_text as string | undefined;
+		const newText = a.new_text as string | undefined;
+		const all = a.all as boolean | undefined;
+
+		try {
+			if (op) {
+				return await computePatchDiff({ path, op: op as "create" | "delete" | "update", rename, diff }, cwd, {
+					fuzzyThreshold: this.#fuzzyThreshold,
+					allowFuzzy: this.#allowFuzzy,
+				});
+			}
+			if (Array.isArray(edits)) {
+				return await computeHashlineDiff({ path, edits }, cwd);
+			}
+			if (oldText !== undefined && newText !== undefined) {
+				return await computeEditDiff(path, oldText, newText, cwd, true, all, this.#fuzzyThreshold);
+			}
+		} catch {
+			return undefined;
+		}
+		return undefined;
+	}
+
+	buildRenderContext(info: { toolState?: unknown }): Record<string, unknown> {
+		return {
+			editDiffPreview: info.toolState,
+			renderDiff,
 		};
 	}
 }
