@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { logger, Snowflake } from "@nghyane/arcane-utils";
-import { $ } from "bun";
+import { $, type Subprocess } from "bun";
 
 export interface RecordingHandle {
 	stop(): Promise<void>;
@@ -277,7 +277,7 @@ async function startPowerShellRecording(outputPath: string): Promise<RecordingHa
 
 // ── Health check ───────────────────────────────────────────────────
 
-async function verifyProcessAlive(proc: ReturnType<typeof Bun.spawn>, tool: string): Promise<void> {
+async function verifyProcessAlive(proc: Subprocess, tool: string): Promise<void> {
 	await Bun.sleep(300);
 
 	const exited = await Promise.race([proc.exited.then(code => code), Bun.sleep(0).then(() => "running" as const)]);
