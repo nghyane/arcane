@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Removed
+
+- `arc commit` command and entire commit pipeline (agentic commit, map-reduce, changelog generation)
+- `quick_task` bundled agent (only used by commit flow)
+- `commit.*` settings (`mapReduceEnabled`, `mapReduceMinFiles`, `mapReduceMaxFileTokens`, `mapReduceTimeoutMs`, `mapReduceMaxConcurrency`, `changelogMaxDiffChars`)
+
 ## [0.1.12] - 2026-02-24
 
 ### Fixed

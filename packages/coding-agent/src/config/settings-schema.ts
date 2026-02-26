@@ -511,15 +511,6 @@ export const SETTINGS_SCHEMA = {
 		default: true,
 		ui: { tab: "tools", label: "Enable LSP", description: "Enable the lsp tool for language server protocol" },
 	},
-	"calc.enabled": {
-		type: "boolean",
-		default: false,
-		ui: {
-			tab: "tools",
-			label: "Enable Calculator",
-			description: "Enable the calculator tool for basic calculations",
-		},
-	},
 	"browser.enabled": {
 		type: "boolean",
 		default: true,
@@ -1120,15 +1111,6 @@ export interface SkillsSettings {
 	includeSkills?: string[];
 }
 
-export interface CommitSettings {
-	mapReduceEnabled: boolean;
-	mapReduceMinFiles: number;
-	mapReduceMaxFileTokens: number;
-	mapReduceTimeoutMs: number;
-	mapReduceMaxConcurrency: number;
-	changelogMaxDiffChars: number;
-}
-
 export interface TtsrSettings {
 	enabled: boolean;
 	contextMode: "discard" | "keep";
@@ -1186,7 +1168,6 @@ export interface GroupTypeMap {
 	memories: MemoriesSettings;
 	branchSummary: BranchSummarySettings;
 	skills: SkillsSettings;
-	commit: CommitSettings;
 	ttsr: TtsrSettings;
 	exa: ExaSettings;
 	statusLine: StatusLineSettings;

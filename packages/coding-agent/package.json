@@ -107,66 +107,6 @@
 			"types": "./src/commands/*.ts",
 			"import": "./src/commands/*.ts"
 		},
-		"./commit": {
-			"types": "./src/commit/index.ts",
-			"import": "./src/commit/index.ts"
-		},
-		"./commit/*": {
-			"types": "./src/commit/*.ts",
-			"import": "./src/commit/*.ts"
-		},
-		"./commit/agentic": {
-			"types": "./src/commit/agentic/index.ts",
-			"import": "./src/commit/agentic/index.ts"
-		},
-		"./commit/agentic/*": {
-			"types": "./src/commit/agentic/*.ts",
-			"import": "./src/commit/agentic/*.ts"
-		},
-		"./commit/agentic/tools": {
-			"types": "./src/commit/agentic/tools/index.ts",
-			"import": "./src/commit/agentic/tools/index.ts"
-		},
-		"./commit/agentic/tools/*": {
-			"types": "./src/commit/agentic/tools/*.ts",
-			"import": "./src/commit/agentic/tools/*.ts"
-		},
-		"./commit/analysis": {
-			"types": "./src/commit/analysis/index.ts",
-			"import": "./src/commit/analysis/index.ts"
-		},
-		"./commit/analysis/*": {
-			"types": "./src/commit/analysis/*.ts",
-			"import": "./src/commit/analysis/*.ts"
-		},
-		"./commit/changelog": {
-			"types": "./src/commit/changelog/index.ts",
-			"import": "./src/commit/changelog/index.ts"
-		},
-		"./commit/changelog/*": {
-			"types": "./src/commit/changelog/*.ts",
-			"import": "./src/commit/changelog/*.ts"
-		},
-		"./commit/git": {
-			"types": "./src/commit/git/index.ts",
-			"import": "./src/commit/git/index.ts"
-		},
-		"./commit/git/*": {
-			"types": "./src/commit/git/*.ts",
-			"import": "./src/commit/git/*.ts"
-		},
-		"./commit/map-reduce": {
-			"types": "./src/commit/map-reduce/index.ts",
-			"import": "./src/commit/map-reduce/index.ts"
-		},
-		"./commit/map-reduce/*": {
-			"types": "./src/commit/map-reduce/*.ts",
-			"import": "./src/commit/map-reduce/*.ts"
-		},
-		"./commit/utils/*": {
-			"types": "./src/commit/utils/*.ts",
-			"import": "./src/commit/utils/*.ts"
-		},
 		"./config/*": {
 			"types": "./src/config/*.ts",
 			"import": "./src/config/*.ts"

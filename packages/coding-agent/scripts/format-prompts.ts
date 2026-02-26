@@ -15,10 +15,8 @@
 import { Glob } from "bun";
 
 const PROMPTS_DIR = new URL("../src/prompts/", import.meta.url).pathname;
-const COMMIT_PROMPTS_DIR = new URL("../src/commit/prompts/", import.meta.url).pathname;
-const AGENTIC_PROMPTS_DIR = new URL("../src/commit/agentic/prompts/", import.meta.url).pathname;
 
-const PROMPT_DIRS = [PROMPTS_DIR, COMMIT_PROMPTS_DIR, AGENTIC_PROMPTS_DIR];
+const PROMPT_DIRS = [PROMPTS_DIR];
 
 // Opening XML tag (not self-closing, not closing)
 const OPENING_XML = /^<([a-z_-]+)(?:\s+[^>]*)?>$/;

@@ -37,7 +37,6 @@ import {
 export type {
 	BashInterceptorRule,
 	BranchSummarySettings,
-	CommitSettings,
 	CompactionSettings,
 	ContextPromotionSettings,
 	ExaSettings,
