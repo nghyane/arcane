@@ -178,6 +178,7 @@ export interface AgentState {
 	error?: string;
 }
 
+/** @intentional-any — TDetails default: variance erasure for heterogeneous tool arrays */
 export interface AgentToolResult<T = any, TNormative extends TSchema = any> {
 	// Content blocks supporting text and images
 	content: (TextContent | ImageContent)[];
@@ -188,6 +189,7 @@ export interface AgentToolResult<T = any, TNormative extends TSchema = any> {
 }
 
 // Callback for streaming tool execution updates
+/** @intentional-any — same variance erasure as AgentToolResult */
 export type AgentToolUpdateCallback<T = any, TNormative extends TSchema = any> = (
 	partialResult: AgentToolResult<T, TNormative>,
 ) => void;
@@ -212,6 +214,7 @@ export interface AgentToolContext {
 	emit?: (event: AgentEvent) => void;
 }
 
+/** @intentional-any — TDetails default: tools declare their own detail type */
 export type AgentToolExecFn<TParameters extends TSchema = TSchema, TDetails = any, TTheme = unknown> = (
 	this: AgentTool<TParameters, TDetails, TTheme>,
 	toolCallId: string,
@@ -222,6 +225,7 @@ export type AgentToolExecFn<TParameters extends TSchema = TSchema, TDetails = an
 ) => Promise<AgentToolResult<TDetails, TParameters>>;
 
 // AgentTool extends Tool but adds the execute function
+/** @intentional-any — TDetails default: TypeScript lacks existential types, any required for variance erasure */
 export interface AgentTool<TParameters extends TSchema = TSchema, TDetails = any, TTheme = unknown>
 	extends Tool<TParameters> {
 	// A human-readable label for the tool to be displayed in UI
