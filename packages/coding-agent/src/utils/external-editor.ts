@@ -40,10 +40,10 @@ export async function openInEditor(
 		const stdio = options?.stdio ?? ["inherit", "inherit", "inherit"];
 
 		const child = spawn(editor, [...editorArgs, tmpFile], { stdio });
-		const exitCode = await new Promise<number>((resolve, reject) => {
-			child.once("exit", (code, signal) => resolve(code ?? (signal ? -1 : 0)));
-			child.once("error", error => reject(error));
-		});
+		const { promise: exitPromise, resolve, reject } = Promise.withResolvers<number>();
+		child.once("exit", (code, signal) => resolve(code ?? (signal ? -1 : 0)));
+		child.once("error", error => reject(error));
+		const exitCode = await exitPromise;
 
 		if (exitCode === 0) {
 			return (await Bun.file(tmpFile).text()).replace(/\n$/, "");

@@ -2030,34 +2030,32 @@ Be thorough - include exact file paths, function names, error messages, and tech
 
 		// Create a promise that resolves when the agent completes
 		let handoffText: string | undefined;
-		const completionPromise = new Promise<void>((resolve, reject) => {
-			const unsubscribe = this.subscribe(event => {
-				if (this.#handoffAbortController?.signal.aborted) {
-					unsubscribe();
-					reject(new Error("Handoff cancelled"));
-					return;
-				}
+		const { promise: completionPromise, resolve, reject } = Promise.withResolvers<void>();
+		const unsubscribe = this.subscribe(event => {
+			if (this.#handoffAbortController?.signal.aborted) {
+				unsubscribe();
+				reject(new Error("Handoff cancelled"));
+				return;
+			}
 
-				if (event.type === "agent_end") {
-					unsubscribe();
-					// Extract text from the last assistant message
-					const messages = this.agent.state.messages;
-					for (let i = messages.length - 1; i >= 0; i--) {
-						const msg = messages[i];
-						if (msg.role === "assistant") {
-							const content = (msg as AssistantMessage).content;
-							const textParts = content
-								.filter((c): c is { type: "text"; text: string } => c.type === "text")
-								.map(c => c.text);
-							if (textParts.length > 0) {
-								handoffText = textParts.join("\n");
-								break;
-							}
+			if (event.type === "agent_end") {
+				unsubscribe();
+				const messages = this.agent.state.messages;
+				for (let i = messages.length - 1; i >= 0; i--) {
+					const msg = messages[i];
+					if (msg.role === "assistant") {
+						const content = (msg as AssistantMessage).content;
+						const textParts = content
+							.filter((c): c is { type: "text"; text: string } => c.type === "text")
+							.map(c => c.text);
+						if (textParts.length > 0) {
+							handoffText = textParts.join("\n");
+							break;
 						}
 					}
-					resolve();
 				}
-			});
+				resolve();
+			}
 		});
 
 		try {

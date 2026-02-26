@@ -451,32 +451,32 @@ export const streamCursor: StreamFunction<"cursor-agent"> = (
 
 			heartbeatTimer = setInterval(sendHeartbeat, 5000);
 
-			await new Promise<void>((resolve, reject) => {
-				h2Request!.on("trailers", trailers => {
-					const status = trailers["grpc-status"];
-					const msg = trailers["grpc-message"];
-					if (status && status !== "0") {
-						reject(new Error(`gRPC error ${status}: ${decodeURIComponent(String(msg || ""))}`));
-					}
-				});
-
-				h2Request!.on("end", () => {
-					if (endStreamError) {
-						reject(endStreamError);
-						return;
-					}
-					resolve();
-				});
-
-				h2Request!.on("error", reject);
-
-				if (options?.signal) {
-					options.signal.addEventListener("abort", () => {
-						h2Request?.close();
-						reject(new Error("Request was aborted"));
-					});
+			const { promise: streamPromise, resolve, reject } = Promise.withResolvers<void>();
+			h2Request!.on("trailers", trailers => {
+				const status = trailers["grpc-status"];
+				const msg = trailers["grpc-message"];
+				if (status && status !== "0") {
+					reject(new Error(`gRPC error ${status}: ${decodeURIComponent(String(msg || ""))}`));
 				}
 			});
+
+			h2Request!.on("end", () => {
+				if (endStreamError) {
+					reject(endStreamError);
+					return;
+				}
+				resolve();
+			});
+
+			h2Request!.on("error", reject);
+
+			if (options?.signal) {
+				options.signal.addEventListener("abort", () => {
+					h2Request?.close();
+					reject(new Error("Request was aborted"));
+				});
+			}
+			await streamPromise;
 
 			if (state.currentTextBlock) {
 				const idx = output.content.indexOf(state.currentTextBlock);
