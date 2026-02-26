@@ -23,9 +23,7 @@ const DEFAULT_BASE_URL = "https://api.anthropic.com";
  */
 async function readJson<T>(filePath: string): Promise<T | null> {
 	try {
-		const file = Bun.file(filePath);
-		if (!(await file.exists())) return null;
-		const content = await file.text();
+		const content = await Bun.file(filePath).text();
 		return JSON.parse(content) as T;
 	} catch (error) {
 		logger.warn("Failed to parse JSON file", { path: filePath, error: String(error) });

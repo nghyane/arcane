@@ -13,10 +13,8 @@ interface TodoFile {
 }
 
 async function loadTodoFile(filePath: string): Promise<TodoFile | null> {
-	const file = Bun.file(filePath);
-	if (!(await file.exists())) return null;
 	try {
-		const text = await file.text();
+		const text = await Bun.file(filePath).text();
 		const data = JSON.parse(text) as TodoFile;
 		if (!data || !Array.isArray(data.todos)) return null;
 		return data;

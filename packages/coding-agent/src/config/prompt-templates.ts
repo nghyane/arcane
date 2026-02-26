@@ -415,14 +415,9 @@ async function loadTemplatesFromDir(
 
 		for (const entry of entries) {
 			const fullPath = path.join(dir, entry);
-			const file = Bun.file(fullPath);
-
 			try {
-				const stat = await file.exists();
-				if (!stat) continue;
-
 				if (entry.endsWith(".md")) {
-					const rawContent = await file.text();
+					const rawContent = await Bun.file(fullPath).text();
 					const { frontmatter, body } = parseFrontmatter(rawContent, { source: fullPath });
 
 					const name = entry.split("/").pop()!.slice(0, -3); // Remove .md extension

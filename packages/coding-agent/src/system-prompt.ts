@@ -334,9 +334,7 @@ function getSystemInfoCachePath(): string {
 async function loadGpuCache(): Promise<GpuCache | null> {
 	try {
 		const cachePath = getSystemInfoCachePath();
-		const file = Bun.file(cachePath);
-		if (!(await file.exists())) return null;
-		const content = await file.json();
+		const content = await Bun.file(cachePath).json();
 		return content as GpuCache;
 	} catch {
 		return null;
