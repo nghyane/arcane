@@ -1,23 +1,11 @@
 import type { AgentTool } from "@nghyane/arcane-agent";
 import { sanitizeText } from "@nghyane/arcane-natives";
-import {
-	Box,
-	type Component,
-	Container,
-	getImageDimensions,
-	Image,
-	ImageProtocol,
-	imageFallback,
-	Spacer,
-	TERMINAL,
-	Text,
-	type TUI,
-} from "@nghyane/arcane-tui";
+import { Box, type Component, Container, Spacer, TERMINAL, Text, type TUI } from "@nghyane/arcane-tui";
 import { logger } from "@nghyane/arcane-utils";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { theme } from "../../modes/theme/theme";
 import { defaultRenderer } from "../../tools/default-renderer";
-import { convertToPng } from "../../utils/image-convert";
+import { ToolImageDisplay } from "./tool-image-display";
 
 function ensureInvalidate(component: unknown): Component {
 	const c = component as { render: Component["render"]; invalidate?: () => void };
@@ -60,8 +48,7 @@ export interface ToolExecutionHandle {
  */
 export class ToolExecutionComponent extends Container {
 	#contentBox: Box; // Used for custom tools and bash visual truncation
-	#imageComponents: Image[] = [];
-	#imageSpacers: Spacer[] = [];
+	#imageDisplay: ToolImageDisplay;
 	#toolName: string;
 	#toolLabel: string;
 	#tool: AgentTool | undefined;
@@ -80,8 +67,6 @@ export class ToolExecutionComponent extends Container {
 	// Tool-specific state from onArgsComplete (e.g. edit diff preview)
 	#toolState?: unknown;
 	#toolStateKey?: string;
-	// Cached converted images for Kitty protocol (which requires PNG), keyed by index
-	#convertedImages: Map<number, { data: string; mimeType: string }> = new Map();
 	// Spinner animation for partial task results
 	#spinnerFrame = 0;
 	#spinnerInterval?: NodeJS.Timeout;
@@ -117,6 +102,10 @@ export class ToolExecutionComponent extends Container {
 		this.#compact = compact;
 		this.#ui = ui;
 		this.#cwd = cwd;
+		this.#imageDisplay = new ToolImageDisplay(this, () => {
+			this.#updateDisplay();
+			this.#ui.requestRender();
+		});
 
 		if (!compact) {
 			this.addChild(new Spacer(1));
@@ -183,8 +172,7 @@ export class ToolExecutionComponent extends Container {
 		}
 		this.#updateSpinnerAnimation();
 		this.#updateDisplay();
-		// Convert non-PNG images to PNG for Kitty protocol (async)
-		this.#maybeConvertImagesForKitty();
+		this.#imageDisplay.convertForKitty(this.#getAllImageBlocks());
 	}
 
 	/**
@@ -196,40 +184,6 @@ export class ToolExecutionComponent extends Container {
 		const contentImages = this.#result.content?.filter((c: any) => c.type === "image") || [];
 		const detailImages = this.#result.details?.images || [];
 		return [...contentImages, ...detailImages];
-	}
-
-	/**
-	 * Convert non-PNG images to PNG for Kitty graphics protocol.
-	 * Kitty requires PNG format (f=100), so JPEG/GIF/WebP won't display.
-	 */
-	#maybeConvertImagesForKitty(): void {
-		// Only needed for Kitty protocol
-		if (TERMINAL.imageProtocol !== ImageProtocol.Kitty) return;
-		if (!this.#result) return;
-
-		const imageBlocks = this.#getAllImageBlocks();
-
-		for (let i = 0; i < imageBlocks.length; i++) {
-			const img = imageBlocks[i];
-			if (!img.data || !img.mimeType) continue;
-			// Skip if already PNG or already converted
-			if (img.mimeType === "image/png") continue;
-			if (this.#convertedImages.has(i)) continue;
-
-			// Convert async - catch errors from processing
-			const index = i;
-			convertToPng(img.data, img.mimeType)
-				.then(converted => {
-					if (converted) {
-						this.#convertedImages.set(index, converted);
-						this.#updateDisplay();
-						this.#ui.requestRender();
-					}
-				})
-				.catch(() => {
-					// Ignore conversion failures - display will use original image format
-				});
-		}
 	}
 
 	/**
@@ -347,45 +301,11 @@ export class ToolExecutionComponent extends Container {
 			}
 		}
 
-		// Handle images (same for both custom and built-in)
-		for (const img of this.#imageComponents) {
-			this.removeChild(img);
-		}
-		this.#imageComponents = [];
-		for (const spacer of this.#imageSpacers) {
-			this.removeChild(spacer);
-		}
-		this.#imageSpacers = [];
-
+		// Handle images
 		if (this.#result) {
-			const imageBlocks = this.#getAllImageBlocks();
-
-			for (let i = 0; i < imageBlocks.length; i++) {
-				const img = imageBlocks[i];
-				if (TERMINAL.imageProtocol && this.#showImages && img.data && img.mimeType) {
-					// Use converted PNG for Kitty protocol if available
-					const converted = this.#convertedImages.get(i);
-					const imageData = converted?.data ?? img.data;
-					const imageMimeType = converted?.mimeType ?? img.mimeType;
-
-					// For Kitty, skip non-PNG images that haven't been converted yet
-					if (TERMINAL.imageProtocol === ImageProtocol.Kitty && imageMimeType !== "image/png") {
-						continue;
-					}
-
-					const spacer = new Spacer(1);
-					this.addChild(spacer);
-					this.#imageSpacers.push(spacer);
-					const imageComponent = new Image(
-						imageData,
-						imageMimeType,
-						{ fallbackColor: (s: string) => theme.fg("toolOutput", s) },
-						{ maxWidthCells: 60 },
-					);
-					this.#imageComponents.push(imageComponent);
-					this.addChild(imageComponent);
-				}
-			}
+			this.#imageDisplay.update(this.#getAllImageBlocks(), this.#showImages, (s: string) =>
+				theme.fg("toolOutput", s),
+			);
 		}
 	}
 
@@ -422,12 +342,7 @@ export class ToolExecutionComponent extends Container {
 			.join("\n");
 
 		if (imageBlocks.length > 0 && (!TERMINAL.imageProtocol || !this.#showImages)) {
-			const imageIndicators = imageBlocks
-				.map((img: any) => {
-					const dims = img.data ? (getImageDimensions(img.data, img.mimeType) ?? undefined) : undefined;
-					return imageFallback(img.mimeType, dims);
-				})
-				.join("\n");
+			const imageIndicators = ToolImageDisplay.fallbackText(imageBlocks);
 			output = output ? `${output}\n${imageIndicators}` : imageIndicators;
 		}
 
