@@ -177,7 +177,11 @@ export function createCodeTool(tools: AgentTool[], options: CodeToolOptions = {}
 			// are already shown individually in the TUI
 			const parts: string[] = [];
 			if (result.error) {
-				parts.push(`Error: ${result.error}`);
+				const e = result.error;
+				const errorParts = [`Error [${e.type}]: ${e.message}`];
+				if (e.toolName) errorParts.push(`Tool: ${e.toolName}`);
+				if (e.snippet) errorParts.push(e.snippet);
+				parts.push(errorParts.join("\n"));
 			}
 			if (result.logs.length > 0) {
 				parts.push(result.logs.join("\n"));

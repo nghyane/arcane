@@ -227,12 +227,12 @@ describe("execute", () => {
 
 	test("unknown tool throws error", async () => {
 		const result = await execute("async () => { return await codemode.nope(); }", {});
-		expect(result.error).toContain('"nope" not found');
+		expect(result.error?.message).toContain('"nope" not found');
 	});
 
 	test("execution error is captured", async () => {
 		const result = await execute('async () => { throw new Error("boom"); }', {});
-		expect(result.error).toBe("boom");
+		expect(result.error?.message).toBe("boom");
 		expect(result.result).toBeUndefined();
 	});
 
@@ -242,7 +242,7 @@ describe("execute", () => {
 			{},
 			{ timeoutMs: 50 },
 		);
-		expect(result.error).toContain("timed out");
+		expect(result.error?.message).toContain("timed out");
 	});
 
 	test("abort signal", async () => {
@@ -253,7 +253,7 @@ describe("execute", () => {
 			{},
 			{ signal: controller.signal },
 		);
-		expect(result.error).toContain("aborted");
+		expect(result.error?.message).toContain("aborted");
 	});
 
 	test("proxy handles symbol keys and 'then' safely", async () => {
@@ -417,7 +417,7 @@ describe("bridgeToolFunctions", () => {
 		await bridged.my_tool({});
 
 		const id = events[0].toolCallId;
-		expect(id).toMatch(/^codemode_my-tool_\d+_[a-z0-9]+$/);
+		expect(id).toMatch(/^code_my-tool_\d+_[a-z0-9]+$/);
 		// Same ID across start and done events
 		expect(events[0].toolCallId).toBe(events[1].toolCallId);
 	});

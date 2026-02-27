@@ -14,13 +14,24 @@
 
 import { logger } from "@nghyane/arcane-utils";
 
+export interface ExecutionError {
+	/** Error category */
+	type: "timeout" | "abort" | "tool_not_found" | "tool_error" | "runtime";
+	/** Human-readable error message */
+	message: string;
+	/** Tool name if the error originated from a sub-tool call */
+	toolName?: string;
+	/** Numbered code snippet for context */
+	snippet?: string;
+}
+
 export interface ExecuteResult {
 	/** Return value from the code (JSON-serializable) */
 	result: unknown;
 	/** Captured console.log output */
 	logs: string[];
-	/** Error message if execution failed */
-	error?: string;
+	/** Structured error if execution failed */
+	error?: ExecutionError;
 }
 
 export interface ExecutorOptions {
@@ -160,32 +171,51 @@ export async function execute(
 }
 
 /**
- * Format an execution error with code context.
+ * Format an execution error into a structured object.
  *
  * Bun's eval source maps are unreliable for line pinpointing,
  * so we include a numbered code snippet instead of highlighting a specific line.
  */
-function formatExecutionError(err: unknown, code: string): string {
-	if (!(err instanceof Error)) return String(err);
+function formatExecutionError(err: unknown, code: string): ExecutionError {
+	const snippet = buildCodeSnippet(code);
 
-	const message = err.message;
-	const codeLines = code.split("\n");
-
-	// For short code (<= 20 lines), include full numbered snippet
-	// For longer code, include first/last 10 lines
-	let snippet: string;
-	if (codeLines.length <= 20) {
-		snippet = codeLines.map((line, i) => `  ${String(i + 1).padStart(3)} | ${line}`).join("\n");
-	} else {
-		const head = codeLines.slice(0, 10).map((line, i) => `  ${String(i + 1).padStart(3)} | ${line}`);
-		const tail = codeLines.slice(-10).map((line, i) => {
-			const lineNum = codeLines.length - 10 + i + 1;
-			return `  ${String(lineNum).padStart(3)} | ${line}`;
-		});
-		snippet = [...head, `  ... (${codeLines.length - 20} lines omitted)`, ...tail].join("\n");
+	if (!(err instanceof Error)) {
+		return { type: "runtime", message: String(err), snippet };
 	}
 
-	return `${message}\n\n${snippet}`;
+	// Classify the error
+	const message = err.message;
+	if (message.includes("timed out")) {
+		return { type: "timeout", message, snippet };
+	}
+	if (message.includes("aborted") || err.name === "AbortError") {
+		return { type: "abort", message, snippet };
+	}
+	if (message.includes("not found in codemode")) {
+		const toolMatch = message.match(/Tool "(.+?)" not found/);
+		return { type: "tool_not_found", message, toolName: toolMatch?.[1], snippet };
+	}
+
+	// Check if it's a sub-tool error (errors thrown from bridged tool functions)
+	const toolName = (err as unknown as Record<string, unknown>).toolName as string | undefined;
+	if (toolName) {
+		return { type: "tool_error", message, toolName, snippet };
+	}
+
+	return { type: "runtime", message, snippet };
+}
+
+function buildCodeSnippet(code: string): string {
+	const codeLines = code.split("\n");
+	if (codeLines.length <= 20) {
+		return codeLines.map((line, i) => `  ${String(i + 1).padStart(3)} | ${line}`).join("\n");
+	}
+	const head = codeLines.slice(0, 10).map((line, i) => `  ${String(i + 1).padStart(3)} | ${line}`);
+	const tail = codeLines.slice(-10).map((line, i) => {
+		const lineNum = codeLines.length - 10 + i + 1;
+		return `  ${String(lineNum).padStart(3)} | ${line}`;
+	});
+	return [...head, `  ... (${codeLines.length - 20} lines omitted)`, ...tail].join("\n");
 }
 
 function createTimeout(ms: number): { promise: Promise<never>; cleanup: () => void } {
