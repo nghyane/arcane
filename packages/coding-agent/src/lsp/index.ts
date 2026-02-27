@@ -890,7 +890,8 @@ export function createLspWritethrough(cwd: string, options?: WritethroughOptions
 export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Theme> {
 	readonly name = "lsp";
 	readonly label = "LSP";
-	readonly description = "Run LSP operations: diagnostics, go-to-definition, references, hover, symbols, rename";
+	readonly description =
+		"Run LSP operations: diagnostics, go-to-definition, references, hover, symbols, rename. Output is shown to the user, so do not repeat or summarize the results.";
 	readonly parameters = lspSchema;
 	readonly renderCall = renderCall;
 	readonly renderResult = renderResult;

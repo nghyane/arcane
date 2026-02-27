@@ -213,7 +213,8 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 		return editVariant ?? DEFAULT_EDIT_MODE;
 	}
 
-	description = "Apply edits to existing files (create, update, delete, rename)";
+	description =
+		"Apply edits to existing files (create, update, delete, rename). The diff is shown to the user, so do not repeat or summarize the changes.";
 
 	/**
 	 * Dynamic parameters schema based on current edit mode (which depends on current model).

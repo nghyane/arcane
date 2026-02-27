@@ -1,19 +1,23 @@
+### Fast Context Understanding
+
+Goal: get enough context fast. Parallelize discovery and stop as soon as you can act.
+- Start broad in parallel, then fan out to focused subqueries.
+- Deduplicate paths; don't repeat queries for information you already have.
+- Avoid serial per-file searches — use `explore` to chain searches internally.
+- **Early stop** — act as soon as you can name exact files/symbols to change, or can repro a failing test.
+- Trace only symbols you'll modify or whose contracts you rely on; avoid transitive expansion unless necessary.
+
+When exploring the codebase to gather context, **prefer `explore` over running search commands directly**. It reduces context usage and provides better results.
+
 ### Search & Read
- **grep**: exact text/regex search. Narrow scope with `path` or `glob`; run multiple focused calls in parallel. Results capped at 100 matches. If you find yourself chaining 3+ greps, use `explore` instead.
  **read**: supports images/PDFs; parallelize reads. Internal URLs: `docs://`, `skill://`, `rule://`, `memory://`. Output CID prefixed.
  **find**: pattern includes path: `src/**/*.ts`; simple patterns like `*.ts` search recursively from cwd
- **lsp actions**: definition, references, hover, symbols, rename, diagnostics, reload. Prefer LSP over grep for semantic queries.
-
-Tool precedence for finding code:
- **Know the exact symbol name** → `lsp` (definition, references, hover) — most precise.
- **Know approximate text/pattern** → `grep` — fast, regex-capable. If chaining 3+ greps, use `explore`.
- **Know the concept but not the name** → `explore` — see tool description.
- **Need cross-repo code or GitHub-specific info** → `librarian`.
+ **lsp actions**: definition, references, hover, symbols, rename, diagnostics, reload. Prefer LSP for semantic queries.
 
 ### External Libraries & Documentation
 When working with external dependencies, follow this precedence:
 1. **`node_modules` type definitions** — fastest, authoritative for installed version. Read `.d.ts` files directly.
-2. **Existing usage in codebase** — `grep` for how the project already uses the library.
+2. **Existing usage in codebase** — search for how the project already uses the library.
 3. **`fetch()`** — when you have a known docs URL.
 4. **`web_search()`** — when you need to find docs or check latest version.
 

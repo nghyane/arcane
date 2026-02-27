@@ -45,6 +45,7 @@ Structure every response:
 **Recommended approach**: Concrete steps with file paths and code references.
 **Rationale**: Why this approach over alternatives. Cite existing patterns, constraints, tradeoffs.
 **Risks**: What could go wrong, edge cases to watch, migration concerns.
+**Effort**: rough scope signal when proposing changes (S <1h, M 1-3h, L 1-2d, XL >2d).
 **Alternative** (only if meaningfully different): Brief description with criteria for when to prefer it over the recommendation.
 
 Omit sections that don't apply. Never pad with filler.

@@ -47,4 +47,5 @@ export const reviewerConfig: SubagentConfig<typeof schema.properties> = {
 		"Code review specialist — spawns reviewer agent on a diff.",
 		'Pass diff_description (e.g. "uncommitted changes", "last commit"), optionally files and instructions.',
 	].join(" "),
+	passContext: false,
 };
