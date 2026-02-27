@@ -505,6 +505,9 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 						if (r.error && !success) {
 							lines.push(`${INDENT}${theme.fg("error", truncateToWidth(r.error, 70))}`);
 						}
+						if (success && fallbackText.trim()) {
+							lines.push(`${INDENT}${theme.fg("dim", truncateToWidth(fallbackText.trim(), width))}`);
+						}
 					}
 
 					if (lines.length === 0) {

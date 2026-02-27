@@ -21,11 +21,13 @@ Arcane is a lightweight coding agent. Decisions follow these principles:
 | `packages/ai`           | Multi-provider LLM client with streaming support     |
 | `packages/agent`        | Agent runtime with tool calling and state management |
 | `packages/coding-agent` | Main CLI application (primary focus)                 |
+| `packages/codemode`     | Tool orchestration via code generation for LLM agents|
 | `packages/tui`          | Terminal UI library with differential rendering      |
-| `packages/natives`      | bindings for native text/image/grep operations       |
+| `packages/natives`      | Bindings for native text/image/grep operations       |
+| `packages/swarm-extension` | Swarm orchestration extension                     |
 | `packages/stats`        | Local observability dashboard (`arc stats`)          |
 | `packages/utils`        | Shared utilities (logger, streams, temp files)       |
-| `crates/arcane-natives`     | Rust crate for performance-critical text/grep ops    |
+| `crates/arcane-natives` | Rust crate for performance-critical text/grep ops    |
 
 ## Code Quality
 

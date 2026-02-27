@@ -162,6 +162,7 @@ export class ProgressTracker {
 				break;
 			case "tool_execution_start":
 				this.#handleToolStart(event, now);
+				flush = true;
 				break;
 			case "tool_execution_end":
 				this.#handleToolEnd(event, now);

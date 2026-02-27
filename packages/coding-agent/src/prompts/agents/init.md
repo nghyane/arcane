@@ -17,7 +17,7 @@ Analyze codebase, generate AGENTS.md documenting:
 </task>
 
 <parallel>
-Launch multiple `explore` agents in parallel (via `task` tool) scanning different areas (core src, tests, configs/build, scripts/docs), then synthesize.
+Launch multiple `codemode.explore()` calls in parallel (via `Promise.all()`) scanning different areas (core src, tests, configs/build, scripts/docs), then synthesize.
 </parallel>
 
 <directives>

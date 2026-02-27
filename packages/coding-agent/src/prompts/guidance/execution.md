@@ -5,7 +5,7 @@
 - `head`/`tail`: return only first/last N lines. Use `tail` for build errors (errors at end), `head` for directory listings. Combine for focused output on long commands.
 - Non-zero exit: output includes both stdout and stderr. Read the error message — fix and retry rather than asking the user.
 - `skill://`, `docs://`, `rule://` URIs in commands are auto-resolved to filesystem paths.
-- Prefer specialized tools over shell equivalents: `read`/`find` over `cat`/`find`, `lsp` over `jq` for code navigation.
+- Prefer specialized tools over shell equivalents: `codemode.read()`/`codemode.find()` over `cat`/`find`, `codemode.lsp()` over `jq` for code navigation.
  **python**: persistent Jupyter kernel for computation, data analysis, and scripting.
 - Kernel state persists across calls — variables, imports, and installed packages carry over.
 - Use `cells` array to organize code logically (imports, processing, output). Each cell runs sequentially.
@@ -18,5 +18,5 @@
 ### SSH
  **ssh**: execute commands on connected remote hosts.
 - Match commands to the remote host's OS and shell (e.g., don't use macOS commands on Linux).
-- Remote filesystems are mirrored at `~/.arcane/remote/<hostname>/` — use `read`/`find` on those paths for file operations instead of SSH `cat`/`find`.
+- Remote filesystems are mirrored at `~/.arcane/remote/<hostname>/` — use `codemode.read()`/`codemode.find()` on those paths for file operations instead of SSH `cat`/`find`.
 - `cwd`: the tool handles `cd` automatically per shell type (Unix, PowerShell, cmd). Just set the param — don't prepend `cd` to your command.
