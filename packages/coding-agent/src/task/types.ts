@@ -1,6 +1,5 @@
 import type { ThinkingLevel } from "@nghyane/arcane-agent";
 import type { Usage } from "@nghyane/arcane-ai";
-import { $env } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
 
 /** Source of an agent definition */
@@ -9,23 +8,8 @@ export type AgentSource = "bundled" | "user" | "project";
 /** Discriminant for agent capability profile */
 export type AgentKind = "local" | "remote" | "hybrid" | "reasoning";
 
-const parseNumber = (value: string | undefined, defaultValue: number): number => {
-	if (!value) return defaultValue;
-	const number = Number.parseInt(value, 10);
-	return Number.isNaN(number) || number <= 0 ? defaultValue : number;
-};
-
-/** Maximum output bytes per agent */
-export const MAX_OUTPUT_BYTES = parseNumber($env.ARCANE_TASK_MAX_OUTPUT_BYTES, 500_000);
-
-/** Maximum output lines per agent */
-export const MAX_OUTPUT_LINES = parseNumber($env.ARCANE_TASK_MAX_OUTPUT_LINES, 5000);
-
 /** EventBus channel for raw subagent events */
 export const TASK_SUBAGENT_EVENT_CHANNEL = "task:subagent:event";
-
-/** EventBus channel for aggregated subagent progress */
-export const TASK_SUBAGENT_PROGRESS_CHANNEL = "task:subagent:progress";
 
 /** Single task item for execution */
 export interface TaskItem {
@@ -116,19 +100,13 @@ export interface SingleResult {
 	description?: string;
 	lastIntent?: string;
 	exitCode: number;
-	output: string;
 	stderr: string;
-	truncated: boolean;
 	durationMs: number;
 	tokens: number;
 	error?: string;
 	aborted?: boolean;
 	/** Aggregated usage from the subprocess, accumulated incrementally from message_end events. */
 	usage?: Usage;
-	/** Output path for the task result */
-	outputPath?: string;
-	/** Output metadata for agent:// URL integration */
-	outputMeta?: { lineCount: number; charCount: number };
 	/** Full history of tool calls for nested display */
 	toolHistory?: Array<{ tool: string; args: string; status: "success" | "error" }>;
 }

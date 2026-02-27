@@ -231,6 +231,7 @@ export {
 	type ThinkingLevelChangeEntry,
 } from "./session/session-manager";
 export { runAgent } from "./task/executor";
+export { extractAgentOutput, ProgressTracker } from "./task/progress-tracker";
 export type {
 	AgentDefinition,
 	AgentProgress,
@@ -274,4 +275,5 @@ export {
 	type WriteToolDetails,
 	type WriteToolInput,
 } from "./tools";
+export { EventBus } from "./utils/event-bus";
 export { VERSION } from "./version";

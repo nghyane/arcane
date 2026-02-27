@@ -20,9 +20,12 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { getBundledAgent } from "../task/agents";
 import { runAgent } from "../task/executor";
 import { AgentOutputManager } from "../task/output-manager";
+import { extractAgentOutput, ProgressTracker } from "../task/progress-tracker";
 import { createUnifiedSubagentRenderer } from "../task/render";
-import type { AgentProgress, TaskToolDetails } from "../task/types";
+import type { TaskToolDetails } from "../task/types";
+import { TASK_SUBAGENT_EVENT_CHANNEL } from "../task/types";
 import type { Theme } from "../theme/theme";
+import { EventBus } from "../utils/event-bus";
 
 export interface SubagentConfig<T extends TProperties = TProperties> {
 	/** Tool name exposed to the model */
@@ -126,12 +129,35 @@ export class SubagentTool<T extends TProperties = TProperties>
 				session.agentOutputManager ?? new AgentOutputManager(session.getArtifactsDir ?? (() => null));
 			const [id] = await outputManager.allocateBatch([label]);
 
-			const emitProgress = (progress: AgentProgress) => {
-				onUpdate?.({
-					content: [{ type: "text", text: progressText }],
-					details: { results: [], totalDurationMs: Date.now() - startTime, progress: [progress] },
-				});
-			};
+			// Set up EventBus — all observation flows through here
+			const eventBus = new EventBus();
+
+			// Progress tracker subscribes to events
+			const tracker = new ProgressTracker({
+				index: 0,
+				id,
+				agent: agentName,
+				task,
+				description: buildDescription(params),
+				startTime,
+				onProgress: progress => {
+					onUpdate?.({
+						content: [{ type: "text", text: progressText }],
+						details: { results: [], totalDurationMs: Date.now() - startTime, progress: [progress] },
+					});
+				},
+				onTerminateRequest: () => eventBus.emit("executor:terminate", {}),
+			});
+			tracker.subscribe(eventBus);
+
+			// Capture output from agent_end event
+			let agentOutput = "";
+			const outputListener = eventBus.on(TASK_SUBAGENT_EVENT_CHANNEL, (data: unknown) => {
+				const payload = data as { event?: { type: string; messages?: unknown[] } };
+				if (payload.event?.type === "agent_end") {
+					agentOutput = extractAgentOutput(payload.event as Parameters<typeof extractAgentOutput>[0]);
+				}
+			});
 
 			let contextFilePath: string | undefined;
 			if (passContext) {
@@ -157,7 +183,7 @@ export class SubagentTool<T extends TProperties = TProperties>
 				contextFile: contextFilePath,
 				enableLsp: false,
 				signal,
-				onProgress: emitProgress,
+				eventBus,
 				authStorage: session.subagentContext?.authStorage,
 				modelRegistry: session.subagentContext?.modelRegistry,
 				settings: session.settings,
@@ -167,12 +193,38 @@ export class SubagentTool<T extends TProperties = TProperties>
 				mcpManager: session.subagentContext?.mcpManager,
 			});
 
+			// Finalize tracker
+			const wasAborted = result.aborted ?? false;
+			tracker.finalize(wasAborted ? "aborted" : result.exitCode === 0 ? "completed" : "failed");
+			tracker.dispose();
+			outputListener();
+
+			// Enrich result with tracker data
+			result.tokens = tracker.progress.tokens;
+			result.lastIntent = tracker.progress.lastIntent;
+			result.usage = tracker.usage;
+			result.toolHistory = tracker.progress.toolHistory.map(t => ({
+				tool: t.tool,
+				args: t.args,
+				status: t.status === "running" ? ("error" as const) : t.status,
+			}));
+
+			// Write output artifact for agent:// URL integration
+			if (artifactsDir && agentOutput) {
+				const outputFile = path.join(effectiveArtifactsDir, `${id}.md`);
+				try {
+					await Bun.write(outputFile, agentOutput);
+				} catch {
+					// Non-fatal
+				}
+			}
+
 			if (tempArtifactsDir) {
 				await fs.rm(tempArtifactsDir, { recursive: true, force: true });
 			}
 
 			const totalDuration = Date.now() - startTime;
-			const output = result.output.trim() || result.stderr.trim() || "(no output)";
+			const output = agentOutput.trim() || result.stderr.trim() || `${label} produced no output`;
 
 			return {
 				content: [{ type: "text", text: output }],

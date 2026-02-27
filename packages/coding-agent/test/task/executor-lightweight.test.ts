@@ -7,6 +7,7 @@ import type { AgentSession, AgentSessionEvent } from "../../src/session/agent-se
 import type { AuthStorage } from "../../src/session/auth-storage";
 import { runAgent } from "../../src/task/executor";
 import type { AgentDefinition } from "../../src/task/types";
+import { EventBus } from "../../src/utils/event-bus";
 
 vi.mock("../../src/sdk", () => ({
 	createAgentSession: vi.fn(),
@@ -101,6 +102,7 @@ describe("runAgent lightweight fork", () => {
 		authStorage: {} as unknown as AuthStorage,
 		modelRegistry: { refresh: async () => {} } as unknown as import("../../src/config/model-registry").ModelRegistry,
 		enableLsp: false,
+		eventBus: new EventBus(),
 	};
 
 	it("runs a single prompt to completion", async () => {
@@ -120,7 +122,6 @@ describe("runAgent lightweight fork", () => {
 
 		const result = await runAgent(baseOptions);
 		expect(prompts).toHaveLength(1);
-		expect(result.output).toBe("did some work");
 		expect(result.exitCode).toBe(0);
 	});
 

@@ -11,12 +11,21 @@ import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@nghya
 import { Snowflake } from "@nghyane/arcane-utils";
 import type { ToolSession } from "..";
 import type { Theme } from "../theme/theme";
+import { EventBus } from "../utils/event-bus";
 import { getBundledAgent } from "./agents";
 import { runAgent } from "./executor";
 import { AgentOutputManager } from "./output-manager";
+import { extractAgentOutput, ProgressTracker } from "./progress-tracker";
 import { renderCall, renderResult } from "./render";
 import { renderTemplate } from "./template";
-import { type AgentProgress, type TaskParams, type TaskSchema, type TaskToolDetails, taskSchema } from "./types";
+import {
+	type AgentProgress,
+	TASK_SUBAGENT_EVENT_CHANNEL,
+	type TaskParams,
+	type TaskSchema,
+	type TaskToolDetails,
+	taskSchema,
+} from "./types";
 
 // Re-export types and utilities
 export { loadBundledAgents as BUNDLED_AGENTS } from "./agents";
@@ -159,20 +168,32 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				preloadedSkills = resolved;
 			}
 
-			progressMap.set(0, {
+			// Set up EventBus — all observation flows through here
+			const eventBus = new EventBus();
+
+			const tracker = new ProgressTracker({
 				index: 0,
 				id: uniqueId,
 				agent: agentName,
-				status: "pending",
 				task: rendered.task,
-				recentTools: [],
-				recentOutput: [],
-				toolCount: 0,
-				tokens: 0,
-				durationMs: 0,
-				toolHistory: [],
+				description: rendered.description,
+				startTime,
+				onProgress: progress => {
+					progressMap.set(0, { ...structuredClone(progress) });
+					emitProgress();
+				},
+				onTerminateRequest: () => eventBus.emit("executor:terminate", {}),
 			});
-			emitProgress();
+			tracker.subscribe(eventBus);
+
+			// Capture output from agent_end
+			let agentOutput = "";
+			const outputListener = eventBus.on(TASK_SUBAGENT_EVENT_CHANNEL, (data: unknown) => {
+				const payload = data as { event?: { type: string; messages?: unknown[] } };
+				if (payload.event?.type === "agent_end") {
+					agentOutput = extractAgentOutput(payload.event as Parameters<typeof extractAgentOutput>[0]);
+				}
+			});
 
 			const result = await runAgent({
 				cwd: this.session.cwd,
@@ -190,11 +211,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				contextFile: contextFilePath,
 				enableLsp: false,
 				signal,
-				eventBus: undefined,
-				onProgress: progress => {
-					progressMap.set(0, { ...structuredClone(progress) });
-					emitProgress();
-				},
+				eventBus,
 				authStorage: this.session.subagentContext?.authStorage,
 				modelRegistry: this.session.subagentContext?.modelRegistry,
 				settings: this.session.settings,
@@ -205,12 +222,38 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				promptTemplates,
 			});
 
+			// Finalize tracker
+			const wasAborted = result.aborted ?? false;
+			tracker.finalize(wasAborted ? "aborted" : result.exitCode === 0 ? "completed" : "failed");
+			tracker.dispose();
+			outputListener();
+
+			// Enrich result with tracker data
+			result.tokens = tracker.progress.tokens;
+			result.lastIntent = tracker.progress.lastIntent;
+			result.usage = tracker.usage;
+			result.toolHistory = tracker.progress.toolHistory.map(t => ({
+				tool: t.tool,
+				args: t.args,
+				status: t.status === "running" ? ("error" as const) : t.status,
+			}));
+
+			// Write output artifact for agent:// URL integration
+			if (artifactsDir && agentOutput) {
+				const outputFile = path.join(effectiveArtifactsDir, `${uniqueId}.md`);
+				try {
+					await Bun.write(outputFile, agentOutput);
+				} catch {
+					// Non-fatal
+				}
+			}
+
 			if (tempArtifactsDir) {
 				await fs.rm(tempArtifactsDir, { recursive: true, force: true });
 			}
 
 			const totalDuration = Date.now() - startTime;
-			const output = result.output.trim() || result.stderr.trim() || "(no output)";
+			const output = agentOutput.trim() || result.stderr.trim() || "(no output)";
 
 			// Return structured result as JSON for code tool composability
 			const structured = {

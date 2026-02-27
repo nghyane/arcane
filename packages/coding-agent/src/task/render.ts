@@ -260,10 +260,6 @@ function renderAgentResult(result: SingleResult, isLast: boolean, expanded: bool
 	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("accent", titlePart)} ${formatBadge(statusText, iconColor, theme)}`;
 	statusLine += `${theme.sep.dot}${theme.fg("dim", formatDuration(result.durationMs))}`;
 
-	if (result.truncated) {
-		statusLine += ` ${theme.fg("warning", "[truncated]")}`;
-	}
-
 	lines.push(statusLine);
 
 	// Tool history

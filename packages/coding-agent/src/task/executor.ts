@@ -1,7 +1,10 @@
 /**
- * In-process execution for subagents.
+ * In-process subagent executor.
  *
- * Runs each subagent on the main thread and forwards AgentEvents for progress tracking.
+ * Manages agent lifecycle (session creation, abort handling, cleanup) and
+ * forwards AgentEvents to an EventBus. All observation (progress tracking,
+ * output extraction, usage accumulation) is the caller's responsibility
+ * via EventBus subscriptions.
  */
 import * as path from "node:path";
 import type { AgentEvent, ThinkingLevel } from "@nghyane/arcane-agent";
@@ -20,23 +23,14 @@ import { createAgentSession, discoverAuthStorage } from "../sdk";
 import type { AgentSession, AgentSessionEvent } from "../session/agent-session";
 import type { AuthStorage } from "../session/auth-storage";
 import { SessionManager } from "../session/session-manager";
-import { type ContextFileEntry, truncateTail } from "../tools";
+import type { ContextFileEntry } from "../tools";
 import { ToolAbortError } from "../tools/tool-errors";
 import type { EventBus } from "../utils/event-bus";
-import { subprocessToolRegistry } from "./subprocess-tool-registry";
-import {
-	type AgentDefinition,
-	type AgentProgress,
-	MAX_OUTPUT_BYTES,
-	MAX_OUTPUT_LINES,
-	type SingleResult,
-	TASK_SUBAGENT_EVENT_CHANNEL,
-	TASK_SUBAGENT_PROGRESS_CHANNEL,
-} from "./types";
+import { type AgentDefinition, type SingleResult, TASK_SUBAGENT_EVENT_CHANNEL } from "./types";
 
 const MCP_CALL_TIMEOUT_MS = 60_000;
 
-/** Agent event types to forward for progress tracking. */
+/** Agent event types worth forwarding. */
 const agentEventTypes = new Set<AgentEvent["type"]>([
 	"agent_start",
 	"agent_end",
@@ -110,13 +104,13 @@ export interface ExecutorOptions {
 	isSubagent?: boolean;
 	enableLsp?: boolean;
 	signal?: AbortSignal;
-	onProgress?: (progress: AgentProgress) => void;
 	sessionFile?: string | null;
 	persistArtifacts?: boolean;
 	artifactsDir?: string;
 	/** Path to parent conversation context file */
 	contextFile?: string;
-	eventBus?: EventBus;
+	/** EventBus for forwarding agent events. Required — all observation happens here. */
+	eventBus: EventBus;
 	contextFiles?: ContextFileEntry[];
 	skills?: Skill[];
 	preloadedSkills?: Skill[];
@@ -125,55 +119,6 @@ export interface ExecutorOptions {
 	authStorage?: AuthStorage;
 	modelRegistry?: ModelRegistry;
 	settings?: Settings;
-}
-
-/**
- * Extract a short preview from tool args for display.
- */
-function extractToolArgsPreview(args: Record<string, unknown>): string {
-	// Priority order for preview
-	const previewKeys = ["command", "file_path", "path", "pattern", "query", "url", "task", "prompt"];
-
-	for (const key of previewKeys) {
-		if (args[key] && typeof args[key] === "string") {
-			const value = args[key] as string;
-			return value.length > 60 ? `${value.slice(0, 59)}…` : value;
-		}
-	}
-
-	return "";
-}
-
-function getNumberField(record: Record<string, unknown>, key: string): number | undefined {
-	if (!Object.hasOwn(record, key)) return undefined;
-	const value = record[key];
-	return typeof value === "number" && Number.isFinite(value) ? value : 0;
-}
-
-function firstNumberField(record: Record<string, unknown>, keys: string[]): number | undefined {
-	for (const key of keys) {
-		const value = getNumberField(record, key);
-		if (value !== undefined) return value;
-	}
-	return undefined;
-}
-
-/**
- * Normalize usage objects from different event formats.
- */
-function getUsageTokens(usage: unknown): number {
-	if (!usage || typeof usage !== "object") return 0;
-	const record = usage as Record<string, unknown>;
-
-	const totalTokens = firstNumberField(record, ["totalTokens", "total_tokens"]);
-	if (totalTokens !== undefined && totalTokens > 0) return totalTokens;
-
-	const input = firstNumberField(record, ["input", "input_tokens", "inputTokens"]) ?? 0;
-	const output = firstNumberField(record, ["output", "output_tokens", "outputTokens"]) ?? 0;
-	const cacheRead = firstNumberField(record, ["cacheRead", "cache_read", "cacheReadTokens"]) ?? 0;
-	const cacheWrite = firstNumberField(record, ["cacheWrite", "cache_write", "cacheWriteTokens"]) ?? 0;
-
-	return input + output + cacheRead + cacheWrite;
 }
 
 /**
@@ -188,9 +133,7 @@ function createMCPProxyTools(mcpManager: MCPManager): CustomTool<TSchema>[] {
 			description: tool.description ?? "",
 			parameters: tool.parameters as TSchema,
 			execute: async (_toolCallId, params, _onUpdate, _ctx, signal) => {
-				if (signal?.aborted) {
-					throw new ToolAbortError();
-				}
+				if (signal?.aborted) throw new ToolAbortError();
 				const serverName = mcpTool.mcpServerName ?? "";
 				const mcpToolName = mcpTool.mcpToolName ?? "";
 				try {
@@ -231,27 +174,13 @@ function createMCPProxyTools(mcpManager: MCPManager): CustomTool<TSchema>[] {
 
 /**
  * Run a single agent in-process.
+ *
+ * Forwards all AgentEvents to options.eventBus. Callers observe progress,
+ * usage, and output by subscribing to the bus before calling this function.
  */
 export async function runAgent(options: ExecutorOptions): Promise<SingleResult> {
-	const { cwd, agent, task, index, id, modelOverride, thinkingLevel, enableLsp, signal, onProgress } = options;
+	const { cwd, agent, task, index, id, modelOverride, thinkingLevel, enableLsp, signal, eventBus } = options;
 	const startTime = Date.now();
-
-	// Initialize progress
-	const progress: AgentProgress = {
-		index,
-		id,
-		agent: agent.name,
-		status: "running",
-		task,
-		description: options.description,
-		lastIntent: undefined,
-		recentTools: [],
-		recentOutput: [],
-		toolCount: 0,
-		tokens: 0,
-		durationMs: 0,
-		toolHistory: [],
-	};
 
 	// Check if already aborted
 	if (signal?.aborted) {
@@ -262,16 +191,14 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 			task,
 			description: options.description,
 			exitCode: 1,
-			output: "",
 			stderr: "Aborted before start",
-			truncated: false,
 			durationMs: 0,
 			tokens: 0,
 			error: "Aborted",
 		};
 	}
 
-	// Set up artifact paths and write input file upfront if artifacts dir provided
+	// Set up artifact paths
 	let subtaskSessionFile: string | undefined;
 	if (options.artifactsDir) {
 		subtaskSessionFile = path.join(options.artifactsDir, `${id}.jsonl`);
@@ -295,14 +222,9 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 
 	const modelPatterns = normalizeModelPatterns(modelOverride ?? agent.model);
 	const sessionFile = subtaskSessionFile ?? null;
-
 	const lspEnabled = enableLsp ?? true;
 	const skipPythonPreflight = Array.isArray(toolNames) && !toolNames.includes("python");
 
-	const outputChunks: string[] = [];
-	const finalOutputChunks: string[] = [];
-	const RECENT_OUTPUT_TAIL_BYTES = 8 * 1024;
-	let recentOutputTail = "";
 	let stderr = "";
 	let resolved = false;
 	type AbortReason = "signal" | "terminate";
@@ -314,17 +236,6 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 	const abortSignal = abortController.signal;
 	let activeSession: AgentSession | null = null;
 	let unsubscribe: (() => void) | null = null;
-
-	// Accumulate usage incrementally from message_end events (no memory for streaming events)
-	const accumulatedUsage = {
-		input: 0,
-		output: 0,
-		cacheRead: 0,
-		cacheWrite: 0,
-		totalTokens: 0,
-		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
-	};
-	let hasUsage = false;
 
 	const requestAbort = (reason: AbortReason) => {
 		if (abortSent) {
@@ -342,6 +253,11 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 		}
 	};
 
+	/** Allow external observers (e.g. ProgressTracker) to request termination. */
+	const terminateListener = eventBus.on("executor:terminate", () => {
+		requestAbort("terminate");
+	});
+
 	// Handle abort signal
 	const onAbort = () => {
 		if (!resolved) requestAbort("signal");
@@ -350,280 +266,15 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 		signal.addEventListener("abort", onAbort, { once: true, signal: listenerSignal });
 	}
 
-	const PROGRESS_COALESCE_MS = 150;
-	let lastProgressEmitMs = 0;
-	let progressTimeoutId: NodeJS.Timeout | null = null;
-
-	const emitProgressNow = () => {
-		progress.durationMs = Date.now() - startTime;
-		onProgress?.({ ...progress });
-		if (options.eventBus) {
-			options.eventBus.emit(TASK_SUBAGENT_PROGRESS_CHANNEL, {
-				index,
-				agent: agent.name,
-				task,
-				progress: { ...progress },
-			});
-		}
-		lastProgressEmitMs = Date.now();
-	};
-
-	const scheduleProgress = (flush = false) => {
-		if (flush) {
-			if (progressTimeoutId) {
-				clearTimeout(progressTimeoutId);
-				progressTimeoutId = null;
-			}
-			emitProgressNow();
-			return;
-		}
-		const now = Date.now();
-		const elapsed = now - lastProgressEmitMs;
-		if (lastProgressEmitMs === 0 || elapsed >= PROGRESS_COALESCE_MS) {
-			if (progressTimeoutId) {
-				clearTimeout(progressTimeoutId);
-				progressTimeoutId = null;
-			}
-			emitProgressNow();
-			return;
-		}
-		if (progressTimeoutId) return;
-		progressTimeoutId = setTimeout(() => {
-			progressTimeoutId = null;
-			emitProgressNow();
-		}, PROGRESS_COALESCE_MS - elapsed);
-	};
-
-	const getMessageContent = (message: unknown): unknown => {
-		if (message && typeof message === "object" && "content" in message) {
-			return (message as { content?: unknown }).content;
-		}
-		return undefined;
-	};
-
-	const getMessageUsage = (message: unknown): unknown => {
-		if (message && typeof message === "object" && "usage" in message) {
-			return (message as { usage?: unknown }).usage;
-		}
-		return undefined;
-	};
-
-	const updateRecentOutputLines = () => {
-		const lines = recentOutputTail.split("\n").filter(line => line.trim());
-		progress.recentOutput = lines.slice(-8).reverse();
-	};
-
-	const appendRecentOutputTail = (text: string) => {
-		if (!text) return;
-		recentOutputTail += text;
-		if (recentOutputTail.length > RECENT_OUTPUT_TAIL_BYTES) {
-			recentOutputTail = recentOutputTail.slice(-RECENT_OUTPUT_TAIL_BYTES);
-		}
-		updateRecentOutputLines();
-	};
-
-	const replaceRecentOutputFromContent = (content: unknown[]) => {
-		recentOutputTail = "";
-		for (const block of content) {
-			if (!block || typeof block !== "object") continue;
-			const record = block as { type?: unknown; text?: unknown };
-			if (record.type !== "text" || typeof record.text !== "string") continue;
-			if (!record.text) continue;
-			recentOutputTail += record.text;
-			if (recentOutputTail.length > RECENT_OUTPUT_TAIL_BYTES) {
-				recentOutputTail = recentOutputTail.slice(-RECENT_OUTPUT_TAIL_BYTES);
-			}
-		}
-		updateRecentOutputLines();
-	};
-
-	const resetRecentOutput = () => {
-		recentOutputTail = "";
-		progress.recentOutput = [];
-	};
-
+	// Forward agent events to EventBus — the only thing processEvent does
 	const processEvent = (event: AgentEvent) => {
 		if (resolved) return;
-
-		if (options.eventBus) {
-			options.eventBus.emit(TASK_SUBAGENT_EVENT_CHANNEL, {
-				index,
-				agent: agent.name,
-				task,
-				event,
-			});
-		}
-
-		const now = Date.now();
-		let flushProgress = false;
-
-		switch (event.type) {
-			case "message_start":
-				if (event.message?.role === "assistant") {
-					resetRecentOutput();
-				}
-				break;
-
-			case "tool_execution_start": {
-				const isSubTool = !!event.parentToolCallId;
-				const toolArgs = extractToolArgsPreview(event.args ?? {});
-
-				if (!isSubTool) {
-					progress.toolCount++;
-					progress.currentTool = event.toolName;
-					progress.currentToolArgs = toolArgs;
-					progress.currentToolStartMs = now;
-					const intent = event.intent?.trim();
-					if (intent) {
-						progress.lastIntent = intent;
-					}
-				}
-
-				// Add to history — skip the "code" wrapper, only show actual tools
-				if (event.toolName !== "code" && progress.toolHistory.length < 50) {
-					progress.toolHistory.push({
-						tool: event.toolName,
-						args: toolArgs,
-						status: "running",
-					});
-				}
-				break;
-			}
-
-			case "tool_execution_end": {
-				const isSubTool = !!event.parentToolCallId;
-				const isError = !!(event as { isError?: boolean }).isError;
-
-				// Update the last running entry in history to final status
-				for (let i = progress.toolHistory.length - 1; i >= 0; i--) {
-					if (progress.toolHistory[i].status === "running") {
-						progress.toolHistory[i].status = isError ? "error" : "success";
-						break;
-					}
-				}
-
-				if (!isSubTool) {
-					if (progress.currentTool) {
-						progress.recentTools.unshift({
-							tool: progress.currentTool,
-							args: progress.currentToolArgs || "",
-							endMs: now,
-						});
-						if (progress.recentTools.length > 5) {
-							progress.recentTools.pop();
-						}
-					}
-					progress.currentTool = undefined;
-					progress.currentToolArgs = undefined;
-					progress.currentToolStartMs = undefined;
-
-					// Check for registered subagent tool handler
-					const handler = subprocessToolRegistry.getHandler(event.toolName);
-					const eventArgs = (event as { args?: Record<string, unknown> }).args ?? {};
-					if (handler) {
-						if (
-							handler.shouldTerminate?.({
-								toolName: event.toolName,
-								toolCallId: event.toolCallId,
-								args: eventArgs,
-								result: event.result,
-								isError: event.isError,
-							})
-						) {
-							requestAbort("terminate");
-						}
-					}
-				}
-				flushProgress = true;
-				break;
-			}
-
-			case "message_update": {
-				if (event.message?.role !== "assistant") break;
-				const assistantEvent = (
-					event as AgentEvent & {
-						assistantMessageEvent?: { type?: string; delta?: string };
-					}
-				).assistantMessageEvent;
-				if (assistantEvent?.type === "text_delta" && typeof assistantEvent.delta === "string") {
-					appendRecentOutputTail(assistantEvent.delta);
-					break;
-				}
-				if (assistantEvent && assistantEvent.type !== "text_delta") {
-					break;
-				}
-				const updateContent =
-					getMessageContent(event.message) || (event as AgentEvent & { content?: unknown }).content;
-				if (updateContent && Array.isArray(updateContent)) {
-					replaceRecentOutputFromContent(updateContent);
-				}
-				break;
-			}
-
-			case "message_end": {
-				// Extract text from assistant and toolResult messages (not user prompts)
-				const role = event.message?.role;
-				if (role === "assistant") {
-					const messageContent =
-						getMessageContent(event.message) || (event as AgentEvent & { content?: unknown }).content;
-					if (messageContent && Array.isArray(messageContent)) {
-						for (const block of messageContent) {
-							if (block.type === "text" && block.text) {
-								outputChunks.push(block.text);
-							}
-						}
-					}
-				}
-				// Extract and accumulate usage (prefer message.usage, fallback to event.usage)
-				const messageUsage = getMessageUsage(event.message) || (event as AgentEvent & { usage?: unknown }).usage;
-				if (messageUsage && typeof messageUsage === "object") {
-					// Only count assistant messages (not tool results, etc.)
-					if (role === "assistant") {
-						const usageRecord = messageUsage as Record<string, unknown>;
-						const costRecord = (messageUsage as { cost?: Record<string, unknown> }).cost;
-						hasUsage = true;
-						accumulatedUsage.input += getNumberField(usageRecord, "input") ?? 0;
-						accumulatedUsage.output += getNumberField(usageRecord, "output") ?? 0;
-						accumulatedUsage.cacheRead += getNumberField(usageRecord, "cacheRead") ?? 0;
-						accumulatedUsage.cacheWrite += getNumberField(usageRecord, "cacheWrite") ?? 0;
-						accumulatedUsage.totalTokens += getNumberField(usageRecord, "totalTokens") ?? 0;
-						if (costRecord) {
-							accumulatedUsage.cost.input += getNumberField(costRecord, "input") ?? 0;
-							accumulatedUsage.cost.output += getNumberField(costRecord, "output") ?? 0;
-							accumulatedUsage.cost.cacheRead += getNumberField(costRecord, "cacheRead") ?? 0;
-							accumulatedUsage.cost.cacheWrite += getNumberField(costRecord, "cacheWrite") ?? 0;
-							accumulatedUsage.cost.total += getNumberField(costRecord, "total") ?? 0;
-						}
-					}
-					// Accumulate tokens for progress display
-					progress.tokens += getUsageTokens(messageUsage);
-				}
-				break;
-			}
-
-			case "agent_end":
-				// Extract only the LAST assistant message — subagent prompts instruct
-				// that only the final message contains the synthesized answer.
-				if (event.messages && Array.isArray(event.messages)) {
-					for (let i = event.messages.length - 1; i >= 0; i--) {
-						const msg = event.messages[i];
-						if ((msg as { role?: string })?.role !== "assistant") continue;
-						const messageContent = getMessageContent(msg);
-						if (messageContent && Array.isArray(messageContent)) {
-							for (const block of messageContent) {
-								if (block.type === "text" && block.text) {
-									finalOutputChunks.push(block.text);
-								}
-							}
-						}
-						break;
-					}
-				}
-				flushProgress = true;
-				break;
-		}
-
-		scheduleProgress(flushProgress);
+		eventBus.emit(TASK_SUBAGENT_EVENT_CHANNEL, {
+			index,
+			agent: agent.name,
+			task,
+			event,
+		});
 	};
 
 	const runSubagent = async (): Promise<{
@@ -724,15 +375,15 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 			if (extensionRunner) {
 				extensionRunner.initialize(
 					{
-						sendMessage: (message, options) => {
-							session.sendCustomMessage(message, options).catch(e => {
+						sendMessage: (message, msgOptions) => {
+							session.sendCustomMessage(message, msgOptions).catch(e => {
 								logger.error("Extension sendMessage failed", {
 									error: e instanceof Error ? e.message : String(e),
 								});
 							});
 						},
-						sendUserMessage: (content, options) => {
-							session.sendUserMessage(content, options).catch(e => {
+						sendUserMessage: (content, msgOptions) => {
+							session.sendUserMessage(content, msgOptions).catch(e => {
 								logger.error("Extension sendUserMessage failed", {
 									error: e instanceof Error ? e.message : String(e),
 								});
@@ -746,13 +397,13 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 						},
 						getActiveTools: () => session.getActiveToolNames(),
 						getAllTools: () => session.getAllToolNames(),
-						setActiveTools: (toolNames: string[]) =>
-							session.setActiveToolsByName(toolNames.filter(name => !parentOwnedToolNames.has(name))),
+						setActiveTools: (names: string[]) =>
+							session.setActiveToolsByName(names.filter(name => !parentOwnedToolNames.has(name))),
 						getCommands: () => [],
-						setModel: async model => {
-							const key = await session.modelRegistry.getApiKey(model);
+						setModel: async modelStr => {
+							const key = await session.modelRegistry.getApiKey(modelStr);
 							if (!key) return false;
-							await session.setModel(model);
+							await session.setModel(modelStr);
 							return true;
 						},
 						getThinkingLevel: () => session.thinkingLevel,
@@ -768,17 +419,14 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 						getSystemPrompt: () => session.systemPrompt,
 						compact: async instructionsOrOptions => {
 							const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-							const options =
+							const compactOptions =
 								instructionsOrOptions && typeof instructionsOrOptions === "object"
 									? instructionsOrOptions
 									: undefined;
-							await session.compact(instructions, options);
+							await session.compact(instructions, compactOptions);
 						},
 					},
 				);
-				extensionRunner.onError(err => {
-					logger.error("Extension error", { path: err.extensionPath, error: err.error });
-				});
 				await extensionRunner.emit({ type: "session_start" });
 			}
 
@@ -848,45 +496,13 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 	const done = await runSubagent();
 	resolved = true;
 	listenerController.abort();
+	terminateListener();
 
-	if (progressTimeoutId) {
-		clearTimeout(progressTimeoutId);
-		progressTimeoutId = null;
-	}
-
-	const exitCode = done.exitCode;
 	if (done.error) {
 		stderr = done.error;
 	}
 
-	// Use final output if available, otherwise accumulated output
-	const rawOutput = finalOutputChunks.length > 0 ? finalOutputChunks.join("") : outputChunks.join("");
-	const { content: truncatedOutput, truncated } = truncateTail(rawOutput, {
-		maxBytes: MAX_OUTPUT_BYTES,
-		maxLines: MAX_OUTPUT_LINES,
-	});
-
-	// Write output artifact (input and jsonl already written in real-time)
-	// Compute output metadata for agent:// URL integration
-	let outputMeta: { lineCount: number; charCount: number } | undefined;
-	let outputPath: string | undefined;
-	if (options.artifactsDir) {
-		outputPath = path.join(options.artifactsDir, `${id}.md`);
-		try {
-			await Bun.write(outputPath, rawOutput);
-			outputMeta = {
-				lineCount: rawOutput.split("\n").length,
-				charCount: rawOutput.length,
-			};
-		} catch {
-			// Non-fatal
-		}
-	}
-
-	// Update final progress
 	const wasAborted = done.aborted || signal?.aborted || false;
-	progress.status = wasAborted ? "aborted" : exitCode === 0 ? "completed" : "failed";
-	scheduleProgress(true);
 
 	return {
 		index,
@@ -894,22 +510,11 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 		agent: agent.name,
 		task,
 		description: options.description,
-		lastIntent: progress.lastIntent,
-		exitCode,
-		output: truncatedOutput,
+		exitCode: done.exitCode,
 		stderr,
-		truncated,
 		durationMs: Date.now() - startTime,
-		tokens: progress.tokens,
-		error: exitCode !== 0 && stderr ? stderr : undefined,
+		tokens: 0,
+		error: done.exitCode !== 0 && stderr ? stderr : undefined,
 		aborted: wasAborted,
-		usage: hasUsage ? accumulatedUsage : undefined,
-		outputPath,
-		outputMeta,
-		toolHistory: progress.toolHistory.map(t => ({
-			tool: t.tool,
-			args: t.args,
-			status: t.status === "running" ? ("error" as const) : t.status,
-		})),
 	};
 }

@@ -14,7 +14,7 @@ import type {
 	Settings,
 	SingleResult,
 } from "@nghyane/arcane";
-import { runAgent } from "@nghyane/arcane";
+import { EventBus, ProgressTracker, runAgent } from "@nghyane/arcane";
 import type { SwarmAgent } from "./schema";
 import type { StateTracker } from "./state";
 
@@ -77,6 +77,20 @@ export async function executeSwarmAgent(
 	await stateTracker.appendLog(agent.name, `Starting iteration ${iteration}`);
 
 	try {
+		const startTime = Date.now();
+		const eventBus = new EventBus();
+
+		const tracker = new ProgressTracker({
+			index,
+			id: agentId,
+			agent: agent.name,
+			task: agent.task,
+			startTime,
+			onProgress: progress => onProgress?.(agent.name, progress),
+			onTerminateRequest: () => eventBus.emit("executor:terminate", {}),
+		});
+		tracker.subscribe(eventBus);
+
 		const result = await runAgent({
 			cwd: workspace,
 			agent: agentDef,
@@ -85,13 +99,28 @@ export async function executeSwarmAgent(
 			id: agentId,
 			modelOverride,
 			signal,
-			onProgress: progress => onProgress?.(agent.name, progress),
+			eventBus,
 			authStorage,
 			modelRegistry,
 			settings,
 			enableLsp: false,
 			artifactsDir: path.join(stateTracker.swarmDir, "context"),
 		});
+
+		const wasAborted = result.aborted ?? false;
+		tracker.finalize(wasAborted ? "aborted" : result.exitCode === 0 ? "completed" : "failed");
+
+		// Enrich result with tracker data
+		result.tokens = tracker.progress.tokens;
+		result.lastIntent = tracker.progress.lastIntent;
+		result.usage = tracker.usage;
+		result.toolHistory = tracker.progress.toolHistory.map(t => ({
+			tool: t.tool,
+			args: t.args,
+			status: t.status === "running" ? ("error" as const) : t.status,
+		}));
+
+		tracker.dispose();
 
 		const status = result.exitCode === 0 ? ("completed" as const) : ("failed" as const);
 		await stateTracker.updateAgent(agent.name, {
