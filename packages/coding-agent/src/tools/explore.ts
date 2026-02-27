@@ -17,6 +17,10 @@ export const exploreConfig: SubagentConfig<typeof schema.properties> = {
 	tmpPrefix: "arc-explore-",
 	buildTask: p => p.query as string,
 	buildDescription: p => (p.query as string).slice(0, 80),
-	toolDescription: "Search local codebase by concept or behavior — spawns a read-only scout agent",
+	toolDescription: [
+		"Smart codebase scout — locates logic by conceptual description, chains grep/find/read internally.",
+		'WHEN TO USE: Locate code by behavior or concept; chain multiple greps; trace flows; find code by behavior (e.g. "where do we validate auth headers?"). Spawn multiple explores in parallel for different concepts.',
+		"WHEN NOT TO USE: Exact symbol lookup (use lsp); exact text match (use grep); remote repos (use librarian).",
+	].join(" "),
 	passContext: false,
 };

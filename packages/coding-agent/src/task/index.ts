@@ -48,7 +48,12 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 	readonly renderResult = renderResult;
 	readonly mergeCallAndResult = true;
 
-	readonly description = "Delegate work to a subagent for parallel execution";
+	readonly description = [
+		"Delegate a well-scoped unit of work to a subagent for parallel execution.",
+		"DO NOT use unless the task genuinely requires independent, parallelizable work across different parts of the codebase.",
+		"Prefer doing work directly yourself — you retain full context. Never spawn a single task for work you can do yourself.",
+		"Each task should be small and focused — one bounded deliverable. Many small tasks > one giant task.",
+	].join(" ");
 
 	private constructor(private readonly session: ToolSession) {
 		this.parameters = taskSchema;

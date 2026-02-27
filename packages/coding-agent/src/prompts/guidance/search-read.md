@@ -17,8 +17,8 @@ Strategy:
 Tool precedence for finding code:
  **Know the exact symbol name** → `lsp` (definition, references, hover) — most precise, no false positives.
  **Know approximate text/pattern** → `grep` — fast, regex-capable, but syntactic not semantic. If you find yourself chaining 3+ greps, use `explore` instead.
- **Know the concept but not the name** → `explore` — spawns a scout that chains grep/find/read internally. Use for: tracing flows, mapping features, finding code by behavior. Spawn multiple explores in parallel for different concepts.
- **Need cross-repo code or GitHub-specific info** → `librarian` (has `search_code` for grep.app + GitHub API). Use `github` directly only for quick single-item lookups.
+ **Know the concept but not the name** → `explore` — see tool description for details.
+ **Need cross-repo code or GitHub-specific info** → `librarian` — see tool description for details.
 
 Early stop — act as soon as **any** of these hold:
 - You can name the exact files and symbols to change.
@@ -51,3 +51,5 @@ Serialize:
 - Plan → code: planning/investigation must finish before edits that depend on it.
 - Write conflicts: edits touching the same file or shared contract (types, schemas, public APIs) must be ordered.
 - Chained transforms: step B requires output from step A.
+
+Example: `oracle`(plan API design), `explore`("validation flow"), `explore`("timeout handling"), `task`(add UI), `task`(add logs) — disjoint paths — parallel.

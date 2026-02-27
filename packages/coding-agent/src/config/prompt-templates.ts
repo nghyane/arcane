@@ -4,7 +4,6 @@ import { logger } from "@nghyane/arcane-utils";
 import { getProjectDir, getProjectPromptsDir, getPromptsDir } from "@nghyane/arcane-utils/dirs";
 import Handlebars from "handlebars";
 import { computeLineHash } from "../patch/hashline";
-import { jtdToTypeScript } from "../tools/jtd-to-typescript";
 import { parseFrontmatter } from "../utils/frontmatter";
 
 /**
@@ -224,8 +223,6 @@ handlebars.registerHelper("includes", (collection: unknown, item: unknown): bool
  * Returns logical NOT of value. For use in subexpressions.
  */
 handlebars.registerHelper("not", (value: unknown): boolean => !value);
-
-handlebars.registerHelper("jtdToTypeScript", (schema: unknown): string => jtdToTypeScript(schema));
 
 handlebars.registerHelper("jsonStringify", (value: unknown): string => JSON.stringify(value));
 

@@ -43,5 +43,8 @@ export const reviewerConfig: SubagentConfig<typeof schema.properties> = {
 		if (p.instructions) parts.push(String(p.instructions).slice(0, 50));
 		return parts.length > 0 ? parts.join(" · ") : null;
 	},
-	toolDescription: "Review code changes for correctness, style, and potential issues",
+	toolDescription: [
+		"Code review specialist — spawns reviewer agent on a diff.",
+		'Pass diff_description (e.g. "uncommitted changes", "last commit"), optionally files and instructions.',
+	].join(" "),
 };

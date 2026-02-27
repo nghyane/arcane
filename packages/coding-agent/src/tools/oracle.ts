@@ -42,5 +42,10 @@ export const oracleConfig: SubagentConfig<typeof schema.properties> = {
 		if (files?.length) parts.push(`${files.length} file${files.length > 1 ? "s" : ""}`);
 		return parts.length > 0 ? parts.join(" · ") : null;
 	},
-	toolDescription: "Strategic advisor for planning, debugging strategy, and design review — read-only, no changes",
+	toolDescription: [
+		"Senior engineering advisor with deep reasoning. Returns single comprehensive response — no follow-ups.",
+		"WHEN TO USE: Only for complex tasks requiring deep analysis, planning, or debugging across multiple files. Pass files for it to examine, context for background.",
+		"WHEN NOT TO USE: Simple questions answerable by reading code; tasks you can do directly.",
+		"Treat its response as advisory — do independent investigation after, then act.",
+	].join(" "),
 };

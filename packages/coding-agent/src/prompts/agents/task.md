@@ -1,7 +1,7 @@
 ---
 name: task
 description: General-purpose subagent with full capabilities for delegated multi-step tasks
-tools: ask, bash, browser, fetch, github, grep, notebook, python, ssh, todo_write, undo_edit, write, read, find, edit, lsp, web_search
+tools: bash, python, read, find, grep, lsp, edit, write, undo_edit, fetch, web_search, todo_write
 model: default
 kind: hybrid
 thinking-level: medium

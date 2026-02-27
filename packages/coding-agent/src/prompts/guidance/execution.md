@@ -6,7 +6,6 @@
 - Non-zero exit: output includes both stdout and stderr. Read the error message — fix and retry rather than asking the user.
 - `skill://`, `docs://`, `rule://` URIs in commands are auto-resolved to filesystem paths.
 - Prefer specialized tools over shell equivalents: `read`/`grep`/`find` over `cat`/`grep`/`find`, `lsp` over `jq` for code navigation.
-
  **python**: persistent Jupyter kernel for computation, data analysis, and scripting.
 - Kernel state persists across calls — variables, imports, and installed packages carry over.
 - Use `cells` array to organize code logically (imports, processing, output). Each cell runs sequentially.

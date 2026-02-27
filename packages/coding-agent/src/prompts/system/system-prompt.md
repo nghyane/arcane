@@ -46,6 +46,10 @@ All operations available via `codemode.*` API — see code tool TypeScript decla
 Use all tools available to you. Use search tools extensively, both in parallel and sequentially.
 </tools>
 
+{{#each guidanceSections}}
+{{{this}}}
+{{/each}}
+
 <conventions>
 ## Code Conventions
 - Mimic existing style. Before writing code, read surrounding context — imports, naming, patterns, frameworks — and match them.

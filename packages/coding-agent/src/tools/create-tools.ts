@@ -5,7 +5,6 @@ import { getPreludeDocs, warmPythonEnvironment } from "../ipy/executor";
 import { checkPythonKernelAvailability } from "../ipy/kernel";
 import { LspTool } from "../lsp";
 import { EditTool } from "../patch";
-import { guidance as guidanceTemplate } from "../prompts/codemode/guidance.js";
 import { TaskTool } from "../task";
 import { time } from "../utils/timings";
 import { SearchTool } from "../web/search";
@@ -158,6 +157,7 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		if (name === "librarian") return session.settings.get("librarian.enabled");
 		if (name === "oracle") return session.settings.get("oracle.enabled");
 		if (name === "github") return session.settings.get("github.enabled");
+		if (name === "search_code") return session.isSubagent;
 		if (name === "task") {
 			return !session.isSubagent;
 		}
@@ -183,7 +183,6 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 	);
 	const tools = results.filter((r): r is AgentTool => r !== null);
 
-	const guidance = guidanceTemplate;
-	const { codeTool, excludedTools } = createCodeTool(tools, { guidance });
-	return [codeTool as AgentTool, ...(excludedTools as AgentTool[])];
+	const { codeTool } = createCodeTool(tools);
+	return [codeTool];
 }

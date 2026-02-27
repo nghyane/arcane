@@ -18,19 +18,12 @@ const codeSchema = Type.Object({
 	code: Type.String({ description: "JavaScript async arrow function to execute using the tool API" }),
 });
 
-/** Tools excluded from code wrapping (interactive, orchestration, or lifecycle tools) */
-const EXCLUDED_TOOLS = new Set<string>();
-
 /** Max characters to include from code execution result in the tool response */
 const MAX_RESULT_LENGTH = 4000;
 
 export interface CodeToolOptions {
-	/** Additional tool names to exclude from code wrapping */
-	excludeTools?: string[];
 	/** Execution timeout in milliseconds (default: 300_000) */
 	timeoutMs?: number;
-	/** Tool guidance text inserted into the prompt */
-	guidance?: string;
 }
 
 /** Details attached to tool_execution_update for sub-tool rendering */
@@ -50,42 +43,21 @@ export interface CodeAgentTool extends AgentTool {
 /**
  * Create a single code tool from a set of existing AgentTools.
  *
- * The returned tool wraps all eligible tools into a TypeScript API.
+ * The returned tool wraps all tools into a TypeScript API.
  * The LLM writes code against this API instead of making individual
  * tool calls, reducing round-trips and context usage.
- *
- * Tools in EXCLUDED_TOOLS (or options.excludeTools) are passed through
- * unchanged and should be registered alongside the code tool.
- *
- * @returns An object with the code tool and any excluded tools that need
- *          to be registered separately.
  */
-export function createCodeTool(
-	tools: AgentTool[],
-	options: CodeToolOptions = {},
-): { codeTool: CodeAgentTool; excludedTools: AgentTool[] } {
-	const { excludeTools = [], timeoutMs = 300_000, guidance = "" } = options;
-	const excludeSet = new Set([...EXCLUDED_TOOLS, ...excludeTools]);
+export function createCodeTool(tools: AgentTool[], options: CodeToolOptions = {}): { codeTool: CodeAgentTool } {
+	const { timeoutMs = 300_000 } = options;
 
 	// Persistent state shared across all code executions in this session
 	const persistentState = new Map<string, unknown>();
 
-	const wrappedTools: AgentTool[] = [];
-	const excludedTools: AgentTool[] = [];
-
-	for (const tool of tools) {
-		if (excludeSet.has(tool.name)) {
-			excludedTools.push(tool);
-		} else {
-			wrappedTools.push(tool);
-		}
-	}
-
-	// Generate TypeScript declarations for the wrapped tools
-	const { declarations, nameMap } = generateTypes(wrappedTools);
+	// Generate TypeScript declarations for the tools
+	const { declarations, nameMap } = generateTypes(tools);
 
 	// Build the tool description with embedded TypeScript API
-	const description = codeToolDescription.replace("{{types}}", declarations).replace("{{guidance}}", guidance);
+	const description = codeToolDescription.replace("{{types}}", declarations);
 
 	// Build the dispatch functions map (sanitized name → executor).
 	// Each fn accepts (toolCallId, args) so the event bridge's ID
@@ -94,7 +66,7 @@ export function createCodeTool(
 		const fullResults = new Map<string, AgentToolResult>();
 		const fns: Record<string, DispatchFn> = {};
 
-		for (const tool of wrappedTools) {
+		for (const tool of tools) {
 			const safeName = sanitizeToolName(tool.name);
 			fns[safeName] = async (toolCallId: string, args: Record<string, unknown>) => {
 				// Forward onUpdate directly to the agent event stream — no intermediate CodeToolEvent
@@ -129,7 +101,7 @@ export function createCodeTool(
 		description,
 		parameters: codeSchema,
 		concurrency: "exclusive",
-		wrappedToolMap: new Map(wrappedTools.map(t => [t.name, t])),
+		wrappedToolMap: new Map(tools.map(t => [t.name, t])),
 
 		async execute(
 			this: AgentTool,
@@ -144,7 +116,7 @@ export function createCodeTool(
 
 			// Build tool lookup map for sub-tool event emission
 			const toolByName = new Map<string, AgentTool>();
-			for (const tool of wrappedTools) {
+			for (const tool of tools) {
 				toolByName.set(tool.name, tool);
 			}
 
@@ -244,5 +216,5 @@ export function createCodeTool(
 		},
 	};
 
-	return { codeTool, excludedTools };
+	return { codeTool };
 }

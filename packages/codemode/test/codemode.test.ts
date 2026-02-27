@@ -304,21 +304,6 @@ describe("createCodeTool", () => {
 		expect(codeTool.parameters).toBeDefined();
 	});
 
-	test("EXCLUDED_TOOLS are filtered out", () => {
-		const excludedTool = {
-			name: "ask",
-			label: "Ask",
-			description: "Ask the user",
-			parameters: Type.Object({}),
-			concurrency: "shared" as const,
-			execute: async () => ({ content: [] }),
-		};
-		const { codeTool, excludedTools } = createCodeTool([mockTool, excludedTool]);
-		expect(excludedTools).toHaveLength(1);
-		expect(excludedTools[0].name).toBe("ask");
-		expect(codeTool.description).not.toContain("\nask(");
-	});
-
 	test("execute runs code and returns text result", async () => {
 		const { codeTool } = createCodeTool([mockTool]);
 		const result = await codeTool.execute.call(
