@@ -401,7 +401,7 @@ The wrapper step is not cosmetic: it enforces uniform meta-notice behavior and n
 
 ### Code execution: native tool interface
 
-Built-in tools are **always** wrapped into a single `code` AgentTool via `createCodeTool()` from `@nghyane/arcane-codemode`. The LLM writes JavaScript async arrow functions that call `codemode.<tool>(args)` instead of making individual tool calls. This is not a "mode" — it is the native tool interface.
+Built-in tools are **always** wrapped into a single `code` AgentTool via `createCodeTool()` from `./tools/code-tool.ts`. The LLM writes JavaScript async arrow functions that call `codemode.<tool>(args)` instead of making individual tool calls. This is not a "mode" — it is the native tool interface.
 
 Benefits:
 

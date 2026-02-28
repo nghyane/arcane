@@ -144,7 +144,6 @@ When to serialize:
 - **Plan → Code**: planning must finish before dependent edits.
 - **Write conflicts**: edits touching the **same file(s)** or a **shared contract** (types, DB schema, public API) must be ordered.
 - **Chained transforms**: step B requires artifacts from step A.
-
 **Good** — disjoint paths, use `Promise.all()`:
 ```javascript
 await Promise.all([
@@ -159,12 +158,10 @@ await Promise.all([
 `codemode.task()` (refactor) touching `api/types.ts` in parallel with `codemode.task()` (handler-fix) also touching `api/types.ts`.
 
 ### Codemode Idioms
-
 **`memo()` — cache across turns** (avoid re-reading files or re-running searches):
 ```javascript
 const pkg = await memo("pkg", () => codemode.read({ path: "package.json" }));
 ```
-
 **`Promise.allSettled()` — tolerate partial failure** (e.g., optional diagnostics, multi-file grep where some paths may not exist):
 ```javascript
 const results = await Promise.allSettled(
@@ -172,7 +169,6 @@ const results = await Promise.allSettled(
 );
 const errors = results.filter(r => r.status === "fulfilled" && r.value);
 ```
-
 **Conditional chain — branch on tool results**:
 ```javascript
 const result = await codemode.bash({ command: "bun check" });
@@ -189,7 +185,6 @@ Use `codemode.todo_write()` to show the user what you are doing.
 - Start with high-level steps. Expand as you discover more.
 - Mark completed as you go — do not batch. Never create todos and stop.
 - Skip entirely for single-step or trivial requests.
-
 **Example** — User: "Run the build and fix any type errors"
 
 ```javascript

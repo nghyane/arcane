@@ -14,7 +14,6 @@ Post-edit: check `codemode.lsp({ action: "diagnostics" })` immediately. Fix erro
 Multi-file renames: prefer `codemode.lsp({ action: "rename" })` over manual edits.
 Make the smallest reasonable diff per file. Do not rewrite whole files to change a few lines.
 Do NOT call edit on the same file in parallel.
-
 **Multi-file edit pipeline**:
 ```javascript
 // Read all targets in parallel

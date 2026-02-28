@@ -2,8 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { Settings } from "@nghyane/arcane/config/settings";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 import { PythonTool } from "@nghyane/arcane/tools/python";
-import type { CodeAgentTool } from "@nghyane/arcane-codemode";
 import { TempDir } from "@nghyane/arcane-utils";
+import type { CodeAgentTool } from "../../src/tools/code-tool";
 
 let previousSkipCheck: string | undefined;
 let tempDir: TempDir;

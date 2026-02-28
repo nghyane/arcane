@@ -7,8 +7,8 @@ import * as pythonExecutor from "@nghyane/arcane/ipy/executor";
 import * as pythonKernel from "@nghyane/arcane/ipy/kernel";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 import { PythonTool } from "@nghyane/arcane/tools/python";
-import type { CodeAgentTool } from "@nghyane/arcane-codemode";
 import { Snowflake } from "@nghyane/arcane-utils";
+import type { CodeAgentTool } from "../src/tools/code-tool";
 
 function createSession(
 	cwd: string,

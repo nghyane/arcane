@@ -12,7 +12,6 @@ Goal: get enough context fast. Parallelize discovery and stop as soon as you can
 - **Early stop** — act as soon as you can name exact files/symbols to change, or can repro a failing test.
 - Trace only symbols you'll modify or whose contracts you rely on; avoid transitive expansion unless necessary.
 - Use `memo()` to cache discoveries across turns — avoid re-reading files you already have.
-
 **Fan-out search pattern**:
 ```javascript
 // Broad parallel search → conditional deep-dive

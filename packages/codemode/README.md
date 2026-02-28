@@ -1,41 +1,28 @@
 # @nghyane/arcane-codemode
 
-Code Mode replaces tool-calling with LLM-generated JavaScript. The LLM writes one async function that reads, transforms, and edits across multiple files — work that normally takes 3-4 LLM turns finishes in one.
+Pure library for executing LLM-generated JavaScript. Provides type generation from tool schemas, code normalization, and sandboxed execution.
 
-## How it works
+## Exports
 
-1. Tool schemas are converted to TypeScript declarations (`codemode.*` API)
-2. The LLM writes an async arrow function that orchestrates tool calls
-3. Each `codemode.*` call dispatches to the real tool and streams results to the TUI
-
-## Features
-
-- **More done per turn**: Conditional logic, data transforms, and parallel calls — all in one function
-- **Parallel by default**: `Promise.all()` for independent operations
-- **Typed API**: Auto-generated TypeScript declarations from tool schemas
-- **Transparent**: Sub-tool calls render individually in the TUI — not a black box
-- **Persistent state**: `state` Map and `memo()` cache survive across turns
-- **Guarded execution**: `AsyncFunction` with shadowed globals, timeout, and abort (not a security sandbox)
+| Module | Role |
+|---|---|
+| `executor.ts` | Runs code via `AsyncFunction` with timeout/abort |
+| `type-generator.ts` | Generates TypeScript declarations from tool schemas |
+| `schema-to-ts.ts` | JSON Schema to TypeScript type strings |
+| `normalize.ts` | Normalizes LLM output into valid async arrow functions |
 
 ## Usage
 
 ```typescript
-import { createCodeTool } from "@nghyane/arcane-codemode";
+import { execute, generateTypes, normalizeCode } from "@nghyane/arcane-codemode";
 
-const { codeTool, excludedTools } = createCodeTool(tools);
-// Register codeTool + excludedTools with your agent
+// Generate typed API from tool schemas
+const { declarations } = generateTypes(tools);
+
+// Normalize and execute LLM-generated code
+const code = normalizeCode(rawCode);
+const result = await execute(code, dispatchMap, { timeoutMs: 300_000 });
 ```
-
-## Architecture
-
-| Module | Role |
-|---|---|
-| `engine.ts` | Entry point — `createCodeTool()` |
-| `type-generator.ts` | Generates TypeScript declarations from tool schemas |
-| `schema-to-ts.ts` | JSON Schema to TypeScript type strings |
-| `normalize.ts` | Normalizes LLM output into valid async arrow functions |
-| `executor.ts` | Runs code via `AsyncFunction` with timeout/abort |
-| `event-bridge.ts` | Wraps tool calls with start/done/error events for TUI |
 
 ## License
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { type SettingPath, Settings } from "@nghyane/arcane/config/settings";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
-import type { CodeAgentTool } from "@nghyane/arcane-codemode";
+import type { CodeAgentTool } from "../../src/tools/code-tool";
 
 Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 

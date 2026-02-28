@@ -3,7 +3,7 @@ import { type SettingPath, Settings } from "@nghyane/arcane/config/settings";
 import * as pythonKernelModule from "@nghyane/arcane/ipy/kernel";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 
-import type { CodeAgentTool } from "@nghyane/arcane-codemode";
+import type { CodeAgentTool } from "../../src/tools/code-tool";
 
 function getWrappedNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
 	const codeTool = tools.find(t => t.name === "code") as CodeAgentTool | undefined;

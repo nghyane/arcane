@@ -1,5 +1,4 @@
 import type { AgentTool } from "@nghyane/arcane-agent";
-import { createCodeTool } from "@nghyane/arcane-codemode";
 import { $env, logger } from "@nghyane/arcane-utils";
 import { getPreludeDocs, warmPythonEnvironment } from "../ipy/executor";
 import { checkPythonKernelAvailability } from "../ipy/kernel";
@@ -11,6 +10,7 @@ import { SearchTool } from "../web/search";
 import { AskTool } from "./ask";
 import { BashTool } from "./bash";
 import { BrowserTool } from "./browser";
+import { createCodeTool } from "./code-tool";
 import { exploreConfig } from "./explore";
 import { FetchTool } from "./fetch";
 import { FindTool } from "./find";
@@ -182,6 +182,12 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		}),
 	);
 	const tools = results.filter((r): r is AgentTool => r !== null);
+
+	// Subagents use direct tool calls — no codemode wrapper.
+	// This avoids token waste from raw output in codemode results,
+	// double-codemode overhead, and XML leak from LLM confusing
+	// codemode JS syntax with native tool calling format.
+	if (session.isSubagent) return tools;
 
 	const { codeTool } = createCodeTool(tools);
 	return [codeTool];

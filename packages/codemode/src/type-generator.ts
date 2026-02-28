@@ -1,12 +1,17 @@
 /**
- * Generate TypeScript declarations from an AgentTool registry.
+ * Generate TypeScript declarations from a tool registry.
  *
  * Produces a `declare const codemode: { ... }` block that the LLM
  * sees in the code tool's description, enabling typed orchestration.
  */
 
-import type { AgentTool } from "@nghyane/arcane-agent";
 import { jsonSchemaToTypeScript } from "./schema-to-ts";
+
+/** Minimal tool shape needed for type generation. */
+export interface ToolDefinition {
+	name: string;
+	parameters: Record<string, unknown>;
+}
 
 const JS_RESERVED = new Set([
 	"break",
@@ -90,26 +95,24 @@ function toPascalCase(name: string): string {
 interface GeneratedTypes {
 	/** Full TypeScript declaration block */
 	declarations: string;
-	/** Map from sanitized name → original tool name */
-	nameMap: Map<string, string>;
 }
 
 /**
  * Generate TypeScript type declarations for a set of tools.
  */
-export function generateTypes(tools: AgentTool[]): GeneratedTypes {
-	const nameMap = new Map<string, string>();
+export function generateTypes(tools: ToolDefinition[]): GeneratedTypes {
+	const seen = new Map<string, string>();
 	const interfaceBlocks: string[] = [];
 	const methodLines: string[] = [];
 
 	for (const tool of tools) {
 		const safeName = sanitizeToolName(tool.name);
-		const existing = nameMap.get(safeName);
+		const existing = seen.get(safeName);
 		if (existing && existing !== tool.name) {
 			throw new Error(`Tool name collision: "${tool.name}" and "${existing}" both sanitize to "${safeName}"`);
 		}
 		const pascalName = toPascalCase(safeName);
-		nameMap.set(safeName, tool.name);
+		seen.set(safeName, tool.name);
 
 		// Generate input type from tool parameters schema
 		const inputTypeName = `${pascalName}Input`;
@@ -145,5 +148,5 @@ export function generateTypes(tools: AgentTool[]): GeneratedTypes {
 		"declare const memo: <T = unknown>(key: string, fn: () => Promise<T>) => Promise<T>;",
 	].join("\n");
 
-	return { declarations, nameMap };
+	return { declarations };
 }
