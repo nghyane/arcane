@@ -17,7 +17,7 @@ type ReadEntry = {
 	text: Text;
 };
 
-type StepState = "active" | "done" | "error";
+type StepState = "active" | "done";
 
 type StepGroup = {
 	stepId: string;
@@ -27,10 +27,8 @@ type StepGroup = {
 	progress?: string;
 	subTools: Component[];
 	entries: Map<string, { toolCallId: string; component: ToolExecutionComponent }>;
-	readEntries: Map<string, ReadEntry>;
 	headerText: Text;
 	progressText: Text;
-	startTime: number;
 };
 
 export class CodeGroupComponent implements Component, ToolExecutionHandle {
@@ -38,7 +36,6 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 	#logsText: Text;
 	#orderedSubTools: Component[] = [];
 	#entries = new Map<string, { toolCallId: string; component: ToolExecutionComponent }>();
-	#readEntries = new Map<string, ReadEntry>();
 	#intent = "";
 	#expanded = false;
 	#logs: string[] = [];
@@ -186,7 +183,7 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 
 	// --- Read items (flat, no sub-tree) ---
 
-	#addReadItem(toolCallId: string, args: any, step?: StepGroup): ToolExecutionHandle {
+	#addReadItem(_toolCallId: string, args: any, step?: StepGroup): ToolExecutionHandle {
 		const readArgs = args as { path?: string; file_path?: string; offset?: number; limit?: number };
 		const text = new Text("", 0, 0);
 		const entry: ReadEntry = {
@@ -196,9 +193,7 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 			status: "pending",
 			text,
 		};
-		const targetReadEntries = step ? step.readEntries : this.#readEntries;
 		const targetSubTools = step ? step.subTools : this.#orderedSubTools;
-		targetReadEntries.set(toolCallId, entry);
 		targetSubTools.push(text);
 		this.#updateReadDisplay(entry);
 
@@ -246,10 +241,8 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 			state: "active",
 			subTools: [],
 			entries: new Map(),
-			readEntries: new Map(),
 			headerText: new Text("", 0, 0),
 			progressText: new Text("", 0, 0),
-			startTime: performance.now(),
 		};
 		this.#steps.set(stepId, step);
 		this.#orderedSteps.push(step);
@@ -418,9 +411,6 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 				if (parts.length > 0) suffix = ` ${theme.fg("dim", `(${parts.join(", ")})`)}`;
 				break;
 			}
-			case "error":
-				icon = theme.fg("error", theme.status.error);
-				break;
 		}
 
 		step.headerText.setText(`${icon} ${theme.fg("muted", step.intent)}${suffix}`);

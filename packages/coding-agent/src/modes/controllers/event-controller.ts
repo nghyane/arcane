@@ -1,4 +1,4 @@
-import { INTENT_FIELD, toolDetails } from "@nghyane/arcane-agent";
+import { toolDetails } from "@nghyane/arcane-agent";
 import { Loader, TERMINAL, Text } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
@@ -167,12 +167,7 @@ export class EventController {
 						if (content.type !== "toolCall") continue;
 						// Code Mode: create group component early during streaming for intent display
 						if (content.name === "code") {
-							const group = this.#ensureCodeGroup(content.id);
-							const args = content.arguments;
-							if (args && typeof args === "object" && INTENT_FIELD in args) {
-								const intent = (args[INTENT_FIELD] as string | undefined)?.trim();
-								if (intent) group.setIntent(intent);
-							}
+							this.#ensureCodeGroup(content.id);
 							continue;
 						}
 
@@ -212,9 +207,6 @@ export class EventController {
 					for (const content of this.ctx.streamingMessage.content) {
 						if (content.type !== "toolCall") continue;
 						if (this.#codeGroups.has(content.id)) continue;
-						const args = content.arguments;
-						if (!args || typeof args !== "object" || !(INTENT_FIELD in args)) continue;
-						this.#updateWorkingMessageFromIntent(args[INTENT_FIELD] as string | undefined);
 					}
 
 					this.ctx.ui.requestRender();
@@ -261,9 +253,7 @@ export class EventController {
 				if (!this.#codeGroups.has(event.toolCallId)) this.#updateWorkingMessageFromIntent(event.intent);
 				if (event.toolName === "code") {
 					const group = this.#ensureCodeGroup(event.toolCallId);
-					const intent = (event.intent ?? (event.args as Record<string, unknown>)?.agent__intent) as
-						| string
-						| undefined;
+					const intent = event.intent as string | undefined;
 					if (typeof intent === "string" && intent.trim()) {
 						group.setIntent(intent.trim());
 					}

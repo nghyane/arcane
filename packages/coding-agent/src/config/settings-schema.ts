@@ -529,15 +529,6 @@ export const SETTINGS_SCHEMA = {
 			description: "Launch browser in headless mode (disable to show browser UI)",
 		},
 	},
-	"tools.intentTracing": {
-		type: "boolean",
-		default: true,
-		ui: {
-			tab: "tools",
-			label: "Intent tracing",
-			description: "Ask the agent to describe the intent of each tool call before executing it",
-		},
-	},
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// Task tool settings

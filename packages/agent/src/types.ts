@@ -122,7 +122,6 @@ export interface AgentLoopConfig extends SimpleStreamOptions {
 	 * When enabled, the harness injects a `_intent: string` field into tool schemas sent to the model,
 	 * then strips `_intent` from arguments before executing tools.
 	 */
-	intentTracing?: boolean;
 }
 
 export interface ToolCallContext {
@@ -361,7 +360,7 @@ export interface ToolArgsMap {
 	browser: { action: string; url?: string; selector?: string; text?: string; value?: string };
 	notebook: { action: string; code?: string; kernel?: string };
 	todo_write: { todos: Array<{ id?: string; content: string; status: string }> };
-	code: { code: string /** @deprecated Use step() inside code instead */; agent__intent?: string };
+	code: { code: string };
 	task: { id: string; description: string; assignment: string; context?: string; complexity?: string };
 	search_code: { query: string; regexp?: boolean; language?: string; repo?: string; limit?: number };
 	undo_edit: { path: string };
