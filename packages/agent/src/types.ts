@@ -307,6 +307,7 @@ export type AgentEvent =
 			tool?: AgentTool;
 			/** Set when this event is a sub-tool call inside a meta-tool (e.g. Code Mode) */
 			parentToolCallId?: string;
+			stepId?: string;
 	  }
 	| {
 			type: "tool_execution_update";
@@ -315,6 +316,7 @@ export type AgentEvent =
 			args: Record<string, unknown>;
 			partialResult: AgentToolResult;
 			parentToolCallId?: string;
+			stepId?: string;
 	  }
 	| {
 			type: "tool_execution_end";
@@ -323,7 +325,13 @@ export type AgentEvent =
 			result: AgentToolResult;
 			isError?: boolean;
 			parentToolCallId?: string;
-	  };
+			stepId?: string;
+	  }
+	// Step/progress lifecycle (code tool)
+	| { type: "step_start"; stepId: string; intent: string; parentToolCallId: string }
+	| { type: "step_progress"; stepId: string; message: string }
+	| { type: "step_end"; stepId: string; durationMs: number }
+	| { type: "execution_abort"; toolCallId: string; message: string };
 
 /**
  * Known tool argument shapes, keyed by tool name.
@@ -353,7 +361,7 @@ export interface ToolArgsMap {
 	browser: { action: string; url?: string; selector?: string; text?: string; value?: string };
 	notebook: { action: string; code?: string; kernel?: string };
 	todo_write: { todos: Array<{ id?: string; content: string; status: string }> };
-	code: { code: string; agent__intent?: string };
+	code: { code: string /** @deprecated Use step() inside code instead */; agent__intent?: string };
 	task: { id: string; description: string; assignment: string; context?: string; complexity?: string };
 	search_code: { query: string; regexp?: boolean; language?: string; repo?: string; limit?: number };
 	undo_edit: { path: string };

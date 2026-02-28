@@ -32,6 +32,16 @@ export interface ExecuteResult {
 	logs: string[];
 	/** Structured error if execution failed */
 	error?: ExecutionError;
+	/** Message from abort() if execution was intentionally stopped */
+	abortMessage?: string;
+}
+
+/** Thrown by `abort()` to cleanly exit execution without error framing. */
+export class AbortExecution extends Error {
+	constructor(readonly userMessage: string) {
+		super(`AbortExecution: ${userMessage}`);
+		this.name = "AbortExecution";
+	}
 }
 
 export interface ExecutorOptions {
@@ -41,6 +51,8 @@ export interface ExecutorOptions {
 	signal?: AbortSignal;
 	/** Persistent state object shared across executions */
 	state?: Map<string, unknown>;
+	/** Additional globals to inject into the sandbox */
+	injectedGlobals?: Record<string, unknown>;
 }
 
 type ToolFn = (args: Record<string, unknown>) => Promise<unknown>;
@@ -62,7 +74,7 @@ export async function execute(
 	fns: Record<string, ToolFn>,
 	options: ExecutorOptions = {},
 ): Promise<ExecuteResult> {
-	const { timeoutMs = 300_000, signal } = options;
+	const { timeoutMs = 300_000, signal, injectedGlobals } = options;
 	const logs: string[] = [];
 
 	// Build the codemode proxy — any property access returns an async dispatch function.
@@ -134,8 +146,20 @@ export async function execute(
 	try {
 		// Parameters: injected globals first, then shadowed globals (set to undefined).
 		// Keep params/args arrays in sync to avoid positional mismatches.
-		const params = ["codemode", "console", "state", "memo", "process", "require", "Bun", "globalThis", "global"];
-		const args = [codemode, sandboxConsole, persistentState, memo];
+		const injectedNames = Object.keys(injectedGlobals ?? {});
+		const params = [
+			"codemode",
+			"console",
+			"state",
+			"memo",
+			...injectedNames,
+			"process",
+			"require",
+			"Bun",
+			"globalThis",
+			"global",
+		];
+		const args = [codemode, sandboxConsole, persistentState, memo, ...Object.values(injectedGlobals ?? {})];
 
 		const fn = new AsyncFunction(...params, `const __fn = ${code};\nreturn await __fn();`);
 		resultPromise = fn(...args);
@@ -158,6 +182,11 @@ export async function execute(
 
 		return { result, logs };
 	} catch (err) {
+		// AbortExecution — clean intentional exit, not an error
+		if (err instanceof AbortExecution) {
+			resultPromise?.catch(() => {});
+			return { result: undefined, logs, abortMessage: err.userMessage };
+		}
 		const error = formatExecutionError(err, code);
 		logger.debug("Code Mode execution error", { error });
 		// Suppress unhandled rejection from the still-running resultPromise.

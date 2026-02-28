@@ -133,4 +133,171 @@ describe("createCodeTool", () => {
 		expect(timestamps.length).toBe(2);
 		expect(Math.abs(timestamps[0] - timestamps[1])).toBeLessThan(40);
 	});
+
+	it("step() groups sub-tool events under stepId", async () => {
+		const events: Record<string, unknown>[] = [];
+		const echo = makeTool("echo", async () => simpleResult("ok"));
+		const { codeTool } = createCodeTool([echo]);
+		const ctx = { emit: (e: Record<string, unknown>) => events.push(e) };
+
+		await codeTool.execute(
+			"parent_1",
+			{
+				code: `async () => {
+				await step("Reading files", async () => {
+					await codemode.echo({ value: "a" });
+				});
+			}`,
+			},
+			undefined,
+			undefined,
+			ctx as never,
+		);
+
+		const stepStarts = events.filter(e => e.type === "step_start");
+		const stepEnds = events.filter(e => e.type === "step_end");
+		expect(stepStarts.length).toBe(1);
+		expect(stepStarts[0].intent).toBe("Reading files");
+		expect(stepEnds.length).toBe(1);
+		expect(typeof stepEnds[0].durationMs).toBe("number");
+		const toolStarts = events.filter(e => e.type === "tool_execution_start");
+		expect(toolStarts.length).toBe(1);
+		expect(toolStarts[0].stepId).toBe(stepStarts[0].stepId);
+	});
+
+	it("nested step() correctly restores parent", async () => {
+		const events: Record<string, unknown>[] = [];
+		const echo = makeTool("echo", async () => simpleResult("ok"));
+		const { codeTool } = createCodeTool([echo]);
+		const ctx = { emit: (e: Record<string, unknown>) => events.push(e) };
+
+		await codeTool.execute(
+			"parent_1",
+			{
+				code: `async () => {
+				await step("Outer", async () => {
+					await codemode.echo({ value: "before" });
+					await step("Inner", async () => {
+						await codemode.echo({ value: "inside" });
+					});
+					await codemode.echo({ value: "after" });
+				});
+			}`,
+			},
+			undefined,
+			undefined,
+			ctx as never,
+		);
+
+		const stepStarts = events.filter(e => e.type === "step_start") as { stepId: string; intent: string }[];
+		const outerStepId = stepStarts.find(s => s.intent === "Outer")!.stepId;
+		const innerStepId = stepStarts.find(s => s.intent === "Inner")!.stepId;
+		const toolStarts = events.filter(e => e.type === "tool_execution_start") as { stepId?: string }[];
+		expect(toolStarts[0].stepId).toBe(outerStepId);
+		expect(toolStarts[1].stepId).toBe(innerStepId);
+		expect(toolStarts[2].stepId).toBe(outerStepId);
+	});
+
+	it("parallel step() — both active simultaneously", async () => {
+		const events: Record<string, unknown>[] = [];
+		const echo = makeTool("echo", async () => simpleResult("ok"));
+		const { codeTool } = createCodeTool([echo]);
+		const ctx = { emit: (e: Record<string, unknown>) => events.push(e) };
+
+		await codeTool.execute(
+			"parent_1",
+			{
+				code: `async () => {
+				await Promise.all([
+					step("A", async () => await codemode.echo({ value: "a" })),
+					step("B", async () => await codemode.echo({ value: "b" })),
+				]);
+			}`,
+			},
+			undefined,
+			undefined,
+			ctx as never,
+		);
+
+		const stepStarts = events.filter(e => e.type === "step_start") as { intent: string }[];
+		expect(stepStarts.length).toBe(2);
+		expect(stepStarts.map(s => s.intent).sort()).toEqual(["A", "B"]);
+	});
+
+	it("progress() emits event with current stepId", async () => {
+		const events: Record<string, unknown>[] = [];
+		const echo = makeTool("echo", async () => simpleResult("ok"));
+		const { codeTool } = createCodeTool([echo]);
+		const ctx = { emit: (e: Record<string, unknown>) => events.push(e) };
+
+		await codeTool.execute(
+			"parent_1",
+			{
+				code: `async () => {
+				await step("Work", async () => {
+					progress("doing stuff");
+					await codemode.echo({ value: "a" });
+				});
+			}`,
+			},
+			undefined,
+			undefined,
+			ctx as never,
+		);
+
+		const progressEvents = events.filter(e => e.type === "step_progress");
+		expect(progressEvents.length).toBe(1);
+		expect(progressEvents[0].message).toBe("doing stuff");
+		const stepStart = events.find(e => e.type === "step_start") as { stepId: string };
+		expect(progressEvents[0].stepId).toBe(stepStart.stepId);
+	});
+
+	it("abort() returns clean result without error classification", async () => {
+		const echo = makeTool("echo", async () => simpleResult("ok"));
+		const { codeTool } = createCodeTool([echo]);
+
+		const result = await codeTool.execute("call_1", {
+			code: 'async () => { abort("nothing to do"); }',
+		});
+		const text = getText(result);
+		expect(text).toContain("Aborted");
+		expect(text).toContain("nothing to do");
+		expect(text).not.toContain("Error");
+	});
+
+	it("abort() mid-step ends step cleanly", async () => {
+		const events: Record<string, unknown>[] = [];
+		const echo = makeTool("echo", async () => simpleResult("ok"));
+		const { codeTool } = createCodeTool([echo]);
+		const ctx = { emit: (e: Record<string, unknown>) => events.push(e) };
+
+		const result = await codeTool.execute(
+			"parent_1",
+			{
+				code: `async () => {
+				await step("Work", async () => {
+					await codemode.echo({ value: "a" });
+					abort("done early");
+				});
+			}`,
+			},
+			undefined,
+			undefined,
+			ctx as never,
+		);
+
+		expect(getText(result)).toContain("Aborted");
+		const stepEnds = events.filter(e => e.type === "step_end");
+		expect(stepEnds.length).toBe(1);
+	});
+
+	it("code without step/progress/abort works unchanged", async () => {
+		const echo = makeTool("echo", async () => simpleResult("ok"));
+		const { codeTool } = createCodeTool([echo]);
+
+		const result = await codeTool.execute("call_1", {
+			code: 'async () => { return await codemode.echo({ value: "hi" }); }',
+		});
+		expect(getText(result)).toContain("ok");
+	});
 });

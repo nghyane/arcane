@@ -146,6 +146,15 @@ export function generateTypes(tools: ToolDefinition[]): GeneratedTypes {
 		"",
 		"/** Cache-on-first-call helper. Returns cached value for `key` if it exists, otherwise calls `fn`, caches the result, and returns it. */",
 		"declare const memo: <T = unknown>(key: string, fn: () => Promise<T>) => Promise<T>;",
+		"",
+		"/** Group sub-tool calls under a named intent. TUI renders as collapsible sections. Supports nesting and parallel (Promise.all([step(...), step(...)])). */",
+		"declare const step: <T = unknown>(intent: string, fn: () => Promise<T>) => Promise<T>;",
+		"",
+		"/** Emit a transient status message under the current step. Replaces previous progress message. Only works inside a step() call. */",
+		"declare const progress: (message: string) => void;",
+		"",
+		"/** Clean intentional exit. Returns message to LLM without error framing. Use instead of throw when stopping is expected. */",
+		"declare const abort: (message: string) => never;",
 	].join("\n");
 
 	return { declarations };

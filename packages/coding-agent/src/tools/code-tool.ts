@@ -4,9 +4,16 @@
  * Connects codemode's pure executor with the agent's event system.
  */
 
+import { AsyncLocalStorage } from "node:async_hooks";
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
-import type { ExecutionError } from "@nghyane/arcane-codemode";
-import { execute, generateTypes, normalizeCode, sanitizeToolName } from "@nghyane/arcane-codemode";
+import {
+	AbortExecution,
+	type ExecutionError,
+	execute,
+	generateTypes,
+	normalizeCode,
+	sanitizeToolName,
+} from "@nghyane/arcane-codemode";
 import { Type } from "@sinclair/typebox";
 import codeToolDescription from "./code-tool-prompt.md" with { type: "text" };
 
@@ -27,6 +34,7 @@ interface SubToolRecord {
 	durationMs?: number;
 	resultText?: string;
 	error?: string;
+	stepId?: string;
 }
 
 export function createCodeTool(tools: AgentTool[], options: CodeToolOptions = {}): { codeTool: CodeAgentTool } {
@@ -56,14 +64,51 @@ export function createCodeTool(tools: AgentTool[], options: CodeToolOptions = {}
 		): Promise<AgentToolResult> {
 			const code = (params as { code: string }).code;
 			const records: SubToolRecord[] = [];
+			const stepContext = new AsyncLocalStorage<string>();
 
 			const fns: Record<string, (args: Record<string, unknown>) => Promise<unknown>> = {};
 			for (const tool of tools) {
 				fns[sanitizeToolName(tool.name)] = args =>
-					dispatchToolCall(tool, args, records, parentToolCallId, signal, ctx);
+					dispatchToolCall(tool, args, records, parentToolCallId, signal, ctx, () => stepContext.getStore());
 			}
 
-			const result = await execute(normalizeCode(code), fns, { timeoutMs, signal, state: persistentState });
+			// step(intent, fn) — groups sub-tool calls under a named intent
+			const step = async (intent: string, fn: () => Promise<unknown>): Promise<unknown> => {
+				const stepId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+				const start = performance.now();
+				ctx?.emit?.({ type: "step_start", stepId, intent, parentToolCallId });
+				try {
+					return await stepContext.run(stepId, fn);
+				} finally {
+					ctx?.emit?.({ type: "step_end", stepId, durationMs: performance.now() - start });
+				}
+			};
+
+			// progress(message) — transient status update
+			const progress = (message: string): void => {
+				const stepId = stepContext.getStore();
+				if (stepId) {
+					ctx?.emit?.({ type: "step_progress", stepId, message });
+				}
+			};
+
+			// abort(message) — clean intentional exit
+			const abort = (message: string): never => {
+				throw new AbortExecution(message);
+			};
+
+			const result = await execute(normalizeCode(code), fns, {
+				timeoutMs,
+				signal,
+				state: persistentState,
+				injectedGlobals: { step, progress, abort },
+			});
+
+			if (result.abortMessage) {
+				ctx?.emit?.({ type: "execution_abort", toolCallId: parentToolCallId, message: result.abortMessage });
+				return { content: [{ type: "text", text: `Aborted: ${result.abortMessage}` }] };
+			}
+
 			const text = buildResponse(result.result, result.error, result.logs, records);
 			return { content: [{ type: "text", text }] };
 		},
@@ -79,13 +124,22 @@ async function dispatchToolCall(
 	parentToolCallId: string,
 	signal?: AbortSignal,
 	ctx?: AgentToolContext,
+	getStepId?: () => string | undefined,
 ): Promise<unknown> {
 	const toolCallId = `code_${tool.name}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-	const record: SubToolRecord = { toolCallId, toolName: tool.name, status: "running" };
+	const record: SubToolRecord = { toolCallId, toolName: tool.name, status: "running", stepId: getStepId?.() };
 	records.push(record);
 	const start = performance.now();
 
-	ctx?.emit?.({ type: "tool_execution_start", toolCallId, toolName: tool.name, args, tool, parentToolCallId });
+	ctx?.emit?.({
+		type: "tool_execution_start",
+		toolCallId,
+		toolName: tool.name,
+		args,
+		tool,
+		parentToolCallId,
+		stepId: record.stepId,
+	});
 
 	const onUpdate: AgentToolUpdateCallback | undefined = ctx?.emit
 		? partialResult => {
@@ -96,6 +150,7 @@ async function dispatchToolCall(
 					args,
 					partialResult: partialResult as AgentToolResult,
 					parentToolCallId,
+					stepId: record.stepId,
 				});
 			}
 		: undefined;
@@ -109,7 +164,14 @@ async function dispatchToolCall(
 			.map(c => c.text)
 			.join("\n");
 
-		ctx?.emit?.({ type: "tool_execution_end", toolCallId, toolName: tool.name, result, parentToolCallId });
+		ctx?.emit?.({
+			type: "tool_execution_end",
+			toolCallId,
+			toolName: tool.name,
+			result,
+			parentToolCallId,
+			stepId: record.stepId,
+		});
 		return record.resultText || result.details;
 	} catch (err) {
 		record.status = "error";
@@ -123,6 +185,7 @@ async function dispatchToolCall(
 			result: { content: [{ type: "text" as const, text: record.error }] },
 			isError: true,
 			parentToolCallId,
+			stepId: record.stepId,
 		});
 		throw err;
 	}

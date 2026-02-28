@@ -426,6 +426,18 @@ Extension tools ─────────────────────�
 Custom tools (.arcane/tools/) ───────────► standalone tool calls
 ```
 
+#### Step, progress, and abort primitives
+
+The code tool injects three additional globals beyond `codemode`, `state`, and `memo`:
+
+- **`step(intent, fn)`** — Groups sub-tool calls under a named intent. TUI renders as collapsible sections. Supports nesting and parallel (`Promise.all([step(...), step(...)])`). Uses `AsyncLocalStorage` for correct async context tracking.
+- **`progress(message)`** — Emits a transient status line under the current step. Only works inside `step()`.
+- **`abort(message)`** — Clean intentional exit. Returns message to LLM without error framing (distinct from `throw`).
+
+These replace `agent__intent` (deprecated) for intent signaling. Events emitted: `step_start`, `step_progress`, `step_end`, `execution_abort`.
+
+Implementation: `step`/`progress`/`abort` are closures created in `createCodeTool()`, injected via `ExecutorOptions.injectedGlobals`. `AbortExecution` is caught by the executor and returned as a non-error result.
+
 ### Output metadata model and notice formatting
 
 `packages/coding-agent/src/tools/output-meta.ts` defines `OutputMeta` and builder logic used by tools to attach machine-readable output annotations under `details.meta`.

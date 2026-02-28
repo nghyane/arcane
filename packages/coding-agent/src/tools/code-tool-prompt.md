@@ -26,6 +26,14 @@ A `state` Map and `memo` helper persist across all code executions in the conver
 - `state` — raw Map for manual get/set
 - `memo(key, fn)` — cache-on-first-call: returns cached value or calls `fn`, caches, and returns
 
+## Step, Progress, and Abort
+
+Use `step()` to group related operations under a named intent. The TUI renders steps as collapsible sections.
+
+- `step(intent, fn)` — groups sub-tool calls under a named intent. Supports nesting and parallel (`Promise.all([step(...), step(...)])`)
+- `progress(message)` — transient status under current step. Replaces previous. Only works inside `step()`
+- `abort(message)` — clean exit without error framing. Use when stopping is intentional (e.g., nothing to do)
+
 ## Examples
 
 Parallel reads, then parallel edits, then verify:
@@ -42,5 +50,25 @@ async () => {
   ]);
 
   return await codemode.bash({ command: "bun test" });
+}
+```
+
+Using step and progress:
+```javascript
+async () => {
+  await step("Reading source files", async () => {
+    progress("Searching...");
+    const [a, b] = await Promise.all([
+      codemode.read({ path: "src/a.ts" }),
+      codemode.read({ path: "src/b.ts" }),
+    ]);
+  });
+
+  await step("Applying fixes", async () => {
+    for (const file of files) {
+      progress(`Processing ${file}...`);
+      await codemode.edit({ path: file, edits: [...] });
+    }
+  });
 }
 ```
