@@ -17,6 +17,22 @@ type ReadEntry = {
 	text: Text;
 };
 
+type StepState = "active" | "done" | "error";
+
+type StepGroup = {
+	stepId: string;
+	intent: string;
+	state: StepState;
+	durationMs?: number;
+	progress?: string;
+	subTools: Component[];
+	entries: Map<string, { toolCallId: string; component: ToolExecutionComponent }>;
+	readEntries: Map<string, ReadEntry>;
+	headerText: Text;
+	progressText: Text;
+	startTime: number;
+};
+
 export class CodeGroupComponent implements Component, ToolExecutionHandle {
 	#header: Text;
 	#logsText: Text;
@@ -31,6 +47,9 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 	#spinnerFrames: string[];
 	#spinnerFrame = 0;
 	#spinnerInterval?: NodeJS.Timeout;
+	#steps = new Map<string, StepGroup>();
+	#orderedSteps: StepGroup[] = [];
+	#abortMessage?: string;
 
 	constructor(ui: TUI) {
 		this.#ui = ui;
@@ -45,47 +64,42 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 
 	render(width: number): string[] {
 		const lines: string[] = [];
-
-		// Spacer
 		lines.push("");
-
-		// Header
 		lines.push(...this.#header.render(width));
 
-		// Sub-tools with tree connectors
 		const subToolWidth = Math.max(1, width - TREE_PREFIX_WIDTH);
-		for (let i = 0; i < this.#orderedSubTools.length; i++) {
-			const isLast = i === this.#orderedSubTools.length - 1;
-			const tool = this.#orderedSubTools[i];
-			const toolLines = tool.render(subToolWidth);
+		const hasSteps = this.#orderedSteps.length > 0;
 
-			const branch = getTreeBranch(isLast, theme);
-			const cont = getTreeContinuePrefix(isLast, theme);
-			const branchPfx = `   ${theme.fg("dim", branch)} `;
-			const contPfx = `   ${theme.fg("dim", cont)}`;
-
-			let firstContent = true;
-			const contentLines: string[] = [];
-			for (const line of toolLines) {
-				// Skip leading empty lines (from Spacer(1) in ToolExecutionComponent)
-				if (firstContent && !line.trim()) continue;
-
-				if (firstContent) {
-					contentLines.push(`${branchPfx}${line}`);
-					firstContent = false;
-				} else {
-					contentLines.push(line.trim() ? `${contPfx}${line}` : "");
-				}
+		if (hasSteps) {
+			const totalItems = this.#orderedSteps.length + this.#orderedSubTools.length;
+			let idx = 0;
+			for (const step of this.#orderedSteps) {
+				lines.push(...this.#renderStep(step, subToolWidth, idx === totalItems - 1));
+				idx++;
 			}
-			// Only emit if the sub-tool produced visible content
-			if (!firstContent) {
-				lines.push(...contentLines);
+			for (let i = 0; i < this.#orderedSubTools.length; i++) {
+				lines.push(
+					...this.#renderSubToolWithPrefix(this.#orderedSubTools[i], subToolWidth, idx === totalItems - 1),
+				);
+				idx++;
+			}
+		} else {
+			for (let i = 0; i < this.#orderedSubTools.length; i++) {
+				lines.push(
+					...this.#renderSubToolWithPrefix(
+						this.#orderedSubTools[i],
+						subToolWidth,
+						i === this.#orderedSubTools.length - 1,
+					),
+				);
 			}
 		}
 
-		// Logs
-		lines.push(...this.#logsText.render(width));
+		if (this.#abortMessage) {
+			lines.push(`   ${theme.fg("accent", theme.status.info)} ${theme.fg("muted", this.#abortMessage)}`);
+		}
 
+		lines.push(...this.#logsText.render(width));
 		return lines;
 	}
 
@@ -94,6 +108,13 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 		this.#logsText.invalidate?.();
 		for (const tool of this.#orderedSubTools) {
 			tool.invalidate?.();
+		}
+		for (const step of this.#orderedSteps) {
+			step.headerText.invalidate?.();
+			step.progressText.invalidate?.();
+			for (const tool of step.subTools) {
+				tool.invalidate?.();
+			}
 		}
 	}
 
@@ -130,24 +151,42 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 		options: ToolExecutionOptions,
 		ui: TUI,
 		cwd: string,
+		stepId?: string,
 	): ToolExecutionHandle {
+		// Route into step group if stepId is provided
+		const step = stepId ? this.#steps.get(stepId) : undefined;
+
 		if (toolName === "read") {
-			return this.#addReadItem(toolCallId, args);
+			return this.#addReadItem(toolCallId, args, step);
 		}
+
 		const component = new ToolExecutionComponent(toolName, args, options, tool, ui, cwd, { compact: true });
 		component.setExpanded(this.#expanded);
-		this.#entries.set(toolCallId, { toolCallId, component });
-		this.#orderedSubTools.push(component);
+
+		if (step) {
+			step.entries.set(toolCallId, { toolCallId, component });
+			step.subTools.push(component);
+		} else {
+			this.#entries.set(toolCallId, { toolCallId, component });
+			this.#orderedSubTools.push(component);
+		}
+
 		return component;
 	}
 
 	getSubTool(toolCallId: string): ToolExecutionHandle | undefined {
-		return this.#entries.get(toolCallId)?.component;
+		const direct = this.#entries.get(toolCallId)?.component;
+		if (direct) return direct;
+		for (const step of this.#orderedSteps) {
+			const entry = step.entries.get(toolCallId)?.component;
+			if (entry) return entry;
+		}
+		return undefined;
 	}
 
 	// --- Read items (flat, no sub-tree) ---
 
-	#addReadItem(toolCallId: string, args: any): ToolExecutionHandle {
+	#addReadItem(toolCallId: string, args: any, step?: StepGroup): ToolExecutionHandle {
 		const readArgs = args as { path?: string; file_path?: string; offset?: number; limit?: number };
 		const text = new Text("", 0, 0);
 		const entry: ReadEntry = {
@@ -157,8 +196,10 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 			status: "pending",
 			text,
 		};
-		this.#readEntries.set(toolCallId, entry);
-		this.#orderedSubTools.push(text);
+		const targetReadEntries = step ? step.readEntries : this.#readEntries;
+		const targetSubTools = step ? step.subTools : this.#orderedSubTools;
+		targetReadEntries.set(toolCallId, entry);
+		targetSubTools.push(text);
 		this.#updateReadDisplay(entry);
 
 		return {
@@ -196,6 +237,46 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 		entry.text.setText(`${statusIcon} ${theme.fg("toolTitle", theme.bold("Read"))} ${pathDisplay}`.trimEnd());
 	}
 
+	// --- Step management ---
+
+	startStep(stepId: string, intent: string): void {
+		const step: StepGroup = {
+			stepId,
+			intent,
+			state: "active",
+			subTools: [],
+			entries: new Map(),
+			readEntries: new Map(),
+			headerText: new Text("", 0, 0),
+			progressText: new Text("", 0, 0),
+			startTime: performance.now(),
+		};
+		this.#steps.set(stepId, step);
+		this.#orderedSteps.push(step);
+		this.#updateStepHeader(step);
+	}
+
+	endStep(stepId: string, durationMs: number): void {
+		const step = this.#steps.get(stepId);
+		if (!step) return;
+		step.state = "done";
+		step.durationMs = durationMs;
+		step.progress = undefined;
+		step.progressText.setText("");
+		this.#updateStepHeader(step);
+	}
+
+	updateStepProgress(stepId: string, message: string): void {
+		const step = this.#steps.get(stepId);
+		if (!step || step.state !== "active") return;
+		step.progress = message;
+		step.progressText.setText(`      ${theme.fg("dim", message)}`);
+	}
+
+	setAbortMessage(message: string): void {
+		this.#abortMessage = message;
+	}
+
 	// --- Public setters ---
 
 	setIntent(intent: string): void {
@@ -230,6 +311,9 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 			if (this.#done) return;
 			this.#spinnerFrame = (this.#spinnerFrame + 1) % this.#spinnerFrames.length;
 			this.#updateHeader();
+			for (const step of this.#orderedSteps) {
+				if (step.state === "active") this.#updateStepHeader(step);
+			}
 			this.#ui.requestRender();
 		}, 80);
 	}
@@ -239,6 +323,107 @@ export class CodeGroupComponent implements Component, ToolExecutionHandle {
 			clearInterval(this.#spinnerInterval);
 			this.#spinnerInterval = undefined;
 		}
+	}
+
+	#renderSubToolWithPrefix(tool: Component, subToolWidth: number, isLast: boolean): string[] {
+		const toolLines = tool.render(subToolWidth);
+		const branch = getTreeBranch(isLast, theme);
+		const cont = getTreeContinuePrefix(isLast, theme);
+		const branchPfx = `   ${theme.fg("dim", branch)} `;
+		const contPfx = `   ${theme.fg("dim", cont)}`;
+
+		let firstContent = true;
+		const contentLines: string[] = [];
+		for (const line of toolLines) {
+			if (firstContent && !line.trim()) continue;
+			if (firstContent) {
+				contentLines.push(`${branchPfx}${line}`);
+				firstContent = false;
+			} else {
+				contentLines.push(line.trim() ? `${contPfx}${line}` : "");
+			}
+		}
+		return firstContent ? [] : contentLines;
+	}
+
+	#renderStep(step: StepGroup, subToolWidth: number, isLast: boolean): string[] {
+		const lines: string[] = [];
+		const branch = getTreeBranch(isLast, theme);
+		const branchPfx = `   ${theme.fg("dim", branch)} `;
+		const cont = getTreeContinuePrefix(isLast, theme);
+		const contPfx = `   ${theme.fg("dim", cont)}`;
+
+		// Step header line
+		const headerLines = step.headerText.render(subToolWidth);
+		if (headerLines.length > 0) {
+			lines.push(`${branchPfx}${headerLines[0]}`);
+			for (let i = 1; i < headerLines.length; i++) {
+				lines.push(`${contPfx}${headerLines[i]}`);
+			}
+		}
+
+		// Sub-tools inside the step (only when active or has few items)
+		const showSubTools = step.state === "active" || step.subTools.length <= 2;
+		if (showSubTools && step.subTools.length > 0) {
+			const innerWidth = Math.max(1, subToolWidth - TREE_PREFIX_WIDTH);
+			for (let i = 0; i < step.subTools.length; i++) {
+				const innerIsLast = i === step.subTools.length - 1 && !step.progress;
+				const toolLines = step.subTools[i].render(innerWidth);
+				const innerBranch = getTreeBranch(innerIsLast, theme);
+				const innerCont = getTreeContinuePrefix(innerIsLast, theme);
+				const innerBranchPfx = `${contPfx}   ${theme.fg("dim", innerBranch)} `;
+				const innerContPfx = `${contPfx}   ${theme.fg("dim", innerCont)}`;
+
+				let firstContent = true;
+				for (const line of toolLines) {
+					if (firstContent && !line.trim()) continue;
+					if (firstContent) {
+						lines.push(`${innerBranchPfx}${line}`);
+						firstContent = false;
+					} else {
+						lines.push(line.trim() ? `${innerContPfx}${line}` : "");
+					}
+				}
+			}
+		}
+
+		// Progress line (transient)
+		if (step.progress && step.state === "active") {
+			const progressLines = step.progressText.render(subToolWidth);
+			for (const pLine of progressLines) {
+				if (pLine.trim()) lines.push(`${contPfx}${pLine}`);
+			}
+		}
+
+		return lines;
+	}
+
+	#updateStepHeader(step: StepGroup): void {
+		let icon: string;
+		let suffix = "";
+
+		switch (step.state) {
+			case "active":
+				icon = theme.fg("accent", this.#spinnerFrames[this.#spinnerFrame] ?? theme.format.bullet);
+				break;
+			case "done": {
+				icon = theme.fg("success", theme.status.success);
+				const count = step.subTools.length;
+				const parts: string[] = [];
+				if (count > 0) parts.push(`${count} tool${count !== 1 ? "s" : ""}`);
+				if (step.durationMs !== undefined) {
+					const ms = Math.round(step.durationMs);
+					parts.push(ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`);
+				}
+				if (parts.length > 0) suffix = ` ${theme.fg("dim", `(${parts.join(", ")})`)}`;
+				break;
+			}
+			case "error":
+				icon = theme.fg("error", theme.status.error);
+				break;
+		}
+
+		step.headerText.setText(`${icon} ${theme.fg("muted", step.intent)}${suffix}`);
 	}
 
 	#updateLogs(): void {

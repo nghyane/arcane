@@ -285,6 +285,7 @@ export class EventController {
 							},
 							this.ctx.ui,
 							this.ctx.sessionManager.getCwd(),
+							event.stepId,
 						);
 						this.ctx.pendingTools.set(event.toolCallId, handle);
 						this.ctx.ui.requestRender();
@@ -363,6 +364,40 @@ export class EventController {
 					this.ctx.showWarning(
 						`Todo update failed${textContent ? `: ${textContent}` : ". Progress may be stale until todo_write succeeds."}`,
 					);
+				}
+				break;
+			}
+
+			case "step_start": {
+				const group = this.#codeGroups.get(event.parentToolCallId);
+				if (group) {
+					group.startStep(event.stepId, event.intent);
+					this.ctx.ui.requestRender();
+				}
+				break;
+			}
+
+			case "step_end": {
+				for (const group of this.#codeGroups.values()) {
+					group.endStep(event.stepId, event.durationMs);
+				}
+				this.ctx.ui.requestRender();
+				break;
+			}
+
+			case "step_progress": {
+				for (const group of this.#codeGroups.values()) {
+					group.updateStepProgress(event.stepId, event.message);
+				}
+				this.ctx.ui.requestRender();
+				break;
+			}
+
+			case "execution_abort": {
+				const group = this.#codeGroups.get(event.toolCallId);
+				if (group) {
+					group.setAbortMessage(event.message);
+					this.ctx.ui.requestRender();
 				}
 				break;
 			}
