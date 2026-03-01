@@ -14,11 +14,6 @@ import { renderPromptTemplate } from "./config/prompt-templates";
 import type { SkillsSettings } from "./config/settings";
 import { type ContextFile, loadCapability, type SystemPrompt as SystemPromptFile } from "./discovery";
 import { loadSkills, type Skill } from "./extensibility/skills";
-import editWriteGuidance from "./prompts/guidance/edit-write.md" with { type: "text" };
-import executionGuidance from "./prompts/guidance/execution.md" with { type: "text" };
-import interactiveGuidance from "./prompts/guidance/interactive.md" with { type: "text" };
-import remoteWebGuidance from "./prompts/guidance/remote-web.md" with { type: "text" };
-import searchReadGuidance from "./prompts/guidance/search-read.md" with { type: "text" };
 import customSystemPromptTemplate from "./prompts/system/custom-system-prompt.md" with { type: "text" };
 import systemPromptTemplate from "./prompts/system/system-prompt.md" with { type: "text" };
 import type { ToolName } from "./tools";
@@ -673,12 +668,5 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 		dateTime,
 		cwd: resolvedCwd,
 		appendSystemPrompt: resolvedAppendPrompt ?? "",
-		guidanceSections: [
-			searchReadGuidance,
-			editWriteGuidance,
-			executionGuidance,
-			remoteWebGuidance,
-			interactiveGuidance,
-		],
 	});
 }

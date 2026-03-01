@@ -55,7 +55,6 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 	readonly parameters: TaskSchema;
 	readonly renderCall = renderCall;
 	readonly renderResult = renderResult;
-	readonly mergeCallAndResult = true;
 
 	readonly description = [
 		"Delegate a well-scoped unit of work to a subagent for parallel execution.",

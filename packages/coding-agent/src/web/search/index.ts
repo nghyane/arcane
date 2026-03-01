@@ -262,7 +262,6 @@ export class SearchTool implements AgentTool<typeof webSearchSchema, SearchRende
 	readonly label = "Web Search";
 	readonly description = "Search the web";
 	readonly parameters = webSearchSchema;
-	readonly mergeCallAndResult = true;
 	readonly renderCall = renderSearchCall;
 	readonly renderResult = renderSearchResult;
 

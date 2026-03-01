@@ -434,7 +434,7 @@ The code tool injects three additional globals beyond `codemode`, `state`, and `
 - **`progress(message)`** — Emits a transient status line under the current step. Only works inside `step()`.
 - **`abort(message)`** — Clean intentional exit. Returns message to LLM without error framing (distinct from `throw`).
 
-These replace `agent__intent` (deprecated) for intent signaling. Events emitted: `step_start`, `step_progress`, `step_end`, `execution_abort`.
+Events emitted: `step_start`, `step_progress`, `step_end`, `execution_abort`.
 
 Implementation: `step`/`progress`/`abort` are closures created in `createCodeTool()`, injected via `ExecutorOptions.injectedGlobals`. `AbortExecution` is caught by the executor and returned as a non-error result.
 

@@ -29,7 +29,6 @@ export class SearchCodeTool implements AgentTool<typeof searchCodeSchema, Search
 	readonly label = "Code Search";
 	readonly description = "Search source code across public GitHub repositories via grep.app";
 	readonly parameters = searchCodeSchema;
-	readonly mergeCallAndResult = true;
 	readonly renderCall = renderSearchCall;
 	readonly renderResult = renderSearchResult;
 

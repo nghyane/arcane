@@ -251,8 +251,6 @@ function renderDiffSection(
 }
 
 export const editToolRenderer = {
-	mergeCallAndResult: true,
-
 	renderCall(
 		args: EditRenderArgs,
 		options: RenderResultOptions & { renderContext?: EditRenderContext },

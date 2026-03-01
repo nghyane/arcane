@@ -246,7 +246,6 @@ export class AskTool implements AgentTool<typeof askSchema, AskToolDetails, Them
 	readonly label = "Ask";
 	description = "Ask the user a question when genuinely blocked";
 	readonly parameters = askSchema;
-	readonly mergeCallAndResult = true;
 
 	constructor(private readonly session: ToolSession) {}
 

@@ -37,7 +37,6 @@ export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditTo
 	readonly parameters = undoEditSchema;
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";
-	readonly mergeCallAndResult = true;
 
 	constructor(private readonly session: ToolSession) {}
 

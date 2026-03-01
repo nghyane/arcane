@@ -46,33 +46,13 @@ export class EventController {
 		let group = this.#codeGroups.get(id);
 		if (!group) {
 			this.#resetReadGroup();
-			group = new CodeGroupComponent(this.ctx.ui);
+			group = new CodeGroupComponent();
 			group.setExpanded(this.ctx.toolOutputExpanded);
 			this.ctx.chatContainer.addChild(group);
 			this.#codeGroups.set(id, group);
 			this.ctx.pendingTools.set(id, group);
-			this.#hideLoader();
 		}
 		return group;
-	}
-
-	#hideLoader(): void {
-		if (!this.ctx.loadingAnimation) return;
-		this.ctx.loadingAnimation.stop();
-		this.ctx.statusContainer.clear();
-		this.ctx.loadingAnimation = undefined;
-	}
-
-	#restoreLoader(): void {
-		if (this.ctx.loadingAnimation || this.#codeGroups.size > 0) return;
-		this.ctx.loadingAnimation = new Loader(
-			this.ctx.ui,
-			spinner => theme.fg("accent", spinner),
-			text => theme.fg("muted", text),
-			`Working\u2026 (esc to interrupt)`,
-			getSymbolTheme().spinnerFrames,
-		);
-		this.ctx.statusContainer.addChild(this.ctx.loadingAnimation);
 	}
 
 	subscribeToAgent(): void {
@@ -252,11 +232,7 @@ export class EventController {
 			case "tool_execution_start": {
 				if (!this.#codeGroups.has(event.toolCallId)) this.#updateWorkingMessageFromIntent(event.intent);
 				if (event.toolName === "code") {
-					const group = this.#ensureCodeGroup(event.toolCallId);
-					const intent = event.intent as string | undefined;
-					if (typeof intent === "string" && intent.trim()) {
-						group.setIntent(intent.trim());
-					}
+					this.#ensureCodeGroup(event.toolCallId);
 					this.ctx.ui.requestRender();
 					break;
 				}
@@ -275,7 +251,6 @@ export class EventController {
 							},
 							this.ctx.ui,
 							this.ctx.sessionManager.getCwd(),
-							event.stepId,
 						);
 						this.ctx.pendingTools.set(event.toolCallId, handle);
 						this.ctx.ui.requestRender();
@@ -339,7 +314,6 @@ export class EventController {
 						group.setDone();
 						this.#codeGroups.delete(event.toolCallId);
 					}
-					this.#restoreLoader();
 				}
 				// Update todo display when todo_write tool completes
 				if (event.toolName === "todo_write" && !event.isError) {
@@ -359,27 +333,20 @@ export class EventController {
 			}
 
 			case "step_start": {
-				const group = this.#codeGroups.get(event.parentToolCallId);
-				if (group) {
-					group.startStep(event.stepId, event.intent);
-					this.ctx.ui.requestRender();
-				}
+				const group = this.#codeGroups.get(event.toolCallId);
+				group?.stepStart(event.stepId, event.intent, event.parentStepId);
 				break;
 			}
 
 			case "step_end": {
-				for (const group of this.#codeGroups.values()) {
-					group.endStep(event.stepId, event.durationMs);
-				}
-				this.ctx.ui.requestRender();
+				const group = this.#codeGroups.get(event.toolCallId);
+				group?.stepEnd(event.stepId);
 				break;
 			}
 
 			case "step_progress": {
-				for (const group of this.#codeGroups.values()) {
-					group.updateStepProgress(event.stepId, event.message);
-				}
-				this.ctx.ui.requestRender();
+				const group = this.#codeGroups.get(event.toolCallId);
+				group?.setProgress(event.stepId, event.message);
 				break;
 			}
 

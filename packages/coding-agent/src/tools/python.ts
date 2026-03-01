@@ -119,7 +119,6 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 	description = "Execute Python code in a persistent kernel";
 	readonly parameters = pythonSchema;
 	readonly concurrency = "exclusive";
-	readonly mergeCallAndResult = true;
 	readonly inline = true;
 
 	readonly #proxyExecutor?: PythonProxyExecutor;

@@ -118,7 +118,6 @@ export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails, Them
 	readonly label = "SSH";
 	readonly parameters = sshSchema;
 	readonly concurrency = "exclusive";
-	readonly mergeCallAndResult = true;
 
 	readonly #allowedHosts: Set<string>;
 

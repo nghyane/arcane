@@ -120,7 +120,6 @@ export class TodoWriteTool implements AgentTool<typeof todoWriteSchema, TodoWrit
 	description = "Update the task/todo list";
 	readonly parameters = todoWriteSchema;
 	readonly concurrency = "exclusive";
-	readonly mergeCallAndResult = true;
 
 	constructor(private readonly session: ToolSession) {}
 

@@ -60,7 +60,6 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 	description = "Execute a shell command";
 	readonly parameters = bashSchema;
 	readonly concurrency = "exclusive";
-	readonly mergeCallAndResult = true;
 	readonly inline = true;
 
 	constructor(private readonly session: ToolSession) {}

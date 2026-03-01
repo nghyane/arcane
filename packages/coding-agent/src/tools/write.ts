@@ -74,7 +74,6 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 	readonly parameters = writeSchema;
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";
-	readonly mergeCallAndResult = true;
 
 	readonly #writethrough: WritethroughCallback;
 

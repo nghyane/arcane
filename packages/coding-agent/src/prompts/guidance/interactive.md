@@ -1,4 +1,0 @@
-### Interactive
- **puppeteer**: prefer `click_id`/`type_id`/`fill_id` with element IDs from `observe`; prefer ARIA selectors over CSS; default to `observe` not `screenshot`
- **ask**: ask user when genuinely blocked and user preference is required. Default to action — resolve ambiguity yourself first. Use `recommended` to mark default option. Use `questions` for multiple related questions. Do NOT include "Other" option (UI adds it automatically)
- **todo_write**: show the user what you are doing. Plan with todos for complex/multi-phase work — break into meaningful steps, expand as you discover more, mark completed as you go (never batch). Skip for trivial requests.

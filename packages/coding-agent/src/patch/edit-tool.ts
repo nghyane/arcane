@@ -141,7 +141,6 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 	readonly label = "Edit";
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";
-	readonly mergeCallAndResult = editToolRenderer.mergeCallAndResult;
 	readonly renderCall = editToolRenderer.renderCall as unknown as AgentTool<TInput, any, Theme>["renderCall"];
 	readonly renderResult = editToolRenderer.renderResult as unknown as AgentTool<TInput, any, Theme>["renderResult"];
 

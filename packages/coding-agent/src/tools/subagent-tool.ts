@@ -59,7 +59,6 @@ export class SubagentTool<T extends TProperties = TProperties>
 	readonly label: string;
 	readonly parameters: TObject<T>;
 	description: string;
-	readonly mergeCallAndResult = true;
 	declare renderCall: (args: unknown, options: RenderResultOptions, theme: Theme) => Component;
 	declare renderResult: (
 		result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
