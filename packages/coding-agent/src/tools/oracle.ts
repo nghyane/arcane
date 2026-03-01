@@ -23,7 +23,7 @@ export const oracleConfig: SubagentConfig<typeof schema.properties> = {
 	progressText: "Analyzing...",
 	tmpPrefix: "arc-oracle-",
 	buildTask,
-	buildDescription: p => (p.task as string).slice(0, 80),
+	buildDescription: p => String(p.task ?? "").slice(0, 80),
 	buildContextLine: p => {
 		const parts: string[] = [];
 		if (p.context) parts.push(`Context: ${String(p.context).split("\n")[0].slice(0, 40)}`);

@@ -23,7 +23,7 @@ export const reviewerConfig: SubagentConfig<typeof schema.properties> = {
 	progressText: "Reviewing code...",
 	tmpPrefix: "arc-review-",
 	buildTask,
-	buildDescription: p => (p.diff_description as string).slice(0, 80),
+	buildDescription: p => String(p.diff_description ?? "").slice(0, 80),
 	buildContextLine: p => {
 		const parts: string[] = [];
 		const files = p.files as string[] | undefined;

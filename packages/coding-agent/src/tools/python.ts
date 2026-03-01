@@ -12,7 +12,7 @@ import type { PythonStatusEvent } from "../ipy/kernel";
 import { DEFAULT_MAX_BYTES, OutputSink, type OutputSummary } from "../session/streaming-output";
 import type { Theme } from "../theme/theme";
 import { renderCodeCell, renderStatusLine } from "../tui";
-import { replaceTabs, ToolUIKit } from "../ui/render-utils";
+import { formatExpandHint, PREVIEW_LIMITS, replaceTabs } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
@@ -425,7 +425,6 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 	}
 
 	renderCall(args: PythonRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
-		const ui = new ToolUIKit(uiTheme);
 		const cells = args.cells ?? [];
 		const cwd = getProjectDir();
 		let displayWorkdir = args.cwd;
@@ -449,7 +448,7 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 		if (cells.length === 0) {
 			const prompt = uiTheme.fg("accent", ">>>");
 			const prefix = workdirLabel ? `${uiTheme.fg("dim", `${workdirLabel} && `)}` : "";
-			const text = ui.title(`${prompt} ${prefix}…`);
+			const text = uiTheme.fg("toolTitle", uiTheme.bold(`${prompt} ${prefix}…`));
 			return new Text(text, 0, 0);
 		}
 
@@ -530,9 +529,8 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 		);
 
 		// Tree-style body
-		const TAIL = 4;
 		const showAll = isError || expanded;
-		const displayLines = showAll ? outputLines : outputLines.slice(-TAIL);
+		const displayLines = showAll ? outputLines : outputLines.slice(-PREVIEW_LIMITS.OUTPUT_COLLAPSED);
 		const skipped = total - displayLines.length;
 
 		const bodyLines: string[] = [];
@@ -547,7 +545,7 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 			bodyLines.push(uiTheme.fg("warning", "output truncated"));
 		}
 		if (!showAll && skipped > 0) {
-			bodyLines.push(uiTheme.fg("dim", "(Ctrl+O for full output)"));
+			bodyLines.push(formatExpandHint(uiTheme));
 		}
 
 		const lines = bodyLines.length > 0 ? [header, ...bodyLines] : [header];

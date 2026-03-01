@@ -3,7 +3,7 @@ import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { formatMoreItems, truncateToWidth } from "../ui/render-utils";
+import { formatMoreItems, PREVIEW_LIMITS, TRUNCATE_LENGTHS, truncateToWidth } from "../ui/render-utils";
 import {
 	formatArgsInline,
 	JSON_TREE_MAX_DEPTH_COLLAPSED,
@@ -40,7 +40,7 @@ export const defaultRenderer: DefaultRenderer = {
 
 		const argsObject = asRecord(args);
 		if (argsObject && Object.keys(argsObject).length > 0) {
-			const preview = formatArgsInline(argsObject, 70);
+			const preview = formatArgsInline(argsObject, TRUNCATE_LENGTHS.SUBAGENT_ERROR);
 			if (preview) {
 				lines.push(theme.fg("dim", preview));
 			}
@@ -89,10 +89,10 @@ export const defaultRenderer: DefaultRenderer = {
 
 		// Raw output
 		const outputLines = textContent.split("\n");
-		const maxOutputLines = expanded ? 12 : 4;
+		const maxOutputLines = expanded ? PREVIEW_LIMITS.OUTPUT_EXPANDED : PREVIEW_LIMITS.OUTPUT_COLLAPSED;
 		const displayLines = outputLines.slice(0, maxOutputLines);
 		for (const line of displayLines) {
-			lines.push(theme.fg("toolOutput", truncateToWidth(line, 80)));
+			lines.push(theme.fg("toolOutput", truncateToWidth(line, TRUNCATE_LENGTHS.CONTENT)));
 		}
 		if (outputLines.length > maxOutputLines) {
 			const remaining = outputLines.length - maxOutputLines;

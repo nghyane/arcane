@@ -12,11 +12,14 @@ import type { OutputMeta } from "../tools/output-meta";
 import { renderStatusLine } from "../tui";
 import {
 	formatDiagnostics,
+	formatExpandHint,
 	formatStatusIcon,
 	getDiffStats,
+	PREVIEW_LIMITS,
 	replaceTabs,
 	shortenPath,
-	ToolUIKit,
+	TRUNCATE_LENGTHS,
+	truncateToWidth,
 } from "../ui/render-utils";
 import type { DiffError, DiffResult, Operation } from "./types";
 
@@ -113,7 +116,7 @@ function formatStreamingDiff(diff: string, rawPath: string, uiTheme: Theme, labe
 	return text;
 }
 
-function formatStreamingHashlineEdits(edits: unknown[], uiTheme: Theme, ui: ToolUIKit): string {
+function formatStreamingHashlineEdits(edits: unknown[], uiTheme: Theme): string {
 	const MAX_EDITS = 4;
 	const MAX_DST_LINES = 8;
 	let text = "\n\n";
@@ -125,17 +128,17 @@ function formatStreamingHashlineEdits(edits: unknown[], uiTheme: Theme, ui: Tool
 		shownEdits++;
 		if (shownEdits > MAX_EDITS) break;
 		const formatted = formatHashlineEdit(edit);
-		text += uiTheme.fg("toolOutput", ui.truncate(replaceTabs(formatted.srcLabel), 120));
+		text += uiTheme.fg("toolOutput", truncateToWidth(replaceTabs(formatted.srcLabel), TRUNCATE_LENGTHS.LONG));
 		text += "\n";
 		if (formatted.dst === "") {
-			text += uiTheme.fg("dim", ui.truncate("  (delete)", 120));
+			text += uiTheme.fg("dim", truncateToWidth("  (delete)", TRUNCATE_LENGTHS.LONG));
 			text += "\n";
 			continue;
 		}
 		for (const dstLine of formatted.dst.split("\n")) {
 			shownDstLines++;
 			if (shownDstLines > MAX_DST_LINES) break;
-			text += uiTheme.fg("toolOutput", ui.truncate(replaceTabs(`+ ${dstLine}`), 120));
+			text += uiTheme.fg("toolOutput", truncateToWidth(replaceTabs(`+ ${dstLine}`), TRUNCATE_LENGTHS.LONG));
 			text += "\n";
 		}
 		if (shownDstLines > MAX_DST_LINES) break;
@@ -208,7 +211,6 @@ export const editToolRenderer = {
 		options: RenderResultOptions & { renderContext?: EditRenderContext },
 		uiTheme: Theme,
 	): Component {
-		const ui = new ToolUIKit(uiTheme);
 		const rawPath = args.file_path || args.path || "";
 		const filePath = shortenPath(rawPath);
 		const editLanguage = getLanguageFromPath(rawPath) ?? "text";
@@ -224,7 +226,8 @@ export const editToolRenderer = {
 		const opTitle = args.op === "create" ? "Create" : args.op === "delete" ? "Delete" : "Edit";
 		const spinner =
 			options?.spinnerFrame !== undefined ? formatStatusIcon("running", uiTheme, options.spinnerFrame) : "";
-		let text = `${ui.title(opTitle)} ${spinner ? `${spinner} ` : ""}${editIcon} ${pathDisplay}`;
+		const title = uiTheme.fg("toolTitle", uiTheme.bold(opTitle));
+		let text = `${title} ${spinner ? `${spinner} ` : ""}${editIcon} ${pathDisplay}`;
 
 		// Show streaming preview of diff/content
 		const previewDiffText =
@@ -237,26 +240,24 @@ export const editToolRenderer = {
 		} else if (args.diff && args.op) {
 			text += formatStreamingDiff(args.diff, rawPath, uiTheme);
 		} else if (args.edits && args.edits.length > 0) {
-			text += formatStreamingHashlineEdits(args.edits, uiTheme, ui);
+			text += formatStreamingHashlineEdits(args.edits, uiTheme);
 		} else if (args.diff) {
 			const previewLines = args.diff.split("\n");
-			const maxLines = 6;
 			text += "\n\n";
-			for (const line of previewLines.slice(0, maxLines)) {
-				text += `${uiTheme.fg("toolOutput", ui.truncate(replaceTabs(line), 80))}\n`;
+			for (const line of previewLines.slice(0, PREVIEW_LIMITS.STREAMING_PREVIEW)) {
+				text += `${uiTheme.fg("toolOutput", truncateToWidth(replaceTabs(line), TRUNCATE_LENGTHS.CONTENT))}\n`;
 			}
-			if (previewLines.length > maxLines) {
-				text += uiTheme.fg("dim", `… ${previewLines.length - maxLines} more lines`);
+			if (previewLines.length > PREVIEW_LIMITS.STREAMING_PREVIEW) {
+				text += uiTheme.fg("dim", `… ${previewLines.length - PREVIEW_LIMITS.STREAMING_PREVIEW} more lines`);
 			}
 		} else if (args.newText || args.patch) {
 			const previewLines = (args.newText ?? args.patch ?? "").split("\n");
-			const maxLines = 6;
 			text += "\n\n";
-			for (const line of previewLines.slice(0, maxLines)) {
-				text += `${uiTheme.fg("toolOutput", ui.truncate(replaceTabs(line), 80))}\n`;
+			for (const line of previewLines.slice(0, PREVIEW_LIMITS.STREAMING_PREVIEW)) {
+				text += `${uiTheme.fg("toolOutput", truncateToWidth(replaceTabs(line), TRUNCATE_LENGTHS.CONTENT))}\n`;
 			}
-			if (previewLines.length > maxLines) {
-				text += uiTheme.fg("dim", `… ${previewLines.length - maxLines} more lines`);
+			if (previewLines.length > PREVIEW_LIMITS.STREAMING_PREVIEW) {
+				text += uiTheme.fg("dim", `… ${previewLines.length - PREVIEW_LIMITS.STREAMING_PREVIEW} more lines`);
 			}
 		}
 
@@ -304,7 +305,7 @@ export const editToolRenderer = {
 		// Tree-style diff body
 		const expanded = options.expanded;
 		const diffLines = diffText ? diffText.split("\n") : [];
-		const maxLines = expanded ? diffLines.length : Math.min(diffLines.length, 20);
+		const maxLines = expanded ? diffLines.length : Math.min(diffLines.length, PREVIEW_LIMITS.DIFF_COLLAPSED_LINES);
 
 		const treeBody: string[] = [];
 		for (let i = 0; i < maxLines; i++) {
@@ -315,7 +316,7 @@ export const editToolRenderer = {
 		if (!expanded && diffLines.length > maxLines) {
 			const remaining = diffLines.length - maxLines;
 			treeBody.push(uiTheme.fg("dim", `… ${remaining} more lines`));
-			treeBody.push(uiTheme.fg("dim", "(Ctrl+O for full diff)"));
+			treeBody.push(formatExpandHint(uiTheme));
 		}
 
 		// Diagnostics

@@ -14,7 +14,16 @@ import { createLspWritethrough, type FileDiagnosticsResult, type WritethroughCal
 import type { ToolSession } from "../sdk";
 import { getLanguageFromPath, type Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { formatDiagnostics, formatStatusIcon, replaceTabs, shortenPath, ToolUIKit } from "../ui/render-utils";
+import {
+	formatDiagnostics,
+	formatExpandHint,
+	formatStatusIcon,
+	PREVIEW_LIMITS,
+	replaceTabs,
+	shortenPath,
+	TRUNCATE_LENGTHS,
+	truncateToWidth,
+} from "../ui/render-utils";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
 import { type OutputMeta, outputMeta } from "./output-meta";
 import { resolveToCwd } from "./path-utils";
@@ -113,7 +122,6 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 	}
 
 	renderCall(args: WriteRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
-		const ui = new ToolUIKit(uiTheme);
 		const rawPath = args.file_path || args.path || "";
 		const filePath = shortenPath(rawPath);
 		const lang = getLanguageFromPath(rawPath) ?? "text";
@@ -122,14 +130,15 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 		const spinner =
 			options?.spinnerFrame !== undefined ? formatStatusIcon("running", uiTheme, options.spinnerFrame) : "";
 
-		let text = `${ui.title("Write")} ${spinner ? `${spinner} ` : ""}${langIcon} ${pathDisplay}`;
+		const title = uiTheme.fg("toolTitle", uiTheme.bold("Write"));
+		let text = `${title} ${spinner ? `${spinner} ` : ""}${langIcon} ${pathDisplay}`;
 
 		if (!args.content) {
 			return new Text(text, 0, 0);
 		}
 
 		// Show streaming preview of content (tail)
-		text += formatStreamingContent(args.content, uiTheme, ui);
+		text += formatStreamingContent(args.content, uiTheme);
 
 		return new Text(text, 0, 0);
 	}
@@ -157,11 +166,9 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 		);
 
 		// Tree-style content preview
-		const TAIL = 6;
 		const lines = fileContent ? fileContent.split("\n") : [];
 		const expanded = options.expanded;
-		const showAll = expanded;
-		const displayLines = showAll ? lines : lines.slice(-TAIL);
+		const displayLines = expanded ? lines : lines.slice(-PREVIEW_LIMITS.WRITE_TAIL);
 		const skipped = lines.length - displayLines.length;
 
 		const bodyLines: string[] = [];
@@ -172,8 +179,8 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 			for (let i = 0; i < displayLines.length; i++) {
 				bodyLines.push(uiTheme.fg("toolOutput", replaceTabs(displayLines[i])));
 			}
-			if (!showAll && skipped > 0) {
-				bodyLines.push(uiTheme.fg("dim", "(Ctrl+O for full content)"));
+			if (!expanded && skipped > 0) {
+				bodyLines.push(formatExpandHint(uiTheme));
 			}
 		}
 
@@ -195,17 +202,15 @@ interface WriteRenderArgs {
 	content?: string;
 }
 
-const WRITE_STREAMING_PREVIEW_LINES = 12;
-
 function countLines(text: string): number {
 	if (!text) return 0;
 	return text.split("\n").length;
 }
 
-function formatStreamingContent(content: string, uiTheme: Theme, ui: ToolUIKit): string {
+function formatStreamingContent(content: string, uiTheme: Theme): string {
 	if (!content) return "";
 	const lines = content.split("\n");
-	const displayLines = lines.slice(-WRITE_STREAMING_PREVIEW_LINES);
+	const displayLines = lines.slice(-PREVIEW_LIMITS.EXPANDED_LINES);
 	const hidden = lines.length - displayLines.length;
 
 	let text = "\n\n";
@@ -213,7 +218,7 @@ function formatStreamingContent(content: string, uiTheme: Theme, ui: ToolUIKit):
 		text += uiTheme.fg("dim", `… (${hidden} earlier lines)\n`);
 	}
 	for (const line of displayLines) {
-		text += `${uiTheme.fg("toolOutput", ui.truncate(replaceTabs(line), 80))}\n`;
+		text += `${uiTheme.fg("toolOutput", truncateToWidth(replaceTabs(line), TRUNCATE_LENGTHS.CONTENT))}\n`;
 	}
 	text += uiTheme.fg("dim", `… (streaming)`);
 	return text;

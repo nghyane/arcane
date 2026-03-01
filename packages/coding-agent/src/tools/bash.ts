@@ -11,7 +11,7 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { DEFAULT_MAX_BYTES } from "../session/streaming-output";
 import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { replaceTabs } from "../ui/render-utils";
+import { formatExpandHint, PREVIEW_LIMITS, replaceTabs } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type BashInteractiveResult, runInteractiveBashPty } from "./bash-interactive";
 import { checkBashInterception } from "./bash-interceptor";
@@ -228,10 +228,9 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 			uiTheme,
 		);
 
-		const TAIL = 4;
 		const expanded = renderContext?.expanded ?? options.expanded;
 		const showAll = isError || expanded;
-		const displayLines = showAll ? outputLines : outputLines.slice(-TAIL);
+		const displayLines = showAll ? outputLines : outputLines.slice(-PREVIEW_LIMITS.OUTPUT_COLLAPSED);
 		const skipped = total - displayLines.length;
 
 		const bodyLines: string[] = [];
@@ -247,7 +246,7 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 			bodyLines.push(uiTheme.fg("warning", "output truncated"));
 		}
 		if (!showAll && skipped > 0) {
-			bodyLines.push(uiTheme.fg("dim", "(Ctrl+O for full output)"));
+			bodyLines.push(formatExpandHint(uiTheme));
 		}
 
 		const lines = bodyLines.length > 0 ? [header, ...bodyLines] : [header];

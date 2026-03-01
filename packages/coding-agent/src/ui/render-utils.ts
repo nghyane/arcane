@@ -75,13 +75,23 @@ export const PREVIEW_LIMITS = {
 	/** Items (files, results) shown in collapsed view */
 	COLLAPSED_ITEMS: 8,
 	/** Output preview lines in collapsed view */
-	OUTPUT_COLLAPSED: 3,
+	OUTPUT_COLLAPSED: 4,
 	/** Output preview lines in expanded view */
-	OUTPUT_EXPANDED: 10,
+	OUTPUT_EXPANDED: 12,
 	/** Max hunks shown when collapsed (edit tool) */
 	DIFF_COLLAPSED_HUNKS: 8,
 	/** Max diff lines shown when collapsed (edit tool) */
-	DIFF_COLLAPSED_LINES: 40,
+	DIFF_COLLAPSED_LINES: 20,
+	/** Tail lines for write tool collapsed view */
+	WRITE_TAIL: 6,
+	/** Streaming preview lines (edit/write) */
+	STREAMING_PREVIEW: 6,
+	/** Subagent tool history entries when streaming */
+	SUBAGENT_STREAMING_TOOLS: 4,
+	/** Subagent tool history entries when collapsed */
+	SUBAGENT_COLLAPSED_TOOLS: 3,
+	/** Subagent conclusion lines when collapsed */
+	SUBAGENT_CONCLUSION: 6,
 } as const;
 
 /** Truncation lengths for different content types */
@@ -96,6 +106,10 @@ export const TRUNCATE_LENGTHS = {
 	LINE: 110,
 	/** Very short (task previews, badges) */
 	SHORT: 40,
+	/** Subagent error messages */
+	SUBAGENT_ERROR: 70,
+	/** Subagent tool args preview */
+	TOOL_ARGS: 50,
 } as const;
 
 /** Standard expand hint text */
@@ -247,18 +261,6 @@ export function formatMoreItems(remaining: number, itemType: string): string {
 	return `… ${safeRemaining} more ${pluralize(itemType, safeRemaining)}`;
 }
 
-function formatMeta(meta: string[], theme: Theme): string {
-	return meta.length > 0 ? ` ${theme.fg("muted", meta.join(theme.sep.dot))}` : "";
-}
-
-function formatScope(scopePath: string | undefined, theme: Theme): string {
-	return scopePath ? ` ${theme.fg("muted", `in ${scopePath}`)}` : "";
-}
-
-function formatTruncationSuffix(truncated: boolean, theme: Theme): string {
-	return truncated ? theme.fg("warning", " (truncated)") : "";
-}
-
 export function formatErrorMessage(message: string | undefined, theme: Theme): string {
 	const clean = (message ?? "").replace(/^Error:\s*/, "").trim();
 	return `${theme.styledSymbol("status.error", "error")} ${theme.fg("error", `Error: ${clean || "Unknown error"}`)}`;
@@ -268,109 +270,12 @@ export function formatEmptyMessage(message: string, theme: Theme): string {
 	return `${theme.styledSymbol("status.warning", "warning")} ${theme.fg("muted", message)}`;
 }
 
-// =============================================================================
-// Tool UI Kit
-// =============================================================================
-
 type ToolUIStatus = "success" | "error" | "warning" | "info" | "pending" | "running" | "aborted";
 export type ToolUIColor = "success" | "error" | "warning" | "accent" | "muted";
-
-interface ToolUITitleOptions {
-	bold?: boolean;
-}
 
 // =============================================================================
 // Diagnostic Formatting
 // =============================================================================
-
-export class ToolUIKit {
-	constructor(public theme: Theme) {}
-
-	title(label: string, options?: ToolUITitleOptions): string {
-		const content = options?.bold === false ? label : this.theme.bold(label);
-		return this.theme.fg("toolTitle", content);
-	}
-
-	meta(meta: string[]): string {
-		return formatMeta(meta, this.theme);
-	}
-
-	count(label: string, count: number): string {
-		return formatCount(label, count);
-	}
-
-	moreItems(remaining: number, itemType: string): string {
-		return formatMoreItems(remaining, itemType);
-	}
-
-	expandHint(expanded: boolean, hasMore: boolean): string {
-		return formatExpandHint(this.theme, expanded, hasMore);
-	}
-
-	scope(scopePath?: string): string {
-		return formatScope(scopePath, this.theme);
-	}
-
-	truncationSuffix(truncated: boolean): string {
-		return formatTruncationSuffix(truncated, this.theme);
-	}
-
-	errorMessage(message: string | undefined): string {
-		return formatErrorMessage(message, this.theme);
-	}
-
-	emptyMessage(message: string): string {
-		return formatEmptyMessage(message, this.theme);
-	}
-
-	badge(label: string, color: ToolUIColor): string {
-		return formatBadge(label, color, this.theme);
-	}
-
-	statusIcon(status: ToolUIStatus, spinnerFrame?: number): string {
-		return formatStatusIcon(status, this.theme, spinnerFrame);
-	}
-
-	wrapBrackets(text: string): string {
-		return wrapBrackets(text, this.theme);
-	}
-
-	truncate(text: string, maxLen: number): string {
-		return truncateToWidth(text, maxLen);
-	}
-
-	previewLines(text: string, maxLines: number, maxLineLen: number): string[] {
-		return getPreviewLines(text, maxLines, maxLineLen);
-	}
-
-	formatBytes(bytes: number): string {
-		return formatBytes(bytes);
-	}
-
-	formatTokens(tokens: number): string {
-		return formatTokens(tokens);
-	}
-
-	formatDuration(ms: number): string {
-		return formatDuration(ms);
-	}
-
-	formatAge(ageSeconds: number | null | undefined): string {
-		return formatAge(ageSeconds);
-	}
-
-	formatDiagnostics(
-		diag: { errored: boolean; summary: string; messages: string[] },
-		expanded: boolean,
-		getLangIcon: (filePath: string) => string,
-	): string {
-		return formatDiagnostics(diag, expanded, this.theme, getLangIcon);
-	}
-
-	formatDiffStats(added: number, removed: number, hunks: number): string {
-		return formatDiffStats(added, removed, hunks, this.theme);
-	}
-}
 
 interface ParsedDiagnostic {
 	filePath: string;

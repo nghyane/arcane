@@ -9,8 +9,8 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { computeLineHash } from "../patch/hashline";
 import { DEFAULT_MAX_COLUMN, type TruncationResult, truncateHead } from "../session/streaming-output";
 import type { Theme } from "../theme/theme";
-import { Ellipsis, Hasher, type RenderCache, renderStatusLine, renderTreeList, truncateToWidth } from "../tui";
-import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "../ui/render-utils";
+import { renderStatusLine } from "../tui";
+import { formatCount, formatEmptyMessage, formatErrorMessage } from "../ui/render-utils";
 import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
@@ -302,7 +302,7 @@ export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails, T
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: GrepToolDetails; isError?: boolean },
-		options: RenderResultOptions,
+		_options: RenderResultOptions,
 		uiTheme: Theme,
 		args?: GrepRenderArgs,
 	): Component {
@@ -313,145 +313,29 @@ export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails, T
 			return new Text(formatErrorMessage(errorText, uiTheme), 0, 0);
 		}
 
-		const hasDetailedData = details?.matchCount !== undefined || details?.fileCount !== undefined;
-
-		if (!hasDetailedData) {
-			const textContent = result.content?.find(c => c.type === "text")?.text;
-			if (!textContent || textContent === "No matches found") {
-				return new Text(formatEmptyMessage("No matches found", uiTheme), 0, 0);
-			}
-			const lines = textContent.split("\n").filter(line => line.trim() !== "");
-			const description = args?.pattern ?? undefined;
-			const header = renderStatusLine(
-				{ icon: "success", title: "Grep", description, meta: [formatCount("item", lines.length)] },
-				uiTheme,
-			);
-			let cached: RenderCache | undefined;
-			return {
-				render(width: number): string[] {
-					const { expanded } = options;
-					const key = new Hasher().bool(expanded).u32(width).digest();
-					if (cached?.key === key) return cached.lines;
-					const listLines = renderTreeList(
-						{
-							items: lines,
-							expanded,
-							maxCollapsed: COLLAPSED_TEXT_LIMIT,
-							itemType: "item",
-							renderItem: line => uiTheme.fg("toolOutput", line),
-						},
-						uiTheme,
-					);
-					const result = [header, ...listLines].map(l => truncateToWidth(l, width, Ellipsis.Omit));
-					cached = { key, lines: result };
-					return result;
-				},
-				invalidate() {
-					cached = undefined;
-				},
-			};
-		}
-
 		const matchCount = details?.matchCount ?? 0;
 		const fileCount = details?.fileCount ?? 0;
-		const truncation = details?.meta?.truncation;
-		const limits = details?.meta?.limits;
 		const truncated = Boolean(
-			details?.truncated || truncation || limits?.matchLimit || limits?.resultLimit || limits?.columnTruncated,
+			details?.truncated ||
+				details?.meta?.truncation ||
+				details?.meta?.limits?.matchLimit ||
+				details?.meta?.limits?.resultLimit ||
+				details?.meta?.limits?.columnTruncated,
 		);
 
 		if (matchCount === 0) {
-			const header = renderStatusLine(
-				{ icon: "warning", title: "Grep", description: args?.pattern, meta: ["0 matches"] },
-				uiTheme,
-			);
-			return new Text([header, formatEmptyMessage("No matches found", uiTheme)].join("\n"), 0, 0);
+			return new Text(formatEmptyMessage("No matches found", uiTheme), 0, 0);
 		}
 
-		const summaryParts = [formatCount("match", matchCount), formatCount("file", fileCount)];
-		const meta = [...summaryParts];
+		const meta = [formatCount("match", matchCount), formatCount("file", fileCount)];
 		if (details?.scopePath) meta.push(`in ${details.scopePath}`);
 		if (truncated) meta.push(uiTheme.fg("warning", "truncated"));
-		const description = args?.pattern ?? undefined;
-		const header = renderStatusLine(
-			{ icon: truncated ? "warning" : "success", title: "Grep", description, meta },
+
+		const text = renderStatusLine(
+			{ icon: truncated ? "warning" : "success", title: "Grep", description: args?.pattern, meta },
 			uiTheme,
 		);
-
-		const textContent = result.content?.find(c => c.type === "text")?.text ?? "";
-		const rawLines = textContent.split("\n");
-		const hasSeparators = rawLines.some(line => line.trim().length === 0);
-		const matchGroups: string[][] = [];
-		if (hasSeparators) {
-			let current: string[] = [];
-			for (const line of rawLines) {
-				if (line.trim().length === 0) {
-					if (current.length > 0) {
-						matchGroups.push(current);
-						current = [];
-					}
-					continue;
-				}
-				current.push(line);
-			}
-			if (current.length > 0) matchGroups.push(current);
-		} else {
-			for (const line of rawLines) {
-				if (line.trim().length === 0) continue;
-				matchGroups.push([line]);
-			}
-		}
-
-		const getCollapsedMatchLimit = (groups: string[][], maxLines: number): number => {
-			if (groups.length === 0) return 0;
-			let usedLines = 0;
-			let count = 0;
-			for (const group of groups) {
-				if (count > 0 && usedLines + group.length > maxLines) break;
-				usedLines += group.length;
-				count += 1;
-				if (usedLines >= maxLines) break;
-			}
-			return count;
-		};
-
-		const truncationReasons: string[] = [];
-		if (limits?.matchLimit) truncationReasons.push(`limit ${limits.matchLimit.reached} matches`);
-		if (limits?.resultLimit) truncationReasons.push(`limit ${limits.resultLimit.reached} results`);
-		if (truncation) truncationReasons.push(truncation.truncatedBy === "lines" ? "line limit" : "size limit");
-		if (limits?.columnTruncated) truncationReasons.push(`line length ${limits.columnTruncated.maxColumn}`);
-		if (truncation?.artifactId) truncationReasons.push(`full output: artifact://${truncation.artifactId}`);
-
-		const extraLines =
-			truncationReasons.length > 0 ? [uiTheme.fg("warning", `truncated: ${truncationReasons.join(", ")}`)] : [];
-
-		let cached: RenderCache | undefined;
-		return {
-			render(width: number): string[] {
-				const { expanded } = options;
-				const key = new Hasher().bool(expanded).u32(width).digest();
-				if (cached?.key === key) return cached.lines;
-				const maxCollapsed = expanded
-					? matchGroups.length
-					: getCollapsedMatchLimit(matchGroups, COLLAPSED_TEXT_LIMIT);
-				const matchLines = renderTreeList(
-					{
-						items: matchGroups,
-						expanded,
-						maxCollapsed,
-						itemType: "match",
-						renderItem: group => group.map(line => uiTheme.fg("toolOutput", line)),
-					},
-					uiTheme,
-				);
-				const result = [header, ...matchLines, ...extraLines].map(l => truncateToWidth(l, width, Ellipsis.Omit));
-				cached = { key, lines: result };
-				return result;
-			},
-			invalidate() {
-				cached = undefined;
-			},
-		};
+		return new Text(text, 0, 0);
 	}
 }
 
@@ -467,5 +351,3 @@ interface GrepRenderArgs {
 	limit?: number;
 	offset?: number;
 }
-
-const COLLAPSED_TEXT_LIMIT = PREVIEW_LIMITS.COLLAPSED_LINES * 2;

@@ -7,8 +7,10 @@ import {
 	formatBadge,
 	formatDuration,
 	formatStatusIcon,
+	PREVIEW_LIMITS,
 	replaceTabs,
 	type ToolUIColor,
+	TRUNCATE_LENGTHS,
 	truncateToWidth,
 } from "../ui/render-utils";
 import { subprocessToolRegistry } from "./subprocess-tool-registry";
@@ -45,7 +47,9 @@ function renderToolLine(entry: ToolEntry, theme: Theme): string {
 				? theme.fg("error", theme.status.error)
 				: theme.fg("dim", theme.status.success);
 	const toolName = entry.status === "running" ? theme.fg("muted", entry.tool) : theme.fg("dim", entry.tool);
-	const args = entry.args ? `  ${theme.fg("dim", truncateToWidth(replaceTabs(entry.args), 50))}` : "";
+	const args = entry.args
+		? `  ${theme.fg("dim", truncateToWidth(replaceTabs(entry.args), TRUNCATE_LENGTHS.TOOL_ARGS))}`
+		: "";
 	return `${INDENT}${icon} ${toolName}${args}`;
 }
 
@@ -84,7 +88,7 @@ function renderSubagentHeader(
 	state: { icon: string; duration?: number; badge?: { text: string; color: ToolUIColor } },
 	theme: Theme,
 ): string[] {
-	const desc = truncateToWidth(replaceTabs(config.getDescription(args)), 80);
+	const desc = truncateToWidth(replaceTabs(config.getDescription(args)), TRUNCATE_LENGTHS.CONTENT);
 	let header = `${state.icon} ${theme.fg("accent", theme.bold(config.label))}  ${theme.fg("muted", desc)}`;
 	if (state.duration && state.duration > 0) {
 		header += `${theme.sep.dot}${theme.fg("dim", formatDuration(state.duration))}`;
@@ -107,14 +111,9 @@ function renderSubagentHeader(
 // Tool history rendering
 // ═══════════════════════════════════════════════════════════════════════════
 
-/** Max tool history entries to show during streaming */
-const STREAMING_TOOL_LIMIT = 4;
-
-/** Max tool history entries when collapsed */
-const COLLAPSED_TOOL_LIMIT = 3;
-
-/** Max conclusion lines when collapsed */
-const COLLAPSED_CONCLUSION_LINES = 6;
+const STREAMING_TOOL_LIMIT = PREVIEW_LIMITS.SUBAGENT_STREAMING_TOOLS;
+const COLLAPSED_TOOL_LIMIT = PREVIEW_LIMITS.SUBAGENT_COLLAPSED_TOOLS;
+const COLLAPSED_CONCLUSION_LINES = PREVIEW_LIMITS.SUBAGENT_CONCLUSION;
 
 function renderToolHistory(history: ToolEntry[], expanded: boolean, limit: number, theme: Theme): string[] {
 	const lines: string[] = [];
@@ -150,14 +149,27 @@ const taskRenderConfig: SubagentRenderConfig = {
 	getContextLine: args => {
 		const prompt = String(args.prompt ?? "").trim();
 		if (!prompt) return null;
-		return `Prompt: ${truncateToWidth(replaceTabs(prompt.split("\n")[0] ?? ""), 70)}`;
+		return `Prompt: ${truncateToWidth(replaceTabs(prompt.split("\n")[0] ?? ""), TRUNCATE_LENGTHS.SUBAGENT_ERROR)}`;
 	},
 };
 
-export function renderCall(args: TaskParams, _options: RenderResultOptions, theme: Theme): Component {
-	const icon = formatStatusIcon("pending", theme);
-	const lines = renderSubagentHeader(taskRenderConfig, args as Record<string, unknown>, { icon }, theme);
-	return new Text(lines.join("\n"), 0, 0);
+export function renderCall(args: TaskParams, options: RenderResultOptions, theme: Theme): Component {
+	const params = args as Record<string, unknown>;
+	let cached: RenderCache | undefined;
+	return {
+		render() {
+			const frame = options.spinnerFrame ?? 0;
+			const key = new Hasher().u32(frame).digest();
+			if (cached?.key === key) return cached.lines;
+			const icon = formatStatusIcon("running", theme, frame);
+			const lines = renderSubagentHeader(taskRenderConfig, params, { icon }, theme);
+			cached = { key, lines };
+			return lines;
+		},
+		invalidate() {
+			cached = undefined;
+		},
+	};
 }
 
 export function renderResult(
@@ -167,7 +179,7 @@ export function renderResult(
 ): Component {
 	if (!result.details) {
 		const text = result.content.find(c => c.type === "text")?.text || "";
-		return new Text(theme.fg("dim", truncateToWidth(text, 100)), 0, 0);
+		return new Text(theme.fg("dim", truncateToWidth(text, TRUNCATE_LENGTHS.LONG)), 0, 0);
 	}
 
 	let cached: RenderCache | undefined;
@@ -239,7 +251,7 @@ export function renderResult(
 				}
 
 				if (r.error && !success) {
-					lines.push(`${INDENT}${theme.fg("error", truncateToWidth(r.error, 70))}`);
+					lines.push(`${INDENT}${theme.fg("error", truncateToWidth(r.error, TRUNCATE_LENGTHS.SUBAGENT_ERROR))}`);
 				}
 			} else {
 				const icon = formatStatusIcon("pending", theme);
@@ -247,8 +259,7 @@ export function renderResult(
 			}
 
 			if (lines.length === 0) {
-				const text = fallbackText.trim() ? fallbackText : "No results";
-				const result = [theme.fg("dim", truncateToWidth(text, width))];
+				const result = [truncateToWidth(fallbackText.trim() || theme.fg("dim", "No results"), width)];
 				cached = { key, lines: result };
 				return result;
 			}
@@ -270,7 +281,7 @@ export function renderResult(
 /**
  * Create a renderer for any subagent tool (explore, oracle, librarian, code_review).
  *
- * Renders call and result with unified header + tool history.
+ * Renders call and result with unified header + tool history + conclusion.
  */
 export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 	renderCall: (args: unknown, options: RenderResultOptions, theme: Theme) => Component;
@@ -282,11 +293,23 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 	) => Component;
 } {
 	return {
-		renderCall(args: unknown, _options: RenderResultOptions, theme: Theme): Component {
+		renderCall(args: unknown, options: RenderResultOptions, theme: Theme): Component {
 			const params = (args ?? {}) as Record<string, unknown>;
-			const icon = formatStatusIcon("pending", theme);
-			const lines = renderSubagentHeader(config, params, { icon }, theme);
-			return new Text(lines.join("\n"), 0, 0);
+			let cached: RenderCache | undefined;
+			return {
+				render() {
+					const frame = options.spinnerFrame ?? 0;
+					const key = new Hasher().u32(frame).digest();
+					if (cached?.key === key) return cached.lines;
+					const icon = formatStatusIcon("running", theme, frame);
+					const lines = renderSubagentHeader(config, params, { icon }, theme);
+					cached = { key, lines };
+					return lines;
+				},
+				invalidate() {
+					cached = undefined;
+				},
+			};
 		},
 
 		renderResult(
@@ -299,7 +322,7 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 
 			if (!result.details) {
 				const text = result.content.find(c => c.type === "text")?.text || "No results";
-				return new Text(theme.fg("dim", truncateToWidth(text, 100)), 0, 0);
+				return new Text(theme.fg("dim", truncateToWidth(text, TRUNCATE_LENGTHS.LONG)), 0, 0);
 			}
 
 			let cached: RenderCache | undefined;
@@ -366,7 +389,9 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 						}
 
 						if (r.error && !success) {
-							lines.push(`${INDENT}${theme.fg("error", truncateToWidth(r.error, 70))}`);
+							lines.push(
+								`${INDENT}${theme.fg("error", truncateToWidth(r.error, TRUNCATE_LENGTHS.SUBAGENT_ERROR))}`,
+							);
 						}
 						if (success && fallbackText.trim()) {
 							lines.push("");
@@ -374,7 +399,7 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 							const maxLines = expanded ? conclusionLines.length : COLLAPSED_CONCLUSION_LINES;
 							const show = conclusionLines.slice(0, maxLines);
 							for (const line of show) {
-								lines.push(`${INDENT}${theme.fg("dim", truncateToWidth(replaceTabs(line), width - 4))}`);
+								lines.push(`${INDENT}${truncateToWidth(replaceTabs(line), width - 4)}`);
 							}
 							const remaining = conclusionLines.length - show.length;
 							if (remaining > 0) {
@@ -436,7 +461,7 @@ function renderAgentResult(result: SingleResult, expanded: boolean, theme: Theme
 	}
 
 	if (result.error && !success) {
-		lines.push(`${INDENT}${theme.fg("error", truncateToWidth(result.error, 70))}`);
+		lines.push(`${INDENT}${theme.fg("error", truncateToWidth(result.error, TRUNCATE_LENGTHS.SUBAGENT_ERROR))}`);
 	}
 
 	return lines;

@@ -109,7 +109,7 @@ export class EventController {
 
 						if (!this.ctx.pendingTools.has(content.id)) {
 							const tier = getToolTier(content.name);
-							if (tier !== "quiet" || this.#lastToolTier !== "quiet") {
+							if (tier !== "quiet" || this.#lastToolTier !== undefined) {
 								this.ctx.chatContainer.addChild(new Text("", 0, 0));
 							}
 							this.#lastToolTier = tier;
@@ -181,7 +181,7 @@ export class EventController {
 
 				if (!this.ctx.pendingTools.has(event.toolCallId)) {
 					const tier = getToolTier(event.toolName);
-					if (tier !== "quiet" || this.#lastToolTier !== "quiet") {
+					if (tier !== "quiet" || this.#lastToolTier !== undefined) {
 						this.ctx.chatContainer.addChild(new Text("", 0, 0));
 					}
 					this.#lastToolTier = tier;

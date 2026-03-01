@@ -21,7 +21,7 @@ import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { type Theme, theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { ToolUIKit } from "../ui/render-utils";
+import { formatErrorMessage } from "../ui/render-utils";
 import type { ToolSession } from ".";
 
 // =============================================================================
@@ -356,8 +356,7 @@ export class AskTool implements AgentTool<typeof askSchema, AskToolDetails, Them
 	}
 
 	renderCall(args: AskRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
-		const ui = new ToolUIKit(uiTheme);
-		const label = ui.title("Ask");
+		const label = uiTheme.fg("toolTitle", uiTheme.bold("Ask"));
 
 		// Multi-part questions
 		if (args.questions && args.questions.length > 0) {
@@ -392,14 +391,14 @@ export class AskTool implements AgentTool<typeof askSchema, AskToolDetails, Them
 
 		// Single question
 		if (!args.question) {
-			return new Text(ui.errorMessage("No question provided"), 0, 0);
+			return new Text(formatErrorMessage("No question provided", uiTheme), 0, 0);
 		}
 
 		let text = `${label} ${uiTheme.fg("accent", args.question)}`;
 		const meta: string[] = [];
 		if (args.multi) meta.push("multi");
 		if (args.options?.length) meta.push(`options:${args.options.length}`);
-		text += ui.meta(meta);
+		text += meta.length > 0 ? ` ${uiTheme.fg("muted", meta.join(uiTheme.sep.dot))}` : "";
 
 		if (args.options?.length) {
 			for (let i = 0; i < args.options.length; i++) {

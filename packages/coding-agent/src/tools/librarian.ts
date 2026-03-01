@@ -20,7 +20,7 @@ export const librarianConfig: SubagentConfig<typeof schema.properties> = {
 	progressText: "Exploring repositories...",
 	tmpPrefix: "arc-librarian-",
 	buildTask,
-	buildDescription: p => (p.query as string).slice(0, 80),
+	buildDescription: p => String(p.query ?? "").slice(0, 80),
 	buildContextLine: p => {
 		if (!p.context) return null;
 		return `Context: ${String(p.context).split("\n")[0].slice(0, 60)}`;
