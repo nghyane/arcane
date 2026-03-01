@@ -12,6 +12,7 @@
  * toward the codemode API, not to contain malicious code.
  */
 
+import { AsyncLocalStorage } from "node:async_hooks";
 import { logger } from "@nghyane/arcane-utils";
 
 export interface ExecutionError {
@@ -44,6 +45,10 @@ export class AbortExecution extends Error {
 	}
 }
 
+export type StepEvent =
+	| { type: "start"; stepId: string; intent: string; parentStepId?: string }
+	| { type: "end"; stepId: string };
+
 export interface ExecutorOptions {
 	/** Timeout in milliseconds (default: 300_000 = 5 minutes) */
 	timeoutMs?: number;
@@ -53,6 +58,10 @@ export interface ExecutorOptions {
 	state?: Map<string, unknown>;
 	/** Additional globals to inject into the sandbox */
 	injectedGlobals?: Record<string, unknown>;
+	/** Called when step() starts/ends */
+	onStep?: (event: StepEvent) => void;
+	/** Called when progress() is called */
+	onProgress?: (stepId: string, message: string) => void;
 }
 
 type ToolFn = (args: Record<string, unknown>) => Promise<unknown>;
@@ -61,6 +70,19 @@ type ToolFn = (args: Record<string, unknown>) => Promise<unknown>;
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor as new (
 	...args: string[]
 ) => (...args: unknown[]) => Promise<unknown>;
+
+/** Tracks current step ID for nested step() calls */
+const currentStepId = new AsyncLocalStorage<string>();
+
+let stepCounter = 0;
+function generateStepId(): string {
+	return `step_${++stepCounter}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** Returns the current step ID if inside a step() call, or undefined otherwise. */
+export function getCurrentStepId(): string | undefined {
+	return currentStepId.getStore();
+}
 
 /**
  * Execute LLM-generated code with a codemode proxy.
@@ -74,8 +96,24 @@ export async function execute(
 	fns: Record<string, ToolFn>,
 	options: ExecutorOptions = {},
 ): Promise<ExecuteResult> {
-	const { timeoutMs = 300_000, signal, injectedGlobals } = options;
+	const { timeoutMs = 300_000, signal, injectedGlobals, onStep, onProgress } = options;
 	const logs: string[] = [];
+
+	const step = async (intent: string, fn: () => Promise<unknown>) => {
+		const stepId = generateStepId();
+		const parentStepId = currentStepId.getStore();
+		onStep?.({ type: "start", stepId, intent, parentStepId });
+		try {
+			return await currentStepId.run(stepId, fn);
+		} finally {
+			onStep?.({ type: "end", stepId });
+		}
+	};
+
+	const progress = (message: string) => {
+		const stepId = currentStepId.getStore();
+		if (stepId) onProgress?.(stepId, message);
+	};
 
 	// Build the codemode proxy — any property access returns an async dispatch function.
 	// Must handle symbol keys (e.g., Symbol.toPrimitive, Symbol.toStringTag) and
@@ -152,6 +190,8 @@ export async function execute(
 			"console",
 			"state",
 			"memo",
+			"step",
+			"progress",
 			...injectedNames,
 			"process",
 			"require",
@@ -159,7 +199,15 @@ export async function execute(
 			"globalThis",
 			"global",
 		];
-		const args = [codemode, sandboxConsole, persistentState, memo, ...Object.values(injectedGlobals ?? {})];
+		const args = [
+			codemode,
+			sandboxConsole,
+			persistentState,
+			memo,
+			step,
+			progress,
+			...Object.values(injectedGlobals ?? {}),
+		];
 
 		const fn = new AsyncFunction(...params, `const __fn = ${code};\nreturn await __fn();`);
 		resultPromise = fn(...args);

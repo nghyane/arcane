@@ -306,6 +306,7 @@ export type AgentEvent =
 			tool?: AgentTool;
 			/** Set when this event is a sub-tool call inside a meta-tool (e.g. Code Mode) */
 			parentToolCallId?: string;
+			/** Set when the tool call is inside a step() in Code Mode */
 			stepId?: string;
 	  }
 	| {
@@ -315,7 +316,6 @@ export type AgentEvent =
 			args: Record<string, unknown>;
 			partialResult: AgentToolResult;
 			parentToolCallId?: string;
-			stepId?: string;
 	  }
 	| {
 			type: "tool_execution_end";
@@ -324,13 +324,12 @@ export type AgentEvent =
 			result: AgentToolResult;
 			isError?: boolean;
 			parentToolCallId?: string;
-			stepId?: string;
 	  }
-	// Step/progress lifecycle (code tool)
-	| { type: "step_start"; stepId: string; intent: string; parentToolCallId: string }
-	| { type: "step_progress"; stepId: string; message: string }
-	| { type: "step_end"; stepId: string; durationMs: number }
-	| { type: "execution_abort"; toolCallId: string; message: string };
+	| { type: "execution_abort"; toolCallId: string; message: string }
+	// Step lifecycle (code tool grouping)
+	| { type: "step_start"; toolCallId: string; stepId: string; intent: string; parentStepId?: string }
+	| { type: "step_end"; toolCallId: string; stepId: string; durationMs: number }
+	| { type: "step_progress"; toolCallId: string; stepId: string; message: string };
 
 /**
  * Known tool argument shapes, keyed by tool name.

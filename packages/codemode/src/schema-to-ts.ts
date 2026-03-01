@@ -31,7 +31,7 @@ function safePropName(name: string): string {
 	return isValidIdentifier(name) ? name : JSON.stringify(name);
 }
 
-function schemaToTs(schema: JSONSchema, inline = false): string {
+function schemaToTs(schema: JSONSchema, inline = false, compact = false): string {
 	if (!schema || typeof schema !== "object") return "unknown";
 
 	// Literal / const
@@ -47,13 +47,13 @@ function schemaToTs(schema: JSONSchema, inline = false): string {
 	// Union types (anyOf / oneOf)
 	const unionSchemas = schema.anyOf ?? schema.oneOf;
 	if (unionSchemas) {
-		const variants = unionSchemas.map(s => schemaToTs(s, true));
+		const variants = unionSchemas.map(s => schemaToTs(s, true, compact));
 		return variants.join(" | ");
 	}
 
 	// Intersection (allOf)
 	if (schema.allOf) {
-		const parts = schema.allOf.map(s => schemaToTs(s, true));
+		const parts = schema.allOf.map(s => schemaToTs(s, true, compact));
 		return parts.join(" & ");
 	}
 
@@ -93,7 +93,7 @@ function schemaToTs(schema: JSONSchema, inline = false): string {
 			return "null";
 		case "array": {
 			if (schema.items) {
-				const itemType = schemaToTs(schema.items, true);
+				const itemType = schemaToTs(schema.items, true, compact);
 				return itemType.includes("|") || itemType.includes("&") ? `Array<${itemType}>` : `${itemType}[]`;
 			}
 			return "unknown[]";
@@ -110,7 +110,9 @@ function schemaToTs(schema: JSONSchema, inline = false): string {
 	const props = schema.properties;
 	if (!props && schema.additionalProperties) {
 		const valType =
-			typeof schema.additionalProperties === "object" ? schemaToTs(schema.additionalProperties, true) : "unknown";
+			typeof schema.additionalProperties === "object"
+				? schemaToTs(schema.additionalProperties, true, compact)
+				: "unknown";
 		return `Record<string, ${valType}>`;
 	}
 	if (!props) return "unknown";
@@ -118,9 +120,9 @@ function schemaToTs(schema: JSONSchema, inline = false): string {
 	const required = new Set(schema.required ?? []);
 	const lines: string[] = ["{"];
 	for (const [key, propSchema] of Object.entries(props)) {
-		const propType = schemaToTs(propSchema, true);
+		const propType = schemaToTs(propSchema, true, compact);
 		const opt = required.has(key) ? "" : "?";
-		const hint = buildPropertyHint(key, propSchema);
+		const hint = compact ? null : buildPropertyHint(key, propSchema);
 		if (hint) {
 			lines.push(`  /** ${hint} */`);
 		}
@@ -201,9 +203,14 @@ function isRedundantDescription(propName: string, desc: string): boolean {
 	if (normalized.includes(nameNorm) && desc.length < nameNorm.length + 20) return true;
 	return false;
 }
+export interface SchemaToTsOptions {
+	/** Strip descriptions from generated types (for well-known tools) */
+	compact?: boolean;
+}
+
 /**
  * Convert a JSON Schema (TypeBox) to a TypeScript type string.
  */
-export function jsonSchemaToTypeScript(schema: unknown): string {
-	return schemaToTs(schema as JSONSchema, false);
+export function jsonSchemaToTypeScript(schema: unknown, options?: SchemaToTsOptions): string {
+	return schemaToTs(schema as JSONSchema, false, options?.compact);
 }
