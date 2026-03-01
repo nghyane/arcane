@@ -27,9 +27,9 @@ import { resolveToCwd } from "./path-utils";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
 
 const findSchema = Type.Object({
-	pattern: Type.String(),
-	hidden: Type.Optional(Type.Boolean()),
-	limit: Type.Optional(Type.Number()),
+	pattern: Type.String({ description: "Glob pattern to match file paths" }),
+	hidden: Type.Optional(Type.Boolean({ description: "Include hidden files and directories" })),
+	limit: Type.Optional(Type.Number({ description: "Max number of results to return" })),
 });
 
 export type FindToolInput = Static<typeof findSchema>;

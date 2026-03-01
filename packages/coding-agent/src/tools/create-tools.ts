@@ -10,7 +10,6 @@ import { SearchTool } from "../web/search";
 import { AskTool } from "./ask";
 import { BashTool } from "./bash";
 import { BrowserTool } from "./browser";
-import { createCodeTool } from "./code-tool";
 import { exploreConfig } from "./explore";
 import { FetchTool } from "./fetch";
 import { FindTool } from "./find";
@@ -183,6 +182,5 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 	);
 	const tools = results.filter((r): r is AgentTool => r !== null);
 
-	const { codeTool } = createCodeTool(tools);
-	return [codeTool];
+	return tools;
 }

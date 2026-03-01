@@ -18,16 +18,16 @@ import { resolveToCwd } from "./path-utils";
 import { ToolError } from "./tool-errors";
 
 const grepSchema = Type.Object({
-	pattern: Type.String(),
-	path: Type.Optional(Type.String()),
-	glob: Type.Optional(Type.String()),
-	type: Type.Optional(Type.String()),
-	i: Type.Optional(Type.Boolean()),
-	pre: Type.Optional(Type.Number()),
-	post: Type.Optional(Type.Number()),
-	multiline: Type.Optional(Type.Boolean()),
-	limit: Type.Optional(Type.Number()),
-	offset: Type.Optional(Type.Number()),
+	pattern: Type.String({ description: "Regex pattern to search for" }),
+	path: Type.Optional(Type.String({ description: "Directory or file to search (default: cwd)" })),
+	glob: Type.Optional(Type.String({ description: 'Glob filter for file paths (e.g. "*.ts")' })),
+	type: Type.Optional(Type.String({ description: 'File extension filter without dot (e.g. "ts")' })),
+	i: Type.Optional(Type.Boolean({ description: "Case-insensitive search" })),
+	pre: Type.Optional(Type.Number({ description: "Context lines before match" })),
+	post: Type.Optional(Type.Number({ description: "Context lines after match" })),
+	multiline: Type.Optional(Type.Boolean({ description: "Enable multiline regex matching" })),
+	limit: Type.Optional(Type.Number({ description: "Max number of matches to return" })),
+	offset: Type.Optional(Type.Number({ description: "Skip first N matches" })),
 });
 
 export type GrepToolInput = Static<typeof grepSchema>;

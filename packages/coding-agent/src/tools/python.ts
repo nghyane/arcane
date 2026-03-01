@@ -25,13 +25,14 @@ export const PYTHON_DEFAULT_PREVIEW_LINES = 10;
 const pythonSchema = Type.Object({
 	cells: Type.Array(
 		Type.Object({
-			code: Type.String(),
-			title: Type.Optional(Type.String()),
+			code: Type.String({ description: "Python code to execute" }),
+			title: Type.Optional(Type.String({ description: "Optional label for the cell" })),
 		}),
+		{ description: "Code cells to execute sequentially" },
 	),
-	timeout: Type.Optional(Type.Number()),
-	cwd: Type.Optional(Type.String()),
-	reset: Type.Optional(Type.Boolean()),
+	timeout: Type.Optional(Type.Number({ description: "Timeout in seconds" })),
+	cwd: Type.Optional(Type.String({ description: "Working directory" })),
+	reset: Type.Optional(Type.Boolean({ description: "Reset kernel state before execution" })),
 });
 type PythonToolParams = Static<typeof pythonSchema>;
 

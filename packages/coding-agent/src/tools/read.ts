@@ -509,9 +509,9 @@ async function convertWithMarkitdown(
 }
 
 const readSchema = Type.Object({
-	path: Type.String(),
-	offset: Type.Optional(Type.Number()),
-	limit: Type.Optional(Type.Number()),
+	path: Type.String({ description: "File path (relative or absolute)" }),
+	offset: Type.Optional(Type.Number({ description: "Start reading from this line number (1-indexed)" })),
+	limit: Type.Optional(Type.Number({ description: "Max number of lines to read" })),
 });
 
 export type ReadToolInput = Static<typeof readSchema>;

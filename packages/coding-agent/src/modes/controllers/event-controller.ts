@@ -2,7 +2,6 @@ import { toolDetails } from "@nghyane/arcane-agent";
 import { Loader, TERMINAL, Text } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
-import { CodeGroupComponent } from "../../modes/components/code-group";
 import { ReadToolGroupComponent } from "../../modes/components/read-tool-group";
 import { TodoReminderComponent } from "../../modes/components/todo-reminder";
 import { ToolExecutionComponent } from "../../modes/components/tool-execution";
@@ -13,10 +12,8 @@ import { getSymbolTheme, theme } from "../../theme/theme";
 
 export class EventController {
 	#lastReadGroup: ReadToolGroupComponent | undefined = undefined;
-	#codeGroups = new Map<string, CodeGroupComponent>();
 	#lastThinkingCount = 0;
 	#renderedCustomMessages = new Set<string>();
-	#lastIntent: string | undefined = undefined;
 
 	constructor(private ctx: InteractiveModeContext) {}
 
@@ -35,26 +32,6 @@ export class EventController {
 		return this.#lastReadGroup;
 	}
 
-	#updateWorkingMessageFromIntent(intent: string | undefined): void {
-		const trimmed = intent?.trim();
-		if (!trimmed || trimmed === this.#lastIntent) return;
-		this.#lastIntent = trimmed;
-		this.ctx.setWorkingMessage(`${trimmed} (esc to interrupt)`);
-	}
-
-	#ensureCodeGroup(id: string): CodeGroupComponent {
-		let group = this.#codeGroups.get(id);
-		if (!group) {
-			this.#resetReadGroup();
-			group = new CodeGroupComponent();
-			group.setExpanded(this.ctx.toolOutputExpanded);
-			this.ctx.chatContainer.addChild(group);
-			this.#codeGroups.set(id, group);
-			this.ctx.pendingTools.set(id, group);
-		}
-		return group;
-	}
-
 	subscribeToAgent(): void {
 		this.ctx.unsubscribe = this.ctx.session.subscribe(async (event: AgentSessionEvent) => {
 			await this.handleEvent(event);
@@ -71,7 +48,6 @@ export class EventController {
 
 		switch (event.type) {
 			case "agent_start":
-				this.#lastIntent = undefined;
 				if (this.ctx.retryEscapeHandler) {
 					this.ctx.editor.onEscape = this.ctx.retryEscapeHandler;
 					this.ctx.retryEscapeHandler = undefined;
@@ -145,11 +121,6 @@ export class EventController {
 
 					for (const content of this.ctx.streamingMessage.content) {
 						if (content.type !== "toolCall") continue;
-						// Code Mode: create group component early during streaming for intent display
-						if (content.name === "code") {
-							this.#ensureCodeGroup(content.id);
-							continue;
-						}
 
 						if (!this.ctx.pendingTools.has(content.id)) {
 							if (content.name === "read") {
@@ -181,12 +152,6 @@ export class EventController {
 								component.updateArgs(content.arguments, content.id);
 							}
 						}
-					}
-
-					// Update working message with intent — skip for code tools that already have a visible group
-					for (const content of this.ctx.streamingMessage.content) {
-						if (content.type !== "toolCall") continue;
-						if (this.#codeGroups.has(content.id)) continue;
 					}
 
 					this.ctx.ui.requestRender();
@@ -230,33 +195,7 @@ export class EventController {
 				break;
 
 			case "tool_execution_start": {
-				if (!this.#codeGroups.has(event.toolCallId)) this.#updateWorkingMessageFromIntent(event.intent);
-				if (event.toolName === "code") {
-					this.#ensureCodeGroup(event.toolCallId);
-					this.ctx.ui.requestRender();
-					break;
-				}
-				// Route sub-tools into their parent code group
-				if (event.parentToolCallId) {
-					const parentGroup = this.#codeGroups.get(event.parentToolCallId);
-					if (parentGroup) {
-						const tool = event.tool ?? this.ctx.session.getToolByName(event.toolName);
-						const handle = parentGroup.addSubTool(
-							event.toolCallId,
-							event.toolName,
-							event.args,
-							tool,
-							{
-								showImages: settings.get("terminal.showImages"),
-							},
-							this.ctx.ui,
-							this.ctx.sessionManager.getCwd(),
-						);
-						this.ctx.pendingTools.set(event.toolCallId, handle);
-						this.ctx.ui.requestRender();
-						break;
-					}
-				}
+				if (event.intent) this.ctx.setWorkingMessage(`${event.intent} (esc to interrupt)`);
 
 				if (!this.ctx.pendingTools.has(event.toolCallId)) {
 					if (event.toolName === "read") {
@@ -303,18 +242,6 @@ export class EventController {
 					this.ctx.pendingTools.delete(event.toolCallId);
 					this.ctx.ui.requestRender();
 				}
-				// Code Mode: finalize the group when the "code" tool ends
-				if (event.toolName === "code") {
-					const group = this.#codeGroups.get(event.toolCallId);
-					if (group) {
-						const details = toolDetails("code", (event.result.details ?? {}) as Record<string, unknown>);
-						if (details?.logs) {
-							group.setLogs(details.logs);
-						}
-						group.setDone();
-						this.#codeGroups.delete(event.toolCallId);
-					}
-				}
 				// Update todo display when todo_write tool completes
 				if (event.toolName === "todo_write" && !event.isError) {
 					const details = toolDetails("todo_write", (event.result.details ?? {}) as Record<string, unknown>);
@@ -332,33 +259,6 @@ export class EventController {
 				break;
 			}
 
-			case "step_start": {
-				const group = this.#codeGroups.get(event.toolCallId);
-				group?.stepStart(event.stepId, event.intent, event.parentStepId);
-				break;
-			}
-
-			case "step_end": {
-				const group = this.#codeGroups.get(event.toolCallId);
-				group?.stepEnd(event.stepId);
-				break;
-			}
-
-			case "step_progress": {
-				const group = this.#codeGroups.get(event.toolCallId);
-				group?.setProgress(event.stepId, event.message);
-				break;
-			}
-
-			case "execution_abort": {
-				const group = this.#codeGroups.get(event.toolCallId);
-				if (group) {
-					group.setAbortMessage(event.message);
-					this.ctx.ui.requestRender();
-				}
-				break;
-			}
-
 			case "agent_end":
 				if (this.ctx.loadingAnimation) {
 					this.ctx.loadingAnimation.stop();
@@ -371,7 +271,6 @@ export class EventController {
 					this.ctx.streamingMessage = undefined;
 				}
 				this.ctx.pendingTools.clear();
-				this.#codeGroups.clear();
 				this.ctx.ui.requestRender();
 				this.sendCompletionNotification();
 				break;

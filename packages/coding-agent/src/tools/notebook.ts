@@ -12,11 +12,11 @@ import { formatCount, formatErrorMessage, PREVIEW_LIMITS } from "../ui/render-ut
 import { resolveToCwd } from "./path-utils";
 
 const notebookSchema = Type.Object({
-	action: StringEnum(["edit", "insert", "delete"]),
-	notebook_path: Type.String(),
-	cell_index: Type.Number(),
-	content: Type.Optional(Type.String()),
-	cell_type: Type.Optional(StringEnum(["code", "markdown"])),
+	action: StringEnum(["edit", "insert", "delete"], { description: "Operation to perform on notebook cell" }),
+	notebook_path: Type.String({ description: "Path to the notebook file" }),
+	cell_index: Type.Number({ description: "Zero-based cell index" }),
+	content: Type.Optional(Type.String({ description: "Cell content (for edit/insert)" })),
+	cell_type: Type.Optional(StringEnum(["code", "markdown"], { description: "Cell type (default: code)" })),
 });
 
 export interface NotebookToolDetails {

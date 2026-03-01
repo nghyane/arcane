@@ -2,9 +2,9 @@ import { Type } from "@sinclair/typebox";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
-	diff_description: Type.String(),
-	files: Type.Optional(Type.Array(Type.String())),
-	instructions: Type.Optional(Type.String()),
+	diff_description: Type.String({ description: "Description of the diff or change to review" }),
+	files: Type.Optional(Type.Array(Type.String(), { description: "Specific files to focus the review on" })),
+	instructions: Type.Optional(Type.String({ description: "Additional review instructions" })),
 });
 
 function buildTask(p: Record<string, unknown>): string {

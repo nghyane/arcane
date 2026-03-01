@@ -15,9 +15,9 @@ import { PREVIEW_LIMITS } from "../ui/render-utils";
 const todoWriteSchema = Type.Object({
 	todos: Type.Array(
 		Type.Object({
-			id: Type.Optional(Type.String()),
-			content: Type.String(),
-			status: StringEnum(["pending", "in_progress", "completed"]),
+			id: Type.Optional(Type.String({ description: "Existing todo ID to update (omit for new)" })),
+			content: Type.String({ description: "Todo description" }),
+			status: StringEnum(["pending", "in_progress", "completed"], { description: "Todo status" }),
 		}),
 	),
 });

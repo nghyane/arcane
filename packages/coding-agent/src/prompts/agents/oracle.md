@@ -51,3 +51,8 @@ Structure every response:
 
 Omit sections that don't apply. Never pad with filler.
 </output>
+
+<critical>
+Only your final message is returned to the caller. It must be self-contained.
+Your final message must contain ONLY your analysis and recommendations — no preamble.
+</critical>

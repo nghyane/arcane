@@ -24,18 +24,18 @@ const ActionEnum = Type.Union([
 
 const schema = Type.Object({
 	action: ActionEnum,
-	owner: Type.String(),
-	repo: Type.String(),
-	path: Type.Optional(Type.String()),
-	ref: Type.Optional(Type.String()),
-	number: Type.Optional(Type.Number()),
-	query: Type.Optional(Type.String()),
-	state: Type.Optional(Type.String()),
-	labels: Type.Optional(Type.String()),
-	sha: Type.Optional(Type.String()),
-	include_diff: Type.Optional(Type.Boolean()),
-	recursive: Type.Optional(Type.Boolean()),
-	limit: Type.Optional(Type.Number()),
+	owner: Type.String({ description: "Repository owner (user or org)" }),
+	repo: Type.String({ description: "Repository name" }),
+	path: Type.Optional(Type.String({ description: "File or directory path within the repo" })),
+	ref: Type.Optional(Type.String({ description: "Branch, tag, or commit SHA" })),
+	number: Type.Optional(Type.Number({ description: "Issue or PR number" })),
+	query: Type.Optional(Type.String({ description: "Search query or SSR pattern" })),
+	state: Type.Optional(Type.String({ description: "Filter by state (open, closed, all)" })),
+	labels: Type.Optional(Type.String({ description: "Comma-separated label filter" })),
+	sha: Type.Optional(Type.String({ description: "Commit SHA" })),
+	include_diff: Type.Optional(Type.Boolean({ description: "Include diff in commit details" })),
+	recursive: Type.Optional(Type.Boolean({ description: "Recursively list tree contents" })),
+	limit: Type.Optional(Type.Number({ description: "Max number of results" })),
 });
 
 type GitHubInput = Static<typeof schema>;

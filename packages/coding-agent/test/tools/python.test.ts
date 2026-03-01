@@ -3,7 +3,6 @@ import { Settings } from "@nghyane/arcane/config/settings";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 import { PythonTool } from "@nghyane/arcane/tools/python";
 import { TempDir } from "@nghyane/arcane-utils";
-import type { CodeAgentTool } from "../../src/tools/code-tool";
 
 let previousSkipCheck: string | undefined;
 let tempDir: TempDir;
@@ -40,9 +39,8 @@ function createSettings(toolMode: "ipy-only" | "bash-only" | "both"): Settings {
 	});
 }
 
-function getWrappedNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
-	const codeTool = tools.find(t => t.name === "code") as CodeAgentTool | undefined;
-	return codeTool ? [...codeTool.wrappedToolMap.keys()] : [];
+function getToolNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
+	return tools.map(t => t.name);
 }
 
 describe("python tool schema", () => {
@@ -74,7 +72,7 @@ describe("python tool exposure", () => {
 	it("includes python only in ipy-only mode", async () => {
 		const session = createSession({ settings: createSettings("ipy-only") });
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 		expect(names).toContain("python");
 		expect(names).not.toContain("bash");
 	});
@@ -82,7 +80,7 @@ describe("python tool exposure", () => {
 	it("includes bash only in bash-only mode", async () => {
 		const session = createSession({ settings: createSettings("bash-only") });
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 		expect(names).toContain("bash");
 		expect(names).not.toContain("python");
 	});
@@ -90,7 +88,7 @@ describe("python tool exposure", () => {
 	it("includes bash and python in both mode", async () => {
 		const session = createSession({ settings: createSettings("both") });
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 		expect(names).toContain("bash");
 		expect(names).toContain("python");
 	});

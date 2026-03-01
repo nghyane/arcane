@@ -56,7 +56,7 @@ Be comprehensive and direct. No filler.
 </output>
 
 <critical>
-Only your final message is returned to the caller. It must be self-contained with all findings, paths, and explanations. Do not reference tool names or intermediate steps — present conclusions directly.
+Only your final message is returned to the caller. It must be self-contained with all findings, paths, and explanations. Do not reference tool names or intermediate steps — present conclusions directly. Your final message must contain ONLY the information found — no preamble.
 
 Use "fluent" linking — embed file/PR/commit references in natural noun phrases, not raw URLs. Example: The [`handleAuth` function](file:///path/to/auth.ts#L42) validates tokens.
 </critical>

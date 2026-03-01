@@ -324,12 +324,7 @@ export type AgentEvent =
 			result: AgentToolResult;
 			isError?: boolean;
 			parentToolCallId?: string;
-	  }
-	| { type: "execution_abort"; toolCallId: string; message: string }
-	// Step lifecycle (code tool grouping)
-	| { type: "step_start"; toolCallId: string; stepId: string; intent: string; parentStepId?: string }
-	| { type: "step_end"; toolCallId: string; stepId: string; durationMs: number }
-	| { type: "step_progress"; toolCallId: string; stepId: string; message: string };
+	  };
 
 /**
  * Known tool argument shapes, keyed by tool name.

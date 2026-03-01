@@ -2,9 +2,9 @@ import { Type } from "@sinclair/typebox";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
-	task: Type.String(),
-	context: Type.Optional(Type.String()),
-	files: Type.Optional(Type.Array(Type.String())),
+	task: Type.String({ description: "Question or task for the oracle to reason about" }),
+	context: Type.Optional(Type.String({ description: "Additional context or constraints" })),
+	files: Type.Optional(Type.Array(Type.String(), { description: "File paths for the oracle to examine" })),
 });
 
 function buildTask(p: Record<string, unknown>): string {

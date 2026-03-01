@@ -2,8 +2,8 @@ import { Type } from "@sinclair/typebox";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
-	query: Type.String(),
-	context: Type.Optional(Type.String()),
+	query: Type.String({ description: "What to look up across repositories" }),
+	context: Type.Optional(Type.String({ description: "Additional context for the search" })),
 });
 
 function buildTask(p: Record<string, unknown>): string {

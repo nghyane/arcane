@@ -1,7 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { type SettingPath, Settings } from "@nghyane/arcane/config/settings";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
-import type { CodeAgentTool } from "../../src/tools/code-tool";
 
 Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 
@@ -23,26 +22,16 @@ function createSettingsWithOverrides(overrides: Partial<Record<SettingPath, unkn
 	});
 }
 
-/**
- * Helper: createTools returns [codeTool, ...excludedTools].
- * The code tool wraps all eligible tools — check wrappedToolMap for inner tools.
- */
-function getWrappedNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
-	const codeTool = tools.find(t => t.name === "code") as CodeAgentTool | undefined;
-	return codeTool ? [...codeTool.wrappedToolMap.keys()] : [];
-}
-
-function _getExcludedNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
-	return tools.filter(t => t.name !== "code").map(t => t.name);
+function getToolNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
+	return tools.map(t => t.name);
 }
 
 describe("createTools", () => {
-	it("returns a code tool that wraps all builtin tools", async () => {
+	it("returns all builtin tools directly", async () => {
 		const session = createTestSession();
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
-		expect(tools[0].name).toBe("code");
 		expect(names).toContain("bash");
 		expect(names).toContain("read");
 		expect(names).toContain("edit");
@@ -65,7 +54,7 @@ describe("createTools", () => {
 			}),
 		});
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
 		expect(names).toContain("bash");
 		expect(names).toContain("python");
@@ -79,7 +68,7 @@ describe("createTools", () => {
 			}),
 		});
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
 		expect(names).toContain("bash");
 		expect(names).not.toContain("python");
@@ -88,7 +77,7 @@ describe("createTools", () => {
 	it("excludes lsp tool when session disables LSP", async () => {
 		const session = createTestSession({ enableLsp: false });
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
 		expect(names).not.toContain("lsp");
 	});
@@ -96,7 +85,7 @@ describe("createTools", () => {
 	it("excludes lsp tool when disabled", async () => {
 		const session = createTestSession({ enableLsp: false });
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
 		expect(names).not.toContain("lsp");
 	});
@@ -104,7 +93,7 @@ describe("createTools", () => {
 	it("respects requested tool subset", async () => {
 		const session = createTestSession();
 		const tools = await createTools(session, ["read", "write"]);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
 		expect(names).toContain("read");
 		expect(names).toContain("write");
@@ -114,7 +103,7 @@ describe("createTools", () => {
 	it("excludes ask tool when hasUI is false", async () => {
 		const session = createTestSession({ hasUI: false });
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
 		expect(names).not.toContain("ask");
 	});
@@ -122,7 +111,7 @@ describe("createTools", () => {
 	it("includes ask tool when hasUI is true", async () => {
 		const session = createTestSession({ hasUI: true });
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
 		expect(names).toContain("ask");
 	});

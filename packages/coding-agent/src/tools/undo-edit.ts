@@ -19,7 +19,7 @@ import { ToolError } from "./tool-errors";
 import { popUndo } from "./undo-history";
 
 const undoEditSchema = Type.Object({
-	path: Type.String(),
+	path: Type.String({ description: "File path to revert" }),
 });
 
 export interface UndoEditToolDetails {

@@ -3,11 +3,8 @@ import { type SettingPath, Settings } from "@nghyane/arcane/config/settings";
 import * as pythonKernelModule from "@nghyane/arcane/ipy/kernel";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 
-import type { CodeAgentTool } from "../../src/tools/code-tool";
-
-function getWrappedNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
-	const codeTool = tools.find(t => t.name === "code") as CodeAgentTool | undefined;
-	return codeTool ? [...codeTool.wrappedToolMap.keys()] : [];
+function getToolNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
+	return tools.map(t => t.name);
 }
 
 function createTestSession(overrides: Partial<ToolSession> = {}): ToolSession {
@@ -42,7 +39,7 @@ describe("createTools python fallback", () => {
 		});
 
 		const tools = await createTools(session, ["python"]);
-		const names = getWrappedNames(tools).sort();
+		const names = getToolNames(tools).sort();
 
 		expect(names).toEqual(["bash"]);
 
@@ -62,7 +59,7 @@ describe("createTools python fallback", () => {
 		});
 
 		const tools = await createTools(session);
-		const names = getWrappedNames(tools);
+		const names = getToolNames(tools);
 
 		expect(names).toContain("bash");
 		expect(names).not.toContain("python");

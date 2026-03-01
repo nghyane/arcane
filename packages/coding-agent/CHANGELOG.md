@@ -7,6 +7,14 @@
 - `arc commit` command and entire commit pipeline (agentic commit, map-reduce, changelog generation)
 - `quick_task` bundled agent (only used by commit flow)
 - `commit.*` settings (`mapReduceEnabled`, `mapReduceMinFiles`, `mapReduceMaxFileTokens`, `mapReduceTimeoutMs`, `mapReduceMaxConcurrency`, `changelogMaxDiffChars`)
+- Codemode execution layer — LLM now calls tools natively instead of writing JavaScript ([#49](https://github.com/nghyane/arcane/issues/49))
+- `code-tool.ts`, `executor.ts`, `normalize.ts`, `prompt.ts`, and all codemode prompt snippets
+- `CodeGroupComponent` TUI component (step/progress rendering for code tool)
+
+### Changed
+
+- Tools are now returned directly from `createTools()` as individual `AgentTool` instances
+- System prompt updated for native tool calling guidance
 
 ## [0.1.12] - 2026-02-24
 

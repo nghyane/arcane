@@ -2,11 +2,8 @@ import { describe, expect, it } from "bun:test";
 import { Settings } from "@nghyane/arcane/config/settings";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 
-import type { CodeAgentTool } from "../../src/tools/code-tool";
-
-function getWrappedNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
-	const codeTool = tools.find(t => t.name === "code") as CodeAgentTool | undefined;
-	return codeTool ? [...codeTool.wrappedToolMap.keys()] : [];
+function getToolNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
+	return tools.map(t => t.name);
 }
 
 function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
@@ -29,7 +26,7 @@ describe("createTools python fallback", () => {
 		Bun.env.ARCANE_PYTHON_SKIP_CHECK = "1";
 		const session = createSession();
 		const tools = await createTools(session, ["python"]);
-		const names = getWrappedNames(tools).sort();
+		const names = getToolNames(tools).sort();
 
 		expect(names).toEqual(["bash"]);
 

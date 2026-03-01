@@ -309,8 +309,8 @@ function resolvePageClient(page: Page): PuppeteerCdpClient | null {
 
 const puppeteerGetArgsSchema = Type.Array(
 	Type.Object({
-		selector: Type.String(),
-		attribute: Type.Optional(Type.String()),
+		selector: Type.String({ description: "CSS selector" }),
+		attribute: Type.Optional(Type.String({ description: "Attribute to retrieve" })),
 	}),
 	{ minItems: 1 },
 );
@@ -338,22 +338,26 @@ const browserSchema = Type.Object({
 		"screenshot",
 		"close",
 	]),
-	url: Type.Optional(Type.String()),
-	selector: Type.Optional(Type.String()),
-	element_id: Type.Optional(Type.Number()),
-	include_all: Type.Optional(Type.Boolean()),
-	viewport_only: Type.Optional(Type.Boolean()),
+	url: Type.Optional(Type.String({ description: "URL to navigate to" })),
+	selector: Type.Optional(Type.String({ description: "CSS selector for target element" })),
+	element_id: Type.Optional(Type.Number({ description: "Observed element ID from observe action" })),
+	include_all: Type.Optional(Type.Boolean({ description: "Include all elements, not just interactive ones" })),
+	viewport_only: Type.Optional(Type.Boolean({ description: "Only observe elements in the visible viewport" })),
 	args: Type.Optional(puppeteerGetArgsSchema),
-	script: Type.Optional(Type.String()),
-	text: Type.Optional(Type.String()),
-	value: Type.Optional(Type.String()),
-	attribute: Type.Optional(Type.String()),
-	key: Type.Optional(Type.String()),
-	timeout: Type.Optional(Type.Number()),
-	wait_until: Type.Optional(StringEnum(["load", "domcontentloaded", "networkidle0", "networkidle2"])),
-	full_page: Type.Optional(Type.Boolean()),
-	format: Type.Optional(StringEnum(["text", "markdown"])),
-	path: Type.Optional(Type.String()),
+	script: Type.Optional(Type.String({ description: "JavaScript to evaluate in page context" })),
+	text: Type.Optional(Type.String({ description: "Text to type" })),
+	value: Type.Optional(Type.String({ description: "Value to fill into input" })),
+	attribute: Type.Optional(Type.String({ description: "Attribute name to retrieve" })),
+	key: Type.Optional(Type.String({ description: "Key to press (e.g. Enter, Escape)" })),
+	timeout: Type.Optional(Type.Number({ description: "Timeout in milliseconds" })),
+	wait_until: Type.Optional(
+		StringEnum(["load", "domcontentloaded", "networkidle0", "networkidle2"], {
+			description: "Navigation wait condition",
+		}),
+	),
+	full_page: Type.Optional(Type.Boolean({ description: "Capture full page screenshot" })),
+	format: Type.Optional(StringEnum(["text", "markdown"], { description: "Output format for content extraction" })),
+	path: Type.Optional(Type.String({ description: "File path for screenshot output" })),
 	viewport: Type.Optional(
 		Type.Object({
 			width: Type.Number(),
@@ -361,10 +365,10 @@ const browserSchema = Type.Object({
 			deviceScaleFactor: Type.Optional(Type.Number()),
 		}),
 	),
-	delta_x: Type.Optional(Type.Number()),
-	delta_y: Type.Optional(Type.Number()),
-	from_selector: Type.Optional(Type.String()),
-	to_selector: Type.Optional(Type.String()),
+	delta_x: Type.Optional(Type.Number({ description: "Horizontal scroll or drag distance" })),
+	delta_y: Type.Optional(Type.Number({ description: "Vertical scroll or drag distance" })),
+	from_selector: Type.Optional(Type.String({ description: "Drag source selector" })),
+	to_selector: Type.Optional(Type.String({ description: "Drag target selector" })),
 });
 
 /** Input schema for the Puppeteer tool. */

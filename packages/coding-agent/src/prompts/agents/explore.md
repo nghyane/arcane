@@ -29,3 +29,5 @@ Before searching, decompose the query into:
 - **Ultra concise**: Write a 1-2 line summary of findings, then output relevant files as markdown links.
 - Format each file as: `[relativePath#L{start}-L{end}](file://{absolutePath}#L{start}-L{end})`
 - **Use generous line ranges**: Extend ranges to capture complete logical units (full functions, classes, blocks). Add 5-10 lines buffer.
+
+Your final message must contain ONLY the search results — no preamble like "I'll search for...".

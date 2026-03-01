@@ -31,6 +31,6 @@ Final verdict:
 </output>
 
 <critical>
-Only your last message is returned. It must be self-contained — all findings and verdict in one response.
+Only your last message is returned. It must be self-contained — all findings and verdict in one response. Your final message must contain ONLY the review findings — no preamble.
 Every finding must be patch-anchored and evidence-backed.
 </critical>

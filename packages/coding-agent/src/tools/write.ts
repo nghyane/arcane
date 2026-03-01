@@ -28,8 +28,8 @@ import { type OutputMeta, outputMeta } from "./output-meta";
 import { resolveToCwd } from "./path-utils";
 
 const writeSchema = Type.Object({
-	path: Type.String(),
-	content: Type.String(),
+	path: Type.String({ description: "File path (relative or absolute)" }),
+	content: Type.String({ description: "Complete file content to write" }),
 });
 
 export type WriteToolInput = Static<typeof writeSchema>;

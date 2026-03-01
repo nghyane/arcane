@@ -29,15 +29,15 @@ import type { ToolSession } from ".";
 // =============================================================================
 
 const OptionItem = Type.Object({
-	label: Type.String(),
+	label: Type.String({ description: "Display text for the option" }),
 });
 
 const QuestionItem = Type.Object({
-	id: Type.String(),
-	question: Type.String(),
+	id: Type.String({ description: "Unique question identifier" }),
+	question: Type.String({ description: "Question text to display" }),
 	options: Type.Array(OptionItem),
-	multi: Type.Optional(Type.Boolean()),
-	recommended: Type.Optional(Type.Number()),
+	multi: Type.Optional(Type.Boolean({ description: "Allow multiple selections" })),
+	recommended: Type.Optional(Type.Number({ description: "Index of the recommended option" })),
 });
 
 const askSchema = Type.Object({

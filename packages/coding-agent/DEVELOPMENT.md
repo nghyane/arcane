@@ -399,44 +399,23 @@ A `ToolFactory` is `(session: ToolSession) => Tool | null | Promise<Tool | null>
 
 The wrapper step is not cosmetic: it enforces uniform meta-notice behavior and normalized error rendering across all tools.
 
-### Code execution: native tool interface
+### Native tool calling
 
-Built-in tools are **always** wrapped into a single `code` AgentTool via `createCodeTool()` from `./tools/code-tool.ts`. The LLM writes JavaScript async arrow functions that call `codemode.<tool>(args)` instead of making individual tool calls. This is not a "mode" — it is the native tool interface.
+Built-in tools are returned directly from `createTools()` as individual `AgentTool` instances. The LLM calls tools natively via the model's tool-calling API (e.g., Claude's `tool_use` blocks).
 
 Benefits:
 
-- **Parallelism**: LLM batches independent operations with `Promise.all()` in a single round-trip
-- **Composability**: results flow through JS variables, no intermediate tool-call overhead
-- **Token efficiency**: one tool call replaces N sequential calls
-
-The `ask` tool is excluded from code wrapping (remains a standalone tool call) because it requires interactive user input that cannot be orchestrated from code.
-
-**External tools (MCP, extensions, custom) are NOT wrapped into the code tool.** They remain standard tool calls. Rationale:
-
-- External tool schemas are defined by third parties — TypeScript type generation from arbitrary JSON Schema is unreliable
-- External tools are often stateful/side-effect heavy; an extra execution layer adds failure modes without benefit
-- Tool authors test against the standard tool-call interface; wrapping changes the contract
-- The LLM handles mixed interfaces (code tool + standard tools) without confusion because the code tool description clearly scopes what it wraps
+- **Native parallelism**: LLMs like Claude support parallel tool calls natively — no JS wrapper needed
+- **Full result visibility**: LLM sees complete tool results, not truncated summaries
+- **Simplicity**: No code execution layer, no proxy dispatch, no sandbox
+- **Reliability**: Weak models (subagents) don't need to write correct JavaScript
 
 ```text
-Built-in tools ──► createCodeTool() ──► "code" AgentTool (LLM writes JS)
-                                        └── ask (excluded, standalone)
+Built-in tools ──► createTools() ──► AgentTool[] (native tool calls)
 MCP tools ──────────────────────────────► standalone tool calls
 Extension tools ────────────────────────► standalone tool calls
 Custom tools (.arcane/tools/) ───────────► standalone tool calls
 ```
-
-#### Step, progress, and abort primitives
-
-The code tool injects three additional globals beyond `codemode`, `state`, and `memo`:
-
-- **`step(intent, fn)`** — Groups sub-tool calls under a named intent. TUI renders as collapsible sections. Supports nesting and parallel (`Promise.all([step(...), step(...)])`). Uses `AsyncLocalStorage` for correct async context tracking.
-- **`progress(message)`** — Emits a transient status line under the current step. Only works inside `step()`.
-- **`abort(message)`** — Clean intentional exit. Returns message to LLM without error framing (distinct from `throw`).
-
-Events emitted: `step_start`, `step_progress`, `step_end`, `execution_abort`.
-
-Implementation: `step`/`progress`/`abort` are closures created in `createCodeTool()`, injected via `ExecutorOptions.injectedGlobals`. `AbortExecution` is caught by the executor and returned as a non-error result.
 
 ### Output metadata model and notice formatting
 

@@ -8,7 +8,6 @@ import * as pythonKernel from "@nghyane/arcane/ipy/kernel";
 import { createTools, type ToolSession } from "@nghyane/arcane/tools";
 import { PythonTool } from "@nghyane/arcane/tools/python";
 import { Snowflake } from "@nghyane/arcane-utils";
-import type { CodeAgentTool } from "../src/tools/code-tool";
 
 function createSession(
 	cwd: string,
@@ -23,9 +22,8 @@ function createSession(
 	};
 }
 
-function getWrappedNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
-	const codeTool = tools.find(t => t.name === "code") as CodeAgentTool | undefined;
-	return codeTool ? [...codeTool.wrappedToolMap.keys()] : [];
+function getToolNames(tools: Awaited<ReturnType<typeof createTools>>): string[] {
+	return tools.map(t => t.name);
 }
 
 describe("python tool settings", () => {
@@ -46,7 +44,7 @@ describe("python tool settings", () => {
 		const sessionFile = path.join(testDir, "session.jsonl");
 		const tools = await createTools(createSession(testDir, sessionFile), ["python"]);
 
-		expect(getWrappedNames(tools).sort()).toEqual(["python"]);
+		expect(getToolNames(tools).sort()).toEqual(["python"]);
 	});
 
 	it("falls back to bash when python is unavailable", async () => {
@@ -57,7 +55,7 @@ describe("python tool settings", () => {
 		const sessionFile = path.join(testDir, "session.jsonl");
 		const tools = await createTools(createSession(testDir, sessionFile), ["python"]);
 
-		expect(getWrappedNames(tools).sort()).toEqual(["bash"]);
+		expect(getToolNames(tools).sort()).toEqual(["bash"]);
 	});
 
 	it("passes kernel mode from settings to executor", async () => {
