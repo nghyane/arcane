@@ -50,6 +50,7 @@ export interface ToolExecutionHandle {
  */
 export class ToolExecutionComponent extends Container {
 	#contentBox: Box;
+	#topSpacer?: Spacer;
 	#tier: ToolTier;
 	#imageDisplay: ToolImageDisplay;
 	#toolName: string;
@@ -120,22 +121,22 @@ export class ToolExecutionComponent extends Container {
 		this.#tier = options.tier ?? "default";
 		const tier = this.#tier;
 		if (tier === "quiet") {
-			// Quiet tools: no spacer, no box — content renders directly
 			this.#contentBox = new Box(0, 0);
 			this.addChild(this.#contentBox);
-		} else if (tier === "action") {
-			// Action tools: spacer + box with padding + background
-			this.addChild(new Spacer(1));
-			this.#contentBox = new Box(1, 1, (text: string) => theme.bg("toolPendingBg", text));
-			this.addChild(this.#contentBox);
 		} else {
-			// Interactive/subagent/default: full box with padding + background
-			this.addChild(new Spacer(1));
-			this.#contentBox = new Box(1, 1, (text: string) => theme.bg("toolPendingBg", text));
+			this.#topSpacer = new Spacer(1);
+			this.addChild(this.#topSpacer);
+			this.#contentBox = new Box(1, 0);
 			this.addChild(this.#contentBox);
 		}
 
 		this.#updateDisplay();
+	}
+
+	setMarginTop(lines: number): void {
+		if (this.#topSpacer) {
+			this.#topSpacer.setLines(lines);
+		}
 	}
 
 	updateArgs(args: any, _toolCallId?: string): void {
@@ -260,16 +261,6 @@ export class ToolExecutionComponent extends Container {
 		this.#renderState.label = this.#toolLabel;
 
 		const mergeCallAndResult = this.#tool?.mergeCallAndResult ?? true;
-		// Quiet tools have no background
-		if (this.#tier !== "quiet") {
-			if (this.#isPartial) {
-				this.#contentBox.setBgFn((text: string) => theme.bg("toolPendingBg", text));
-			} else if (this.#result?.isError) {
-				this.#contentBox.setBgFn((text: string) => theme.bg("toolErrorBg", text));
-			} else {
-				this.#contentBox.setBgFn((text: string) => theme.bg("toolSuccessBg", text));
-			}
-		}
 
 		// Determine which components are needed
 		const needsCall = !this.#result || !mergeCallAndResult;

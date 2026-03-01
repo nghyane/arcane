@@ -1,6 +1,6 @@
 import type { TextContent } from "@nghyane/arcane-ai";
 import type { Component } from "@nghyane/arcane-tui";
-import { Box, Container, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
+import { Container, LeftBorderBox, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 import type { HookMessageRenderer } from "../../extensibility/hooks/types";
 import type { HookMessage } from "../../session/messages";
 import { getMarkdownTheme, theme } from "../../theme/theme";
@@ -10,7 +10,7 @@ import { getMarkdownTheme, theme } from "../../theme/theme";
  * Uses distinct styling to differentiate from user messages.
  */
 export class HookMessageComponent extends Container {
-	#box: Box;
+	#box: LeftBorderBox;
 	#customComponent?: Component;
 	#expanded = false;
 
@@ -22,8 +22,7 @@ export class HookMessageComponent extends Container {
 
 		this.addChild(new Spacer(1));
 
-		// Create box with purple background (used for default rendering)
-		this.#box = new Box(1, 1, t => theme.bg("customMessageBg", t));
+		this.#box = new LeftBorderBox(1, 1, s => theme.fg("dim", s));
 
 		this.#rebuild();
 	}

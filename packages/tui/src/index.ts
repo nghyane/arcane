@@ -15,6 +15,7 @@ export { CancellableLoader } from "./components/cancellable-loader";
 export { Editor, type EditorTheme, type EditorTopBorder } from "./components/editor";
 export { Image, type ImageOptions, type ImageTheme } from "./components/image";
 export { Input } from "./components/input";
+export { LeftBorderBox } from "./components/left-border-box";
 export { Loader } from "./components/loader";
 export { type DefaultTextStyle, Markdown, type MarkdownTheme } from "./components/markdown";
 export { type SelectItem, SelectList, type SelectListTheme } from "./components/select-list";

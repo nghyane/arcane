@@ -1,11 +1,11 @@
 import type { TextContent } from "@nghyane/arcane-ai";
 import type { Component } from "@nghyane/arcane-tui";
-import { Box, Container, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
+import { Container, LeftBorderBox, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 import type { CustomMessage, SkillPromptDetails } from "../../session/messages";
 import { getMarkdownTheme, theme } from "../../theme/theme";
 
 export class SkillMessageComponent extends Container {
-	#box: Box;
+	#box: LeftBorderBox;
 	#contentComponent?: Component;
 	#expanded = false;
 
@@ -13,7 +13,7 @@ export class SkillMessageComponent extends Container {
 		super();
 		this.addChild(new Spacer(1));
 
-		this.#box = new Box(1, 1, t => theme.bg("customMessageBg", t));
+		this.#box = new LeftBorderBox(1, 1, s => theme.fg("dim", s));
 		this.#rebuild();
 	}
 

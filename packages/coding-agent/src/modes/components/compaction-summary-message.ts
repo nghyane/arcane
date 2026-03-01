@@ -1,16 +1,19 @@
-import { Box, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
+import { Container, LeftBorderBox, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 import type { CompactionSummaryMessage } from "../../session/messages";
 import { getMarkdownTheme, theme } from "../../theme/theme";
 
 /**
  * Component that renders a compaction message with collapsed/expanded state.
- * Uses same background color as hook messages for visual consistency.
  */
-export class CompactionSummaryMessageComponent extends Box {
+export class CompactionSummaryMessageComponent extends Container {
+	#box: LeftBorderBox;
 	#expanded = false;
 
 	constructor(private readonly message: CompactionSummaryMessage) {
-		super(1, 1, t => theme.bg("customMessageBg", t));
+		super();
+		this.addChild(new Spacer(1));
+		this.#box = new LeftBorderBox(1, 1, s => theme.fg("dim", s));
+		this.addChild(this.#box);
 		this.#updateDisplay();
 	}
 
@@ -25,26 +28,26 @@ export class CompactionSummaryMessageComponent extends Box {
 	}
 
 	#updateDisplay(): void {
-		this.clear();
+		this.#box.clear();
 
 		const tokenStr = this.message.tokensBefore.toLocaleString();
 		const label = theme.fg("customMessageLabel", theme.bold("[compaction]"));
-		this.addChild(new Text(label, 0, 0));
-		this.addChild(new Spacer(1));
+		this.#box.addChild(new Text(label, 0, 0));
+		this.#box.addChild(new Spacer(1));
 
 		if (this.#expanded) {
 			const header = `**Compacted from ${tokenStr} tokens**\n\n`;
-			this.addChild(
+			this.#box.addChild(
 				new Markdown(header + this.message.summary, 0, 0, getMarkdownTheme(), {
 					color: (text: string) => theme.fg("customMessageText", text),
 				}),
 			);
 		} else {
-			this.addChild(
+			this.#box.addChild(
 				new Text(theme.fg("customMessageText", `Compacted from ${tokenStr} tokens (ctrl+o to expand)`), 0, 0),
 			);
 			if (this.message.shortSummary) {
-				this.addChild(new Text(theme.fg("customMessageText", this.message.shortSummary), 0, 1));
+				this.#box.addChild(new Text(theme.fg("customMessageText", this.message.shortSummary), 0, 1));
 			}
 		}
 	}

@@ -1,16 +1,19 @@
-import { Box, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
+import { Container, LeftBorderBox, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 import type { BranchSummaryMessage } from "../../session/messages";
 import { getMarkdownTheme, theme } from "../../theme/theme";
 
 /**
  * Component that renders a branch summary message with collapsed/expanded state.
- * Uses same background color as hook messages for visual consistency.
  */
-export class BranchSummaryMessageComponent extends Box {
+export class BranchSummaryMessageComponent extends Container {
+	#box: LeftBorderBox;
 	#expanded = false;
 
 	constructor(private readonly message: BranchSummaryMessage) {
-		super(1, 1, t => theme.bg("customMessageBg", t));
+		super();
+		this.addChild(new Spacer(1));
+		this.#box = new LeftBorderBox(1, 1, s => theme.fg("dim", s));
+		this.addChild(this.#box);
 		this.#updateDisplay();
 	}
 
@@ -25,21 +28,21 @@ export class BranchSummaryMessageComponent extends Box {
 	}
 
 	#updateDisplay(): void {
-		this.clear();
+		this.#box.clear();
 
 		const label = theme.fg("customMessageLabel", theme.bold("[branch]"));
-		this.addChild(new Text(label, 0, 0));
-		this.addChild(new Spacer(1));
+		this.#box.addChild(new Text(label, 0, 0));
+		this.#box.addChild(new Spacer(1));
 
 		if (this.#expanded) {
 			const header = "**Branch Summary**\n\n";
-			this.addChild(
+			this.#box.addChild(
 				new Markdown(header + this.message.summary, 0, 0, getMarkdownTheme(), {
 					color: (text: string) => theme.fg("customMessageText", text),
 				}),
 			);
 		} else {
-			this.addChild(new Text(theme.fg("customMessageText", "Branch summary (ctrl+o to expand)"), 0, 0));
+			this.#box.addChild(new Text(theme.fg("customMessageText", "Branch summary (ctrl+o to expand)"), 0, 0));
 		}
 	}
 }
