@@ -304,10 +304,6 @@ export type AgentEvent =
 			args: Record<string, unknown>;
 			intent?: string;
 			tool?: AgentTool;
-			/** Set when this event is a sub-tool call inside a meta-tool (e.g. Code Mode) */
-			parentToolCallId?: string;
-			/** Set when the tool call is inside a step() in Code Mode */
-			stepId?: string;
 	  }
 	| {
 			type: "tool_execution_update";
@@ -315,7 +311,6 @@ export type AgentEvent =
 			toolName: string;
 			args: Record<string, unknown>;
 			partialResult: AgentToolResult;
-			parentToolCallId?: string;
 	  }
 	| {
 			type: "tool_execution_end";
@@ -323,7 +318,6 @@ export type AgentEvent =
 			toolName: string;
 			result: AgentToolResult;
 			isError?: boolean;
-			parentToolCallId?: string;
 	  };
 
 /**

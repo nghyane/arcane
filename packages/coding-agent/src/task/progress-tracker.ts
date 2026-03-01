@@ -185,21 +185,18 @@ export class ProgressTracker {
 	// -- Tool events --
 
 	#handleToolStart(event: Extract<AgentEvent, { type: "tool_execution_start" }>, now: number): void {
-		const isSubTool = !!event.parentToolCallId;
 		const toolArgs = extractToolArgsPreview(event.args ?? {});
 
-		if (!isSubTool) {
-			this.#progress.toolCount++;
-			this.#progress.currentTool = event.toolName;
-			this.#progress.currentToolArgs = toolArgs;
-			this.#progress.currentToolStartMs = now;
-			const intent = event.intent?.trim();
-			if (intent) {
-				this.#progress.lastIntent = intent;
-			}
+		this.#progress.toolCount++;
+		this.#progress.currentTool = event.toolName;
+		this.#progress.currentToolArgs = toolArgs;
+		this.#progress.currentToolStartMs = now;
+		const intent = event.intent?.trim();
+		if (intent) {
+			this.#progress.lastIntent = intent;
 		}
 
-		if (event.toolName !== "code" && this.#progress.toolHistory.length < 50) {
+		if (this.#progress.toolHistory.length < 50) {
 			this.#progress.toolHistory.push({
 				tool: event.toolName,
 				args: toolArgs,
@@ -209,7 +206,6 @@ export class ProgressTracker {
 	}
 
 	#handleToolEnd(event: Extract<AgentEvent, { type: "tool_execution_end" }>, now: number): void {
-		const isSubTool = !!event.parentToolCallId;
 		const isError = !!(event as { isError?: boolean }).isError;
 
 		for (let i = this.#progress.toolHistory.length - 1; i >= 0; i--) {
@@ -219,39 +215,36 @@ export class ProgressTracker {
 			}
 		}
 
-		if (!isSubTool) {
-			if (this.#progress.currentTool) {
-				this.#progress.recentTools.unshift({
-					tool: this.#progress.currentTool,
-					args: this.#progress.currentToolArgs || "",
-					endMs: now,
-				});
-				if (this.#progress.recentTools.length > 5) {
-					this.#progress.recentTools.pop();
-				}
+		if (this.#progress.currentTool) {
+			this.#progress.recentTools.unshift({
+				tool: this.#progress.currentTool,
+				args: this.#progress.currentToolArgs || "",
+				endMs: now,
+			});
+			if (this.#progress.recentTools.length > 5) {
+				this.#progress.recentTools.pop();
 			}
-			this.#progress.currentTool = undefined;
-			this.#progress.currentToolArgs = undefined;
-			this.#progress.currentToolStartMs = undefined;
+		}
+		this.#progress.currentTool = undefined;
+		this.#progress.currentToolArgs = undefined;
+		this.#progress.currentToolStartMs = undefined;
 
-			const handler = subprocessToolRegistry.getHandler(event.toolName);
-			if (handler) {
-				const eventArgs = (event as { args?: Record<string, unknown> }).args ?? {};
-				if (
-					handler.shouldTerminate?.({
-						toolName: event.toolName,
-						toolCallId: event.toolCallId,
-						args: eventArgs,
-						result: event.result,
-						isError: event.isError,
-					})
-				) {
-					this.#options.onTerminateRequest?.();
-				}
+		const handler = subprocessToolRegistry.getHandler(event.toolName);
+		if (handler) {
+			const eventArgs = (event as { args?: Record<string, unknown> }).args ?? {};
+			if (
+				handler.shouldTerminate?.({
+					toolName: event.toolName,
+					toolCallId: event.toolCallId,
+					args: eventArgs,
+					result: event.result,
+					isError: event.isError,
+				})
+			) {
+				this.#options.onTerminateRequest?.();
 			}
 		}
 	}
-
 	// -- Message events --
 
 	#handleMessageUpdate(event: Extract<AgentEvent, { type: "message_update" }>): void {
