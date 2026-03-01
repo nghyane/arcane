@@ -379,8 +379,7 @@ export function renderResult(
 /**
  * Create a renderer for any subagent tool (explore, oracle, librarian, code_review).
  *
- * Uses mergeCallAndResult: true. renderResult reconstructs the same header
- * as renderCall to avoid layout shift — only tool lines append below.
+ * Renders call and result with unified header.
  */
 export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 	renderCall: (args: unknown, options: RenderResultOptions, theme: Theme) => Component;
@@ -390,7 +389,6 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 		theme: Theme,
 		args?: unknown,
 	) => Component;
-	mergeCallAndResult: true;
 } {
 	return {
 		renderCall(args: unknown, _options: RenderResultOptions, theme: Theme): Component {
@@ -526,8 +524,6 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 				},
 			};
 		},
-
-		mergeCallAndResult: true as const,
 	};
 }
 

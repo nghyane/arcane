@@ -250,7 +250,7 @@ export class ToolExecutionComponent extends Container {
 		this.#renderState.spinnerFrame = this.#spinnerFrame;
 
 		const isInline = this.#tool?.inline ?? false;
-		const mergeCallAndResult = this.#tool?.mergeCallAndResult ?? false;
+		const mergeCallAndResult = this.#tool?.mergeCallAndResult ?? true;
 		this.#contentBox.setBgFn(isInline ? undefined : bgFn);
 		this.#contentBox.clear();
 

@@ -14,18 +14,11 @@ Execute JavaScript code to accomplish tasks. Instead of calling tools individual
 - Do not make multiple edits to the same file in parallel
 - Return the final result from your function
 - Tool results are already displayed to the user — do NOT repeat raw output in your response text. Summarize or analyze instead.
-- Do NOT use `console.log()` — tool results are already streamed to the UI as they execute
+- Do NOT use `console.log()` — use `return` for final results and `progress()` for live status updates
 - Handle errors with try/catch when needed
 - Browser and notebook are stateful singletons — call actions sequentially, not in parallel
 - Prefer smaller parallel edits over one massive sequential operation — fan out when targets are disjoint
 - Always read a file before editing it — never edit blind
-## Persistent State
-
-A `state` Map and `memo` helper persist across all code executions in the conversation.
-
-- `state` — raw Map for manual get/set
-- `memo(key, fn)` — cache-on-first-call: returns cached value or calls `fn`, caches, and returns
-
 ## Step, Progress, and Abort
 
 Use `step()` to group related operations under a named intent. The TUI renders steps as collapsible sections.
@@ -34,22 +27,43 @@ Use `step()` to group related operations under a named intent. The TUI renders s
 - `progress(message)` — transient status under current step. Replaces previous. Only works inside `step()`
 - `abort(message)` — clean exit without error framing. Use when stopping is intentional (e.g., nothing to do)
 
+**When to use `step()`:** When performing 2+ distinct phases (e.g., search then edit, read then verify). Without steps, the user sees a single opaque execution block with no visibility into what is happening.
+
+**When to use `progress()`:** Inside loops or long operations — gives the user a live status indicator (e.g., which file is being processed).
+
+## Persistent State
+
+A `state` Map and `memo` helper persist across all code executions in the conversation.
+
+- `state` — raw Map for manual get/set
+- `memo(key, fn)` — cache-on-first-call: returns cached value or calls `fn`, caches, and returns
+
+```javascript
+const config = await memo("project-config", () => codemode.read({ path: "config.json" }));
+```
+
 ## Examples
 
 Parallel reads, then parallel edits, then verify:
 ```javascript
 async () => {
-  const [src, test] = await Promise.all([
-    codemode.read({ path: "src/app.ts" }),
-    codemode.read({ path: "test/app.test.ts" }),
-  ]);
+  const [src, test] = await step("Reading source files", async () => {
+    return await Promise.all([
+      codemode.read({ path: "src/app.ts" }),
+      codemode.read({ path: "test/app.test.ts" }),
+    ]);
+  });
 
-  await Promise.all([
-    codemode.edit({ path: "src/app.ts", edits: [...] }),
-    codemode.edit({ path: "test/app.test.ts", edits: [...] }),
-  ]);
+  await step("Applying changes", async () => {
+    await Promise.all([
+      codemode.edit({ path: "src/app.ts", edits: [...] }),
+      codemode.edit({ path: "test/app.test.ts", edits: [...] }),
+    ]);
+  });
 
-  return await codemode.bash({ command: "bun test" });
+  return await step("Verifying", async () => {
+    return await codemode.bash({ command: "bun test" });
+  });
 }
 ```
 
@@ -70,5 +84,14 @@ async () => {
       await codemode.edit({ path: file, edits: [...] });
     }
   });
+}
+```
+
+Using abort for early exit:
+```javascript
+async () => {
+  const diff = await codemode.bash({ command: "git diff --name-only" });
+  if (!diff) abort("No changes to process.");
+  // ... continue with changes
 }
 ```
