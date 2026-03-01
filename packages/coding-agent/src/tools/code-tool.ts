@@ -15,7 +15,7 @@ import {
 	sanitizeToolName,
 } from "@nghyane/arcane-codemode";
 import { Type } from "@sinclair/typebox";
-import codeToolDescription from "./code-tool-prompt.md" with { type: "text" };
+import codeToolDescription from "../prompts/codemode/code-tool-prompt.md" with { type: "text" };
 
 const MAX_RESULT_LENGTH = 4000;
 
