@@ -124,9 +124,9 @@ export class ToolExecutionComponent extends Container {
 			this.#contentBox = new Box(0, 0);
 			this.addChild(this.#contentBox);
 		} else if (tier === "action") {
-			// Action tools: spacer + box with horizontal padding, no vertical padding
+			// Action tools: spacer + box with padding + background
 			this.addChild(new Spacer(1));
-			this.#contentBox = new Box(1, 0, (text: string) => theme.bg("toolPendingBg", text));
+			this.#contentBox = new Box(1, 1, (text: string) => theme.bg("toolPendingBg", text));
 			this.addChild(this.#contentBox);
 		} else {
 			// Interactive/subagent/default: full box with padding + background

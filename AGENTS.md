@@ -443,7 +443,7 @@ A common mistake is sanitizing the happy path but forgetting error paths. If a m
 - Only run specific tests if user instructs: `bun test test/specific.test.ts`
 - NEVER commit unless user asks
 - Do NOT use `tsc` or `npx tsc` - always use `bun check`
-- **Always run `bun fmt` before `bun check`** after editing code — avoids wasted round-trips on formatting errors
+- **Always run `bun fmt` then `bun check`** after editing code — run sequentially (`fmt` must finish before `check`)
 
 ## GitHub Issues
 

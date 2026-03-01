@@ -4,7 +4,7 @@
  */
 
 import { sanitizeText } from "@nghyane/arcane-natives";
-import { Container, Loader, Text, type TUI } from "@nghyane/arcane-tui";
+import { Container, Loader, Spacer, Text, type TUI } from "@nghyane/arcane-tui";
 import { getSymbolTheme, theme } from "../../theme/theme";
 import type { TruncationMeta } from "../../tools/output-meta";
 import { renderStatusLine } from "../../tui/status-line";
@@ -29,15 +29,16 @@ export class BashExecutionComponent extends Container {
 		_excludeFromContext = false,
 	) {
 		super();
+		this.addChild(new Spacer(1));
 
 		this.#headerText = new Text(
 			renderStatusLine({ icon: "running", title: "Bash", description: `$ ${command}` }, theme),
-			0,
+			1,
 			0,
 		);
 		this.addChild(this.#headerText);
 
-		this.#bodyText = new Text("", 0, 0);
+		this.#bodyText = new Text("", 1, 0);
 		this.addChild(this.#bodyText);
 
 		this.#loader = new Loader(
