@@ -17,7 +17,6 @@ import { runAgent } from "./executor";
 import { AgentOutputManager } from "./output-manager";
 import { extractAgentOutput, ProgressTracker } from "./progress-tracker";
 import { renderCall, renderResult } from "./render";
-import { renderTemplate } from "./template";
 import {
 	type AgentProgress,
 	TASK_SUBAGENT_EVENT_CHANNEL,
@@ -40,6 +39,23 @@ export type {
 export { taskSchema } from "./types";
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Derive a CamelCase ID from a short description for artifact naming. */
+function deriveId(description: string): string {
+	return (
+		description
+			.replace(/[^a-zA-Z0-9\s]/g, "")
+			.split(/\s+/)
+			.filter(Boolean)
+			.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+			.join("")
+			.slice(0, 32) || "Task"
+	);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Tool Class
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -57,10 +73,10 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 	readonly renderResult = renderResult;
 
 	readonly description = [
-		"Delegate a well-scoped unit of work to a subagent for parallel execution.",
-		"DO NOT use unless the task genuinely requires independent, parallelizable work across different parts of the codebase.",
-		"Prefer doing work directly yourself — you retain full context. Never spawn a single task for work you can do yourself.",
-		"Each task should be small and focused — one bounded deliverable. Many small tasks > one giant task.",
+		"Perform a task (a sub-task of the user's overall task) using a sub-agent that has access to: grep, find, read, bash, edit, write, explore, web_search, fetch, python, undo_edit, todo_write.",
+		"When to use: Complex multi-step tasks; operations producing lots of output tokens not needed after; changes across many layers after planning; when user asks to launch an 'agent'.",
+		"When NOT to use: Single logical task; reading a single file; performing text search; editing a single file; not sure what changes to make.",
+		"How to use: Run multiple sub-agents concurrently if tasks are independent; include all necessary context and a detailed plan; tell sub-agent how to verify work; show user concise summary of result.",
 	].join(" ");
 
 	private constructor(private readonly session: ToolSession) {
@@ -102,7 +118,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 		const emitProgress = () => {
 			const progress = Array.from(progressMap.values());
 			onUpdate?.({
-				content: [{ type: "text", text: `Running task ${params.id}...` }],
+				content: [{ type: "text", text: `Running task...` }],
 				details: {
 					results: [],
 					totalDurationMs: Date.now() - startTime,
@@ -122,50 +138,8 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 
 			const outputManager =
 				this.session.agentOutputManager ?? new AgentOutputManager(this.session.getArtifactsDir ?? (() => null));
-			const [uniqueId] = await outputManager.allocateBatch([params.id]);
-
-			// Build task text from context + assignment
-			const taskItem = {
-				id: uniqueId,
-				description: params.description,
-				assignment: params.assignment,
-				skills: params.skills,
-			};
-			const rendered = renderTemplate(params.context ?? "", taskItem);
-
-			// Resolve skills
-			const contextFiles = this.session.contextFiles;
-			const availableSkills = this.session.skills;
-			const promptTemplates = this.session.promptTemplates;
-			let resolvedSkills = availableSkills;
-			let preloadedSkills: typeof availableSkills | undefined;
-
-			if (params.skills !== undefined && availableSkills) {
-				const skillLookup = new Map(availableSkills.map(s => [s.name, s]));
-				const resolved: typeof availableSkills = [];
-				const missing: string[] = [];
-				for (const name of params.skills) {
-					const trimmed = name.trim();
-					if (!trimmed) continue;
-					const skill = skillLookup.get(trimmed);
-					if (skill) resolved.push(skill);
-					else missing.push(trimmed);
-				}
-				if (missing.length > 0) {
-					const available = availableSkills.map(s => s.name).join(", ") || "none";
-					return {
-						content: [
-							{
-								type: "text",
-								text: `Unknown skills: ${missing.join(", ")}. Available: ${available}`,
-							},
-						],
-						details: { results: [], totalDurationMs: Date.now() - startTime },
-					};
-				}
-				resolvedSkills = resolved;
-				preloadedSkills = resolved;
-			}
+			const derivedId = deriveId(params.description);
+			const [uniqueId] = await outputManager.allocateBatch([derivedId]);
 
 			// Set up EventBus — all observation flows through here
 			const eventBus = new EventBus();
@@ -174,8 +148,8 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				index: 0,
 				id: uniqueId,
 				agent: agentName,
-				task: rendered.task,
-				description: rendered.description,
+				task: params.prompt,
+				description: params.description,
 				startTime,
 				onProgress: progress => {
 					progressMap.set(0, { ...structuredClone(progress) });
@@ -197,8 +171,8 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 			const result = await runAgent({
 				cwd: this.session.cwd,
 				agent: effectiveAgent,
-				task: rendered.task,
-				description: rendered.description,
+				task: params.prompt,
+				description: params.description,
 				index: 0,
 				id: uniqueId,
 				isSubagent: true,
@@ -215,10 +189,9 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				modelRegistry: this.session.subagentContext?.modelRegistry,
 				settings: this.session.settings,
 				mcpManager: this.session.subagentContext?.mcpManager,
-				contextFiles,
-				skills: resolvedSkills,
-				preloadedSkills,
-				promptTemplates,
+				contextFiles: this.session.contextFiles,
+				skills: this.session.skills,
+				promptTemplates: this.session.promptTemplates,
 			});
 
 			// Finalize tracker

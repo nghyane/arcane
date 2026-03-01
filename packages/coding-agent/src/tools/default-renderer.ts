@@ -3,7 +3,7 @@ import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { formatExpandHint, truncateToWidth } from "../ui/render-utils";
+import { formatMoreItems, truncateToWidth } from "../ui/render-utils";
 import {
 	formatArgsInline,
 	JSON_TREE_MAX_DEPTH_COLLAPSED,
@@ -42,7 +42,7 @@ export const defaultRenderer: DefaultRenderer = {
 		if (argsObject && Object.keys(argsObject).length > 0) {
 			const preview = formatArgsInline(argsObject, 70);
 			if (preview) {
-				lines.push(` ${theme.fg("dim", theme.tree.last)} ${theme.fg("dim", preview)}`);
+				lines.push(theme.fg("dim", preview));
 			}
 		}
 		return new Text(lines.join("\n"), 0, 0);
@@ -52,30 +52,13 @@ export const defaultRenderer: DefaultRenderer = {
 		result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
 		options: RenderResultOptions & { renderContext?: Record<string, unknown> },
 		theme: Theme,
-		args?: unknown,
+		_args?: unknown,
 	): Component {
 		const { expanded = false, isPartial = false } = options;
 		const label = options.label ?? "Tool";
 		const lines: string[] = [];
 		const icon = isPartial ? "pending" : result.isError ? "error" : "success";
 		lines.push(renderStatusLine({ icon, title: label }, theme));
-
-		if (expanded && args !== undefined) {
-			lines.push("");
-			lines.push(theme.fg("dim", "Args"));
-			const tree = renderJsonTreeLines(
-				args,
-				theme,
-				JSON_TREE_MAX_DEPTH_EXPANDED,
-				JSON_TREE_MAX_LINES_EXPANDED,
-				JSON_TREE_SCALAR_LEN_EXPANDED,
-			);
-			lines.push(...tree.lines);
-			if (tree.truncated) {
-				lines.push(theme.fg("dim", "…"));
-			}
-			lines.push("");
-		}
 
 		// Output
 		const textContent = (result.content?.find(c => c.type === "text")?.text ?? "").trimEnd();
@@ -94,9 +77,7 @@ export const defaultRenderer: DefaultRenderer = {
 				const tree = renderJsonTreeLines(parsed, theme, maxDepth, maxLines, maxScalarLen);
 				if (tree.lines.length > 0) {
 					lines.push(...tree.lines);
-					if (!expanded) {
-						lines.push(formatExpandHint(theme, expanded, true));
-					} else if (tree.truncated) {
+					if (tree.truncated) {
 						lines.push(theme.fg("dim", "…"));
 					}
 					return new Text(lines.join("\n"), 0, 0);
@@ -115,9 +96,7 @@ export const defaultRenderer: DefaultRenderer = {
 		}
 		if (outputLines.length > maxOutputLines) {
 			const remaining = outputLines.length - maxOutputLines;
-			lines.push(`${theme.fg("dim", `… ${remaining} more lines`)} ${formatExpandHint(theme, expanded, true)}`);
-		} else if (!expanded) {
-			lines.push(formatExpandHint(theme, expanded, true));
+			lines.push(theme.fg("dim", formatMoreItems(remaining, "line")));
 		}
 
 		return new Text(lines.join("\n"), 0, 0);

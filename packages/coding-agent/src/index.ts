@@ -136,10 +136,8 @@ export {
 	ToolExecutionComponent,
 	type ToolExecutionOptions,
 	TreeSelectorComponent,
-	truncateToVisualLines,
 	UserMessageComponent,
 	UserMessageSelectorComponent,
-	type VisualTruncateResult,
 } from "./modes/components";
 export { computeLineHash } from "./patch/hashline";
 // SDK for programmatic usage

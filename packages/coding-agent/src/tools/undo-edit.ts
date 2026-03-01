@@ -10,8 +10,8 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { generateUnifiedDiffString } from "../patch/diff";
 import { normalizeToLF, stripBom } from "../patch/normalize";
 import type { Theme } from "../theme/theme";
-import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
-import { getDiffStats, replaceTabs, shortenPath, ToolUIKit } from "../ui/render-utils";
+import { renderStatusLine } from "../tui";
+import { formatErrorMessage, getDiffStats, shortenPath } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { invalidateFsScanAfterWrite } from "./fs-cache-invalidation";
 import { resolveToCwd } from "./path-utils";
@@ -84,50 +84,25 @@ export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditTo
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: UndoEditToolDetails; isError?: boolean },
-		options: RenderResultOptions,
+		_options: RenderResultOptions,
 		uiTheme: Theme,
 		args?: UndoEditRenderArgs,
 	): Component {
-		const ui = new ToolUIKit(uiTheme);
 		const filePath = shortenPath(args?.path ?? "");
-		const pathDisplay = filePath ? uiTheme.fg("accent", filePath) : uiTheme.fg("toolOutput", "…");
-		const errorText = result.isError ? (result.content?.find(c => c.type === "text")?.text ?? "") : "";
-
-		let cached: RenderCache | undefined;
-
-		return {
-			render(width) {
-				const { expanded } = options;
-				const key = new Hasher().bool(expanded).u32(width).digest();
-				if (cached?.key === key) return cached.lines;
-
-				const header = renderStatusLine(
-					{ icon: result.isError ? "error" : "success", title: "Undo", description: pathDisplay },
-					uiTheme,
-				);
-				let text = header;
-
-				if (result.isError) {
-					if (errorText) {
-						text += `\n\n${uiTheme.fg("error", replaceTabs(errorText))}`;
-					}
-				} else if (result.details?.diff) {
-					const diffStats = getDiffStats(result.details.diff);
-					text += `\n${uiTheme.fg("dim", uiTheme.format.bracketLeft)}${ui.formatDiffStats(
-						diffStats.added,
-						diffStats.removed,
-						diffStats.hunks,
-					)}${uiTheme.fg("dim", uiTheme.format.bracketRight)}`;
-				}
-
-				const lines =
-					width > 0 ? text.split("\n").map(line => truncateToWidth(line, width, Ellipsis.Omit)) : text.split("\n");
-				cached = { key, lines };
-				return lines;
-			},
-			invalidate() {
-				cached = undefined;
-			},
-		};
+		if (result.isError) {
+			const errorText = result.content?.find(c => c.type === "text")?.text || "Unknown error";
+			return new Text(formatErrorMessage(errorText, uiTheme), 0, 0);
+		}
+		const meta: string[] = ["reverted"];
+		if (result.details?.diff) {
+			const diffStats = getDiffStats(result.details.diff);
+			if (diffStats.added > 0) meta.push(`+${diffStats.added}`);
+			if (diffStats.removed > 0) meta.push(`-${diffStats.removed}`);
+		}
+		return new Text(
+			renderStatusLine({ icon: "success", title: "Undo", description: filePath || "file", meta }, uiTheme),
+			0,
+			0,
+		);
 	}
 }

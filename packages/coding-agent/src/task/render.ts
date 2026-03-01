@@ -14,22 +14,6 @@ import {
 import { subprocessToolRegistry } from "./subprocess-tool-registry";
 import type { AgentProgress, SingleResult, TaskParams, TaskToolDetails } from "./types";
 
-// Time-scoped dedup: only suppress duplicate contexts within a short window
-// (concurrent tasks in the same turn). Entries older than DEDUP_TTL_MS are evicted.
-const DEDUP_TTL_MS = 10_000;
-const recentContexts = new Map<number | bigint, number>();
-
-function isDuplicateContext(key: number | bigint): boolean {
-	const now = Date.now();
-	// Evict stale entries
-	for (const [k, ts] of recentContexts) {
-		if (now - ts > DEDUP_TTL_MS) recentContexts.delete(k);
-	}
-	if (recentContexts.has(key)) return true;
-	recentContexts.set(key, now);
-	return false;
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // Helpers
 // ═══════════════════════════════════════════════════════════════════════════
@@ -49,19 +33,11 @@ function getStatusIcon(status: AgentProgress["status"], theme: Theme, spinnerFra
 	}
 }
 
-function formatTaskId(id: string): string {
-	const segments = id.split(".");
-	if (segments.length < 2) return id;
-	const parsed = segments.map(segment => segment.match(/^(\d+)-(.+)$/));
-	if (parsed.some(match => !match)) return id;
-	const indices = parsed.map(match => match![1]).join(".");
-	const labels = parsed.map(match => match![2]).join(">");
-	return `${indices} ${labels}`;
-}
-
 type ToolEntry = { tool: string; args: string; status: "success" | "error" | "running" };
 
-function renderToolLine(entry: ToolEntry, continuePrefix: string, theme: Theme): string {
+const INDENT = "   ";
+
+function renderToolLine(entry: ToolEntry, theme: Theme): string {
 	const icon =
 		entry.status === "running"
 			? theme.fg("accent", theme.status.running)
@@ -70,7 +46,7 @@ function renderToolLine(entry: ToolEntry, continuePrefix: string, theme: Theme):
 				: theme.fg("dim", theme.status.success);
 	const toolName = entry.status === "running" ? theme.fg("muted", entry.tool) : theme.fg("dim", entry.tool);
 	const args = entry.args ? `  ${theme.fg("dim", truncateToWidth(replaceTabs(entry.args), 50))}` : "";
-	return `${continuePrefix}${icon} ${toolName}${args}`;
+	return `${INDENT}${icon} ${toolName}${args}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -83,8 +59,6 @@ export interface SubagentRenderConfig {
 	getDescription: (args: Record<string, unknown>) => string;
 	getContextLine?: (args: Record<string, unknown>) => string | null;
 }
-
-const INDENT = "   ";
 
 /** Cheap fingerprint of tool state for cache invalidation. */
 function toolStateFingerprint(details: TaskToolDetails): number {
@@ -130,31 +104,53 @@ function renderSubagentHeader(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Task tool renderCall (backwards compat — delegates to unified header)
+// Tool history rendering
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Max tool history entries to show during streaming */
+const STREAMING_TOOL_LIMIT = 4;
+
+/** Max tool history entries when collapsed */
+const COLLAPSED_TOOL_LIMIT = 3;
+
+/** Max conclusion lines when collapsed */
+const COLLAPSED_CONCLUSION_LINES = 6;
+
+function renderToolHistory(history: ToolEntry[], expanded: boolean, limit: number, theme: Theme): string[] {
+	const lines: string[] = [];
+	const completed = history.filter(t => t.status !== "running");
+	const running = history.filter(t => t.status === "running");
+
+	const showCompleted = expanded ? completed : completed.slice(-limit);
+	const skipped = completed.length - showCompleted.length;
+	if (skipped > 0) {
+		lines.push(`${INDENT}${theme.fg("dim", `… ${skipped} more`)}`);
+	}
+	for (const entry of showCompleted) {
+		lines.push(renderToolLine(entry, theme));
+	}
+	if (running.length > 0) {
+		for (const entry of running) {
+			lines.push(renderToolLine(entry, theme));
+		}
+	} else if (completed.length > 0) {
+		// Between tool calls — reserve empty line to prevent layout shift
+		lines.push(INDENT);
+	}
+	return lines;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Task tool renderCall / renderResult
 // ═══════════════════════════════════════════════════════════════════════════
 
 const taskRenderConfig: SubagentRenderConfig = {
 	label: "Task",
-	getDescription: args => String(args.id ?? ""),
+	getDescription: args => String(args.description ?? ""),
 	getContextLine: args => {
-		const context = String(args.context ?? "").trim();
-		const assignment = String(args.assignment ?? "").trim();
-		const parts: string[] = [];
-		if (context) {
-			const contextKey = Bun.hash(context);
-			const isDuplicate = isDuplicateContext(contextKey);
-			if (isDuplicate) {
-				parts.push("Context [shared]");
-			} else {
-				const lineCount = context.split("\n").filter(l => l.trim()).length;
-				const preview = truncateToWidth(replaceTabs(context.split("\n")[0] ?? ""), 40);
-				parts.push(lineCount > 1 ? `Context: ${preview} (${lineCount} lines)` : `Context: ${preview}`);
-			}
-		}
-		if (assignment) {
-			parts.push(`Assignment: ${truncateToWidth(replaceTabs(assignment.split("\n")[0] ?? ""), 50)}`);
-		}
-		return parts.length > 0 ? parts.join(" · ") : null;
+		const prompt = String(args.prompt ?? "").trim();
+		if (!prompt) return null;
+		return `Prompt: ${truncateToWidth(replaceTabs(prompt.split("\n")[0] ?? ""), 70)}`;
 	},
 };
 
@@ -164,138 +160,12 @@ export function renderCall(args: TaskParams, _options: RenderResultOptions, them
 	return new Text(lines.join("\n"), 0, 0);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// renderAgentProgress (streaming)
-// ═══════════════════════════════════════════════════════════════════════════
-
-/** Max tool history entries to show during streaming */
-const STREAMING_TOOL_LIMIT = 4;
-
-function renderAgentProgress(
-	progress: AgentProgress,
-	isLast: boolean,
-	expanded: boolean,
-	theme: Theme,
-	spinnerFrame?: number,
-): string[] {
-	const lines: string[] = [];
-	const prefix = isLast ? theme.fg("dim", theme.tree.last) : theme.fg("dim", theme.tree.branch);
-	const continuePrefix = isLast ? "   " : `${theme.fg("dim", theme.tree.vertical)}  `;
-
-	const icon = getStatusIcon(progress.status, theme, spinnerFrame);
-	const iconColor: ThemeColor =
-		progress.status === "completed"
-			? "success"
-			: progress.status === "failed" || progress.status === "aborted"
-				? "error"
-				: "accent";
-
-	// Main status line
-	const description = progress.description?.trim();
-	const displayId = formatTaskId(progress.id);
-	const titlePart = description ? `${theme.bold(displayId)}: ${description}` : displayId;
-	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("accent", titlePart)}`;
-
-	if (progress.status === "failed" || progress.status === "aborted") {
-		statusLine += ` ${formatBadge(progress.status, iconColor, theme)}`;
-	}
-
-	if (progress.durationMs > 0) {
-		statusLine += `${theme.sep.dot}${theme.fg("dim", formatDuration(progress.durationMs))}`;
-	}
-
-	lines.push(statusLine);
-
-	// Tool history — show last N completed + current running
-	if (progress.status === "running" || progress.status === "completed" || progress.status === "failed") {
-		const history = progress.toolHistory;
-		const completed = history.filter(t => t.status !== "running");
-		const running = history.filter(t => t.status === "running");
-
-		// Show recent completed (last N)
-		const showCompleted = expanded ? completed : completed.slice(-STREAMING_TOOL_LIMIT);
-		const skipped = completed.length - showCompleted.length;
-		if (skipped > 0) {
-			lines.push(`${continuePrefix}${theme.fg("dim", `… ${skipped} more`)}`);
-		}
-		for (const entry of showCompleted) {
-			lines.push(renderToolLine(entry, continuePrefix, theme));
-		}
-		// Show currently running tool (reserve slot to prevent height jitter)
-		if (running.length > 0) {
-			for (const entry of running) {
-				lines.push(renderToolLine(entry, continuePrefix, theme));
-			}
-		} else if (progress.status === "running" && completed.length > 0) {
-			// Between tool calls — reserve empty line to prevent layout shift
-			lines.push(continuePrefix);
-		}
-	}
-
-	return lines;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// renderAgentResult (final)
-// ═══════════════════════════════════════════════════════════════════════════
-
-/** Max tool history entries when collapsed */
-const COLLAPSED_TOOL_LIMIT = 3;
-
-function renderAgentResult(result: SingleResult, isLast: boolean, expanded: boolean, theme: Theme): string[] {
-	const lines: string[] = [];
-	const prefix = isLast ? theme.fg("dim", theme.tree.last) : theme.fg("dim", theme.tree.branch);
-	const continuePrefix = isLast ? "   " : `${theme.fg("dim", theme.tree.vertical)}  `;
-
-	const aborted = result.aborted ?? false;
-	const success = !aborted && result.exitCode === 0;
-	const icon = aborted ? theme.status.aborted : success ? theme.status.success : theme.status.error;
-	const iconColor: ThemeColor = success ? "success" : "error";
-	const statusText = aborted ? "aborted" : success ? "done" : "failed";
-
-	// Main status line
-	const description = result.description?.trim();
-	const displayId = formatTaskId(result.id);
-	const titlePart = description ? `${theme.bold(displayId)}: ${description}` : displayId;
-	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("accent", titlePart)} ${formatBadge(statusText, iconColor, theme)}`;
-	statusLine += `${theme.sep.dot}${theme.fg("dim", formatDuration(result.durationMs))}`;
-
-	lines.push(statusLine);
-
-	// Tool history
-	const history = result.toolHistory ?? [];
-	if (history.length > 0) {
-		const show = expanded ? history : history.slice(-COLLAPSED_TOOL_LIMIT);
-		const skipped = history.length - show.length;
-		if (skipped > 0) {
-			lines.push(`${continuePrefix}${theme.fg("dim", `… ${skipped} more`)}`);
-		}
-		for (const entry of show) {
-			lines.push(renderToolLine(entry, continuePrefix, theme));
-		}
-	}
-
-	// Error message for failed tasks
-	if (result.error && !success) {
-		lines.push(`${continuePrefix}${theme.fg("error", truncateToWidth(result.error, 70))}`);
-	}
-
-	return lines;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// renderResult (main entry point)
-// ═══════════════════════════════════════════════════════════════════════════
-
 export function renderResult(
 	result: { content: Array<{ type: string; text?: string }>; details?: TaskToolDetails },
 	options: RenderResultOptions,
 	theme: Theme,
 ): Component {
-	const fallbackText = result.content.find(c => c.type === "text")?.text ?? "";
-	const details = result.details;
-
-	if (!details) {
+	if (!result.details) {
 		const text = result.content.find(c => c.type === "text")?.text || "";
 		return new Text(theme.fg("dim", truncateToWidth(text, 100)), 0, 0);
 	}
@@ -304,6 +174,9 @@ export function renderResult(
 
 	return {
 		render(width) {
+			// Read from result ref each render to pick up mutable updates
+			const details = result.details!;
+			const fallbackText = result.content.find(c => c.type === "text")?.text ?? "";
 			const { expanded, isPartial, spinnerFrame } = options;
 			const key = new Hasher()
 				.bool(expanded)
@@ -315,28 +188,62 @@ export function renderResult(
 			if (cached?.key === key) return cached.lines;
 
 			const lines: string[] = [];
+			const args = {} as Record<string, unknown>;
 
-			if (isPartial && details.progress) {
-				details.progress.forEach((progress, i) => {
-					const isLast = i === details.progress!.length - 1;
-					lines.push(...renderAgentProgress(progress, isLast, expanded, theme, spinnerFrame));
-				});
-			} else if (details.results && details.results.length > 0) {
-				details.results.forEach((res, i) => {
-					const isLast = i === details.results.length - 1;
-					lines.push(...renderAgentResult(res, isLast, expanded, theme));
-				});
+			if (isPartial && details.progress?.length) {
+				const p = details.progress[0];
+				const icon = getStatusIcon(p.status, theme, spinnerFrame);
+				const duration = p.durationMs > 0 ? p.durationMs : undefined;
+				const errorColor = "error" as const;
+				const badge =
+					p.status === "failed" || p.status === "aborted" ? { text: p.status, color: errorColor } : undefined;
+				// Use description from progress for header
+				const headerArgs = { description: p.description ?? p.id, prompt: p.task };
+				lines.push(
+					...renderSubagentHeader(
+						taskRenderConfig,
+						headerArgs as Record<string, unknown>,
+						{ icon, duration, badge },
+						theme,
+					),
+				);
+				lines.push(...renderToolHistory(p.toolHistory, expanded, STREAMING_TOOL_LIMIT, theme));
+			} else if (details.results?.length) {
+				const r = details.results[0];
+				const aborted = r.aborted ?? false;
+				const success = !aborted && r.exitCode === 0;
+				const statusText = aborted ? "aborted" : success ? "done" : "failed";
+				const iconColor: ToolUIColor = success ? "success" : "error";
+				const icon = formatStatusIcon(success ? "success" : "error", theme);
+				const headerArgs = { description: r.description ?? r.id, prompt: r.task };
+				lines.push(
+					...renderSubagentHeader(
+						taskRenderConfig,
+						headerArgs as Record<string, unknown>,
+						{ icon, duration: r.durationMs, badge: { text: statusText, color: iconColor } },
+						theme,
+					),
+				);
 
-				// Summary line
-				const abortedCount = details.results.filter(r => r.aborted).length;
-				const successCount = details.results.filter(r => !r.aborted && r.exitCode === 0).length;
-				const failCount = details.results.length - successCount - abortedCount;
-				const parts: string[] = [];
-				if (successCount > 0) parts.push(theme.fg("success", `${successCount} succeeded`));
-				if (failCount > 0) parts.push(theme.fg("error", `${failCount} failed`));
-				if (abortedCount > 0) parts.push(theme.fg("error", `${abortedCount} aborted`));
-				parts.push(theme.fg("dim", formatDuration(details.totalDurationMs)));
-				lines.push(parts.join(theme.sep.dot));
+				// Tool history
+				const history = r.toolHistory ?? [];
+				if (history.length > 0) {
+					const show = expanded ? history : history.slice(-COLLAPSED_TOOL_LIMIT);
+					const skipped = history.length - show.length;
+					if (skipped > 0) {
+						lines.push(`${INDENT}${theme.fg("dim", `… ${skipped} more`)}`);
+					}
+					for (const entry of show) {
+						lines.push(renderToolLine(entry, theme));
+					}
+				}
+
+				if (r.error && !success) {
+					lines.push(`${INDENT}${theme.fg("error", truncateToWidth(r.error, 70))}`);
+				}
+			} else {
+				const icon = formatStatusIcon("pending", theme);
+				lines.push(...renderSubagentHeader(taskRenderConfig, args, { icon }, theme));
 			}
 
 			if (lines.length === 0) {
@@ -346,23 +253,7 @@ export function renderResult(
 				return result;
 			}
 
-			// Check for system notifications in fallback text
-			if (fallbackText.trim()) {
-				const summaryLines = fallbackText.split("\n");
-				const markerIndex = summaryLines.findIndex(
-					line => line.includes("<system-notification>") || line.startsWith("Applied patches:"),
-				);
-				if (markerIndex >= 0) {
-					for (const line of summaryLines.slice(markerIndex)) {
-						if (!line.trim()) continue;
-						lines.push(theme.fg("dim", line));
-					}
-				}
-			}
-
-			const indented = lines.map(line =>
-				line.length > 0 ? truncateToWidth(`   ${line}`, width, Ellipsis.Omit) : "",
-			);
+			const indented = lines.map(line => (line.length > 0 ? truncateToWidth(line, width, Ellipsis.Omit) : ""));
 			cached = { key, lines: indented };
 			return indented;
 		},
@@ -379,7 +270,7 @@ export function renderResult(
 /**
  * Create a renderer for any subagent tool (explore, oracle, librarian, code_review).
  *
- * Renders call and result with unified header.
+ * Renders call and result with unified header + tool history.
  */
 export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 	renderCall: (args: unknown, options: RenderResultOptions, theme: Theme) => Component;
@@ -405,11 +296,9 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 			args?: unknown,
 		): Component {
 			const params = (args ?? {}) as Record<string, unknown>;
-			const details = result.details as TaskToolDetails | undefined;
-			const fallbackText = result.content.find(c => c.type === "text")?.text ?? "";
 
-			if (!details) {
-				const text = fallbackText || "No results";
+			if (!result.details) {
+				const text = result.content.find(c => c.type === "text")?.text || "No results";
 				return new Text(theme.fg("dim", truncateToWidth(text, 100)), 0, 0);
 			}
 
@@ -417,13 +306,16 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 
 			return {
 				render(width) {
+					// Read from result ref each render to pick up mutable updates
+					const details = result.details as TaskToolDetails;
+					const fallbackText = result.content.find(c => c.type === "text")?.text ?? "";
 					const { expanded, isPartial, spinnerFrame } = options;
 					const key = new Hasher()
 						.bool(expanded)
 						.bool(isPartial)
 						.u32(spinnerFrame ?? 0)
 						.u32(width)
-						.u32(toolStateFingerprint(details as TaskToolDetails))
+						.u32(toolStateFingerprint(details))
 						.digest();
 					if (cached?.key === key) return cached.lines;
 
@@ -440,6 +332,7 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 								? { text: p.status, color: errorColor }
 								: undefined;
 						lines.push(...renderSubagentHeader(config, params, { icon, duration, badge }, theme));
+						lines.push(...renderToolHistory(p.toolHistory, expanded, STREAMING_TOOL_LIMIT, theme));
 					} else if (details.results?.length) {
 						const r = details.results[0];
 						const aborted = r.aborted ?? false;
@@ -459,34 +352,7 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 								theme,
 							),
 						);
-					} else {
-						const icon = formatStatusIcon("pending", theme);
-						lines.push(...renderSubagentHeader(config, params, { icon }, theme));
-					}
 
-					// Tool history — appended below header
-					if (isPartial && details.progress?.length) {
-						const p = details.progress[0];
-						const history = p.toolHistory;
-						const completed = history.filter(t => t.status !== "running");
-						const running = history.filter(t => t.status === "running");
-						const showCompleted = expanded ? completed : completed.slice(-STREAMING_TOOL_LIMIT);
-						const skipped = completed.length - showCompleted.length;
-						if (skipped > 0) {
-							lines.push(`${INDENT}${theme.fg("dim", `… ${skipped} more`)}`);
-						}
-						for (const entry of showCompleted) {
-							lines.push(renderToolLine(entry, INDENT, theme));
-						}
-						if (running.length > 0) {
-							for (const entry of running) {
-								lines.push(renderToolLine(entry, INDENT, theme));
-							}
-						} else if (p.status === "running" && completed.length > 0) {
-							lines.push(INDENT);
-						}
-					} else if (details.results?.length) {
-						const r = details.results[0];
 						const history = r.toolHistory ?? [];
 						if (history.length > 0) {
 							const show = expanded ? history : history.slice(-COLLAPSED_TOOL_LIMIT);
@@ -495,17 +361,29 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 								lines.push(`${INDENT}${theme.fg("dim", `… ${skipped} more`)}`);
 							}
 							for (const entry of show) {
-								lines.push(renderToolLine(entry, INDENT, theme));
+								lines.push(renderToolLine(entry, theme));
 							}
 						}
-						const aborted = r.aborted ?? false;
-						const success = !aborted && r.exitCode === 0;
+
 						if (r.error && !success) {
 							lines.push(`${INDENT}${theme.fg("error", truncateToWidth(r.error, 70))}`);
 						}
 						if (success && fallbackText.trim()) {
-							lines.push(`${INDENT}${theme.fg("dim", truncateToWidth(fallbackText.trim(), width))}`);
+							lines.push("");
+							const conclusionLines = fallbackText.trim().split("\n");
+							const maxLines = expanded ? conclusionLines.length : COLLAPSED_CONCLUSION_LINES;
+							const show = conclusionLines.slice(0, maxLines);
+							for (const line of show) {
+								lines.push(`${INDENT}${theme.fg("dim", truncateToWidth(replaceTabs(line), width - 4))}`);
+							}
+							const remaining = conclusionLines.length - show.length;
+							if (remaining > 0) {
+								lines.push(`${INDENT}${theme.fg("dim", `… ${remaining} more lines`)}`);
+							}
 						}
+					} else {
+						const icon = formatStatusIcon("pending", theme);
+						lines.push(...renderSubagentHeader(config, params, { icon }, theme));
 					}
 
 					if (lines.length === 0) {
@@ -531,6 +409,39 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 // Subprocess tool registry
 // ═══════════════════════════════════════════════════════════════════════════
 
+function renderAgentResult(result: SingleResult, expanded: boolean, theme: Theme): string[] {
+	const lines: string[] = [];
+	const aborted = result.aborted ?? false;
+	const success = !aborted && result.exitCode === 0;
+	const icon = aborted ? theme.status.aborted : success ? theme.status.success : theme.status.error;
+	const iconColor: ThemeColor = success ? "success" : "error";
+	const statusText = aborted ? "aborted" : success ? "done" : "failed";
+
+	const description = result.description?.trim();
+	const titlePart = description || result.id;
+	let statusLine = `${theme.fg(iconColor, icon)} ${theme.fg("accent", titlePart)} ${formatBadge(statusText, iconColor, theme)}`;
+	statusLine += `${theme.sep.dot}${theme.fg("dim", formatDuration(result.durationMs))}`;
+	lines.push(statusLine);
+
+	const history = result.toolHistory ?? [];
+	if (history.length > 0) {
+		const show = expanded ? history : history.slice(-COLLAPSED_TOOL_LIMIT);
+		const skipped = history.length - show.length;
+		if (skipped > 0) {
+			lines.push(`${INDENT}${theme.fg("dim", `… ${skipped} more`)}`);
+		}
+		for (const entry of show) {
+			lines.push(renderToolLine(entry, theme));
+		}
+	}
+
+	if (result.error && !success) {
+		lines.push(`${INDENT}${theme.fg("error", truncateToWidth(result.error, 70))}`);
+	}
+
+	return lines;
+}
+
 function isTaskToolDetails(value: unknown): value is TaskToolDetails {
 	return (
 		Boolean(value) &&
@@ -549,10 +460,9 @@ const taskSubprocessHandler = {
 		const lines: string[] = [];
 		for (const details of allData) {
 			if (!details.results || details.results.length === 0) continue;
-			details.results.forEach((result, index) => {
-				const isLast = index === details.results.length - 1;
-				lines.push(...renderAgentResult(result, isLast, expanded, theme));
-			});
+			for (const result of details.results) {
+				lines.push(...renderAgentResult(result, expanded, theme));
+			}
 		}
 		return new Text(lines.join("\n"), 0, 0);
 	},

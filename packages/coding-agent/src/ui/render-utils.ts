@@ -11,6 +11,58 @@ import type { Theme } from "../theme/theme";
 export { Ellipsis, replaceTabs, truncateToWidth } from "@nghyane/arcane-tui";
 
 // =============================================================================
+// Tool Tiers
+// =============================================================================
+
+export type ToolTier = "quiet" | "action" | "interactive" | "subagent" | "default";
+
+const TOOL_TIERS: Record<string, ToolTier> = {
+	// Quiet — dim, 1 line, no expand
+	read: "quiet",
+	grep: "quiet",
+	find: "quiet",
+	fetch: "quiet",
+	search_code: "quiet",
+	lsp: "quiet",
+	browser: "quiet",
+	github: "quiet",
+	notebook: "quiet",
+	undo_edit: "quiet",
+	generate_image: "quiet",
+
+	// Action — normal color, show output, some expandable
+	bash: "action",
+	ssh: "action",
+	python: "action",
+	edit: "action",
+	write: "action",
+	web_search: "action",
+	exa_search: "action",
+	exa_search_deep: "action",
+	exa_search_code: "action",
+	exa_crawl: "action",
+	exa_company: "action",
+	exa_linkedin: "action",
+	exa_researcher_start: "action",
+	exa_researcher_poll: "action",
+
+	// Interactive — inline result, no expand
+	ask: "interactive",
+	todo_write: "interactive",
+
+	// Subagent — tool history + conclusion
+	task: "subagent",
+	explore: "subagent",
+	librarian: "subagent",
+	oracle: "subagent",
+	code_review: "subagent",
+};
+
+export function getToolTier(toolName: string): ToolTier {
+	return TOOL_TIERS[toolName] ?? "default";
+}
+
+// =============================================================================
 // Standardized Display Constants
 // =============================================================================
 

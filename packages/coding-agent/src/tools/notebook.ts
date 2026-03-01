@@ -7,8 +7,8 @@ import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { ToolSession } from "../sdk";
 import type { Theme } from "../theme/theme";
-import { Hasher, type RenderCache, renderCodeCell, renderStatusLine } from "../tui";
-import { formatCount, formatErrorMessage, PREVIEW_LIMITS } from "../ui/render-utils";
+import { renderStatusLine } from "../tui";
+import { formatCount, formatErrorMessage, shortenPath } from "../ui/render-utils";
 import { resolveToCwd } from "./path-utils";
 
 const notebookSchema = Type.Object({
@@ -196,67 +196,30 @@ export class NotebookTool implements AgentTool<typeof notebookSchema, NotebookTo
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: NotebookToolDetails },
-		options: RenderResultOptions,
+		_options: RenderResultOptions,
 		uiTheme: Theme,
 		args?: NotebookRenderArgs,
 	): Component {
 		const content = result.content?.[0];
 		if (content?.type === "text" && content.text?.startsWith("Error:")) {
-			const notebookPath = args?.notebookPath ?? args?.notebook_path ?? "?";
-			const header = renderStatusLine({ icon: "error", title: "Notebook", description: notebookPath }, uiTheme);
-			return new Text([header, formatErrorMessage(content.text, uiTheme)].join("\n"), 0, 0);
+			return new Text(formatErrorMessage(content.text, uiTheme), 0, 0);
 		}
-
 		const details = result.details;
 		const action = details?.action ?? "edit";
 		const cellIndex = details?.cellIndex;
 		const cellType = details?.cellType;
-		const totalCells = details?.totalCells;
-		const cellSource = details?.cellSource ?? [];
-		const lineCount = cellSource.length;
-
-		const actionLabel = action === "insert" ? "Inserted" : action === "delete" ? "Deleted" : "Edited";
-		const cellLabel = cellType || "cell";
-		const summaryParts = [`${actionLabel} ${cellLabel} ${cellIndex ?? "?"}`];
-		if (lineCount > 0) summaryParts.push(formatCount("line", lineCount));
-		if (totalCells !== undefined) summaryParts.push(`${totalCells} total`);
-
-		const outputLines = summaryParts.map(part => uiTheme.fg("dim", part));
-		const codeText = cellSource.join("");
-		const language = cellType === "markdown" ? "markdown" : undefined;
-
+		const lineCount = details?.cellSource?.length ?? 0;
 		const notebookPath = args?.notebookPath ?? args?.notebook_path;
-		const notebookLabel = notebookPath ? `${actionLabel} ${notebookPath}` : "Notebook";
-		let cached: RenderCache | undefined;
-
-		return {
-			render: (width: number): string[] => {
-				// REACTIVE: read mutable options at render time
-				const { expanded } = options;
-				const key = new Hasher().bool(expanded).u32(width).digest();
-				if (cached?.key === key) return cached.lines;
-
-				const lines = renderCodeCell(
-					{
-						code: codeText,
-						language,
-						title: notebookLabel,
-						status: "complete",
-						output: outputLines.join("\n"),
-						codeMaxLines: expanded ? Number.POSITIVE_INFINITY : COLLAPSED_TEXT_LIMIT,
-						expanded,
-						width,
-					},
-					uiTheme,
-				);
-
-				cached = { key, lines };
-				return lines;
-			},
-			invalidate: () => {
-				cached = undefined;
-			},
-		};
+		const description = notebookPath ? shortenPath(notebookPath) : "notebook";
+		const meta: string[] = [];
+		if (cellType) meta.push(cellType);
+		if (cellIndex !== undefined) meta.push(`cell ${cellIndex}`);
+		if (lineCount > 0) meta.push(formatCount("line", lineCount));
+		return new Text(
+			renderStatusLine({ icon: "success", title: `Notebook ${action}`, description, meta }, uiTheme),
+			0,
+			0,
+		);
 	}
 }
 
@@ -270,5 +233,3 @@ interface NotebookRenderArgs {
 	cell_type?: string;
 	content?: string;
 }
-
-const COLLAPSED_TEXT_LIMIT = PREVIEW_LIMITS.COLLAPSED_LINES * 2;

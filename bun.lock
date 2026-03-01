@@ -60,18 +60,6 @@
         "@types/bun": "^1.3.9",
       },
     },
-    "packages/codemode": {
-      "name": "@nghyane/arcane-codemode",
-      "version": "0.1.12",
-      "dependencies": {
-        "@nghyane/arcane-agent": "^0.1.11",
-        "@nghyane/arcane-utils": "^0.1.6",
-        "@sinclair/typebox": "^0.34.48",
-      },
-      "devDependencies": {
-        "@types/bun": "^1.3.9",
-      },
-    },
     "packages/coding-agent": {
       "name": "@nghyane/arcane",
       "version": "0.1.13",
@@ -82,7 +70,6 @@
         "@mozilla/readability": "0.6.0",
         "@nghyane/arcane-agent": "^0.1.11",
         "@nghyane/arcane-ai": "^0.1.8",
-        "@nghyane/arcane-codemode": "^0.1.12",
         "@nghyane/arcane-natives": "^0.1.7",
         "@nghyane/arcane-stats": "^0.1.8",
         "@nghyane/arcane-tui": "^0.1.10",
@@ -359,8 +346,6 @@
     "@nghyane/arcane-agent": ["@nghyane/arcane-agent@workspace:packages/agent"],
 
     "@nghyane/arcane-ai": ["@nghyane/arcane-ai@workspace:packages/ai"],
-
-    "@nghyane/arcane-codemode": ["@nghyane/arcane-codemode@workspace:packages/codemode"],
 
     "@nghyane/arcane-natives": ["@nghyane/arcane-natives@workspace:packages/natives"],
 

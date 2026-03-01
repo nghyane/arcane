@@ -8,12 +8,10 @@ import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
 import { type BashResult, executeBash } from "../exec/bash-executor";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import { DEFAULT_MAX_BYTES } from "../session/streaming-output";
 import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { CachedOutputBlock } from "../tui/output-block";
-import { formatBytes, replaceTabs, wrapBrackets } from "../ui/render-utils";
+import { replaceTabs } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type BashInteractiveResult, runInteractiveBashPty } from "./bash-interactive";
 import { checkBashInterception } from "./bash-interceptor";
@@ -60,7 +58,6 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 	description = "Execute a shell command";
 	readonly parameters = bashSchema;
 	readonly concurrency = "exclusive";
-	readonly inline = true;
 
 	constructor(private readonly session: ToolSession) {}
 
@@ -214,95 +211,47 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 		uiTheme: Theme,
 		args?: BashRenderArgs,
 	): Component {
-		const cmdText = args ? formatBashCommand(args, uiTheme) : undefined;
+		const cmdText = args ? formatBashCommand(args, uiTheme) : "…";
 		const isError = result.isError === true;
-		const header = renderStatusLine({ icon: isError ? "error" : "success", title: "Bash" }, uiTheme);
-		const details = result.details;
-		const truncation = details?.meta?.truncation;
-		const outputBlock = new CachedOutputBlock();
+		const { renderContext } = options;
+		const output = (renderContext?.output ?? result.content?.find(c => c.type === "text")?.text ?? "").trimEnd();
+		const outputLines = output ? output.split("\n") : [];
+		const total = outputLines.length;
+		const truncation = result.details?.meta?.truncation;
 
-		return {
-			render: (width: number): string[] => {
-				// REACTIVE: read mutable options at render time
-				const { renderContext } = options;
-				const expanded = renderContext?.expanded ?? options.expanded;
-				const previewLines = renderContext?.previewLines ?? BASH_DEFAULT_PREVIEW_LINES;
+		const meta: string[] = [];
+		if (isError) meta.push("failed");
+		if (total > 0) meta.push(`${total} lines`);
 
-				// Get output from context (preferred) or fall back to result content
-				const output = renderContext?.output ?? result.content?.find(c => c.type === "text")?.text ?? "";
-				const displayOutput = output.trimEnd();
-				const showingFullOutput = expanded && renderContext?.isFullOutput === true;
+		const header = renderStatusLine(
+			{ icon: isError ? "error" : "success", title: "Bash", description: cmdText, meta },
+			uiTheme,
+		);
 
-				// Build truncation warning
-				const timeoutSeconds = renderContext?.timeout;
-				const timeoutLine =
-					typeof timeoutSeconds === "number"
-						? uiTheme.fg(
-								"dim",
-								`${uiTheme.format.bracketLeft}Timeout: ${timeoutSeconds}s${uiTheme.format.bracketRight}`,
-							)
-						: undefined;
-				let warningLine: string | undefined;
-				if (truncation && !showingFullOutput) {
-					const warnings: string[] = [];
-					if (truncation?.artifactId) {
-						warnings.push(`Full output: artifact://${truncation.artifactId}`);
-					}
-					if (truncation.truncatedBy === "lines") {
-						warnings.push(`Truncated: showing ${truncation.outputLines} of ${truncation.totalLines} lines`);
-					} else {
-						warnings.push(
-							`Truncated: ${truncation.outputLines} lines shown (${formatBytes(truncation.outputBytes)} limit)`,
-						);
-					}
-					if (warnings.length > 0) {
-						warningLine = uiTheme.fg("warning", wrapBrackets(warnings.join(". "), uiTheme));
-					}
-				}
+		const TAIL = 4;
+		const expanded = renderContext?.expanded ?? options.expanded;
+		const showAll = isError || expanded;
+		const displayLines = showAll ? outputLines : outputLines.slice(-TAIL);
+		const skipped = total - displayLines.length;
 
-				const outputLines: string[] = [];
-				const hasOutput = displayOutput.trim().length > 0;
-				if (hasOutput) {
-					if (expanded) {
-						outputLines.push(...displayOutput.split("\n").map(line => replaceTabs(line)));
-					} else {
-						const styledOutput = displayOutput
-							.split("\n")
-							.map(line => replaceTabs(line))
-							.join("\n");
-						const textContent = styledOutput;
-						const result = truncateToVisualLines(textContent, previewLines, width);
-						if (result.skippedCount > 0) {
-							outputLines.push(
-								uiTheme.fg(
-									"dim",
-									`… (${result.skippedCount} earlier lines, showing ${result.visualLines.length} of ${result.skippedCount + result.visualLines.length}) (ctrl+o to expand)`,
-								),
-							);
-						}
-						outputLines.push(...result.visualLines);
-					}
-				}
-				if (timeoutLine) outputLines.push(timeoutLine);
-				if (warningLine) outputLines.push(warningLine);
+		const bodyLines: string[] = [];
+		if (skipped > 0) {
+			bodyLines.push(uiTheme.fg("dim", `… (${skipped} earlier lines)`));
+		}
+		const hasTruncation = Boolean(truncation);
+		for (let i = 0; i < displayLines.length; i++) {
+			bodyLines.push(uiTheme.fg("toolOutput", replaceTabs(displayLines[i])));
+		}
 
-				return outputBlock.render(
-					{
-						header,
-						state: isError ? "error" : "success",
-						sections: [
-							{ lines: cmdText ? [uiTheme.fg("dim", cmdText)] : [] },
-							{ label: uiTheme.fg("toolTitle", "Output"), lines: outputLines },
-						],
-						width,
-					},
-					uiTheme,
-				);
-			},
-			invalidate: () => {
-				outputBlock.invalidate();
-			},
-		};
+		if (hasTruncation) {
+			bodyLines.push(uiTheme.fg("warning", "output truncated"));
+		}
+		if (!showAll && skipped > 0) {
+			bodyLines.push(uiTheme.fg("dim", "(Ctrl+O for full output)"));
+		}
+
+		const lines = bodyLines.length > 0 ? [header, ...bodyLines] : [header];
+		return new Text(lines.join("\n"), 0, 0);
 	}
 }
 

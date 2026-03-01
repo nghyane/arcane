@@ -9,7 +9,6 @@ import { CompactionSummaryMessageComponent } from "../../modes/components/compac
 import { CustomMessageComponent } from "../../modes/components/custom-message";
 import { DynamicBorder } from "../../modes/components/dynamic-border";
 import { PythonExecutionComponent } from "../../modes/components/python-execution";
-import { ReadToolGroupComponent } from "../../modes/components/read-tool-group";
 import { SkillMessageComponent } from "../../modes/components/skill-message";
 import { ToolExecutionComponent } from "../../modes/components/tool-execution";
 import { UserMessageComponent } from "../../modes/components/user-message";
@@ -190,12 +189,9 @@ export class UiHelpers {
 			this.ctx.updateEditorBorderColor();
 		}
 
-		let readGroup: ReadToolGroupComponent | null = null;
 		for (const message of sessionContext.messages) {
-			// Assistant messages need special handling for tool calls
 			if (message.role === "assistant") {
 				this.ctx.addMessageToChat(message);
-				readGroup = null;
 				const hasErrorStop = message.stopReason === "aborted" || message.stopReason === "error";
 				const errorMessage = hasErrorStop
 					? message.stopReason === "aborted"
@@ -214,26 +210,6 @@ export class UiHelpers {
 						continue;
 					}
 
-					if (content.name === "read") {
-						if (!readGroup) {
-							readGroup = new ReadToolGroupComponent();
-							readGroup.setExpanded(this.ctx.toolOutputExpanded);
-							this.ctx.chatContainer.addChild(readGroup);
-						}
-						readGroup.updateArgs(content.arguments, content.id);
-						if (hasErrorStop && errorMessage) {
-							readGroup.updateResult(
-								{ content: [{ type: "text", text: errorMessage }], isError: true },
-								false,
-								content.id,
-							);
-						} else {
-							this.ctx.pendingTools.set(content.id, readGroup);
-						}
-						continue;
-					}
-
-					readGroup = null;
 					const tool = this.ctx.session.getToolByName(content.name);
 					const component = new ToolExecutionComponent(
 						content.name,

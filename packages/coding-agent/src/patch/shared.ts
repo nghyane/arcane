@@ -9,16 +9,14 @@ import type { FileDiagnosticsResult } from "../lsp";
 import { renderDiff as renderDiffColored } from "../modes/components/diff";
 import { getLanguageFromPath, type Theme } from "../theme/theme";
 import type { OutputMeta } from "../tools/output-meta";
-import { Ellipsis, Hasher, type RenderCache, renderStatusLine, truncateToWidth } from "../tui";
+import { renderStatusLine } from "../tui";
 import {
-	formatExpandHint,
+	formatDiagnostics,
 	formatStatusIcon,
 	getDiffStats,
-	PREVIEW_LIMITS,
 	replaceTabs,
 	shortenPath,
 	ToolUIKit,
-	truncateDiffByHunk,
 } from "../ui/render-utils";
 import type { DiffError, DiffResult, Operation } from "./types";
 
@@ -99,11 +97,6 @@ export interface EditRenderContext {
 }
 
 const EDIT_STREAMING_PREVIEW_LINES = 12;
-
-function countLines(text: string): number {
-	if (!text) return 0;
-	return text.split("\n").length;
-}
 
 function formatStreamingDiff(diff: string, rawPath: string, uiTheme: Theme, label = "streaming"): string {
 	if (!diff) return "";
@@ -208,47 +201,6 @@ function formatStreamingHashlineEdits(edits: unknown[], uiTheme: Theme, ui: Tool
 		};
 	}
 }
-function formatMetadataLine(lineCount: number | null, language: string | undefined, uiTheme: Theme): string {
-	const icon = uiTheme.getLangIcon(language);
-	if (lineCount !== null) {
-		return uiTheme.fg("dim", `${icon} ${lineCount} lines`);
-	}
-	return uiTheme.fg("dim", `${icon}`);
-}
-
-function renderDiffSection(
-	diff: string,
-	rawPath: string,
-	expanded: boolean,
-	uiTheme: Theme,
-	ui: ToolUIKit,
-	renderDiffFn: (t: string, o?: { filePath?: string }) => string,
-): string {
-	let text = "";
-	const diffStats = getDiffStats(diff);
-	text += `\n${uiTheme.fg("dim", uiTheme.format.bracketLeft)}${ui.formatDiffStats(
-		diffStats.added,
-		diffStats.removed,
-		diffStats.hunks,
-	)}${uiTheme.fg("dim", uiTheme.format.bracketRight)}`;
-
-	const {
-		text: truncatedDiff,
-		hiddenHunks,
-		hiddenLines,
-	} = expanded
-		? { text: diff, hiddenHunks: 0, hiddenLines: 0 }
-		: truncateDiffByHunk(diff, PREVIEW_LIMITS.DIFF_COLLAPSED_HUNKS, PREVIEW_LIMITS.DIFF_COLLAPSED_LINES);
-
-	text += `\n\n${renderDiffFn(truncatedDiff, { filePath: rawPath })}`;
-	if (!expanded && (hiddenHunks > 0 || hiddenLines > 0)) {
-		const remainder: string[] = [];
-		if (hiddenHunks > 0) remainder.push(`${hiddenHunks} more hunks`);
-		if (hiddenLines > 0) remainder.push(`${hiddenLines} more lines`);
-		text += uiTheme.fg("toolOutput", `\n… (${remainder.join(", ")}) ${formatExpandHint(uiTheme)}`);
-	}
-	return text;
-}
 
 export const editToolRenderer = {
 	renderCall(
@@ -317,91 +269,64 @@ export const editToolRenderer = {
 		uiTheme: Theme,
 		args?: EditRenderArgs,
 	): Component {
-		const ui = new ToolUIKit(uiTheme);
 		const rawPath = args?.file_path || args?.path || "";
 		const filePath = shortenPath(rawPath);
-		const editLanguage = getLanguageFromPath(rawPath) ?? "text";
-		const editIcon = uiTheme.fg("muted", uiTheme.getLangIcon(editLanguage));
-
 		const op = args?.op || result.details?.op;
 		const rename = args?.rename || result.details?.rename;
 		const opTitle = op === "create" ? "Create" : op === "delete" ? "Delete" : "Edit";
 
-		// Pre-compute metadata line (static across renders)
-		const lineCountSource = args?.newText ?? args?.oldText ?? args?.diff ?? args?.patch ?? null;
-		const metadataLine =
-			op !== "delete"
-				? `\n${formatMetadataLine(lineCountSource ? countLines(lineCountSource) : null, editLanguage, uiTheme)}`
-				: "";
+		if (result.isError) {
+			const errorText = result.content?.find(c => c.type === "text")?.text || "Unknown error";
+			const header = renderStatusLine({ icon: "error", title: opTitle, description: filePath || "file" }, uiTheme);
+			return new Text(`${header}\n${uiTheme.fg("error", replaceTabs(errorText))}`, 0, 0);
+		}
 
-		// Pre-compute error text (static)
-		const errorText = result.isError ? (result.content?.find(c => c.type === "text")?.text ?? "") : "";
+		// Get diff text from result or preview
+		const { renderContext } = options;
+		const editDiffPreview = renderContext?.editDiffPreview;
+		const diffText =
+			result.details?.diff ??
+			(editDiffPreview && "diff" in editDiffPreview ? editDiffPreview.diff : undefined) ??
+			"";
 
-		let cached: RenderCache | undefined;
+		const diffStats = diffText ? getDiffStats(diffText) : { added: 0, removed: 0, hunks: 0, lines: 0 };
 
-		return {
-			render(width) {
-				const { expanded, renderContext } = options;
-				const editDiffPreview = renderContext?.editDiffPreview;
-				const renderDiffFn = renderContext?.renderDiff ?? ((t: string) => t);
-				const key = new Hasher().bool(expanded).u32(width).digest();
-				if (cached?.key === key) return cached.lines;
+		// Build header with diff stats
+		let description = filePath || "file";
+		if (rename) description += ` ${uiTheme.fg("dim", "→")} ${shortenPath(rename)}`;
+		const meta: string[] = [];
+		if (diffStats.hunks > 0) meta.push(`${diffStats.hunks} hunks`);
+		if (diffStats.added > 0) meta.push(uiTheme.fg("success", `+${diffStats.added}`));
+		if (diffStats.removed > 0) meta.push(uiTheme.fg("error", `-${diffStats.removed}`));
 
-				// Build path display with line number
-				let pathDisplay = filePath ? uiTheme.fg("accent", filePath) : uiTheme.fg("toolOutput", "…");
-				const firstChangedLine =
-					(editDiffPreview && "firstChangedLine" in editDiffPreview
-						? editDiffPreview.firstChangedLine
-						: undefined) || (result.details && !result.isError ? result.details.firstChangedLine : undefined);
-				if (firstChangedLine) {
-					pathDisplay += uiTheme.fg("warning", `:${firstChangedLine}`);
-				}
+		const header = renderStatusLine({ icon: "success", title: opTitle, description, meta }, uiTheme);
 
-				// Add arrow for rename operations
-				if (rename) {
-					pathDisplay += ` ${uiTheme.fg("dim", "→")} ${uiTheme.fg("accent", shortenPath(rename))}`;
-				}
+		// Tree-style diff body
+		const expanded = options.expanded;
+		const diffLines = diffText ? diffText.split("\n") : [];
+		const maxLines = expanded ? diffLines.length : Math.min(diffLines.length, 20);
 
-				const header = renderStatusLine(
-					{
-						icon: result.isError ? "error" : "success",
-						title: opTitle,
-						description: `${editIcon} ${pathDisplay}`,
-					},
-					uiTheme,
-				);
-				let text = header;
-				text += metadataLine;
+		const treeBody: string[] = [];
+		for (let i = 0; i < maxLines; i++) {
+			const line = diffLines[i];
+			const color = line.startsWith("+") ? "success" : line.startsWith("-") ? "error" : "dim";
+			treeBody.push(uiTheme.fg(color, replaceTabs(line)));
+		}
+		if (!expanded && diffLines.length > maxLines) {
+			const remaining = diffLines.length - maxLines;
+			treeBody.push(uiTheme.fg("dim", `… ${remaining} more lines`));
+			treeBody.push(uiTheme.fg("dim", "(Ctrl+O for full diff)"));
+		}
 
-				if (result.isError) {
-					if (errorText) {
-						text += `\n\n${uiTheme.fg("error", replaceTabs(errorText))}`;
-					}
-				} else if (result.details?.diff) {
-					text += renderDiffSection(result.details.diff, rawPath, expanded, uiTheme, ui, renderDiffFn);
-				} else if (editDiffPreview) {
-					if ("error" in editDiffPreview) {
-						text += `\n\n${uiTheme.fg("error", replaceTabs(editDiffPreview.error))}`;
-					} else if (editDiffPreview.diff) {
-						text += renderDiffSection(editDiffPreview.diff, rawPath, expanded, uiTheme, ui, renderDiffFn);
-					}
-				}
+		// Diagnostics
+		if (result.details?.diagnostics) {
+			const diagText = formatDiagnostics(result.details.diagnostics, expanded, uiTheme, (fp: string) =>
+				uiTheme.getLangIcon(getLanguageFromPath(fp)),
+			);
+			if (diagText.trim()) treeBody.push(diagText.trim());
+		}
 
-				// Show LSP diagnostics if available
-				if (result.details?.diagnostics) {
-					text += ui.formatDiagnostics(result.details.diagnostics, expanded, (fp: string) =>
-						uiTheme.getLangIcon(getLanguageFromPath(fp)),
-					);
-				}
-
-				const lines =
-					width > 0 ? text.split("\n").map(line => truncateToWidth(line, width, Ellipsis.Omit)) : text.split("\n");
-				cached = { key, lines };
-				return lines;
-			},
-			invalidate() {
-				cached = undefined;
-			},
-		};
+		const all = treeBody.length > 0 ? [header, ...treeBody] : [header];
+		return new Text(all.join("\n"), 0, 0);
 	},
 };

@@ -19,7 +19,6 @@ export { LoginDialogComponent } from "./login-dialog";
 export { ModelSelectorComponent } from "./model-selector";
 export { OAuthSelectorComponent } from "./oauth-selector";
 export { QueueModeSelectorComponent } from "./queue-mode-selector";
-export { ReadToolGroupComponent } from "./read-tool-group";
 export { SessionSelectorComponent } from "./session-selector";
 export {
 	type SettingsCallbacks,
@@ -37,5 +36,4 @@ export { TreeSelectorComponent } from "./tree-selector";
 export { TtsrNotificationComponent } from "./ttsr-notification";
 export { UserMessageComponent } from "./user-message";
 export { UserMessageSelectorComponent } from "./user-message-selector";
-export { truncateToVisualLines, type VisualTruncateResult } from "./visual-truncate";
 export { type LspServerInfo, type RecentSession, WelcomeComponent } from "./welcome";

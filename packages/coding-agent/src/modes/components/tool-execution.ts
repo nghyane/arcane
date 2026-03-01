@@ -5,6 +5,7 @@ import { logger } from "@nghyane/arcane-utils";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { theme } from "../../theme/theme";
 import { defaultRenderer } from "../../tools/default-renderer";
+import type { ToolTier } from "../../ui/render-utils";
 import { ToolImageDisplay } from "./tool-image-display";
 
 function ensureInvalidate(component: unknown): Component {
@@ -26,6 +27,7 @@ function cloneToolArgs<T>(args: T): T {
 
 export interface ToolExecutionOptions {
 	showImages?: boolean; // default: true (only used if terminal supports images)
+	tier?: ToolTier;
 }
 
 export interface ToolExecutionHandle {
@@ -47,7 +49,8 @@ export interface ToolExecutionHandle {
  * Component that renders a tool call with its result (updateable)
  */
 export class ToolExecutionComponent extends Container {
-	#contentBox: Box; // Used for custom tools and bash visual truncation
+	#contentBox: Box;
+	#tier: ToolTier;
 	#imageDisplay: ToolImageDisplay;
 	#toolName: string;
 	#toolLabel: string;
@@ -56,7 +59,6 @@ export class ToolExecutionComponent extends Container {
 	#expanded = false;
 	#showImages: boolean;
 	#isPartial = true;
-	#compact: boolean;
 	#ui: TUI;
 	#cwd: string;
 	#result?: {
@@ -83,6 +85,16 @@ export class ToolExecutionComponent extends Container {
 		expanded: false,
 		isPartial: true,
 	};
+	// Cached components to avoid clear+rebuild flicker
+	#structureKey = "";
+	#cachedCallComponent?: Component;
+	#cachedResultComponent?: Component;
+	// Mutable result ref for subagent closures to read fresh data
+	#resultRef: {
+		content: Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
+		details?: any;
+		isError?: boolean;
+	} = { content: [] };
 
 	constructor(
 		toolName: string,
@@ -91,7 +103,6 @@ export class ToolExecutionComponent extends Container {
 		tool: AgentTool | undefined,
 		ui: TUI,
 		cwd: string = getProjectDir(),
-		{ compact = false }: { compact?: boolean } = {},
 	) {
 		super();
 		this.#toolName = toolName;
@@ -99,7 +110,6 @@ export class ToolExecutionComponent extends Container {
 		this.#tool = tool;
 		this.#args = cloneToolArgs(args);
 		this.#showImages = options.showImages ?? true;
-		this.#compact = compact;
 		this.#ui = ui;
 		this.#cwd = cwd;
 		this.#imageDisplay = new ToolImageDisplay(this, () => {
@@ -107,15 +117,23 @@ export class ToolExecutionComponent extends Container {
 			this.#ui.requestRender();
 		});
 
-		if (!compact) {
+		this.#tier = options.tier ?? "default";
+		const tier = this.#tier;
+		if (tier === "quiet") {
+			// Quiet tools: no spacer, no box — content renders directly
+			this.#contentBox = new Box(0, 0);
+			this.addChild(this.#contentBox);
+		} else if (tier === "action") {
+			// Action tools: spacer + box with horizontal padding, no vertical padding
 			this.addChild(new Spacer(1));
+			this.#contentBox = new Box(1, 0, (text: string) => theme.bg("toolPendingBg", text));
+			this.addChild(this.#contentBox);
+		} else {
+			// Interactive/subagent/default: full box with padding + background
+			this.addChild(new Spacer(1));
+			this.#contentBox = new Box(1, 1, (text: string) => theme.bg("toolPendingBg", text));
+			this.addChild(this.#contentBox);
 		}
-
-		const px = compact ? 0 : 1;
-		const py = compact ? 0 : 1;
-		const initialBg = compact ? undefined : (text: string) => theme.bg("toolPendingBg", text);
-		this.#contentBox = new Box(px, py, initialBg);
-		this.addChild(this.#contentBox);
 
 		this.#updateDisplay();
 	}
@@ -234,71 +252,88 @@ export class ToolExecutionComponent extends Container {
 		this.#updateDisplay();
 	}
 
-	#getBgFn(): ((text: string) => string) | undefined {
-		if (this.#compact) return undefined;
-		if (this.#isPartial) return (text: string) => theme.bg("toolPendingBg", text);
-		if (this.#result?.isError) return (text: string) => theme.bg("toolErrorBg", text);
-		return (text: string) => theme.bg("toolSuccessBg", text);
-	}
-
 	#updateDisplay(): void {
-		const bgFn = this.#getBgFn();
-
 		// Sync shared mutable render state for component closures
 		this.#renderState.expanded = this.#expanded;
 		this.#renderState.isPartial = this.#isPartial;
 		this.#renderState.spinnerFrame = this.#spinnerFrame;
-
-		const isInline = this.#tool?.inline ?? false;
-		const mergeCallAndResult = this.#tool?.mergeCallAndResult ?? true;
-		this.#contentBox.setBgFn(isInline ? undefined : bgFn);
-		this.#contentBox.clear();
-
-		// Pass label for default renderer
 		this.#renderState.label = this.#toolLabel;
 
-		const shouldRenderCall = !this.#result || !mergeCallAndResult;
-		if (shouldRenderCall) {
-			try {
-				const callComponent = (this.#tool?.renderCall ?? defaultRenderer.renderCall)(
-					this.#getCallArgsForRender(),
-					this.#renderState,
-					theme,
-				);
-				if (callComponent) {
-					this.#contentBox.addChild(ensureInvalidate(callComponent));
-				}
-			} catch (err) {
-				logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
-				this.#contentBox.addChild(new Text(theme.fg("toolTitle", theme.bold(this.#toolLabel)), 0, 0));
+		const mergeCallAndResult = this.#tool?.mergeCallAndResult ?? true;
+		// Quiet tools have no background
+		if (this.#tier !== "quiet") {
+			if (this.#isPartial) {
+				this.#contentBox.setBgFn((text: string) => theme.bg("toolPendingBg", text));
+			} else if (this.#result?.isError) {
+				this.#contentBox.setBgFn((text: string) => theme.bg("toolErrorBg", text));
+			} else {
+				this.#contentBox.setBgFn((text: string) => theme.bg("toolSuccessBg", text));
 			}
 		}
 
-		if (this.#result) {
-			try {
-				const renderContext = this.#buildRenderContext();
-				this.#renderState.renderContext = renderContext;
+		// Determine which components are needed
+		const needsCall = !this.#result || !mergeCallAndResult;
+		const needsResult = !!this.#result;
+		const structureKey = `${needsCall}|${needsResult}|${!!this.#toolState}`;
 
-				const resultComponent = (this.#tool?.renderResult ?? defaultRenderer.renderResult)(
-					{
-						content: this.#result.content as any,
-						details: this.#result.details,
-						isError: this.#result.isError,
-					},
-					this.#renderState,
-					theme,
-					this.#args,
-				);
-				if (resultComponent) {
-					this.#contentBox.addChild(ensureInvalidate(resultComponent));
-				}
-			} catch (err) {
-				logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
-				const output = this.#getTextOutput();
-				if (output) {
-					this.#contentBox.addChild(new Text(theme.fg("toolOutput", output), 0, 0));
+		// Update mutable result ref so existing closures read fresh data
+		if (this.#result) {
+			this.#resultRef.content = this.#result.content as any;
+			this.#resultRef.details = this.#result.details;
+			this.#resultRef.isError = this.#result.isError;
+		}
+
+		if (structureKey !== this.#structureKey) {
+			// Structure changed — rebuild components
+			this.#structureKey = structureKey;
+			this.#contentBox.clear();
+			this.#cachedCallComponent = undefined;
+			this.#cachedResultComponent = undefined;
+
+			if (needsCall) {
+				try {
+					const comp = (this.#tool?.renderCall ?? defaultRenderer.renderCall)(
+						this.#getCallArgsForRender(),
+						this.#renderState,
+						theme,
+					);
+					if (comp) {
+						this.#cachedCallComponent = ensureInvalidate(comp);
+						this.#contentBox.addChild(this.#cachedCallComponent);
+					}
+				} catch (err) {
+					logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
+					this.#cachedCallComponent = new Text(theme.fg("toolTitle", theme.bold(this.#toolLabel)), 0, 0);
+					this.#contentBox.addChild(this.#cachedCallComponent);
 				}
 			}
+
+			if (needsResult) {
+				try {
+					this.#renderState.renderContext = this.#buildRenderContext();
+					const comp = (this.#tool?.renderResult ?? defaultRenderer.renderResult)(
+						this.#resultRef as any,
+						this.#renderState,
+						theme,
+						this.#args,
+					);
+					if (comp) {
+						this.#cachedResultComponent = ensureInvalidate(comp);
+						this.#contentBox.addChild(this.#cachedResultComponent);
+					}
+				} catch (err) {
+					logger.warn("Tool renderer failed", { tool: this.#toolName, error: String(err) });
+					const output = this.#getTextOutput();
+					if (output) {
+						this.#contentBox.addChild(new Text(theme.fg("toolOutput", output), 0, 0));
+					}
+				}
+			}
+		} else {
+			// Structure unchanged — invalidate existing components so they re-render
+			this.#renderState.renderContext = this.#buildRenderContext();
+			this.#cachedCallComponent?.invalidate();
+			this.#cachedResultComponent?.invalidate();
 		}
 
 		// Handle images

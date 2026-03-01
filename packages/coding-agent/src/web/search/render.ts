@@ -5,63 +5,15 @@
  */
 
 import type { Component } from "@nghyane/arcane-tui";
-import { Text, visibleWidth, wrapTextWithAnsi } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../../extensibility/custom-tools/types";
 import type { Theme } from "../../theme/theme";
-import { renderStatusLine, renderTreeList } from "../../tui";
-import { CachedOutputBlock } from "../../tui/output-block";
-import {
-	formatAge,
-	formatCount,
-	formatExpandHint,
-	formatMoreItems,
-	formatStatusIcon,
-	getDomain,
-	getPreviewLines,
-	PREVIEW_LIMITS,
-	TRUNCATE_LENGTHS,
-	truncateToWidth,
-} from "../../ui/render-utils";
+import { renderStatusLine } from "../../tui";
+import { formatCount, formatMoreItems, getDomain, truncateToWidth } from "../../ui/render-utils";
 import { getSearchProvider } from "./provider";
 import type { SearchResponse } from "./types";
 
-const MAX_COLLAPSED_ANSWER_LINES = PREVIEW_LIMITS.COLLAPSED_LINES;
-const MAX_EXPANDED_ANSWER_LINES = PREVIEW_LIMITS.EXPANDED_LINES;
-const MAX_ANSWER_LINE_LEN = TRUNCATE_LENGTHS.LINE;
-const MAX_SNIPPET_LINES = 2;
-const MAX_SNIPPET_LINE_LEN = TRUNCATE_LENGTHS.LINE;
-const MAX_COLLAPSED_ITEMS = PREVIEW_LIMITS.COLLAPSED_ITEMS;
-const MAX_QUERY_PREVIEW = 2;
-const MAX_QUERY_LEN = 90;
-const MAX_REQUEST_ID_LEN = 36;
-
-function renderFallbackText(contentText: string, expanded: boolean, theme: Theme): Component {
-	const lines = contentText.split("\n").filter(line => line.trim());
-	const maxLines = expanded ? lines.length : 6;
-	const displayLines = lines.slice(0, maxLines).map(line => truncateToWidth(line.trim(), 110));
-	const remaining = lines.length - displayLines.length;
-
-	const headerIcon = formatStatusIcon("warning", theme);
-	const expandHint = formatExpandHint(theme, expanded, remaining > 0);
-	let text = `${headerIcon} ${theme.fg("dim", "Response")}${expandHint}`;
-
-	if (displayLines.length === 0) {
-		text += `\n ${theme.fg("dim", theme.tree.last)} ${theme.fg("muted", "No response data")}`;
-		return new Text(text, 0, 0);
-	}
-
-	for (let i = 0; i < displayLines.length; i++) {
-		const isLast = i === displayLines.length - 1 && remaining === 0;
-		const branch = isLast ? theme.tree.last : theme.tree.branch;
-		text += `\n ${theme.fg("dim", branch)} ${theme.fg("dim", displayLines[i])}`;
-	}
-
-	if (!expanded && remaining > 0) {
-		text += `\n ${theme.fg("dim", theme.tree.last)} ${theme.fg("muted", formatMoreItems(remaining, "line"))}`;
-	}
-
-	return new Text(text, 0, 0);
-}
+const MAX_COLLAPSED_SOURCES = 5;
 
 export interface SearchRenderDetails {
 	response: SearchResponse;
@@ -81,204 +33,70 @@ export function renderSearchResult(
 	},
 ): Component {
 	const details = result.details;
-
-	// Handle error case
-	if (details?.error) {
-		return new Text(theme.fg("error", `Error: ${details.error}`), 0, 0);
-	}
-
-	const rawText = result.content?.find(block => block.type === "text")?.text?.trim() ?? "";
 	const response = details?.response;
-	if (!response) {
-		return renderFallbackText(rawText, options.expanded, theme);
-	}
-
-	const sources = Array.isArray(response.sources) ? response.sources : [];
+	const sources = Array.isArray(response?.sources) ? response.sources : [];
 	const sourceCount = sources.length;
-	const citations = Array.isArray(response.citations) ? response.citations : [];
-	const citationCount = citations.length;
-	const searchQueries = Array.isArray(response.searchQueries)
+	const searchQueries = Array.isArray(response?.searchQueries)
 		? response.searchQueries.filter(item => typeof item === "string")
 		: [];
-	const provider = response.provider;
+	const provider = response?.provider;
 
-	// Get answer text
-	const answerText = typeof response.answer === "string" ? response.answer.trim() : "";
-	const contentText = answerText || rawText;
-	const answerLines = contentText
-		? contentText
-				.split("\n")
-				.filter(l => l.trim())
-				.map(l => l.trim())
-		: [];
-	const totalAnswerLines = answerLines.length;
-
-	const providerLabel =
-		provider === "none" ? "None" : provider === "grep" ? "grep.app" : getSearchProvider(provider).label;
+	const providerLabel = provider
+		? provider === "none"
+			? "None"
+			: provider === "grep"
+				? "grep.app"
+				: getSearchProvider(provider).label
+		: "auto";
 	const queryPreview = args?.query
 		? truncateToWidth(args.query, 80)
 		: searchQueries[0]
 			? truncateToWidth(searchQueries[0], 80)
 			: undefined;
+
 	const header = renderStatusLine(
 		{
-			icon: sourceCount > 0 ? "success" : "warning",
+			icon: sourceCount > 0 ? "success" : details?.error ? "error" : "warning",
 			title: "Web Search",
-			description: providerLabel,
-			meta: [formatCount("source", sourceCount)],
+			description: queryPreview,
+			meta: [formatCount("source", sourceCount), providerLabel],
 		},
 		theme,
 	);
 
-	const metaLines: string[] = [];
-	metaLines.push(`${theme.fg("muted", "Provider:")} ${theme.fg("text", providerLabel)}`);
-	if (response.authMode)
-		metaLines.push(
-			`${theme.fg("muted", "Auth:")} ${theme.fg("text", response.authMode === "oauth" ? "OAuth" : response.authMode === "api_key" ? "API key" : response.authMode)}`,
-		);
-	if (response.model) metaLines.push(`${theme.fg("muted", "Model:")} ${theme.fg("text", response.model)}`);
-	metaLines.push(`${theme.fg("muted", "Sources:")} ${theme.fg("text", String(sourceCount))}`);
-	if (citationCount > 0)
-		metaLines.push(`${theme.fg("muted", "Citations:")} ${theme.fg("text", String(citationCount))}`);
-	if (response.usage) {
-		const usageParts: string[] = [];
-		if (response.usage.inputTokens !== undefined) usageParts.push(`in ${response.usage.inputTokens}`);
-		if (response.usage.outputTokens !== undefined) usageParts.push(`out ${response.usage.outputTokens}`);
-		if (response.usage.totalTokens !== undefined) usageParts.push(`total ${response.usage.totalTokens}`);
-		if (response.usage.searchRequests !== undefined) usageParts.push(`search ${response.usage.searchRequests}`);
-		if (usageParts.length > 0)
-			metaLines.push(`${theme.fg("muted", "Usage:")} ${theme.fg("text", usageParts.join(theme.sep.dot))}`);
-	}
-	if (response.requestId) {
-		metaLines.push(
-			`${theme.fg("muted", "Request:")} ${theme.fg("text", truncateToWidth(response.requestId, MAX_REQUEST_ID_LEN))}`,
-		);
-	}
-	if (searchQueries.length > 0) {
-		const queriesPreview = searchQueries.slice(0, MAX_QUERY_PREVIEW);
-		const queryList = queriesPreview.map(q => truncateToWidth(q, MAX_QUERY_LEN));
-		const suffix = searchQueries.length > queriesPreview.length ? "…" : "";
-		metaLines.push(`${theme.fg("muted", "Queries:")} ${theme.fg("text", queryList.join("; "))}${suffix}`);
+	let text = header;
+
+	if (details?.error) {
+		text += `\n ${theme.fg("dim", theme.tree.last)} ${theme.fg("error", details.error)}`;
+		return new Text(text, 0, 0);
 	}
 
-	const outputBlock = new CachedOutputBlock();
+	const { expanded } = options;
+	const maxItems = expanded ? sources.length : Math.min(sources.length, MAX_COLLAPSED_SOURCES);
+	const remaining = sources.length - maxItems;
 
-	return {
-		render(width: number): string[] {
-			// Read mutable state at render time
-			const { expanded } = options;
+	for (let i = 0; i < maxItems; i++) {
+		const src = sources[i];
+		const isLast = i === maxItems - 1 && remaining === 0;
+		const branch = isLast ? theme.tree.last : theme.tree.branch;
+		const titleText =
+			typeof src.title === "string" && src.title.trim()
+				? src.title
+				: typeof src.url === "string" && src.url.trim()
+					? src.url
+					: "Untitled";
+		const title = truncateToWidth(titleText, 70);
+		const url = typeof src.url === "string" ? src.url : "";
+		const domain = url ? getDomain(url) : "";
+		const domainPart = domain ? ` ${theme.fg("dim", `(${domain})`)}` : "";
+		text += `\n ${theme.fg("dim", branch)} ${theme.fg("accent", title)}${domainPart}`;
+	}
 
-			// Expanded-dependent computations
-			const answerLimit = expanded ? MAX_EXPANDED_ANSWER_LINES : MAX_COLLAPSED_ANSWER_LINES;
-			const answerPreview = contentText
-				? args?.allowLongAnswer
-					? answerLines.slice(0, args.maxAnswerLines ?? answerLines.length)
-					: getPreviewLines(contentText, answerLimit, MAX_ANSWER_LINE_LEN)
-				: [];
-			const remainingAnswer = totalAnswerLines - answerPreview.length;
+	if (remaining > 0) {
+		text += `\n ${theme.fg("dim", theme.tree.last)} ${theme.fg("muted", formatMoreItems(remaining, "source"))}`;
+	}
 
-			const sourceTree = renderTreeList(
-				{
-					items: sources,
-					expanded,
-					maxCollapsed: MAX_COLLAPSED_ITEMS,
-					itemType: "source",
-					renderItem: src => {
-						const titleText =
-							typeof src.title === "string" && src.title.trim()
-								? src.title
-								: typeof src.url === "string" && src.url.trim()
-									? src.url
-									: "Untitled";
-						const title = truncateToWidth(titleText, 70);
-						const url = typeof src.url === "string" ? src.url : "";
-						const domain = url ? getDomain(url) : "";
-						const age =
-							formatAge(src.ageSeconds) || (typeof src.publishedDate === "string" ? src.publishedDate : "");
-						const metaParts: string[] = [];
-						if (domain) metaParts.push(theme.fg("dim", `(${domain})`));
-						if (typeof src.author === "string" && src.author.trim())
-							metaParts.push(theme.fg("muted", src.author));
-						if (age) metaParts.push(theme.fg("muted", age));
-						const metaSep = theme.fg("dim", theme.sep.dot);
-						const metaSuffix = metaParts.length > 0 ? ` ${metaParts.join(metaSep)}` : "";
-						const srcLines: string[] = [`${theme.fg("accent", title)}${metaSuffix}`];
-						const snippetText = typeof src.snippet === "string" ? src.snippet : "";
-						if (snippetText.trim()) {
-							const snippetLines = getPreviewLines(snippetText, MAX_SNIPPET_LINES, MAX_SNIPPET_LINE_LEN);
-							for (const snippetLine of snippetLines) {
-								srcLines.push(theme.fg("muted", `${theme.format.dash} ${snippetLine}`));
-							}
-						}
-						if (url) srcLines.push(theme.fg("mdLinkUrl", url));
-						return srcLines;
-					},
-				},
-				theme,
-			);
-
-			// Build answer section
-			const answerState = sourceCount > 0 ? "success" : "warning";
-			const borderColor: "warning" | "dim" = answerState === "warning" ? "warning" : "dim";
-			const border = (t: string) => theme.fg(borderColor, t);
-			const contentPrefix = border(`${theme.boxSharp.vertical} `);
-			const contentSuffix = border(theme.boxSharp.vertical);
-			const contentWidth = Math.max(0, width - visibleWidth(contentPrefix) - visibleWidth(contentSuffix));
-			const answerTreeLines = answerPreview.length > 0 ? answerPreview : ["No answer text returned"];
-			const answerTree = renderTreeList(
-				{
-					items: answerTreeLines,
-					expanded: true,
-					maxCollapsed: answerTreeLines.length,
-					itemType: "line",
-					renderItem: (line, context) => {
-						const coloredLine =
-							line === "No answer text returned" ? theme.fg("muted", line) : theme.fg("dim", line);
-						if (!args?.allowLongAnswer) {
-							return coloredLine;
-						}
-						const prefixWidth = visibleWidth(context.continuePrefix);
-						const wrapWidth = Math.max(10, contentWidth - prefixWidth);
-						return wrapTextWithAnsi(coloredLine, wrapWidth);
-					},
-				},
-				theme,
-			);
-			if (remainingAnswer > 0) {
-				answerTree.push(theme.fg("muted", formatMoreItems(remainingAnswer, "line")));
-			}
-
-			return outputBlock.render(
-				{
-					header,
-					state: sourceCount > 0 ? "success" : "warning",
-					sections: [
-						...(queryPreview
-							? [
-									{
-										lines: [`${theme.fg("muted", "Query:")} ${theme.fg("text", queryPreview)}`],
-									},
-								]
-							: []),
-						{
-							label: theme.fg("toolTitle", "Answer"),
-							lines: answerTree,
-						},
-						{
-							label: theme.fg("toolTitle", "Sources"),
-							lines: sourceTree.length > 0 ? sourceTree : [theme.fg("muted", "No sources returned")],
-						},
-						{ label: theme.fg("toolTitle", "Metadata"), lines: metaLines },
-					],
-					width,
-				},
-				theme,
-			);
-		},
-		invalidate() {
-			outputBlock.invalidate();
-		},
-	};
+	return new Text(text, 0, 0);
 }
 
 /** Render web search call (query preview) */

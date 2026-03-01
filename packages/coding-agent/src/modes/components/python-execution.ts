@@ -1,17 +1,16 @@
 /**
  * Component for displaying user-initiated Python execution with streaming output.
- * Shares the same kernel session as the agent's Python tool.
+ * Tree-style output: tail 4 lines on success, all on error.
  */
 
 import { sanitizeText } from "@nghyane/arcane-natives";
-import { Container, Loader, Spacer, Text, type TUI } from "@nghyane/arcane-tui";
-import { formatBytes } from "../../session/streaming-output";
-import { getSymbolTheme, highlightCode, theme } from "../../theme/theme";
+import { Container, Loader, Text, type TUI } from "@nghyane/arcane-tui";
+import { getSymbolTheme, theme } from "../../theme/theme";
 import type { TruncationMeta } from "../../tools/output-meta";
-import { DynamicBorder } from "./dynamic-border";
-import { truncateToVisualLines } from "./visual-truncate";
+import { renderStatusLine } from "../../tui/status-line";
+import { formatCount, replaceTabs } from "../../ui/render-utils";
 
-const PREVIEW_LINES = 20;
+const TAIL_LINES = 4;
 const MAX_DISPLAY_LINE_CHARS = 4000;
 
 export class PythonExecutionComponent extends Container {
@@ -21,45 +20,35 @@ export class PythonExecutionComponent extends Container {
 	#loader: Loader;
 	#truncation?: TruncationMeta;
 	#expanded = false;
-	#contentContainer: Container;
-
-	#formatHeader(colorKey: "dim" | "pythonMode"): Text {
-		const prompt = theme.fg(colorKey, theme.bold(">>>"));
-		const continuation = theme.fg(colorKey, "    ");
-		const codeLines = highlightCode(this.code, "python");
-		const headerLines = codeLines.map((line, index) =>
-			index === 0 ? `${prompt} ${line}` : `${continuation}${line}`,
-		);
-		return new Text(headerLines.join("\n"), 1, 0);
-	}
+	#headerText: Text;
+	#bodyText: Text;
 
 	constructor(
 		private readonly code: string,
 		ui: TUI,
-		private readonly excludeFromContext = false,
+		_excludeFromContext = false,
 	) {
 		super();
 
-		const colorKey = this.excludeFromContext ? "dim" : "pythonMode";
-		const borderColor = (str: string) => theme.fg(colorKey, str);
+		const codePreview = code.split("\n")[0].slice(0, 60);
+		this.#headerText = new Text(
+			renderStatusLine({ icon: "running", title: "Python", description: `>>> ${codePreview}` }, theme),
+			0,
+			0,
+		);
+		this.addChild(this.#headerText);
 
-		this.addChild(new Spacer(1));
-		this.addChild(new DynamicBorder(borderColor));
-
-		this.#contentContainer = new Container();
-		this.addChild(this.#contentContainer);
-		this.#contentContainer.addChild(this.#formatHeader(colorKey));
+		this.#bodyText = new Text("", 0, 0);
+		this.addChild(this.#bodyText);
 
 		this.#loader = new Loader(
 			ui,
-			spinner => theme.fg(colorKey, spinner),
+			spinner => theme.fg("accent", spinner),
 			text => theme.fg("muted", text),
-			`Running… (esc to cancel)`,
+			"Running\u2026 (esc to cancel)",
 			getSymbolTheme().spinnerFrames,
 		);
-		this.#contentContainer.addChild(this.#loader);
-
-		this.addChild(new DynamicBorder(borderColor));
+		this.addChild(this.#loader);
 	}
 
 	setExpanded(expanded: boolean): void {
@@ -74,7 +63,6 @@ export class PythonExecutionComponent extends Container {
 
 	appendOutput(chunk: string): void {
 		const clean = sanitizeText(chunk);
-
 		const newLines = clean.split("\n").map(line => this.#clampDisplayLine(line));
 		if (this.#outputLines.length > 0 && newLines.length > 0) {
 			this.#outputLines[this.#outputLines.length - 1] = this.#clampDisplayLine(
@@ -84,7 +72,6 @@ export class PythonExecutionComponent extends Container {
 		} else {
 			this.#outputLines.push(...newLines);
 		}
-
 		this.#updateDisplay();
 	}
 
@@ -103,82 +90,54 @@ export class PythonExecutionComponent extends Container {
 		if (options?.output !== undefined) {
 			this.#setOutput(options.output);
 		}
-
 		this.#loader.stop();
 		this.#updateDisplay();
 	}
 
 	#updateDisplay(): void {
-		const availableLines = this.#outputLines;
-		const previewLogicalLines = availableLines.slice(-PREVIEW_LINES);
-		const hiddenLineCount = availableLines.length - previewLogicalLines.length;
+		const isError = this.#status === "error";
+		const isDone = this.#status !== "running";
+		const lines = this.#outputLines.filter(l => l.trim());
+		const total = lines.length;
 
-		this.#contentContainer.clear();
-
-		const colorKey = this.excludeFromContext ? "dim" : "pythonMode";
-		this.#contentContainer.addChild(this.#formatHeader(colorKey));
-
-		if (availableLines.length > 0) {
-			if (this.#expanded) {
-				const displayText = availableLines.map(line => theme.fg("muted", line)).join("\n");
-				this.#contentContainer.addChild(new Text(`\n${displayText}`, 1, 0));
-			} else {
-				const styledOutput = previewLogicalLines.map(line => theme.fg("muted", line)).join("\n");
-				const previewText = `\n${styledOutput}`;
-				this.#contentContainer.addChild({
-					render: (width: number) => {
-						const { visualLines } = truncateToVisualLines(previewText, PREVIEW_LINES, width, 1);
-						return visualLines;
-					},
-					invalidate: () => {},
-				});
-			}
+		if (isDone) {
+			const icon = isError ? "error" : this.#status === "cancelled" ? "warning" : "success";
+			const codePreview = this.code.split("\n")[0].slice(0, 60);
+			const meta: string[] = [];
+			if (isError && this.#exitCode !== undefined) meta.push(`exit ${this.#exitCode}`);
+			if (total > 0) meta.push(formatCount("line", total));
+			this.#headerText.setText(
+				renderStatusLine({ icon, title: "Python", description: `>>> ${codePreview}`, meta }, theme),
+			);
 		}
 
-		if (this.#status === "running") {
-			this.#contentContainer.addChild(this.#loader);
-		} else {
-			const statusParts: string[] = [];
+		const bodyLines: string[] = [];
+		if (total > 0) {
+			const showAll = isError || this.#expanded;
+			const displayLines = showAll ? lines : lines.slice(-TAIL_LINES);
+			const skipped = total - displayLines.length;
 
-			if (hiddenLineCount > 0) {
-				statusParts.push(theme.fg("dim", `… ${hiddenLineCount} more lines (ctrl+o to expand)`));
+			if (skipped > 0) {
+				bodyLines.push(theme.fg("dim", `\u2026 (${skipped} earlier lines)`));
 			}
-
-			if (this.#status === "cancelled") {
-				statusParts.push(theme.fg("warning", "(cancelled)"));
-			} else if (this.#status === "error") {
-				statusParts.push(theme.fg("error", `(exit ${this.#exitCode})`));
+			for (let i = 0; i < displayLines.length; i++) {
+				bodyLines.push(theme.fg("toolOutput", replaceTabs(displayLines[i])));
 			}
-
 			if (this.#truncation) {
-				const warnings: string[] = [];
-				if (this.#truncation.artifactId) {
-					warnings.push(`Full output: artifact://${this.#truncation.artifactId}`);
-				}
-				if (this.#truncation.truncatedBy === "lines") {
-					warnings.push(
-						`Truncated: showing ${this.#truncation.outputLines} of ${this.#truncation.totalLines} lines`,
-					);
-				} else {
-					warnings.push(
-						`Truncated: ${this.#truncation.outputLines} lines shown (${formatBytes(this.#truncation.outputBytes)} limit)`,
-					);
-				}
-				statusParts.push(theme.fg("warning", warnings.join(". ")));
+				bodyLines.push(theme.fg("warning", "output truncated"));
 			}
-
-			if (statusParts.length > 0) {
-				this.#contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 1, 0));
+			if (!showAll && skipped > 0) {
+				bodyLines.push(theme.fg("dim", "(Ctrl+O for full output)"));
 			}
 		}
+
+		this.#bodyText.setText(bodyLines.length > 0 ? bodyLines.join("\n") : "");
 	}
 
 	#clampDisplayLine(line: string): string {
-		if (line.length <= MAX_DISPLAY_LINE_CHARS) {
-			return line;
-		}
+		if (line.length <= MAX_DISPLAY_LINE_CHARS) return line;
 		const omitted = line.length - MAX_DISPLAY_LINE_CHARS;
-		return `${line.slice(0, MAX_DISPLAY_LINE_CHARS)}… [${omitted} chars omitted]`;
+		return `${line.slice(0, MAX_DISPLAY_LINE_CHARS)}\u2026 [${omitted} chars omitted]`;
 	}
 
 	#setOutput(output: string): void {

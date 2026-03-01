@@ -10,15 +10,13 @@ import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { DEFAULT_MAX_BYTES, truncateHead } from "../session/streaming-output";
 import { type Theme, theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { CachedOutputBlock } from "../tui/output-block";
-import { formatExpandHint } from "../ui/render-utils";
+import { formatCount } from "../ui/render-utils";
 import { ensureTool } from "../utils/tools-manager";
 import { specialHandlers } from "../web/scrapers";
 import type { RenderResult } from "../web/scrapers/types";
 import { finalizeOutput, loadPage, MAX_OUTPUT_CHARS } from "../web/scrapers/types";
 import { convertWithMarkitdown, fetchBinary } from "../web/scrapers/utils";
 import type { ToolSession } from ".";
-import { applyListLimit } from "./list-limit";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact } from "./output-utils";
 import { ToolAbortError } from "./tool-errors";
@@ -978,102 +976,26 @@ function renderFetchCall(
 /** Render fetch result with tree-based layout */
 function renderFetchResult(
 	result: { content: Array<{ type: string; text?: string }>; details?: FetchToolDetails },
-	options: RenderResultOptions,
+	_options: RenderResultOptions,
 	uiTheme: Theme = theme,
 ): Component {
 	const details = result.details;
-
 	if (!details) {
 		return new Text(uiTheme.fg("error", "No response data"), 0, 0);
 	}
 
 	const domain = getDomain(details.finalUrl);
-	const path = truncate(details.finalUrl.replace(/^https?:\/\/[^/]+/, ""), 50, "…");
-	const hasRedirect = details.url !== details.finalUrl;
-	const hasNotes = details.notes.length > 0;
-	const truncation = details.meta?.truncation;
-	const truncated = Boolean(details.truncated || truncation);
-
-	const header = renderStatusLine(
-		{
-			icon: truncated ? "warning" : "success",
-			title: "Fetch",
-			description: `${domain}${path ? ` ${path}` : ""}`,
-		},
-		uiTheme,
-	);
-
+	const truncated = Boolean(details.truncated || details.meta?.truncation);
 	const contentText = result.content[0]?.text ?? "";
-	const contentBody = contentText.includes("---\n\n")
-		? contentText.split("---\n\n").slice(1).join("---\n\n")
-		: contentText;
-	const lineCount = countNonEmptyLines(contentBody);
-	const charCount = contentBody.trim().length;
-	const contentLines = contentBody.split("\n").filter(l => l.trim());
+	const lineCount = countNonEmptyLines(contentText);
 
-	const metadataLines: string[] = [
-		`${uiTheme.fg("muted", "Content-Type:")} ${details.contentType || "unknown"}`,
-		`${uiTheme.fg("muted", "Method:")} ${details.method}`,
-	];
-	if (hasRedirect) {
-		metadataLines.push(`${uiTheme.fg("muted", "Final URL:")} ${uiTheme.fg("mdLinkUrl", details.finalUrl)}`);
-	}
-	const lineLabel = `${lineCount} line${lineCount === 1 ? "" : "s"}`;
-	metadataLines.push(`${uiTheme.fg("muted", "Lines:")} ${lineLabel}`);
-	metadataLines.push(`${uiTheme.fg("muted", "Chars:")} ${charCount}`);
-	if (truncated) {
-		metadataLines.push(uiTheme.fg("warning", `${uiTheme.status.warning} Output truncated`));
-		if (truncation?.artifactId) {
-			metadataLines.push(uiTheme.fg("warning", `Full output: artifact://${truncation.artifactId}`));
-		}
-	}
-	if (hasNotes) {
-		metadataLines.push(`${uiTheme.fg("muted", "Notes:")} ${details.notes.join("; ")}`);
-	}
+	const meta: string[] = [];
+	if (lineCount > 0) meta.push(formatCount("line", lineCount));
+	if (truncated) meta.push(uiTheme.fg("warning", "truncated"));
 
-	const outputBlock = new CachedOutputBlock();
-	let lastExpanded: boolean | undefined;
-	let contentPreviewLines: string[] | undefined;
-
-	return {
-		render: (width: number) => {
-			const { expanded } = options;
-
-			if (contentPreviewLines === undefined || lastExpanded !== expanded) {
-				const previewLimit = expanded ? 12 : 3;
-				const previewList = applyListLimit(contentLines, { headLimit: previewLimit });
-				const previewLines = previewList.items.map(line => truncate(line.trimEnd(), 120, "…"));
-				const remaining = Math.max(0, contentLines.length - previewLines.length);
-				contentPreviewLines =
-					previewLines.length > 0
-						? previewLines.map(line => uiTheme.fg("dim", line))
-						: [uiTheme.fg("dim", "(no content)")];
-				if (remaining > 0) {
-					const hint = formatExpandHint(uiTheme, expanded, true);
-					contentPreviewLines.push(uiTheme.fg("muted", `… ${remaining} more lines${hint ? ` ${hint}` : ""}`));
-				}
-				lastExpanded = expanded;
-				outputBlock.invalidate();
-			}
-
-			return outputBlock.render(
-				{
-					header,
-					state: truncated ? "warning" : "success",
-					sections: [
-						{ label: uiTheme.fg("toolTitle", "Metadata"), lines: metadataLines },
-						{ label: uiTheme.fg("toolTitle", "Content Preview"), lines: contentPreviewLines },
-					],
-					width,
-					applyBg: false,
-				},
-				uiTheme,
-			);
-		},
-		invalidate: () => {
-			outputBlock.invalidate();
-			contentPreviewLines = undefined;
-			lastExpanded = undefined;
-		},
-	};
+	return new Text(
+		renderStatusLine({ icon: truncated ? "warning" : "success", title: "Fetch", description: domain, meta }, uiTheme),
+		0,
+		0,
+	);
 }

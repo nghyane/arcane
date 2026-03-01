@@ -132,7 +132,6 @@ providers:
 | [`@nghyane/arcane-ai`](packages/ai) | Multi-provider LLM client |
 | [`@nghyane/arcane-tui`](packages/tui) | Terminal UI library |
 | [`@nghyane/arcane-natives`](packages/natives) | Rust bindings for text/grep ops |
-| [`@nghyane/arcane-codemode`](packages/codemode) | Code Mode engine — replaces tool-calling with JS orchestration |
 | [`@nghyane/arcane-stats`](packages/stats) | Usage dashboard |
 | [`@nghyane/arcane-utils`](packages/utils) | Shared utilities |
 

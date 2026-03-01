@@ -20,9 +20,8 @@ import {
 	truncateStringToBytesFromStart,
 } from "../session/streaming-output";
 import { getLanguageFromPath, type Theme } from "../theme/theme";
-import { renderCodeCell, renderStatusLine } from "../tui";
-import { CachedOutputBlock } from "../tui/output-block";
-import { formatAge, shortenPath, wrapBrackets } from "../ui/render-utils";
+import { renderStatusLine } from "../tui";
+import { formatAge, formatCount, formatErrorMessage, shortenPath } from "../ui/render-utils";
 import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import { formatDimensionNote, resizeImage } from "../utils/image-resize";
 import { detectSupportedImageMimeTypeFromFile } from "../utils/mime";
@@ -1073,99 +1072,33 @@ export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails, T
 	}
 
 	renderResult(
-		result: { content: Array<{ type: string; text?: string }>; details?: ReadToolDetails },
+		result: { content: Array<{ type: string; text?: string }>; details?: ReadToolDetails; isError?: boolean },
 		_options: RenderResultOptions,
 		uiTheme: Theme,
 		args?: ReadRenderArgs,
 	): Component {
-		const details = result.details;
-		const contentText = result.content?.find(c => c.type === "text")?.text ?? "";
-		const imageContent = result.content?.find(c => c.type === "image");
 		const rawPath = args?.file_path || args?.path || "";
 		const filePath = shortenPath(rawPath);
+
+		if (result.isError) {
+			const errorText = result.content?.find(c => c.type === "text")?.text || "Unknown error";
+			return new Text(formatErrorMessage(errorText, uiTheme), 0, 0);
+		}
+
+		const details = result.details;
+		const meta: string[] = [];
+		const contentText = result.content?.find(c => c.type === "text")?.text ?? "";
+		const lineCount = contentText ? contentText.split("\n").length : 0;
+		if (lineCount > 0) meta.push(formatCount("line", lineCount));
 		const lang = getLanguageFromPath(rawPath);
+		if (lang) meta.push(lang);
+		if (details?.meta?.truncation) meta.push(uiTheme.fg("warning", "truncated"));
 
-		const warningLines: string[] = [];
-		const truncation = details?.meta?.truncation;
-		const fallback = details?.truncation;
-		if (details?.resolvedPath) {
-			warningLines.push(uiTheme.fg("dim", wrapBrackets(`Resolved path: ${details.resolvedPath}`, uiTheme)));
-		}
-		if (truncation) {
-			let warning: string;
-			if (fallback?.firstLineExceedsLimit) {
-				warning = `First line exceeds ${formatBytes(fallback.maxBytes ?? DEFAULT_MAX_BYTES)} limit`;
-			} else if (truncation.truncatedBy === "lines") {
-				warning = `Truncated: ${truncation.outputLines} of ${truncation.totalLines} lines (${DEFAULT_MAX_LINES} line limit)`;
-			} else {
-				const maxBytes = fallback?.maxBytes ?? DEFAULT_MAX_BYTES;
-				warning = `Truncated: ${truncation.outputLines} lines (${formatBytes(maxBytes)} limit)`;
-			}
-			if (truncation.artifactId) {
-				warning += `. Full output: artifact://${truncation.artifactId}`;
-			}
-			warningLines.push(uiTheme.fg("warning", wrapBrackets(warning, uiTheme)));
-		}
-
-		if (imageContent) {
-			const header = renderStatusLine(
-				{ icon: "success", title: "Read", description: filePath || rawPath || "image" },
-				uiTheme,
-			);
-			const detailLines = contentText ? contentText.split("\n").map(line => uiTheme.fg("toolOutput", line)) : [];
-			const lines = [...detailLines, ...warningLines];
-			const outputBlock = new CachedOutputBlock();
-			return {
-				render: (width: number) =>
-					outputBlock.render(
-						{
-							header,
-							state: "success",
-							sections: [
-								{
-									label: uiTheme.fg("toolTitle", "Details"),
-									lines: lines.length > 0 ? lines : [uiTheme.fg("dim", "(image)")],
-								},
-							],
-							width,
-						},
-						uiTheme,
-					),
-				invalidate: () => outputBlock.invalidate(),
-			};
-		}
-
-		let title = filePath ? `Read ${filePath}` : "Read";
-		if (args?.offset !== undefined || args?.limit !== undefined) {
-			const startLine = args.offset ?? 1;
-			const endLine = args.limit !== undefined ? startLine + args.limit - 1 : "";
-			title += `:${startLine}${endLine ? `-${endLine}` : ""}`;
-		}
-		let cachedWidth: number | undefined;
-		let cachedLines: string[] | undefined;
-		return {
-			render: (width: number) => {
-				if (cachedLines && cachedWidth === width) return cachedLines;
-				cachedLines = renderCodeCell(
-					{
-						code: contentText,
-						language: lang,
-						title,
-						status: "complete",
-						output: warningLines.length > 0 ? warningLines.join("\n") : undefined,
-						expanded: true,
-						width,
-					},
-					uiTheme,
-				);
-				cachedWidth = width;
-				return cachedLines;
-			},
-			invalidate: () => {
-				cachedWidth = undefined;
-				cachedLines = undefined;
-			},
-		};
+		const text = renderStatusLine(
+			{ icon: "success", title: "Read", description: filePath || rawPath || "file", meta },
+			uiTheme,
+		);
+		return new Text(text, 0, 0);
 	}
 }
 

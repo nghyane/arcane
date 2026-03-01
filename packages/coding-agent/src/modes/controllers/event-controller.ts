@@ -2,35 +2,20 @@ import { toolDetails } from "@nghyane/arcane-agent";
 import { Loader, TERMINAL, Text } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
-import { ReadToolGroupComponent } from "../../modes/components/read-tool-group";
 import { TodoReminderComponent } from "../../modes/components/todo-reminder";
 import { ToolExecutionComponent } from "../../modes/components/tool-execution";
 import { TtsrNotificationComponent } from "../../modes/components/ttsr-notification";
 import type { InteractiveModeContext } from "../../modes/types";
 import type { AgentSessionEvent } from "../../session/agent-session";
 import { getSymbolTheme, theme } from "../../theme/theme";
+import { getToolTier } from "../../ui/render-utils";
 
 export class EventController {
-	#lastReadGroup: ReadToolGroupComponent | undefined = undefined;
+	#lastToolTier: string | undefined = undefined;
 	#lastThinkingCount = 0;
 	#renderedCustomMessages = new Set<string>();
 
 	constructor(private ctx: InteractiveModeContext) {}
-
-	#resetReadGroup(): void {
-		this.#lastReadGroup = undefined;
-	}
-
-	#getReadGroup(): ReadToolGroupComponent {
-		if (!this.#lastReadGroup) {
-			this.ctx.chatContainer.addChild(new Text("", 0, 0));
-			const group = new ReadToolGroupComponent();
-			group.setExpanded(this.ctx.toolOutputExpanded);
-			this.ctx.chatContainer.addChild(group);
-			this.#lastReadGroup = group;
-		}
-		return this.#lastReadGroup;
-	}
 
 	subscribeToAgent(): void {
 		this.ctx.unsubscribe = this.ctx.session.subscribe(async (event: AgentSessionEvent) => {
@@ -80,11 +65,11 @@ export class EventController {
 						break;
 					}
 					this.#renderedCustomMessages.add(signature);
-					this.#resetReadGroup();
+					this.#lastToolTier = undefined;
 					this.ctx.addMessageToChat(event.message);
 					this.ctx.ui.requestRender();
 				} else if (event.message.role === "user") {
-					this.#resetReadGroup();
+					this.#lastToolTier = undefined;
 					this.ctx.addMessageToChat(event.message);
 					if (!event.message.synthetic) {
 						this.ctx.editor.setText("");
@@ -92,12 +77,12 @@ export class EventController {
 					}
 					this.ctx.ui.requestRender();
 				} else if (event.message.role === "fileMention") {
-					this.#resetReadGroup();
+					this.#lastToolTier = undefined;
 					this.ctx.addMessageToChat(event.message);
 					this.ctx.ui.requestRender();
 				} else if (event.message.role === "assistant") {
 					this.#lastThinkingCount = 0;
-					this.#resetReadGroup();
+					this.#lastToolTier = undefined;
 					this.ctx.streamingComponent = new AssistantMessageComponent(undefined, this.ctx.hideThinkingBlock);
 					this.ctx.streamingMessage = event.message;
 					this.ctx.chatContainer.addChild(this.ctx.streamingComponent);
@@ -115,7 +100,7 @@ export class EventController {
 						content => content.type === "thinking" && content.thinking.trim(),
 					).length;
 					if (thinkingCount > this.#lastThinkingCount) {
-						this.#resetReadGroup();
+						this.#lastToolTier = undefined;
 						this.#lastThinkingCount = thinkingCount;
 					}
 
@@ -123,21 +108,18 @@ export class EventController {
 						if (content.type !== "toolCall") continue;
 
 						if (!this.ctx.pendingTools.has(content.id)) {
-							if (content.name === "read") {
-								const group = this.#getReadGroup();
-								group.updateArgs(content.arguments, content.id);
-								this.ctx.pendingTools.set(content.id, group);
-								continue;
+							const tier = getToolTier(content.name);
+							if (tier !== "quiet" || this.#lastToolTier !== "quiet") {
+								this.ctx.chatContainer.addChild(new Text("", 0, 0));
 							}
-
-							this.#resetReadGroup();
-							this.ctx.chatContainer.addChild(new Text("", 0, 0));
+							this.#lastToolTier = tier;
 							const tool = this.ctx.session.getToolByName(content.name);
 							const component = new ToolExecutionComponent(
 								content.name,
 								content.arguments,
 								{
 									showImages: settings.get("terminal.showImages"),
+									tier,
 								},
 								tool,
 								this.ctx.ui,
@@ -198,21 +180,19 @@ export class EventController {
 				if (event.intent) this.ctx.setWorkingMessage(`${event.intent} (esc to interrupt)`);
 
 				if (!this.ctx.pendingTools.has(event.toolCallId)) {
-					if (event.toolName === "read") {
-						const group = this.#getReadGroup();
-						group.updateArgs(event.args, event.toolCallId);
-						this.ctx.pendingTools.set(event.toolCallId, group);
-						this.ctx.ui.requestRender();
-						break;
+					const tier = getToolTier(event.toolName);
+					if (tier !== "quiet" || this.#lastToolTier !== "quiet") {
+						this.ctx.chatContainer.addChild(new Text("", 0, 0));
 					}
+					this.#lastToolTier = tier;
 
-					this.#resetReadGroup();
 					const tool = event.tool ?? this.ctx.session.getToolByName(event.toolName);
 					const component = new ToolExecutionComponent(
 						event.toolName,
 						event.args,
 						{
 							showImages: settings.get("terminal.showImages"),
+							tier,
 						},
 						tool,
 						this.ctx.ui,

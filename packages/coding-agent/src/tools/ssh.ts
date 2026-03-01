@@ -12,8 +12,7 @@ import { ensureHostInfo, getHostInfoForHost } from "../ssh/connection-manager";
 import { executeSSH } from "../ssh/ssh-executor";
 import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { CachedOutputBlock } from "../tui/output-block";
-import { formatBytes, wrapBrackets } from "../ui/render-utils";
+import { replaceTabs } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
@@ -196,90 +195,52 @@ export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails, Them
 	}
 
 	renderResult(
-		result: {
-			content: Array<{ type: string; text?: string }>;
-			details?: SSHToolDetails;
-		},
+		result: { content: Array<{ type: string; text?: string }>; details?: SSHToolDetails },
 		options: RenderResultOptions & { renderContext?: SshRenderContext },
 		uiTheme: Theme,
 		args?: SshRenderArgs,
 	): Component {
-		const details = result.details;
 		const host = args?.host || "…";
 		const command = args?.command || "…";
+		const cmdText = `[${host}] $ ${command}`;
+		const textContent = result.content?.find(c => c.type === "text")?.text ?? "";
+		const output = textContent.trimEnd();
+		const outputLines = output ? output.split("\n") : [];
+		const total = outputLines.length;
+		const truncation = result.details?.meta?.truncation;
+		const isError = false;
+
+		const meta: string[] = [];
+		if (total > 0) meta.push(`${total} lines`);
+
 		const header = renderStatusLine(
-			{ icon: "success", title: "SSH", description: `[${host}] $ ${command}` },
+			{ icon: isError ? "error" : "success", title: "SSH", description: cmdText, meta },
 			uiTheme,
 		);
-		const textContent = result.content?.find(c => c.type === "text")?.text ?? "";
-		const truncation = details?.meta?.truncation;
-		const outputBlock = new CachedOutputBlock();
 
-		return {
-			render: (width: number): string[] => {
-				// REACTIVE: read mutable options at render time
-				const { expanded, renderContext } = options;
-				const output = textContent.trimEnd();
-				const outputLines: string[] = [];
+		const TAIL = 4;
+		const expanded = options.expanded;
+		const showAll = isError || expanded;
+		const displayLines = showAll ? outputLines : outputLines.slice(-TAIL);
+		const skipped = total - displayLines.length;
 
-				if (output) {
-					if (expanded) {
-						outputLines.push(...output.split("\n").map(line => uiTheme.fg("toolOutput", line)));
-					} else if (renderContext?.visualLines) {
-						const { visualLines, skippedCount = 0, totalVisualLines = visualLines.length } = renderContext;
-						if (skippedCount > 0) {
-							outputLines.push(
-								uiTheme.fg(
-									"dim",
-									`… (${skippedCount} earlier lines, showing ${visualLines.length} of ${totalVisualLines}) (ctrl+o to expand)`,
-								),
-							);
-						}
-						const styledVisual = visualLines.map(line =>
-							line.includes("\x1b[") ? line : uiTheme.fg("toolOutput", line),
-						);
-						outputLines.push(...styledVisual);
-					} else {
-						const outputLinesRaw = output.split("\n");
-						const maxLines = 5;
-						const displayLines = outputLinesRaw.slice(0, maxLines);
-						const remaining = outputLinesRaw.length - maxLines;
-						outputLines.push(...displayLines.map(line => uiTheme.fg("toolOutput", line)));
-						if (remaining > 0) {
-							outputLines.push(uiTheme.fg("dim", `… (${remaining} more lines) (ctrl+o to expand)`));
-						}
-					}
-				}
+		const bodyLines: string[] = [];
+		if (skipped > 0) {
+			bodyLines.push(uiTheme.fg("dim", `… (${skipped} earlier lines)`));
+		}
+		const hasTruncation = Boolean(truncation);
+		for (let i = 0; i < displayLines.length; i++) {
+			bodyLines.push(uiTheme.fg("toolOutput", replaceTabs(displayLines[i])));
+		}
+		if (hasTruncation) {
+			bodyLines.push(uiTheme.fg("warning", "output truncated"));
+		}
+		if (!showAll && skipped > 0) {
+			bodyLines.push(uiTheme.fg("dim", "(Ctrl+O for full output)"));
+		}
 
-				if (truncation) {
-					const warnings: string[] = [];
-					if (truncation.artifactId) {
-						warnings.push(`Full output: artifact://${truncation.artifactId}`);
-					}
-					if (truncation.truncatedBy === "lines") {
-						warnings.push(`Truncated: showing ${truncation.outputLines} of ${truncation.totalLines} lines`);
-					} else {
-						warnings.push(
-							`Truncated: ${truncation.outputLines} lines shown (${formatBytes(truncation.outputBytes)} limit)`,
-						);
-					}
-					outputLines.push(uiTheme.fg("warning", wrapBrackets(warnings.join(". "), uiTheme)));
-				}
-
-				return outputBlock.render(
-					{
-						header,
-						state: "success",
-						sections: [{ label: uiTheme.fg("toolTitle", "Output"), lines: outputLines }],
-						width,
-					},
-					uiTheme,
-				);
-			},
-			invalidate: () => {
-				outputBlock.invalidate();
-			},
-		};
+		const lines = bodyLines.length > 0 ? [header, ...bodyLines] : [header];
+		return new Text(lines.join("\n"), 0, 0);
 	}
 }
 
@@ -303,11 +264,4 @@ interface SshRenderArgs {
 	timeout?: number;
 }
 
-interface SshRenderContext {
-	/** Visual lines for truncated output (pre-computed by tool-execution) */
-	visualLines?: string[];
-	/** Number of lines skipped */
-	skippedCount?: number;
-	/** Total visual lines */
-	totalVisualLines?: number;
-}
+interface SshRenderContext {}

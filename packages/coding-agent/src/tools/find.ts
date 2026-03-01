@@ -10,16 +10,8 @@ import { Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { type TruncationResult, truncateHead } from "../session/streaming-output";
 import type { Theme } from "../theme/theme";
-import {
-	Ellipsis,
-	Hasher,
-	type RenderCache,
-	renderFileList,
-	renderStatusLine,
-	renderTreeList,
-	truncateToWidth,
-} from "../tui";
-import { formatCount, formatEmptyMessage, formatErrorMessage, PREVIEW_LIMITS } from "../ui/render-utils";
+import { renderStatusLine } from "../tui";
+import { formatCount, formatEmptyMessage, formatErrorMessage } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { applyListLimit } from "./list-limit";
 import { type OutputMeta, toolResult } from "./output-meta";
@@ -402,7 +394,7 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails, T
 
 	renderResult(
 		result: { content: Array<{ type: string; text?: string }>; details?: FindToolDetails; isError?: boolean },
-		options: RenderResultOptions,
+		_options: RenderResultOptions,
 		uiTheme: Theme,
 		args?: FindRenderArgs,
 	): Component {
@@ -413,110 +405,48 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails, T
 			return new Text(formatErrorMessage(errorText, uiTheme), 0, 0);
 		}
 
-		const hasDetailedData = details?.fileCount !== undefined;
-		const textContent = result.content?.find(c => c.type === "text")?.text;
-
-		if (!hasDetailedData) {
-			if (
-				!textContent ||
-				textContent.includes("No files matching") ||
-				textContent.includes("No files found") ||
-				textContent.trim() === ""
-			) {
-				return new Text(formatEmptyMessage("No files found", uiTheme), 0, 0);
-			}
-
-			const lines = textContent.split("\n").filter(l => l.trim());
-			const header = renderStatusLine(
-				{
-					icon: "success",
-					title: "Find",
-					description: args?.pattern,
-					meta: [formatCount("file", lines.length)],
-				},
-				uiTheme,
-			);
-			let cached: RenderCache | undefined;
-			return {
-				render(width: number): string[] {
-					const { expanded } = options;
-					const key = new Hasher().bool(expanded).u32(width).digest();
-					if (cached?.key === key) return cached.lines;
-					const listLines = renderTreeList(
-						{
-							items: lines,
-							expanded,
-							maxCollapsed: COLLAPSED_LIST_LIMIT,
-							itemType: "file",
-							renderItem: line => uiTheme.fg("accent", line),
-						},
-						uiTheme,
-					);
-					const result = [header, ...listLines].map(l => truncateToWidth(l, width, Ellipsis.Omit));
-					cached = { key, lines: result };
-					return result;
-				},
-				invalidate() {
-					cached = undefined;
-				},
-			};
-		}
-
 		const fileCount = details?.fileCount ?? 0;
-		const truncation = details?.truncation ?? details?.meta?.truncation;
-		const limits = details?.meta?.limits;
-		const truncated = Boolean(details?.truncated || truncation || details?.resultLimitReached || limits?.resultLimit);
-		const files = details?.files ?? [];
 
 		if (fileCount === 0) {
-			const header = renderStatusLine(
-				{ icon: "warning", title: "Find", description: args?.pattern, meta: ["0 files"] },
-				uiTheme,
+			const textContent = result.content?.find(c => c.type === "text")?.text;
+			if (!textContent || textContent.includes("No files") || textContent.trim() === "") {
+				return new Text(formatEmptyMessage("No files found", uiTheme), 0, 0);
+			}
+			const lines = textContent.split("\n").filter(l => l.trim());
+			return new Text(
+				renderStatusLine(
+					{
+						icon: "success",
+						title: "Find",
+						description: args?.pattern,
+						meta: [formatCount("file", lines.length)],
+					},
+					uiTheme,
+				),
+				0,
+				0,
 			);
-			return new Text([header, formatEmptyMessage("No files found", uiTheme)].join("\n"), 0, 0);
 		}
+
+		const truncated = Boolean(
+			details?.truncated ||
+				details?.truncation ||
+				details?.meta?.truncation ||
+				details?.resultLimitReached ||
+				details?.meta?.limits?.resultLimit,
+		);
 		const meta: string[] = [formatCount("file", fileCount)];
 		if (details?.scopePath) meta.push(`in ${details.scopePath}`);
 		if (truncated) meta.push(uiTheme.fg("warning", "truncated"));
-		const header = renderStatusLine(
-			{ icon: truncated ? "warning" : "success", title: "Find", description: args?.pattern, meta },
-			uiTheme,
+
+		return new Text(
+			renderStatusLine(
+				{ icon: truncated ? "warning" : "success", title: "Find", description: args?.pattern, meta },
+				uiTheme,
+			),
+			0,
+			0,
 		);
-
-		const truncationReasons: string[] = [];
-		if (details?.resultLimitReached) truncationReasons.push(`limit ${details.resultLimitReached} results`);
-		if (limits?.resultLimit) truncationReasons.push(`limit ${limits.resultLimit.reached} results`);
-		if (truncation) truncationReasons.push(truncation.truncatedBy === "lines" ? "line limit" : "size limit");
-		const artifactId = truncation && "artifactId" in truncation ? truncation.artifactId : undefined;
-		if (artifactId) truncationReasons.push(`full output: artifact://${artifactId}`);
-
-		const extraLines: string[] = [];
-		if (truncationReasons.length > 0) {
-			extraLines.push(uiTheme.fg("warning", `truncated: ${truncationReasons.join(", ")}`));
-		}
-
-		let cached: RenderCache | undefined;
-		return {
-			render(width: number): string[] {
-				const { expanded } = options;
-				const key = new Hasher().bool(expanded).u32(width).digest();
-				if (cached?.key === key) return cached.lines;
-				const fileLines = renderFileList(
-					{
-						files: files.map(entry => ({ path: entry, isDirectory: entry.endsWith("/") })),
-						expanded,
-						maxCollapsed: COLLAPSED_LIST_LIMIT,
-					},
-					uiTheme,
-				);
-				const result = [header, ...fileLines, ...extraLines].map(l => truncateToWidth(l, width, Ellipsis.Omit));
-				cached = { key, lines: result };
-				return result;
-			},
-			invalidate() {
-				cached = undefined;
-			},
-		};
 	}
 }
 
@@ -524,5 +454,3 @@ interface FindRenderArgs {
 	pattern: string;
 	limit?: number;
 }
-
-const COLLAPSED_LIST_LIMIT = PREVIEW_LIMITS.COLLAPSED_ITEMS;

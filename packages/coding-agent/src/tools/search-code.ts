@@ -1,8 +1,18 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+	RenderResultOptions,
+} from "@nghyane/arcane-agent";
+import type { Component } from "@nghyane/arcane-tui";
+import { Text } from "@nghyane/arcane-tui";
 import { Type } from "@sinclair/typebox";
 import type { Theme } from "../theme/theme";
+import { renderStatusLine } from "../tui";
+import { formatCount, formatErrorMessage, truncateToWidth } from "../ui/render-utils";
 import { GrepAppProvider, type SearchCodeSource } from "../web/search/providers/grep";
-import { renderSearchCall, renderSearchResult, type SearchRenderDetails } from "../web/search/render";
+import { renderSearchCall, type SearchRenderDetails } from "../web/search/render";
 
 const grepProvider = new GrepAppProvider();
 
@@ -28,7 +38,34 @@ export class SearchCodeTool implements AgentTool<typeof searchCodeSchema, Search
 	readonly description = "Search source code across public GitHub repositories via grep.app";
 	readonly parameters = searchCodeSchema;
 	readonly renderCall = renderSearchCall;
-	readonly renderResult = renderSearchResult;
+
+	renderResult(
+		result: { content: Array<{ type: string; text?: string }>; details?: SearchRenderDetails; isError?: boolean },
+		_options: RenderResultOptions,
+		theme: Theme,
+		args?: SearchCodeToolParams,
+	): Component {
+		if (result.isError || result.details?.error) {
+			const errorText =
+				result.details?.error || result.content?.find(c => c.type === "text")?.text || "Unknown error";
+			return new Text(formatErrorMessage(errorText, theme), 0, 0);
+		}
+		const query = args?.query ? truncateToWidth(args.query, 60) : "code";
+		const sourceCount = result.details?.response?.sources?.length ?? 0;
+		return new Text(
+			renderStatusLine(
+				{
+					icon: sourceCount > 0 ? "success" : "warning",
+					title: "Code Search",
+					description: `"${query}"`,
+					meta: [formatCount("result", sourceCount)],
+				},
+				theme,
+			),
+			0,
+			0,
+		);
+	}
 
 	async execute(
 		_toolCallId: string,

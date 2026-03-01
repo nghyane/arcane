@@ -11,38 +11,15 @@ export type AgentKind = "local" | "remote" | "hybrid" | "reasoning";
 /** EventBus channel for raw subagent events */
 export const TASK_SUBAGENT_EVENT_CHANNEL = "task:subagent:event";
 
-/** Single task item for execution */
-export interface TaskItem {
-	id: string;
-	description: string;
-	assignment: string;
-	skills?: string[];
-}
-
-/** Task schema — single task with optional context */
+/** Task schema — simplified prompt + description */
 export const taskSchema = Type.Object({
-	id: Type.String({
-		description: "CamelCase identifier, max 32 chars",
-		maxLength: 32,
+	prompt: Type.String({
+		description:
+			"The task for the agent to perform. Be specific about what needs to be done and include any relevant context.",
 	}),
 	description: Type.String({
-		description: "Short one-liner for UI display only \u2014 not seen by the subagent",
+		description: "A very short description of the task that can be displayed to the user.",
 	}),
-	assignment: Type.String({
-		description:
-			"Complete instructions the subagent executes. Structure: Target (files, symbols), Change (step-by-step), Edge Cases, Acceptance Criteria. Must be self-contained — subagent has no conversation history.",
-	}),
-	context: Type.Optional(
-		Type.String({
-			description:
-				"Shared background prepended to assignment. Use for session-specific info subagents lack: API contracts, type definitions, reference files. Do NOT repeat AGENTS.md rules — subagents already have them.",
-		}),
-	),
-	skills: Type.Optional(
-		Type.Array(Type.String(), {
-			description: "Skill names to preload into the subagent.",
-		}),
-	),
 	complexity: Type.Optional(
 		Type.Union([Type.Literal("low"), Type.Literal("high")], {
 			description:

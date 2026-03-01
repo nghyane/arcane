@@ -35,8 +35,6 @@
 			"@nghyane/arcane-natives/*": ["./packages/natives/src/*"],
 			"@nghyane/arcane-stats": ["./packages/stats/src/index.ts"],
 			"@nghyane/arcane-stats/*": ["./packages/stats/src/*"],
-			"@nghyane/arcane-codemode": ["./packages/codemode/src/index.ts"],
-			"@nghyane/arcane-codemode/*": ["./packages/codemode/src/*"],
 			"@nghyane/arcane-tui": ["./packages/tui/src/index.ts"],
 			"@nghyane/arcane-tui/*": ["./packages/tui/src/*"],
 			"@nghyane/arcane-react-edit-benchmark": ["./packages/react-edit-benchmark/src/index.ts"],
