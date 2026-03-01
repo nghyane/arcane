@@ -9,7 +9,6 @@ import {
 	AbortExecution,
 	type ExecutionError,
 	execute,
-	generateTypes,
 	getCurrentStepId,
 	normalizeCode,
 	sanitizeToolName,
@@ -39,11 +38,7 @@ interface SubToolRecord {
 export function createCodeTool(tools: AgentTool[], options: CodeToolOptions = {}): { codeTool: CodeAgentTool } {
 	const { timeoutMs = 300_000 } = options;
 	const persistentState = new Map<string, unknown>();
-	const VERBOSE_TOOLS = new Set(["edit", "lsp", "task"]);
-	const { declarations } = generateTypes(
-		tools.map(t => ({ name: t.name, parameters: t.parameters, compact: !VERBOSE_TOOLS.has(t.name) })),
-	);
-	const description = codeToolDescription.replace("{{types}}", declarations);
+	const description = codeToolDescription;
 	const toolByName = new Map<string, AgentTool>(tools.map(t => [t.name, t]));
 
 	const codeTool: CodeAgentTool = {
