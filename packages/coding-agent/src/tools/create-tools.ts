@@ -183,12 +183,6 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 	);
 	const tools = results.filter((r): r is AgentTool => r !== null);
 
-	// Subagents use direct tool calls — no codemode wrapper.
-	// This avoids token waste from raw output in codemode results,
-	// double-codemode overhead, and XML leak from LLM confusing
-	// codemode JS syntax with native tool calling format.
-	if (session.isSubagent) return tools;
-
 	const { codeTool } = createCodeTool(tools);
 	return [codeTool];
 }
