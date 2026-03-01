@@ -309,91 +309,62 @@ function resolvePageClient(page: Page): PuppeteerCdpClient | null {
 
 const puppeteerGetArgsSchema = Type.Array(
 	Type.Object({
-		selector: Type.String({
-			description:
-				"Selector for the target element (CSS, or puppeteer query handler like aria/, text/, xpath/, pierce/; also accepts legacy p- prefixes)",
-		}),
-		attribute: Type.Optional(Type.String({ description: "Attribute name (get_attribute)" })),
+		selector: Type.String(),
+		attribute: Type.Optional(Type.String()),
 	}),
-	{ description: "Batch arguments for get_* actions", minItems: 1 },
+	{ minItems: 1 },
 );
 
 const browserSchema = Type.Object({
-	action: StringEnum(
-		[
-			"open",
-			"goto",
-			"observe",
-			"click",
-			"click_id",
-			"type",
-			"type_id",
-			"fill",
-			"fill_id",
-			"press",
-			"scroll",
-			"drag",
-			"wait_for_selector",
-			"evaluate",
-			"get_text",
-			"get_html",
-			"get_attribute",
-			"extract_readable",
-			"screenshot",
-			"close",
-		],
-		{ description: "Action to perform" },
-	),
-	url: Type.Optional(Type.String({ description: "URL to navigate to (goto)" })),
-	selector: Type.Optional(
-		Type.String({
-			description:
-				"Selector for the target element (CSS, or puppeteer query handler like aria/, text/, xpath/, pierce/; also accepts legacy p- prefixes)",
-		}),
-	),
-	element_id: Type.Optional(Type.Number({ description: "Element ID from observe" })),
-	include_all: Type.Optional(Type.Boolean({ description: "Include non-interactive nodes in observe" })),
-	viewport_only: Type.Optional(Type.Boolean({ description: "Limit observe output to elements in the viewport" })),
+	action: StringEnum([
+		"open",
+		"goto",
+		"observe",
+		"click",
+		"click_id",
+		"type",
+		"type_id",
+		"fill",
+		"fill_id",
+		"press",
+		"scroll",
+		"drag",
+		"wait_for_selector",
+		"evaluate",
+		"get_text",
+		"get_html",
+		"get_attribute",
+		"extract_readable",
+		"screenshot",
+		"close",
+	]),
+	url: Type.Optional(Type.String()),
+	selector: Type.Optional(Type.String()),
+	element_id: Type.Optional(Type.Number()),
+	include_all: Type.Optional(Type.Boolean()),
+	viewport_only: Type.Optional(Type.Boolean()),
 	args: Type.Optional(puppeteerGetArgsSchema),
-	script: Type.Optional(Type.String({ description: "JavaScript to evaluate (evaluate)" })),
-	text: Type.Optional(Type.String({ description: "Text to type (type)" })),
-	value: Type.Optional(Type.String({ description: "Value to set (fill)" })),
-	attribute: Type.Optional(Type.String({ description: "Attribute name to read (get_attribute)" })),
-	key: Type.Optional(Type.String({ description: "Keyboard key to press (press)" })),
-	timeout: Type.Optional(Type.Number({ description: "Timeout in seconds (default: 30)" })),
-	wait_until: Type.Optional(
-		StringEnum(["load", "domcontentloaded", "networkidle0", "networkidle2"], {
-			description: "Navigation wait condition (goto)",
-		}),
-	),
-	full_page: Type.Optional(Type.Boolean({ description: "Capture full page screenshot (screenshot)" })),
-	format: Type.Optional(
-		StringEnum(["text", "markdown"], {
-			description: "Output format for extract_readable (text/markdown)",
-		}),
-	),
-	path: Type.Optional(Type.String({ description: "Optional path to save screenshot (relative to cwd)" })),
+	script: Type.Optional(Type.String()),
+	text: Type.Optional(Type.String()),
+	value: Type.Optional(Type.String()),
+	attribute: Type.Optional(Type.String()),
+	key: Type.Optional(Type.String()),
+	timeout: Type.Optional(Type.Number()),
+	wait_until: Type.Optional(StringEnum(["load", "domcontentloaded", "networkidle0", "networkidle2"])),
+	full_page: Type.Optional(Type.Boolean()),
+	format: Type.Optional(StringEnum(["text", "markdown"])),
+	path: Type.Optional(Type.String()),
 	viewport: Type.Optional(
 		Type.Object({
-			width: Type.Number({ description: "Viewport width in pixels" }),
-			height: Type.Number({ description: "Viewport height in pixels" }),
-			deviceScaleFactor: Type.Optional(Type.Number({ description: "Device scale factor" })),
+			width: Type.Number(),
+			height: Type.Number(),
+			deviceScaleFactor: Type.Optional(Type.Number()),
 		}),
 	),
-	delta_x: Type.Optional(Type.Number({ description: "Scroll delta X (scroll)" })),
-	delta_y: Type.Optional(Type.Number({ description: "Scroll delta Y (scroll)" })),
-	from_selector: Type.Optional(
-		Type.String({
-			description:
-				"Drag start selector (CSS, or puppeteer query handler like aria/, text/, xpath/, pierce/; also accepts legacy p- prefixes)",
-		}),
-	),
-	to_selector: Type.Optional(
-		Type.String({
-			description:
-				"Drag end selector (CSS, or puppeteer query handler like aria/, text/, xpath/, pierce/; also accepts legacy p- prefixes)",
-		}),
-	),
+	delta_x: Type.Optional(Type.Number()),
+	delta_y: Type.Optional(Type.Number()),
+	from_selector: Type.Optional(Type.String()),
+	to_selector: Type.Optional(Type.String()),
 });
 
 /** Input schema for the Puppeteer tool. */

@@ -7,13 +7,11 @@ import { renderSearchCall, renderSearchResult, type SearchRenderDetails } from "
 const grepProvider = new GrepAppProvider();
 
 const searchCodeSchema = Type.Object({
-	query: Type.String({ description: "Code pattern to search for across public GitHub repos" }),
-	regexp: Type.Optional(Type.Boolean({ description: "Enable regex search (default: false)" })),
-	language: Type.Optional(
-		Type.String({ description: "Filter by programming language (e.g. TypeScript, Python, Go)" }),
-	),
-	repo: Type.Optional(Type.String({ description: "Filter by repository (e.g. vercel/next.js)" })),
-	limit: Type.Optional(Type.Number({ description: "Max results to return (default: 10)" })),
+	query: Type.String(),
+	regexp: Type.Optional(Type.Boolean()),
+	language: Type.Optional(Type.String()),
+	repo: Type.Optional(Type.String()),
+	limit: Type.Optional(Type.Number()),
 });
 
 interface SearchCodeToolParams {

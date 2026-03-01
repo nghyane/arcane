@@ -2,21 +2,9 @@ import { Type } from "@sinclair/typebox";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
-	diff_description: Type.String({
-		description:
-			'A description or command identifying the diff to review. Examples: "uncommitted changes", "last commit", "PR #42", "changes against main branch".',
-	}),
-	files: Type.Optional(
-		Type.Array(Type.String(), {
-			description: "Specific file paths to focus the review on. If omitted, all changed files are reviewed.",
-		}),
-	),
-	instructions: Type.Optional(
-		Type.String({
-			description:
-				'Additional guidance for the reviewer. Examples: "Focus on error handling", "Check for race conditions".',
-		}),
-	),
+	diff_description: Type.String(),
+	files: Type.Optional(Type.Array(Type.String())),
+	instructions: Type.Optional(Type.String()),
 });
 
 function buildTask(p: Record<string, unknown>): string {

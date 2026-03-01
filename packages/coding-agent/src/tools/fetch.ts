@@ -834,9 +834,9 @@ async function renderUrl(url: string, timeout: number, raw: boolean, signal?: Ab
 // =============================================================================
 
 const fetchSchema = Type.Object({
-	url: Type.String({ description: "URL to fetch" }),
-	timeout: Type.Optional(Type.Number({ description: "Timeout in seconds (default: 20)" })),
-	raw: Type.Optional(Type.Boolean({ description: "Return raw HTML without transforms" })),
+	url: Type.String(),
+	timeout: Type.Optional(Type.Number()),
+	raw: Type.Optional(Type.Boolean()),
 });
 
 export interface FetchToolDetails {

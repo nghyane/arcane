@@ -2,15 +2,8 @@ import { Type } from "@sinclair/typebox";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
-	query: Type.String({
-		description:
-			"Your question about the codebase or repository. Be specific about what you want to understand or explore.",
-	}),
-	context: Type.Optional(
-		Type.String({
-			description: "Background about what you're trying to achieve.",
-		}),
-	),
+	query: Type.String(),
+	context: Type.Optional(Type.String()),
 });
 
 function buildTask(p: Record<string, unknown>): string {

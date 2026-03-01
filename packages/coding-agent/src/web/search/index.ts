@@ -28,21 +28,24 @@ import { SearchProviderError } from "./types";
 
 /** Web search parameters schema */
 export const webSearchSchema = Type.Object({
-	query: Type.String({ description: "Search query" }),
+	query: Type.String(),
 	provider: Type.Optional(
-		StringEnum(
-			["auto", "exa", "brave", "jina", "kimi", "zai", "anthropic", "perplexity", "gemini", "codex", "synthetic"],
-			{
-				description: "Search provider (default: auto)",
-			},
-		),
+		StringEnum([
+			"auto",
+			"exa",
+			"brave",
+			"jina",
+			"kimi",
+			"zai",
+			"anthropic",
+			"perplexity",
+			"gemini",
+			"codex",
+			"synthetic",
+		]),
 	),
-	recency: Type.Optional(
-		StringEnum(["day", "week", "month", "year"], {
-			description: "Recency filter (Brave, Perplexity)",
-		}),
-	),
-	limit: Type.Optional(Type.Number({ description: "Max results to return" })),
+	recency: Type.Optional(StringEnum(["day", "week", "month", "year"])),
+	limit: Type.Optional(Type.Number()),
 });
 
 export type SearchParams = {

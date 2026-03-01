@@ -15,11 +15,10 @@ import { PREVIEW_LIMITS } from "../ui/render-utils";
 const todoWriteSchema = Type.Object({
 	todos: Type.Array(
 		Type.Object({
-			id: Type.Optional(Type.String({ description: "Stable todo id" })),
-			content: Type.String({ description: "Task description (e.g., 'Run tests')" }),
+			id: Type.Optional(Type.String()),
+			content: Type.String(),
 			status: StringEnum(["pending", "in_progress", "completed"]),
 		}),
-		{ description: "The updated todo list" },
 	),
 });
 

@@ -12,17 +12,11 @@ import { formatCount, formatErrorMessage, PREVIEW_LIMITS } from "../ui/render-ut
 import { resolveToCwd } from "./path-utils";
 
 const notebookSchema = Type.Object({
-	action: StringEnum(["edit", "insert", "delete"], {
-		description: "Action to perform on the notebook cell",
-	}),
-	notebook_path: Type.String({ description: "Path to the .ipynb file (relative or absolute)" }),
-	cell_index: Type.Number({ description: "0-based index of the cell to operate on" }),
-	content: Type.Optional(Type.String({ description: "New cell content (required for edit/insert)" })),
-	cell_type: Type.Optional(
-		StringEnum(["code", "markdown"], {
-			description: "Cell type for insert (default: code)",
-		}),
-	),
+	action: StringEnum(["edit", "insert", "delete"]),
+	notebook_path: Type.String(),
+	cell_index: Type.Number(),
+	content: Type.Optional(Type.String()),
+	cell_type: Type.Optional(StringEnum(["code", "markdown"])),
 });
 
 export interface NotebookToolDetails {

@@ -20,10 +20,10 @@ import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
 import { ToolError } from "./tool-errors";
 
 const sshSchema = Type.Object({
-	host: Type.String({ description: "Host name from managed SSH config or discovered ssh.json files" }),
-	command: Type.String({ description: "Command to execute on the remote host" }),
-	cwd: Type.Optional(Type.String({ description: "Remote working directory (optional)" })),
-	timeout: Type.Optional(Type.Number({ description: "Timeout in seconds (default: 60)" })),
+	host: Type.String(),
+	command: Type.String(),
+	cwd: Type.Optional(Type.String()),
+	timeout: Type.Optional(Type.Number()),
 });
 
 export interface SSHToolDetails {

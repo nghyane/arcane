@@ -27,9 +27,9 @@ import { resolveToCwd } from "./path-utils";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
 
 const findSchema = Type.Object({
-	pattern: Type.String({ description: "Glob pattern, e.g. '*.ts', 'src/**/*.json', 'lib/*.tsx'" }),
-	hidden: Type.Optional(Type.Boolean({ description: "Include hidden files and directories (default: true)" })),
-	limit: Type.Optional(Type.Number({ description: "Max results (default: 1000)" })),
+	pattern: Type.String(),
+	hidden: Type.Optional(Type.Boolean()),
+	limit: Type.Optional(Type.Number()),
 });
 
 export type FindToolInput = Static<typeof findSchema>;

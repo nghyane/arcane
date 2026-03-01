@@ -11,8 +11,6 @@ import { jsonSchemaToTypeScript } from "./schema-to-ts";
 export interface ToolDefinition {
 	name: string;
 	parameters: Record<string, unknown>;
-	/** Strip descriptions for well-known tools to save tokens */
-	compact?: boolean;
 }
 
 const JS_RESERVED = new Set([
@@ -118,7 +116,7 @@ export function generateTypes(tools: ToolDefinition[]): GeneratedTypes {
 
 		// Generate input type from tool parameters schema
 		const inputTypeName = `${pascalName}Input`;
-		const inputTs = jsonSchemaToTypeScript(tool.parameters, { compact: tool.compact });
+		const inputTs = jsonSchemaToTypeScript(tool.parameters);
 
 		// Inline simple types directly into method signature to save tokens
 		const lineCount = inputTs.split("\n").length;

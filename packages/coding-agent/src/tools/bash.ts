@@ -27,11 +27,11 @@ import { ToolAbortError, ToolError } from "./tool-errors";
 export const BASH_DEFAULT_PREVIEW_LINES = 10;
 
 const bashSchema = Type.Object({
-	command: Type.String({ description: "Command to execute" }),
-	timeout: Type.Optional(Type.Number({ description: "Timeout in seconds (default: 300)" })),
-	cwd: Type.Optional(Type.String({ description: "Working directory (default: cwd)" })),
-	head: Type.Optional(Type.Number({ description: "Return only first N lines of output" })),
-	tail: Type.Optional(Type.Number({ description: "Return only last N lines of output" })),
+	command: Type.String(),
+	timeout: Type.Optional(Type.Number()),
+	cwd: Type.Optional(Type.String()),
+	head: Type.Optional(Type.Number()),
+	tail: Type.Optional(Type.Number()),
 });
 
 export type BashToolInput = Static<typeof bashSchema>;

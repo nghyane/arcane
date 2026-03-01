@@ -24,20 +24,18 @@ const ActionEnum = Type.Union([
 
 const schema = Type.Object({
 	action: ActionEnum,
-	owner: Type.String({ description: "Repository owner (user or organization)" }),
-	repo: Type.String({ description: "Repository name" }),
-	path: Type.Optional(Type.String({ description: "File or directory path" })),
-	ref: Type.Optional(Type.String({ description: "Branch, tag, or commit SHA" })),
-	number: Type.Optional(Type.Number({ description: "Issue or PR number" })),
-	query: Type.Optional(Type.String({ description: "Search query string" })),
-	state: Type.Optional(Type.String({ description: "Filter: open, closed, all" })),
-	labels: Type.Optional(Type.String({ description: "Comma-separated label names" })),
-	sha: Type.Optional(Type.String({ description: "Commit SHA, branch, or tag" })),
-	include_diff: Type.Optional(Type.Boolean({ description: "Include file diffs" })),
-	recursive: Type.Optional(Type.Boolean({ description: "Recursively list tree" })),
-	limit: Type.Optional(
-		Type.Number({ description: "Max total results to return (default: 100, max: 500). Auto-paginates internally." }),
-	),
+	owner: Type.String(),
+	repo: Type.String(),
+	path: Type.Optional(Type.String()),
+	ref: Type.Optional(Type.String()),
+	number: Type.Optional(Type.Number()),
+	query: Type.Optional(Type.String()),
+	state: Type.Optional(Type.String()),
+	labels: Type.Optional(Type.String()),
+	sha: Type.Optional(Type.String()),
+	include_diff: Type.Optional(Type.Boolean()),
+	recursive: Type.Optional(Type.Boolean()),
+	limit: Type.Optional(Type.Number()),
 });
 
 type GitHubInput = Static<typeof schema>;

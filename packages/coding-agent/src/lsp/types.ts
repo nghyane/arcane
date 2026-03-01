@@ -7,19 +7,17 @@ import { type Static, Type } from "@sinclair/typebox";
 // =============================================================================
 
 export const lspSchema = Type.Object({
-	action: StringEnum(["diagnostics", "definition", "references", "hover", "symbols", "rename", "status", "reload"], {
-		description: "LSP operation",
-	}),
-	files: Type.Optional(Type.Array(Type.String({ description: "File path" }))),
-	file: Type.Optional(Type.String({ description: "File path" })),
-	line: Type.Optional(Type.Number({ description: "Line number (1-indexed)" })),
-	column: Type.Optional(Type.Number({ description: "Column number (1-indexed)" })),
-	end_line: Type.Optional(Type.Number({ description: "End line for range (1-indexed)" })),
-	end_character: Type.Optional(Type.Number({ description: "End column for range (1-indexed)" })),
-	query: Type.Optional(Type.String({ description: "Search query or SSR pattern" })),
-	new_name: Type.Optional(Type.String({ description: "New name for rename" })),
-	apply: Type.Optional(Type.Boolean({ description: "Apply edits (default: true)" })),
-	include_declaration: Type.Optional(Type.Boolean({ description: "Include declaration in refs (default: true)" })),
+	action: StringEnum(["diagnostics", "definition", "references", "hover", "symbols", "rename", "status", "reload"]),
+	files: Type.Optional(Type.Array(Type.String())),
+	file: Type.Optional(Type.String()),
+	line: Type.Optional(Type.Number()),
+	column: Type.Optional(Type.Number()),
+	end_line: Type.Optional(Type.Number()),
+	end_character: Type.Optional(Type.Number()),
+	query: Type.Optional(Type.String()),
+	new_name: Type.Optional(Type.String()),
+	apply: Type.Optional(Type.Boolean()),
+	include_declaration: Type.Optional(Type.Boolean()),
 });
 
 export type LspParams = Static<typeof lspSchema>;

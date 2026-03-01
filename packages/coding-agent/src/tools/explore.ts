@@ -2,10 +2,7 @@ import { Type } from "@sinclair/typebox";
 import type { SubagentConfig } from "./subagent-tool";
 
 const schema = Type.Object({
-	query: Type.String({
-		description:
-			"Your question about the codebase. Be specific — include technical terms, file types, or expected code patterns.",
-	}),
+	query: Type.String(),
 });
 
 export const exploreConfig: SubagentConfig<typeof schema.properties> = {
