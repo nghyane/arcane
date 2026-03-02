@@ -26,26 +26,28 @@ jobs:
       native_hash: ${{ steps.hash.outputs.native_hash }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Compute native source hash
         id: hash
         run: echo "native_hash=${{ hashFiles('crates/**', 'Cargo.toml', 'Cargo.lock', 'packages/natives/scripts/**') }}" >> "$GITHUB_OUTPUT"
       - name: Check if native code changed
         id: check
         run: |
-          NATIVE_HASH=${{ steps.hash.outputs.native_hash }}
-          CHANGED=false
-          for combo in linux-x64 linux-arm64 darwin-x64 darwin-arm64 win32-x64; do
-            CACHE_KEY="native-${combo}-release-${NATIVE_HASH}"
-            if ! gh cache list --key "$CACHE_KEY" --limit 1 | grep -q "$CACHE_KEY"; then
-              echo "Cache miss for $CACHE_KEY"
-              CHANGED=true
-              break
-            fi
-          done
-          echo "natives_changed=$CHANGED" >> "$GITHUB_OUTPUT"
-          echo "Natives changed: $CHANGED"
-        env:
-          GH_TOKEN: ${{ github.token }}
+          PREV_TAG=$(git tag --sort=-v:refname --list 'release/*' | head -n 1)
+          if [ -z "$PREV_TAG" ]; then
+            echo "natives_changed=true" >> "$GITHUB_OUTPUT"
+            echo "No previous release tag found, building natives"
+            exit 0
+          fi
+          echo "Comparing against $PREV_TAG"
+          if git diff --quiet "$PREV_TAG" -- crates/ Cargo.toml Cargo.lock packages/natives/scripts/; then
+            echo "natives_changed=false" >> "$GITHUB_OUTPUT"
+            echo "Native code unchanged"
+          else
+            echo "natives_changed=true" >> "$GITHUB_OUTPUT"
+            echo "Native code changed"
+          fi
 
   native:
     needs: [detect-changes]
@@ -139,36 +141,20 @@ jobs:
           pattern: arcane-natives-*
           path: packages/natives/native
           merge-multiple: true
-      - name: Restore linux-x64 native cache
+      - name: Download native addons from latest release
         if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.linux-x64*.node
-          key: native-linux-x64-release-${{ needs.detect-changes.outputs.native_hash }}
-      - name: Restore linux-arm64 native cache
-        if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.linux-arm64*.node
-          key: native-linux-arm64-release-${{ needs.detect-changes.outputs.native_hash }}
-      - name: Restore darwin-x64 native cache
-        if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.darwin-x64*.node
-          key: native-darwin-x64-release-${{ needs.detect-changes.outputs.native_hash }}
-      - name: Restore darwin-arm64 native cache
-        if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.darwin-arm64*.node
-          key: native-darwin-arm64-release-${{ needs.detect-changes.outputs.native_hash }}
-      - name: Restore win32-x64 native cache
-        if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.win32-x64*.node
-          key: native-win32-x64-release-${{ needs.detect-changes.outputs.native_hash }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p packages/natives/native
+          LATEST=$(gh release list --limit 20 --json tagName,assets --jq '[.[] | select(.assets | length > 0) | select(.assets | map(.name) | any(endswith(".node")))][0].tagName')
+          if [ -z "$LATEST" ]; then
+            echo "::error::No previous release with native addons found"
+            exit 1
+          fi
+          echo "Downloading native addons from release $LATEST"
+          gh release download "$LATEST" --pattern "*.node" --dir packages/natives/native/
+          ls -la packages/natives/native/
       - name: Publish to npm
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -215,36 +201,20 @@ jobs:
           pattern: arcane-natives-*
           path: packages/natives/native
           merge-multiple: true
-      - name: Restore linux-x64 native cache
+      - name: Download native addons from latest release
         if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.linux-x64*.node
-          key: native-linux-x64-release-${{ needs.detect-changes.outputs.native_hash }}
-      - name: Restore linux-arm64 native cache
-        if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.linux-arm64*.node
-          key: native-linux-arm64-release-${{ needs.detect-changes.outputs.native_hash }}
-      - name: Restore darwin-x64 native cache
-        if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.darwin-x64*.node
-          key: native-darwin-x64-release-${{ needs.detect-changes.outputs.native_hash }}
-      - name: Restore darwin-arm64 native cache
-        if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.darwin-arm64*.node
-          key: native-darwin-arm64-release-${{ needs.detect-changes.outputs.native_hash }}
-      - name: Restore win32-x64 native cache
-        if: ${{ needs.native.result == 'skipped' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: packages/natives/native/arcane_natives.win32-x64*.node
-          key: native-win32-x64-release-${{ needs.detect-changes.outputs.native_hash }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p packages/natives/native
+          LATEST=$(gh release list --limit 20 --json tagName,assets --jq '[.[] | select(.assets | length > 0) | select(.assets | map(.name) | any(endswith(".node")))][0].tagName')
+          if [ -z "$LATEST" ]; then
+            echo "::error::No previous release with native addons found"
+            exit 1
+          fi
+          echo "Downloading native addons from release $LATEST"
+          gh release download "$LATEST" --pattern "*.node" --dir packages/natives/native/
+          ls -la packages/natives/native/
       - name: Verify native addons
         run: |
           echo "Native addons downloaded:"
