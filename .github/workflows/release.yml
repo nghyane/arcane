@@ -26,29 +26,26 @@ jobs:
       native_hash: ${{ steps.hash.outputs.native_hash }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Compute native source hash
         id: hash
         run: echo "native_hash=${{ hashFiles('crates/**', 'Cargo.toml', 'Cargo.lock', 'packages/natives/scripts/**') }}" >> "$GITHUB_OUTPUT"
       - name: Check if native code changed
         id: check
         run: |
-          PREV_TAG=$(git tag --list 'release/*' --sort=-creatordate | head -n 2 | tail -n 1)
-          if [ -z "$PREV_TAG" ]; then
-            echo "natives_changed=true" >> "$GITHUB_OUTPUT"
-            echo "No previous release tag found, building natives"
-            exit 0
-          fi
-          CHANGED=$(git diff --name-only "$PREV_TAG" HEAD -- 'crates/' 'Cargo.toml' 'Cargo.lock' 'packages/natives/scripts/')
-          if [ -n "$CHANGED" ]; then
-            echo "natives_changed=true" >> "$GITHUB_OUTPUT"
-            echo "Native code changed since $PREV_TAG:"
-            echo "$CHANGED"
-          else
-            echo "natives_changed=false" >> "$GITHUB_OUTPUT"
-            echo "No native code changes since $PREV_TAG"
-          fi
+          NATIVE_HASH=${{ steps.hash.outputs.native_hash }}
+          CHANGED=false
+          for combo in linux-x64 linux-arm64 darwin-x64 darwin-arm64 win32-x64; do
+            CACHE_KEY="native-${combo}-release-${NATIVE_HASH}"
+            if ! gh cache list --key "$CACHE_KEY" --limit 1 | grep -q "$CACHE_KEY"; then
+              echo "Cache miss for $CACHE_KEY"
+              CHANGED=true
+              break
+            fi
+          done
+          echo "natives_changed=$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "Natives changed: $CHANGED"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   native:
     needs: [detect-changes]
