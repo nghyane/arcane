@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "@nghyane/arcane-natives",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"description": "Native Rust bindings for grep, clipboard, image processing, syntax highlighting, PTY, and shell operations via N-API",
 	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
@@ -41,7 +41,7 @@
 		"bench": "bun bench/grep.ts"
 	},
 	"dependencies": {
-		"@nghyane/arcane-utils": "^0.1.6"
+		"@nghyane/arcane-utils": "^0.1.7"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.3.9"

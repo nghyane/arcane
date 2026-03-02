@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.17] - 2026-03-02
+
 ### Added
 
 - Thread search and retrieval tools (find-thread, read-thread)
