@@ -12,7 +12,7 @@ import { ensureHostInfo, getHostInfoForHost } from "../ssh/connection-manager";
 import { executeSSH } from "../ssh/ssh-executor";
 import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { replaceTabs } from "../ui/render-utils";
+import { formatClickHint, replaceTabs } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";

@@ -15,6 +15,7 @@ import type { ToolSession } from "../sdk";
 import { getLanguageFromPath, type Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
 import {
+	formatClickHint,
 	formatDiagnostics,
 	formatStatusIcon,
 	PREVIEW_LIMITS,

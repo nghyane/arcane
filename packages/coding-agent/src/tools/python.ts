@@ -12,7 +12,7 @@ import type { PythonStatusEvent } from "../ipy/kernel";
 import { DEFAULT_MAX_BYTES, OutputSink, type OutputSummary } from "../session/streaming-output";
 import type { Theme } from "../theme/theme";
 import { renderCodeCell, renderStatusLine } from "../tui";
-import { PREVIEW_LIMITS, replaceTabs } from "../ui/render-utils";
+import { formatClickHint, PREVIEW_LIMITS, replaceTabs } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";

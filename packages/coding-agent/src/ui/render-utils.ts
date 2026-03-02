@@ -255,6 +255,16 @@ export function formatMoreItems(remaining: number, itemType: string): string {
 	return `… ${safeRemaining} more ${pluralize(itemType, safeRemaining)}`;
 }
 
+/**
+ * Render a subtle "click to expand" hint for truncated content.
+ * Returns empty string if already expanded or nothing to expand.
+ */
+export function formatClickHint(theme: Theme, expanded?: boolean, hasMore?: boolean): string {
+	if (expanded) return "";
+	if (hasMore === false) return "";
+	return theme.fg("dim", wrapBrackets("click to expand", theme));
+}
+
 export function formatErrorMessage(message: string | undefined, theme: Theme): string {
 	const clean = (message ?? "").replace(/^Error:\s*/, "").trim();
 	return `${theme.styledSymbol("status.error", "error")} ${theme.fg("error", `Error: ${clean || "Unknown error"}`)}`;
@@ -425,7 +435,10 @@ export function formatDiagnostics(
 
 	if (totalDiags > diagsShown) {
 		const remaining = totalDiags - diagsShown;
-		output += `\n ${theme.fg("dim", theme.tree.last)} ${theme.fg("muted", `… ${remaining} more`)}`;
+		output += `\n ${theme.fg("dim", theme.tree.last)} ${theme.fg(
+			"muted",
+			`… ${remaining} more`,
+		)} ${formatClickHint(theme)}`;
 	}
 
 	return output;
