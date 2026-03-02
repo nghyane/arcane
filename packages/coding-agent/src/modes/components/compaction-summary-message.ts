@@ -1,6 +1,7 @@
 import { Container, LeftBorderBox, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 import type { CompactionSummaryMessage } from "../../session/messages";
 import { getMarkdownTheme, theme } from "../../theme/theme";
+import { formatClickHint } from "../../ui/render-utils";
 
 /**
  * Component that renders a compaction message with collapsed/expanded state.
@@ -43,7 +44,13 @@ export class CompactionSummaryMessageComponent extends Container {
 				}),
 			);
 		} else {
-			this.#box.addChild(new Text(theme.fg("customMessageText", `Compacted from ${tokenStr} tokens`), 0, 0));
+			this.#box.addChild(
+				new Text(
+					`${theme.fg("customMessageText", `Compacted from ${tokenStr} tokens`)} ${formatClickHint(theme)}`,
+					0,
+					0,
+				),
+			);
 			if (this.message.shortSummary) {
 				this.#box.addChild(new Text(theme.fg("customMessageText", this.message.shortSummary), 0, 1));
 			}

@@ -8,7 +8,7 @@ import { Container, Loader, Spacer, Text, type TUI } from "@nghyane/arcane-tui";
 import { getSymbolTheme, theme } from "../../theme/theme";
 import type { TruncationMeta } from "../../tools/output-meta";
 import { renderStatusLine } from "../../tui/status-line";
-import { formatCount, replaceTabs } from "../../ui/render-utils";
+import { formatClickHint, formatCount, replaceTabs } from "../../ui/render-utils";
 
 const TAIL_LINES = 4;
 const MAX_DISPLAY_LINE_CHARS = 4000;
@@ -126,6 +126,9 @@ export class PythonExecutionComponent extends Container {
 			}
 			if (this.#truncation) {
 				bodyLines.push(theme.fg("warning", "output truncated"));
+			}
+			if (!showAll && skipped > 0) {
+				bodyLines.push(formatClickHint(theme));
 			}
 		}
 

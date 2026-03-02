@@ -315,7 +315,7 @@ export const editToolRenderer = {
 		}
 		if (!expanded && diffLines.length > maxLines) {
 			const remaining = diffLines.length - maxLines;
-			treeBody.push(uiTheme.fg("dim", `… ${remaining} more lines`) + ` ${formatClickHint(uiTheme)}`);
+			treeBody.push(`${uiTheme.fg("dim", `… ${remaining} more lines`)} ${formatClickHint(uiTheme)}`);
 		}
 
 		// Diagnostics

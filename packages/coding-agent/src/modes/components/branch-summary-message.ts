@@ -1,6 +1,7 @@
 import { Container, LeftBorderBox, Markdown, Spacer, Text } from "@nghyane/arcane-tui";
 import type { BranchSummaryMessage } from "../../session/messages";
 import { getMarkdownTheme, theme } from "../../theme/theme";
+import { formatClickHint } from "../../ui/render-utils";
 
 /**
  * Component that renders a branch summary message with collapsed/expanded state.
@@ -42,7 +43,9 @@ export class BranchSummaryMessageComponent extends Container {
 				}),
 			);
 		} else {
-			this.#box.addChild(new Text(theme.fg("customMessageText", "Branch summary"), 0, 0));
+			this.#box.addChild(
+				new Text(`${theme.fg("customMessageText", "Branch summary")} ${formatClickHint(theme)}`, 0, 0),
+			);
 		}
 	}
 }
