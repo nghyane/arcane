@@ -111,14 +111,15 @@ interface UIContext {
 	select(
 		prompt: string,
 		options: string[],
-		options_?: { initialIndex?: number; timeout?: number; outline?: boolean },
+		options_?: { initialIndex?: number; timeout?: number; outline?: boolean; signal?: AbortSignal },
 	): Promise<string | undefined>;
-	input(prompt: string): Promise<string | undefined>;
+	input(prompt: string, placeholder?: string, options_?: { signal?: AbortSignal }): Promise<string | undefined>;
 }
 
 interface AskQuestionOptions {
 	/** Timeout in milliseconds, null/undefined to disable */
 	timeout?: number | null;
+	signal?: AbortSignal;
 }
 
 async function askSingleQuestion(
@@ -158,6 +159,7 @@ async function askSingleQuestion(
 				initialIndex: cursorIndex,
 				timeout: timeout ?? undefined,
 				outline: true,
+				signal: options?.signal,
 			});
 			const elapsed = Date.now() - selectionStart;
 			const timedOut = timeout != null && elapsed >= timeout;
@@ -166,7 +168,7 @@ async function askSingleQuestion(
 
 			if (choice === OTHER_OPTION) {
 				if (!timedOut) {
-					const input = await ui.input("Enter your response:");
+					const input = await ui.input("Enter your response:", undefined, { signal: options?.signal });
 					if (input) customInput = input;
 				}
 				break;
@@ -205,9 +207,10 @@ async function askSingleQuestion(
 			timeout: timeout ?? undefined,
 			initialIndex: recommended,
 			outline: true,
+			signal: options?.signal,
 		});
 		if (choice === OTHER_OPTION) {
-			const input = await ui.input("Enter your response:");
+			const input = await ui.input("Enter your response:", undefined, { signal: options?.signal });
 			if (input) customInput = input;
 		} else if (choice) {
 			selectedOptions = [stripRecommendedSuffix(choice)];
@@ -300,7 +303,7 @@ export class AskTool implements AgentTool<typeof askSchema, AskToolDetails, Them
 				optionLabels,
 				q.multi ?? false,
 				q.recommended,
-				{ timeout },
+				{ timeout, signal: _signal },
 			);
 
 			const details: AskToolDetails = {
@@ -335,7 +338,7 @@ export class AskTool implements AgentTool<typeof askSchema, AskToolDetails, Them
 				optionLabels,
 				q.multi ?? false,
 				q.recommended,
-				{ timeout },
+				{ timeout, signal: _signal },
 			);
 
 			results.push({

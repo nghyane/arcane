@@ -189,7 +189,7 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 				modelRegistry: this.session.subagentContext?.modelRegistry,
 				settings: this.session.settings,
 				mcpManager: this.session.subagentContext?.mcpManager,
-				contextFiles: this.session.contextFiles,
+				contextFiles: this.session.contextFiles?.filter(f => !f.path.endsWith("AGENTS.md")),
 				skills: this.session.skills,
 				promptTemplates: this.session.promptTemplates,
 			});

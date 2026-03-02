@@ -567,6 +567,37 @@ export function validateLineRef(ref: { line: number; hash: string }, fileLines: 
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
+ * Detect suspicious Unicode escape placeholders in edit lines.
+ * LLMs sometimes emit literal `\uDDDD` strings instead of actual Unicode characters.
+ * Returns a warning message if detected, undefined otherwise.
+ */
+function detectUnicodeEscapePlaceholders(lines: string[]): string | undefined {
+	for (const line of lines) {
+		if (/\\u[0-9A-Fa-f]{4}/.test(line)) {
+			return "Warning: edit content contains literal Unicode escape sequences (\\uXXXX). These may be intended as actual Unicode characters.";
+		}
+	}
+	return undefined;
+}
+
+/**
+ * Auto-correct escaped tab indentation in edit lines.
+ * When enabled via ARCANE_HASHLINE_AUTOCORRECT_ESCAPED_TABS=1, replaces
+ * leading `\\t` sequences (literal backslash-t from JSON) with real tab characters.
+ */
+function autocorrectEscapedTabs(lines: string[]): string[] {
+	if (Bun.env.ARCANE_HASHLINE_AUTOCORRECT_ESCAPED_TABS !== "1") {
+		return lines;
+	}
+	return lines.map(line => {
+		const match = line.match(/^((?:\\t)+)/);
+		if (!match) return line;
+		const tabCount = match[1].length / 2; // each \\t is 2 chars
+		return "\t".repeat(tabCount) + line.slice(match[1].length);
+	});
+}
+
+/**
  * Apply an array of hashline edits to file content.
  *
  * Each edit operation identifies target lines directly (`set`, `set_range`,
@@ -598,6 +629,16 @@ export function applyHashlineEdits(
 	const noopEdits: Array<{ editIndex: number; loc: string; currentContent: string }> = [];
 
 	const autocorrect = Bun.env.ARCANE_HL_AUTOCORRECT === "1";
+
+	// Collect warnings and auto-correct edit content
+	const warnings: string[] = [];
+	for (const edit of edits) {
+		const unicodeWarning = detectUnicodeEscapePlaceholders(edit.content);
+		if (unicodeWarning && !warnings.includes(unicodeWarning)) {
+			warnings.push(unicodeWarning);
+		}
+		edit.content = autocorrectEscapedTabs(edit.content);
+	}
 
 	function collectExplicitlyTouchedLines(): Set<number> {
 		const touched = new Set<number>();
@@ -914,6 +955,7 @@ export function applyHashlineEdits(
 	return {
 		content: finalContent,
 		firstChangedLine,
+		...(warnings.length > 0 ? { warnings } : {}),
 		...(noopEdits.length > 0 ? { noopEdits } : {}),
 	};
 

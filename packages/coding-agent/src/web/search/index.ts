@@ -35,6 +35,7 @@ export const webSearchSchema = Type.Object({
 			"exa",
 			"brave",
 			"jina",
+			"kagi",
 			"kimi",
 			"zai",
 			"anthropic",
@@ -55,6 +56,7 @@ export type SearchParams = {
 		| "exa"
 		| "brave"
 		| "jina"
+		| "kagi"
 		| "kimi"
 		| "zai"
 		| "anthropic"
