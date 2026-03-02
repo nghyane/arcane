@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ["release/*"]
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       skip_npm:
@@ -34,7 +34,7 @@ jobs:
       - name: Check if native code changed
         id: check
         run: |
-          PREV_TAG=$(git tag --sort=-v:refname --list 'release/*' | head -n 1)
+          PREV_TAG=$(git tag --sort=-v:refname --list 'v*' | head -n 1)
           if [ -z "$PREV_TAG" ]; then
             echo "natives_changed=true" >> "$GITHUB_OUTPUT"
             echo "No previous release tag found, building natives"

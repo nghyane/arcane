@@ -185,8 +185,18 @@ async function main(): Promise<void> {
 		console.log(`  Tagged ${tag}`);
 	}
 
+	// Determine release tag version from coding-agent package
+	const codingAgentPkg = changedPackages.find((p) => p.dir === "packages/coding-agent");
+	let codingAgentVersion: string;
+	if (codingAgentPkg) {
+		codingAgentVersion = bumpVersion(codingAgentPkg.version, bump);
+	} else {
+		const pkg = await Bun.file("packages/coding-agent/package.json").json();
+		codingAgentVersion = pkg.version;
+	}
+
 	// Single trigger tag for CI (one CI run publishes everything)
-	const releaseTag = `release/${new Date().toISOString().replace(/[:.]/g, "-")}`;
+	const releaseTag = `v${codingAgentVersion}`;
 	await $`git tag ${releaseTag}`;
 	console.log(`  Tagged ${releaseTag} (CI trigger)`);
 	console.log();
@@ -200,7 +210,7 @@ async function main(): Promise<void> {
 		await $`git push origin ${tags.map(t => `refs/tags/${t}`)}`.quiet();
 	}
 	// Push release trigger tag separately — GitHub only fires one push event per
-	// git-push invocation, so the release/* tag must be the sole ref to match the workflow filter.
+	// git-push invocation, so the v* tag must be the sole ref to match the workflow filter.
 	await $`git push origin refs/tags/${releaseTag}`.quiet();
 	console.log();
 

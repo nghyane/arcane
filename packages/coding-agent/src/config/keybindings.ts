@@ -116,10 +116,12 @@ function isAppAction(action: string): action is AppAction {
 /**
  * Key hint formatting utilities for UI labels.
  */
+const IS_MACOS = process.platform === "darwin";
+
 const MODIFIER_LABELS: Record<string, string> = {
-	ctrl: "Ctrl",
-	shift: "Shift",
-	alt: "Alt",
+	ctrl: IS_MACOS ? "⌃" : "Ctrl",
+	shift: IS_MACOS ? "⇧" : "Shift",
+	alt: IS_MACOS ? "⌥" : "Alt",
 };
 
 const KEY_LABELS: Record<string, string> = {
@@ -154,7 +156,8 @@ function formatKeyPart(part: string): string {
 }
 
 export function formatKeyHint(key: KeyId): string {
-	return key.split("+").map(formatKeyPart).join("+");
+	const parts = key.split("+").map(formatKeyPart);
+	return IS_MACOS ? parts.join("") : parts.join("+");
 }
 
 export function formatKeyHints(keys: KeyId | KeyId[]): string {
@@ -253,13 +256,12 @@ export class KeybindingsManager {
 	}
 
 	/**
-	 * Get display string for an action.
+	 * Get display string for an action, formatted for the current platform.
 	 */
 	getDisplayString(action: AppAction): string {
 		const keys = this.getKeys(action);
 		if (keys.length === 0) return "";
-		if (keys.length === 1) return keys[0]!;
-		return keys.join("/");
+		return formatKeyHints(keys);
 	}
 
 	/**

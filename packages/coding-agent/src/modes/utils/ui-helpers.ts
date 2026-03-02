@@ -1,6 +1,7 @@
 import type { AgentMessage } from "@nghyane/arcane-agent";
 import type { AssistantMessage, Message } from "@nghyane/arcane-ai";
 import { Spacer, Text, TruncatedText } from "@nghyane/arcane-tui";
+import { formatKeyHint, type KeyId } from "../../config/keybindings";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
 import { BashExecutionComponent } from "../../modes/components/bash-execution";
@@ -385,7 +386,7 @@ export class UiHelpers {
 				const queuedText = theme.fg("dim", `${entry.label}: ${entry.message}`);
 				this.ctx.pendingMessagesContainer.addChild(new TruncatedText(queuedText, 1, 0));
 			}
-			const dequeueKey = this.ctx.keybindings.getDisplayString("dequeue") || "Alt+Up";
+			const dequeueKey = this.ctx.keybindings.getDisplayString("dequeue") || formatKeyHint("alt+up" as KeyId);
 			const hintText = theme.fg("dim", `${theme.tree.hook} ${dequeueKey} to edit`);
 			this.ctx.pendingMessagesContainer.addChild(new TruncatedText(hintText, 1, 0));
 		}
