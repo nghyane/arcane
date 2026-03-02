@@ -2067,9 +2067,10 @@ Be thorough - include exact file paths, function names, error messages, and tech
 				return undefined;
 			}
 
-			// Start a new session
+			// Start a new session with parent reference
+			const parentThreadId = this.sessionManager.getSessionId();
 			await this.sessionManager.flush();
-			await this.sessionManager.newSession();
+			await this.sessionManager.newSession({ parentSession: parentThreadId });
 			this.agent.reset();
 			this.agent.sessionId = this.sessionManager.getSessionId();
 			this.#steeringMessages = [];
@@ -2078,7 +2079,7 @@ Be thorough - include exact file paths, function names, error messages, and tech
 			this.#todoReminderCount = 0;
 
 			// Inject the handoff document as a custom message
-			const handoffContent = `<handoff-context>\n${handoffText}\n</handoff-context>\n\nThe above is a handoff document from a previous session. Use this context to continue the work seamlessly.`;
+			const handoffContent = `<handoff-context thread="${parentThreadId}">\n${handoffText}\n</handoff-context>\n\nThe above is a handoff document from thread \`${parentThreadId}\`. Use this context to continue the work seamlessly. If you need additional details not covered above, use \`read_thread("${parentThreadId}", "your specific question")\` to query the original session.`;
 			this.sessionManager.appendCustomMessageEntry("handoff", handoffContent, true);
 
 			// Rebuild agent messages from session

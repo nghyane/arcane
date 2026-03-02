@@ -9,9 +9,9 @@ const SKILL_URL_PATTERN = /'skill:\/\/[^'\s")`\\]+'|"skill:\/\/[^"\s')`\\]+"|ski
 
 /** Regex to find supported internal URL tokens in command text. */
 const INTERNAL_URL_PATTERN =
-	/'(?:skill|agent|artifact|plan|memory|rule):\/\/[^'\s")`\\]+'|"(?:skill|agent|artifact|plan|memory|rule):\/\/[^"\s')`\\]+"|(?:skill|agent|artifact|plan|memory|rule):\/\/[^\s'")`\\]+/g;
+	/'(?:skill|agent|artifact|plan|rule):\/\/[^'\s")`\\]+'|"(?:skill|agent|artifact|plan|rule):\/\/[^"\s')`\\]+"|(?:skill|agent|artifact|plan|rule):\/\/[^\s'")`\\]+/g;
 
-const SUPPORTED_INTERNAL_SCHEMES = ["skill", "agent", "artifact", "plan", "memory", "rule"] as const;
+const SUPPORTED_INTERNAL_SCHEMES = ["skill", "agent", "artifact", "plan", "rule"] as const;
 
 type SupportedInternalScheme = (typeof SUPPORTED_INTERNAL_SCHEMES)[number];
 
@@ -152,7 +152,7 @@ export function expandSkillUrls(command: string, skills: readonly Skill[]): stri
 
 /**
  * Expand supported internal URLs in a bash command string to shell-escaped absolute paths.
- * Supported schemes: skill://, agent://, artifact://, plan://, memory://, rule://
+ * Supported schemes: skill://, agent://, artifact://, plan://, rule://
  */
 export async function expandInternalUrls(command: string, options: InternalUrlExpansionOptions): Promise<string> {
 	if (!command.includes("://")) return command;

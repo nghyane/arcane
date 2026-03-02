@@ -350,22 +350,6 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<BuiltinSlashCommandSpec> = [
 		},
 	},
 	{
-		name: "memory",
-		description: "Inspect and operate memory maintenance",
-		subcommands: [
-			{ name: "view", description: "Show current memory injection payload" },
-			{ name: "clear", description: "Clear persisted memory data and artifacts" },
-			{ name: "reset", description: "Alias for clear" },
-			{ name: "enqueue", description: "Enqueue memory consolidation maintenance" },
-			{ name: "rebuild", description: "Alias for enqueue" },
-		],
-		allowArgs: true,
-		handle: async (command, runtime) => {
-			runtime.ctx.editor.setText("");
-			await runtime.ctx.handleMemoryCommand(command.text);
-		},
-	},
-	{
 		name: "move",
 		description: "Move session to a different working directory",
 		inlineHint: "<path>",

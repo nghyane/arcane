@@ -242,14 +242,6 @@
 			"types": "./src/mcp/transports/*.ts",
 			"import": "./src/mcp/transports/*.ts"
 		},
-		"./memories": {
-			"types": "./src/memories/index.ts",
-			"import": "./src/memories/index.ts"
-		},
-		"./memories/*": {
-			"types": "./src/memories/*.ts",
-			"import": "./src/memories/*.ts"
-		},
 		"./modes": {
 			"types": "./src/modes/index.ts",
 			"import": "./src/modes/index.ts"

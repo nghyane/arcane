@@ -1,12 +1,12 @@
 /**
- * Internal URL router for internal protocols (agent://, artifact://, plan://, memory://, skill://, rule://, docs://).
+ * Internal URL router for internal protocols (agent://, artifact://, plan://, skill://, rule://, docs://).
  */
 import type { InternalResource, InternalUrl, ProtocolHandler } from "./types";
 
 /**
  * Router for internal URL schemes.
  *
- * Dispatches URLs like `agent://output_id` or `memory://root/memory_summary.md` to
+ * Dispatches URLs like `agent://output_id` or `skill://name/file.md` to
  * registered protocol handlers.
  */
 export class InternalUrlRouter {

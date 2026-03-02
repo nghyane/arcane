@@ -42,13 +42,11 @@ import {
 	ArtifactProtocolHandler,
 	DocsProtocolHandler,
 	InternalUrlRouter,
-	MemoryProtocolHandler,
 	RuleProtocolHandler,
 	SkillProtocolHandler,
 } from "./internal-urls";
 import { disposeAllKernelSessions } from "./ipy/executor";
 import { discoverAndLoadMCPTools, type MCPManager, type MCPToolsLoadResult } from "./mcp";
-import { buildMemoryToolDeveloperInstructions, getMemoryRoot, startMemoryStartupTask } from "./memories";
 import { collectEnvSecrets, loadSecrets, obfuscateMessages, SecretObfuscator } from "./secrets";
 import { AgentSession } from "./session/agent-session";
 import { AuthStorage } from "./session/auth-storage";
@@ -735,7 +733,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		settings,
 	};
 
-	// Initialize internal URL router for internal protocols (agent://, artifact://, memory://, skill://, rule://)
+	// Initialize internal URL router for internal protocols (agent://, artifact://, skill://, rule://)
 	const internalRouter = new InternalUrlRouter();
 	const getArtifactsDir = () => {
 		const sessionFile = sessionManager.getSessionFile();
@@ -743,11 +741,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	};
 	internalRouter.register(new AgentProtocolHandler({ getArtifactsDir }));
 	internalRouter.register(new ArtifactProtocolHandler({ getArtifactsDir }));
-	internalRouter.register(
-		new MemoryProtocolHandler({
-			getMemoryRoot: () => getMemoryRoot(agentDir, settings.getCwd()),
-		}),
-	);
 	internalRouter.register(
 		new SkillProtocolHandler({
 			getSkills: () => skills,
@@ -1027,7 +1020,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 
 	const rebuildSystemPrompt = async (toolNames: string[], tools: Map<string, AgentTool>): Promise<string> => {
 		toolContextStore.setToolNames(toolNames);
-		const memoryInstructions = await buildMemoryToolDeveloperInstructions(agentDir, settings);
 		const defaultPrompt = await buildSystemPromptInternal({
 			cwd,
 			skills,
@@ -1037,7 +1029,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			toolNames,
 			rules: rulebookRules,
 			skillsSettings: settings.getGroup("skills") as SkillsSettings,
-			appendSystemPrompt: memoryInstructions,
 		});
 
 		if (options.systemPrompt === undefined) {
@@ -1054,7 +1045,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 				rules: rulebookRules,
 				skillsSettings: settings.getGroup("skills") as SkillsSettings,
 				customPrompt: options.systemPrompt,
-				appendSystemPrompt: memoryInstructions,
 			});
 		}
 		return options.systemPrompt(defaultPrompt);
@@ -1257,14 +1247,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			logger.warn("LSP server warmup failed", { cwd, error: String(error) });
 		}
 	}
-
-	startMemoryStartupTask({
-		session,
-		settings,
-		modelRegistry,
-		agentDir,
-		isSubagent,
-	});
 
 	return {
 		session,

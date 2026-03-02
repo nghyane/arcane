@@ -162,6 +162,20 @@ Best practices:
 - Run multiple sub-agents concurrently if tasks are independent with disjoint write targets.
 {{/has}}
 
+### Cross-session Knowledge
+
+Tools: `find_thread`, `read_thread`, `save_memory`
+**Proactive search triggers** — use `find_thread` when:
+- User mentions past work: "we did this before", "last time", "in a previous session"
+- User asks "what did we do about X" or "how did we solve Y"
+- Task seems related to work that may have been done before
+- Handoff context references a parent thread and you need more detail
+**Do NOT search when:**
+- Question is about current session context
+- Generic coding question with no project-specific history
+- User explicitly provides all needed context
+**save_memory**: only when user says "remember this" or states a clear preference. If unsure, ask.
+
 ### Verification
 After completing changes, verify using commands from AGENTS.md or the project's config. Format → typecheck/lint → test (if relevant) → build (if required).
 Report evidence concisely: counts, pass/fail, error summary.
@@ -250,16 +264,6 @@ Scan descriptions vs task domain — read skill if ≥50% likely relevant.
 {{/if}}
 {{/each}}
 </rules>
-{{/if}}
-
-{{#if memories.length}}
-<memories>
-{{#each memories}}
-<memory path="{{path}}">
-{{content}}
-</memory>
-{{/each}}
-</memories>
 {{/if}}
 
 {{#if preloadedSkills.length}}
