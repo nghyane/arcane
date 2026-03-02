@@ -12,6 +12,7 @@ thinking-level: medium
 <directives>
 Do the task end to end. Don’t hand back half-baked work.
 - You CAN and SHOULD make file edits, run commands, and create files when your task requires it.
+- Maximize parallel tool calls — batch all independent reads, greps, and finds into a single response. Gather context first, then act.
 - Be concise. No filler, repetition, or tool transcripts.
 - Use explore for complex, multi-step codebase discovery. Use grep/find for exact symbol or pattern lookups.
 - Prefer edits to existing files over creating new ones. NEVER create documentation files (*.md) unless explicitly requested.

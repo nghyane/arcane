@@ -1,7 +1,8 @@
 import type { Component } from "@nghyane/arcane-tui";
-import { Text } from "@nghyane/arcane-tui";
+import { Markdown, Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme, ThemeColor } from "../theme/theme";
+import { getMarkdownTheme } from "../theme/theme";
 import { Ellipsis, Hasher, type RenderCache } from "../tui";
 import {
 	formatBadge,
@@ -114,6 +115,22 @@ function renderSubagentHeader(
 const STREAMING_TOOL_LIMIT = PREVIEW_LIMITS.SUBAGENT_STREAMING_TOOLS;
 const COLLAPSED_TOOL_LIMIT = PREVIEW_LIMITS.SUBAGENT_COLLAPSED_TOOLS;
 const COLLAPSED_CONCLUSION_LINES = PREVIEW_LIMITS.SUBAGENT_CONCLUSION;
+
+/** Render conclusion text as markdown, returning indented lines with collapsed/expanded limit. */
+function renderConclusionMarkdown(text: string, width: number, expanded: boolean, theme: Theme): string[] {
+	const md = new Markdown(text.trim(), INDENT.length, 0, getMarkdownTheme());
+	const mdLines = md.render(width);
+	if (mdLines.length === 0) return [];
+
+	const maxLines = expanded ? mdLines.length : COLLAPSED_CONCLUSION_LINES;
+	const show = mdLines.slice(0, maxLines);
+	const remaining = mdLines.length - maxLines;
+	const lines = ["", ...show];
+	if (remaining > 0) {
+		lines.push(`${INDENT}${theme.fg("dim", `… ${remaining} more lines`)}`);
+	}
+	return lines;
+}
 
 function renderToolHistory(history: ToolEntry[], expanded: boolean, limit: number, theme: Theme): string[] {
 	const lines: string[] = [];
@@ -252,6 +269,9 @@ export function renderResult(
 
 				if (r.error && !success) {
 					lines.push(`${INDENT}${theme.fg("error", truncateToWidth(r.error, TRUNCATE_LENGTHS.SUBAGENT_ERROR))}`);
+				}
+				if (success && fallbackText.trim()) {
+					lines.push(...renderConclusionMarkdown(fallbackText, width, expanded, theme));
 				}
 			} else {
 				const icon = formatStatusIcon("pending", theme);
@@ -394,17 +414,7 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 							);
 						}
 						if (success && fallbackText.trim()) {
-							lines.push("");
-							const conclusionLines = fallbackText.trim().split("\n");
-							const maxLines = expanded ? conclusionLines.length : COLLAPSED_CONCLUSION_LINES;
-							const show = conclusionLines.slice(0, maxLines);
-							for (const line of show) {
-								lines.push(`${INDENT}${truncateToWidth(replaceTabs(line), width - 4)}`);
-							}
-							const remaining = conclusionLines.length - show.length;
-							if (remaining > 0) {
-								lines.push(`${INDENT}${theme.fg("dim", `… ${remaining} more lines`)}`);
-							}
+							lines.push(...renderConclusionMarkdown(fallbackText, width, expanded, theme));
 						}
 					} else {
 						const icon = formatStatusIcon("pending", theme);

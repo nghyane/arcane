@@ -6,6 +6,7 @@ import { AssistantMessageComponent } from "../../modes/components/assistant-mess
 import { BashExecutionComponent } from "../../modes/components/bash-execution";
 import { BranchSummaryMessageComponent } from "../../modes/components/branch-summary-message";
 import { CompactionSummaryMessageComponent } from "../../modes/components/compaction-summary-message";
+import { ContextGroupComponent } from "../../modes/components/context-group";
 import { CustomMessageComponent } from "../../modes/components/custom-message";
 import { DynamicBorder } from "../../modes/components/dynamic-border";
 import { PythonExecutionComponent } from "../../modes/components/python-execution";
@@ -17,6 +18,7 @@ import { type CustomMessage, SKILL_PROMPT_MESSAGE_TYPE, type SkillPromptDetails 
 import type { SessionContext } from "../../session/session-manager";
 import { formatBytes } from "../../session/streaming-output";
 import { theme } from "../../theme/theme";
+import { getToolTier, isContextTool } from "../../ui/render-utils";
 
 type TextBlock = { type: "text"; text: string };
 
@@ -189,8 +191,12 @@ export class UiHelpers {
 			this.ctx.updateEditorBorderColor();
 		}
 
+		let currentGroup: ContextGroupComponent | undefined;
+		const toolGroups = new Map<string, ContextGroupComponent>();
+
 		for (const message of sessionContext.messages) {
 			if (message.role === "assistant") {
+				currentGroup = undefined;
 				this.ctx.addMessageToChat(message);
 				const hasErrorStop = message.stopReason === "aborted" || message.stopReason === "error";
 				const errorMessage = hasErrorStop
@@ -204,25 +210,36 @@ export class UiHelpers {
 						: message.errorMessage || "Error"
 					: null;
 
-				// Render tool call components
+				// Render tool call components with context grouping
 				for (const content of message.content) {
 					if (content.type !== "toolCall") {
 						continue;
 					}
 
+					const tier = getToolTier(content.name);
 					const tool = this.ctx.session.getToolByName(content.name);
 					const component = new ToolExecutionComponent(
 						content.name,
 						content.arguments,
-						{
-							showImages: settings.get("terminal.showImages"),
-						},
+						{ showImages: settings.get("terminal.showImages"), tier },
 						tool,
 						this.ctx.ui,
 						this.ctx.sessionManager.getCwd(),
 					);
 					component.setExpanded(this.ctx.toolOutputExpanded);
-					this.ctx.chatContainer.addChild(component);
+
+					if (isContextTool(content.name)) {
+						if (!currentGroup) {
+							currentGroup = new ContextGroupComponent();
+							currentGroup.setExpanded(this.ctx.toolOutputExpanded);
+							this.ctx.chatContainer.addChild(currentGroup);
+						}
+						currentGroup.addTool(content.name, component);
+						toolGroups.set(content.id, currentGroup);
+					} else {
+						currentGroup = undefined;
+						this.ctx.chatContainer.addChild(component);
+					}
 
 					if (hasErrorStop && errorMessage) {
 						component.updateResult(
@@ -230,6 +247,11 @@ export class UiHelpers {
 							false,
 							content.id,
 						);
+						const group = toolGroups.get(content.id);
+						if (group) {
+							group.markDone();
+							toolGroups.delete(content.id);
+						}
 					} else {
 						this.ctx.pendingTools.set(content.id, component);
 					}
@@ -240,8 +262,14 @@ export class UiHelpers {
 				if (component) {
 					component.updateResult(message, false, message.toolCallId);
 					this.ctx.pendingTools.delete(message.toolCallId);
+					const group = toolGroups.get(message.toolCallId);
+					if (group) {
+						group.markDone();
+						toolGroups.delete(message.toolCallId);
+					}
 				}
 			} else {
+				currentGroup = undefined;
 				// All other messages use standard rendering
 				this.ctx.addMessageToChat(message, options);
 			}

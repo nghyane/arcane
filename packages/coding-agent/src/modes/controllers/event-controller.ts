@@ -1,19 +1,21 @@
-import { toolDetails } from "@nghyane/arcane-agent";
-import { Loader, TERMINAL, Text } from "@nghyane/arcane-tui";
+import { type AgentTool, toolDetails } from "@nghyane/arcane-agent";
+import { Loader, TERMINAL } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
+import { ContextGroupComponent } from "../../modes/components/context-group";
 import { TodoReminderComponent } from "../../modes/components/todo-reminder";
 import { ToolExecutionComponent } from "../../modes/components/tool-execution";
 import { TtsrNotificationComponent } from "../../modes/components/ttsr-notification";
 import type { InteractiveModeContext } from "../../modes/types";
 import type { AgentSessionEvent } from "../../session/agent-session";
 import { getSymbolTheme, theme } from "../../theme/theme";
-import { getToolTier } from "../../ui/render-utils";
+import { getToolTier, isContextTool } from "../../ui/render-utils";
 
 export class EventController {
-	#lastToolTier: string | undefined = undefined;
 	#lastThinkingCount = 0;
 	#renderedCustomMessages = new Set<string>();
+	#currentContextGroup?: ContextGroupComponent;
+	#toolGroups = new Map<string, ContextGroupComponent>();
 
 	constructor(private ctx: InteractiveModeContext) {}
 
@@ -65,11 +67,11 @@ export class EventController {
 						break;
 					}
 					this.#renderedCustomMessages.add(signature);
-					this.#lastToolTier = undefined;
+					this.#finalizeContextGroup();
 					this.ctx.addMessageToChat(event.message);
 					this.ctx.ui.requestRender();
 				} else if (event.message.role === "user") {
-					this.#lastToolTier = undefined;
+					this.#finalizeContextGroup();
 					this.ctx.addMessageToChat(event.message);
 					if (!event.message.synthetic) {
 						this.ctx.editor.setText("");
@@ -77,12 +79,12 @@ export class EventController {
 					}
 					this.ctx.ui.requestRender();
 				} else if (event.message.role === "fileMention") {
-					this.#lastToolTier = undefined;
+					this.#finalizeContextGroup();
 					this.ctx.addMessageToChat(event.message);
 					this.ctx.ui.requestRender();
 				} else if (event.message.role === "assistant") {
 					this.#lastThinkingCount = 0;
-					this.#lastToolTier = undefined;
+					this.#finalizeContextGroup();
 					this.ctx.streamingComponent = new AssistantMessageComponent(undefined, this.ctx.hideThinkingBlock);
 					this.ctx.streamingMessage = event.message;
 					this.ctx.chatContainer.addChild(this.ctx.streamingComponent);
@@ -100,7 +102,6 @@ export class EventController {
 						content => content.type === "thinking" && content.thinking.trim(),
 					).length;
 					if (thinkingCount > this.#lastThinkingCount) {
-						this.#lastToolTier = undefined;
 						this.#lastThinkingCount = thinkingCount;
 					}
 
@@ -108,26 +109,8 @@ export class EventController {
 						if (content.type !== "toolCall") continue;
 
 						if (!this.ctx.pendingTools.has(content.id)) {
-							const tier = getToolTier(content.name);
-							if (tier !== "quiet" || this.#lastToolTier !== undefined) {
-								this.ctx.chatContainer.addChild(new Text("", 0, 0));
-							}
-							this.#lastToolTier = tier;
 							const tool = this.ctx.session.getToolByName(content.name);
-							const component = new ToolExecutionComponent(
-								content.name,
-								content.arguments,
-								{
-									showImages: settings.get("terminal.showImages"),
-									tier,
-								},
-								tool,
-								this.ctx.ui,
-								this.ctx.sessionManager.getCwd(),
-							);
-							component.setExpanded(this.ctx.toolOutputExpanded);
-							this.ctx.chatContainer.addChild(component);
-							this.ctx.pendingTools.set(content.id, component);
+							this.#appendTool(content.id, content.name, content.arguments, tool);
 						} else {
 							const component = this.ctx.pendingTools.get(content.id);
 							if (component) {
@@ -180,27 +163,8 @@ export class EventController {
 				if (event.intent) this.ctx.setWorkingMessage(`${event.intent} (esc to interrupt)`);
 
 				if (!this.ctx.pendingTools.has(event.toolCallId)) {
-					const tier = getToolTier(event.toolName);
-					if (tier !== "quiet" || this.#lastToolTier !== undefined) {
-						this.ctx.chatContainer.addChild(new Text("", 0, 0));
-					}
-					this.#lastToolTier = tier;
-
 					const tool = event.tool ?? this.ctx.session.getToolByName(event.toolName);
-					const component = new ToolExecutionComponent(
-						event.toolName,
-						event.args,
-						{
-							showImages: settings.get("terminal.showImages"),
-							tier,
-						},
-						tool,
-						this.ctx.ui,
-						this.ctx.sessionManager.getCwd(),
-					);
-					component.setExpanded(this.ctx.toolOutputExpanded);
-					this.ctx.chatContainer.addChild(component);
-					this.ctx.pendingTools.set(event.toolCallId, component);
+					this.#appendTool(event.toolCallId, event.toolName, event.args, tool);
 					this.ctx.ui.requestRender();
 				}
 				break;
@@ -220,6 +184,12 @@ export class EventController {
 				if (component) {
 					component.updateResult({ ...event.result, isError: event.isError }, false, event.toolCallId);
 					this.ctx.pendingTools.delete(event.toolCallId);
+					// Mark context group completion
+					const group = this.#toolGroups.get(event.toolCallId);
+					if (group) {
+						group.markDone();
+						this.#toolGroups.delete(event.toolCallId);
+					}
 					this.ctx.ui.requestRender();
 				}
 				// Update todo display when todo_write tool completes
@@ -240,6 +210,7 @@ export class EventController {
 			}
 
 			case "agent_end":
+				this.#finalizeContextGroup();
 				if (this.ctx.loadingAnimation) {
 					this.ctx.loadingAnimation.stop();
 					this.ctx.loadingAnimation = undefined;
@@ -251,6 +222,7 @@ export class EventController {
 					this.ctx.streamingMessage = undefined;
 				}
 				this.ctx.pendingTools.clear();
+				this.#toolGroups.clear();
 				this.ctx.ui.requestRender();
 				this.sendCompletionNotification();
 				break;
@@ -345,6 +317,7 @@ export class EventController {
 			}
 
 			case "ttsr_triggered": {
+				this.#finalizeContextGroup();
 				const component = new TtsrNotificationComponent(event.rules);
 				component.setExpanded(this.ctx.toolOutputExpanded);
 				this.ctx.chatContainer.addChild(component);
@@ -353,12 +326,45 @@ export class EventController {
 			}
 
 			case "todo_reminder": {
+				this.#finalizeContextGroup();
 				const component = new TodoReminderComponent(event.todos, event.attempt, event.maxAttempts);
 				this.ctx.chatContainer.addChild(component);
 				this.ctx.ui.requestRender();
 				break;
 			}
 		}
+	}
+
+	#appendTool(toolCallId: string, toolName: string, args: unknown, tool: AgentTool | undefined): void {
+		const tier = getToolTier(toolName);
+		const component = new ToolExecutionComponent(
+			toolName,
+			args,
+			{ showImages: settings.get("terminal.showImages"), tier },
+			tool,
+			this.ctx.ui,
+			this.ctx.sessionManager.getCwd(),
+		);
+		component.setExpanded(this.ctx.toolOutputExpanded);
+
+		if (isContextTool(toolName)) {
+			if (!this.#currentContextGroup) {
+				this.#currentContextGroup = new ContextGroupComponent();
+				this.#currentContextGroup.setExpanded(this.ctx.toolOutputExpanded);
+				this.ctx.chatContainer.addChild(this.#currentContextGroup);
+			}
+			this.#currentContextGroup.addTool(toolName, component);
+			this.#toolGroups.set(toolCallId, this.#currentContextGroup);
+		} else {
+			this.#finalizeContextGroup();
+			this.ctx.chatContainer.addChild(component);
+		}
+
+		this.ctx.pendingTools.set(toolCallId, component);
+	}
+
+	#finalizeContextGroup(): void {
+		this.#currentContextGroup = undefined;
 	}
 
 	sendCompletionNotification(): void {

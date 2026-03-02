@@ -90,7 +90,7 @@ export class AssistantMessageComponent extends Container {
 			if (content.type === "text" && content.text.trim()) {
 				// Assistant text messages with no background - trim the text
 				// Set paddingY=0 to avoid extra spacing before tool executions
-				this.#contentContainer.addChild(new Markdown(content.text.trim(), 1, 0, getMarkdownTheme()));
+				this.#contentContainer.addChild(new Markdown(content.text.trim(), 2, 0, getMarkdownTheme()));
 			} else if (content.type === "thinking" && content.thinking.trim()) {
 				// Add spacing only when another visible assistant content block follows.
 				// This avoids a superfluous blank line before separately-rendered tool execution blocks.
@@ -100,14 +100,14 @@ export class AssistantMessageComponent extends Container {
 
 				if (this.hideThinkingBlock) {
 					// Show static "Thinking..." label when hidden
-					this.#contentContainer.addChild(new Text(theme.italic(theme.fg("thinkingText", "Thinking...")), 1, 0));
+					this.#contentContainer.addChild(new Text(theme.italic(theme.fg("thinkingText", "Thinking...")), 2, 0));
 					if (hasVisibleContentAfter) {
 						this.#contentContainer.addChild(new Spacer(1));
 					}
 				} else {
 					// Thinking traces in thinkingText color, italic
 					this.#contentContainer.addChild(
-						new Markdown(content.thinking.trim(), 1, 0, getMarkdownTheme(), {
+						new Markdown(content.thinking.trim(), 2, 0, getMarkdownTheme(), {
 							color: (text: string) => theme.fg("thinkingText", text),
 							italic: true,
 						}),
@@ -133,11 +133,11 @@ export class AssistantMessageComponent extends Container {
 				} else {
 					this.#contentContainer.addChild(new Spacer(1));
 				}
-				this.#contentContainer.addChild(new Text(theme.fg("error", abortMessage), 1, 0));
+				this.#contentContainer.addChild(new Text(theme.fg("error", abortMessage), 2, 0));
 			} else if (message.stopReason === "error") {
 				const errorMsg = message.errorMessage || "Unknown error";
 				this.#contentContainer.addChild(new Spacer(1));
-				this.#contentContainer.addChild(new Text(theme.fg("error", `Error: ${errorMsg}`), 1, 0));
+				this.#contentContainer.addChild(new Text(theme.fg("error", `Error: ${errorMsg}`), 2, 0));
 			}
 		}
 	}

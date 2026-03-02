@@ -11,7 +11,12 @@ export class UserMessageComponent extends Container {
 			? (value: string) => theme.fg("dim", value)
 			: (value: string) => theme.fg("userMessageText", value);
 		this.addChild(new Spacer(1));
-		const borderBox = new LeftBorderBox(1, 1, s => theme.fg("accent", s));
+		const borderBox = new LeftBorderBox(
+			2,
+			1,
+			s => theme.fg("accent", s),
+			t => theme.bg("userMessageBg", t),
+		);
 		borderBox.addChild(new Markdown(text, 0, 0, getMarkdownTheme(), { color }));
 		this.addChild(borderBox);
 	}

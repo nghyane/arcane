@@ -1,4 +1,4 @@
-import { Box, Container, Spacer, Text } from "@nghyane/arcane-tui";
+import { Container, LeftBorderBox, Spacer, Text } from "@nghyane/arcane-tui";
 import type { Rule } from "../../capability/rule";
 import { theme } from "../../theme/theme";
 
@@ -7,7 +7,7 @@ import { theme } from "../../theme/theme";
  * Shows when a rule violation is detected and the stream is being rewound.
  */
 export class TtsrNotificationComponent extends Container {
-	#box: Box;
+	#box: LeftBorderBox;
 	#expanded = false;
 
 	constructor(private readonly rules: Rule[]) {
@@ -15,8 +15,7 @@ export class TtsrNotificationComponent extends Container {
 
 		this.addChild(new Spacer(1));
 
-		// Use inverse warning color for yellow background effect
-		this.#box = new Box(1, 1, t => theme.inverse(theme.fg("warning", t)));
+		this.#box = new LeftBorderBox(1, 1, s => theme.fg("warning", s));
 		this.addChild(this.#box);
 
 		this.#rebuild();
@@ -61,7 +60,6 @@ export class TtsrNotificationComponent extends Container {
 					}
 				}
 
-				// Use italic for subtle distinction (fg colors conflict with inverse)
 				this.#box.addChild(new Text(theme.italic(displayText), 0, 0));
 			}
 		}

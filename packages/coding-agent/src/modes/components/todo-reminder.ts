@@ -1,4 +1,4 @@
-import { Box, Container, Spacer, Text } from "@nghyane/arcane-tui";
+import { Container, LeftBorderBox, Spacer, Text } from "@nghyane/arcane-tui";
 import { theme } from "../../theme/theme";
 import type { TodoItem } from "../../tools/todo-write";
 
@@ -7,7 +7,7 @@ import type { TodoItem } from "../../tools/todo-write";
  * Shows when the agent stops with incomplete todos.
  */
 export class TodoReminderComponent extends Container {
-	#box: Box;
+	#box: LeftBorderBox;
 
 	constructor(
 		private readonly todos: TodoItem[],
@@ -18,7 +18,7 @@ export class TodoReminderComponent extends Container {
 
 		this.addChild(new Spacer(1));
 
-		this.#box = new Box(1, 1, t => theme.inverse(theme.fg("warning", t)));
+		this.#box = new LeftBorderBox(1, 1, s => theme.fg("warning", s));
 		this.addChild(this.#box);
 
 		this.#rebuild();

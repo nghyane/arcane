@@ -62,6 +62,13 @@ export function getToolTier(toolName: string): ToolTier {
 	return TOOL_TIERS[toolName] ?? "default";
 }
 
+/** Tools that gather context (read-only information retrieval). Grouped into context batches. */
+const CONTEXT_TOOLS = new Set(["read", "grep", "find", "fetch", "search_code", "lsp", "notebook"]);
+
+export function isContextTool(toolName: string): boolean {
+	return CONTEXT_TOOLS.has(toolName);
+}
+
 // =============================================================================
 // Standardized Display Constants
 // =============================================================================

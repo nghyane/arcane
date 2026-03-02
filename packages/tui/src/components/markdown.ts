@@ -463,11 +463,15 @@ export class Markdown implements Component {
 					// For mailto: links, strip the prefix before comparing (autolinked emails have
 					// text="foo@bar.com" but href="mailto:foo@bar.com")
 					const hrefForComparison = token.href.startsWith("mailto:") ? token.href.slice(7) : token.href;
+					const osc8Open = TERMINAL.hyperlinks ? `\x1b]8;;${token.href}\x07` : "";
+					const osc8Close = TERMINAL.hyperlinks ? "\x1b]8;;\x07" : "";
 					if (token.text === token.href || token.text === hrefForComparison) {
-						result += this.#theme.link(this.#theme.underline(linkText)) + stylePrefix;
+						result += osc8Open + this.#theme.link(this.#theme.underline(linkText)) + osc8Close + stylePrefix;
 					} else {
 						result +=
+							osc8Open +
 							this.#theme.link(this.#theme.underline(linkText)) +
+							osc8Close +
 							this.#theme.linkUrl(` (${token.href})`) +
 							stylePrefix;
 					}

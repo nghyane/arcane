@@ -126,7 +126,7 @@ export class ToolExecutionComponent extends Container {
 		} else {
 			this.#topSpacer = new Spacer(1);
 			this.addChild(this.#topSpacer);
-			this.#contentBox = new Box(1, 0);
+			this.#contentBox = new Box(2, 0);
 			this.addChild(this.#contentBox);
 		}
 
@@ -141,6 +141,9 @@ export class ToolExecutionComponent extends Container {
 
 	updateArgs(args: any, _toolCallId?: string): void {
 		this.#args = cloneToolArgs(args);
+		// Force call component rebuild — renderCall returns static content
+		// that won't update on invalidate alone
+		this.#structureKey = "";
 		this.#updateSpinnerAnimation();
 		this.#updateDisplay();
 	}
@@ -239,6 +242,7 @@ export class ToolExecutionComponent extends Container {
 	}
 
 	setExpanded(expanded: boolean): void {
+		if (this.#expanded === expanded) return;
 		this.#expanded = expanded;
 		this.#updateDisplay();
 	}
