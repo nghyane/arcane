@@ -26,6 +26,7 @@ export {
 	warmupLspServers,
 } from "../lsp";
 export { EditTool, type EditToolDetails } from "../patch";
+export { SessionIndex, type SessionIndexEntry, type SessionSearchResult } from "../session/session-index";
 export {
 	DEFAULT_MAX_BYTES,
 	DEFAULT_MAX_LINES,
@@ -70,6 +71,7 @@ export {
 	type FindToolInput,
 	type FindToolOptions,
 } from "./find";
+export { FindThreadTool, type FindThreadToolDetails } from "./find-thread";
 export { setPreferredImageProvider } from "./gemini-image";
 export { GitHubTool, type GitHubToolDetails } from "./github";
 export { GrepTool, type GrepToolDetails, type GrepToolInput } from "./grep";
@@ -82,7 +84,10 @@ export {
 	type PythonToolOptions,
 } from "./python";
 export { ReadTool, type ReadToolDetails, type ReadToolInput } from "./read";
+export { ReadThreadTool, type ReadThreadToolDetails } from "./read-thread";
+export { RenderMermaidTool, type RenderMermaidToolDetails } from "./render-mermaid";
 export { reviewerConfig } from "./reviewer-tool";
+export { SaveMemoryTool, type SaveMemoryToolDetails } from "./save-memory";
 export { loadSshTool, type SSHToolDetails, SshTool } from "./ssh";
 export { type SubagentConfig, SubagentTool } from "./subagent-tool";
 export {

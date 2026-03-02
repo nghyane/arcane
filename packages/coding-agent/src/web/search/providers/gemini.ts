@@ -5,7 +5,13 @@
  * Requires OAuth credentials stored in agent.db for provider "google-gemini-cli" or "google-antigravity".
  * Returns synthesized answers with citations and source metadata from grounding chunks.
  */
-import { getAntigravityHeaders, getGeminiCliHeaders, refreshGoogleCloudToken } from "@nghyane/arcane-ai";
+import {
+	ANTIGRAVITY_SYSTEM_INSTRUCTION,
+	extractRetryDelay,
+	getAntigravityHeaders,
+	getGeminiCliHeaders,
+	refreshGoogleCloudToken,
+} from "@nghyane/arcane-ai";
 import { getAgentDbPath } from "@nghyane/arcane-utils/dirs";
 import { AgentStorage } from "../../../session/agent-storage";
 import type { SearchCitation, SearchResponse, SearchSource } from "../../../web/search/types";
@@ -14,10 +20,32 @@ import type { SearchParams } from "./base";
 import { SearchProvider } from "./base";
 
 const DEFAULT_ENDPOINT = "https://cloudcode-pa.googleapis.com";
-const ANTIGRAVITY_ENDPOINT = "https://daily-cloudcode-pa.sandbox.googleapis.com";
+const ANTIGRAVITY_DAILY_ENDPOINT = "https://daily-cloudcode-pa.googleapis.com";
+const ANTIGRAVITY_SANDBOX_ENDPOINT = "https://daily-cloudcode-pa.sandbox.googleapis.com";
+const ANTIGRAVITY_ENDPOINT_FALLBACKS = [ANTIGRAVITY_DAILY_ENDPOINT, ANTIGRAVITY_SANDBOX_ENDPOINT] as const;
 const DEFAULT_MODEL = "gemini-2.5-flash";
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 1000;
+const RATE_LIMIT_BUDGET_MS = 5 * 60 * 1000;
 
-export interface GeminiSearchParams {
+interface GeminiToolParams {
+	google_search?: Record<string, unknown>;
+	code_execution?: Record<string, unknown>;
+	url_context?: Record<string, unknown>;
+}
+
+export function buildGeminiRequestTools(params: GeminiToolParams): Array<Record<string, Record<string, unknown>>> {
+	const tools: Array<Record<string, Record<string, unknown>>> = [{ googleSearch: params.google_search ?? {} }];
+	if (params.code_execution !== undefined) {
+		tools.push({ codeExecution: params.code_execution });
+	}
+	if (params.url_context !== undefined) {
+		tools.push({ urlContext: params.url_context });
+	}
+	return tools;
+}
+
+export interface GeminiSearchParams extends GeminiToolParams {
 	query: string;
 	system_prompt?: string;
 	num_results?: number;
@@ -55,8 +83,8 @@ export async function findGeminiAuth(): Promise<GeminiAuth | null> {
 	const expiryBuffer = 5 * 60 * 1000; // 5 minutes
 	const now = Date.now();
 
-	// Try providers in order: antigravity first (more quota), then gemini-cli
-	const providers = ["google-antigravity", "google-gemini-cli"] as const;
+	// Try providers in order: gemini-cli first (deterministic), then antigravity
+	const providers = ["google-gemini-cli", "google-antigravity"] as const;
 
 	try {
 		const storage = await AgentStorage.open(getAgentDbPath());
@@ -180,6 +208,7 @@ async function callGeminiSearch(
 	systemPrompt?: string,
 	maxOutputTokens?: number,
 	temperature?: number,
+	toolParams: GeminiToolParams = {},
 ): Promise<{
 	answer: string;
 	sources: SearchSource[];
@@ -188,9 +217,19 @@ async function callGeminiSearch(
 	model: string;
 	usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
 }> {
-	const endpoint = auth.isAntigravity ? ANTIGRAVITY_ENDPOINT : DEFAULT_ENDPOINT;
-	const url = `${endpoint}/v1internal:streamGenerateContent?alt=sse`;
+	const endpoints = auth.isAntigravity ? ANTIGRAVITY_ENDPOINT_FALLBACKS : [DEFAULT_ENDPOINT];
 	const headers = auth.isAntigravity ? getAntigravityHeaders() : getGeminiCliHeaders();
+
+	const normalizedSystemPrompt = systemPrompt?.toWellFormed();
+	const systemInstructionParts: Array<{ text: string }> = [
+		...(auth.isAntigravity
+			? [
+					{ text: ANTIGRAVITY_SYSTEM_INSTRUCTION },
+					{ text: `Please ignore following [ignore]${ANTIGRAVITY_SYSTEM_INSTRUCTION}[/ignore]` },
+				]
+			: []),
+		...(normalizedSystemPrompt ? [{ text: normalizedSystemPrompt }] : []),
+	];
 
 	const requestBody: Record<string, unknown> = {
 		project: auth.projectId,
@@ -202,11 +241,11 @@ async function callGeminiSearch(
 					parts: [{ text: query }],
 				},
 			],
-			// Add googleSearch tool for grounding
-			tools: [{ googleSearch: {} }],
-			...(systemPrompt && {
+			tools: buildGeminiRequestTools(toolParams),
+			...(systemInstructionParts.length > 0 && {
 				systemInstruction: {
-					parts: [{ text: systemPrompt }],
+					...(auth.isAntigravity ? { role: "user" } : {}),
+					parts: systemInstructionParts,
 				},
 			}),
 		},
@@ -225,31 +264,83 @@ async function callGeminiSearch(
 		(requestBody.request as Record<string, unknown>).generationConfig = generationConfig;
 	}
 
-	const response = await fetch(url, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${auth.accessToken}`,
-			"Content-Type": "application/json",
-			Accept: "text/event-stream",
-			...headers,
-		},
-		body: JSON.stringify(requestBody),
-	});
+	// Retry loop with endpoint fallback and rate limit budgeting
+	let lastError: Error | undefined;
+	let totalDelayMs = 0;
 
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new SearchProviderError(
-			"gemini",
-			`Gemini Cloud Code API error (${response.status}): ${errorText}`,
-			response.status,
-		);
+	for (const endpoint of endpoints) {
+		const url = `${endpoint}/v1internal:streamGenerateContent?alt=sse`;
+
+		for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+			try {
+				const response = await fetch(url, {
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${auth.accessToken}`,
+						"Content-Type": "application/json",
+						Accept: "text/event-stream",
+						...headers,
+					},
+					body: JSON.stringify(requestBody),
+				});
+
+				if (response.ok) {
+					return await parseGeminiSSEResponse(response);
+				}
+
+				const errorText = await response.text();
+
+				// Non-retryable status codes
+				if (response.status >= 400 && response.status < 429) {
+					throw new SearchProviderError(
+						"gemini",
+						`Gemini Cloud Code API error (${response.status}): ${errorText}`,
+						response.status,
+					);
+				}
+
+				// Rate limit or server error — retry with backoff
+				const serverDelay = extractRetryDelay(errorText, response);
+				const delay = serverDelay ?? BASE_DELAY_MS * 2 ** attempt;
+				totalDelayMs += delay;
+
+				if (totalDelayMs > RATE_LIMIT_BUDGET_MS) {
+					throw new SearchProviderError(
+						"gemini",
+						`Rate limit budget exhausted after ${Math.round(totalDelayMs / 1000)}s of delays`,
+						429,
+					);
+				}
+
+				lastError = new SearchProviderError(
+					"gemini",
+					`Gemini Cloud Code API error (${response.status}): ${errorText}`,
+					response.status,
+				);
+				await Bun.sleep(delay);
+			} catch (err) {
+				if (err instanceof SearchProviderError) throw err;
+				lastError = err as Error;
+				break; // Network error — try next endpoint
+			}
+		}
 	}
 
+	throw lastError ?? new SearchProviderError("gemini", "All Gemini endpoints failed", 500);
+}
+
+async function parseGeminiSSEResponse(response: Response): Promise<{
+	answer: string;
+	sources: SearchSource[];
+	citations: SearchCitation[];
+	searchQueries: string[];
+	model: string;
+	usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
+}> {
 	if (!response.body) {
 		throw new SearchProviderError("gemini", "Gemini API returned no response body", 500);
 	}
 
-	// Parse SSE stream
 	const answerParts: string[] = [];
 	const sources: SearchSource[] = [];
 	const citations: SearchCitation[] = [];
@@ -289,7 +380,6 @@ async function callGeminiSearch(
 
 				const candidate = responseData.candidates?.[0];
 
-				// Extract text content
 				if (candidate?.content?.parts) {
 					for (const part of candidate.content.parts) {
 						if (part.text) {
@@ -298,10 +388,8 @@ async function callGeminiSearch(
 					}
 				}
 
-				// Extract grounding metadata
 				const groundingMetadata = candidate?.groundingMetadata;
 				if (groundingMetadata) {
-					// Extract sources from grounding chunks
 					if (groundingMetadata.groundingChunks) {
 						for (const grChunk of groundingMetadata.groundingChunks) {
 							if (grChunk.web?.uri) {
@@ -317,7 +405,6 @@ async function callGeminiSearch(
 						}
 					}
 
-					// Extract citations from grounding supports
 					if (groundingMetadata.groundingSupports && groundingMetadata.groundingChunks) {
 						for (const support of groundingMetadata.groundingSupports) {
 							const citedText = support.segment?.text;
@@ -336,7 +423,6 @@ async function callGeminiSearch(
 						}
 					}
 
-					// Extract search queries
 					if (groundingMetadata.webSearchQueries) {
 						for (const q of groundingMetadata.webSearchQueries) {
 							if (!searchQueries.includes(q)) {
@@ -346,7 +432,6 @@ async function callGeminiSearch(
 					}
 				}
 
-				// Extract usage metadata
 				if (responseData.usageMetadata) {
 					usage = {
 						inputTokens: responseData.usageMetadata.promptTokenCount ?? 0,
@@ -355,7 +440,6 @@ async function callGeminiSearch(
 					};
 				}
 
-				// Extract model version
 				if (responseData.modelVersion) {
 					model = responseData.modelVersion;
 				}
@@ -396,6 +480,7 @@ export async function searchGemini(params: GeminiSearchParams): Promise<SearchRe
 		params.system_prompt,
 		params.max_output_tokens,
 		params.temperature,
+		params,
 	);
 
 	let sources = result.sources;

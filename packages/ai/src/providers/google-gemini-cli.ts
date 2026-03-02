@@ -110,7 +110,7 @@ export function getAntigravityUserAgent() {
 }
 
 // Antigravity system instruction (compact version from CLIProxyAPI).
-const ANTIGRAVITY_SYSTEM_INSTRUCTION =
+export const ANTIGRAVITY_SYSTEM_INSTRUCTION =
 	"You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding." +
 	"You are pair programming with a USER to solve their coding task. The task may require creating a new codebase, modifying or debugging an existing codebase, or simply answering a question." +
 	"**Absolute paths only**" +

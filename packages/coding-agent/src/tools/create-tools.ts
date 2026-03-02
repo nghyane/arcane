@@ -13,6 +13,7 @@ import { BrowserTool } from "./browser";
 import { exploreConfig } from "./explore";
 import { FetchTool } from "./fetch";
 import { FindTool } from "./find";
+import { FindThreadTool } from "./find-thread";
 import { GitHubTool } from "./github";
 import { GrepTool } from "./grep";
 import type { ToolSession } from "./index";
@@ -22,7 +23,10 @@ import { oracleConfig } from "./oracle";
 import { wrapToolWithMetaNotice } from "./output-meta";
 import { PythonTool } from "./python";
 import { ReadTool } from "./read";
+import { ReadThreadTool } from "./read-thread";
+import { RenderMermaidTool } from "./render-mermaid";
 import { reviewerConfig } from "./reviewer-tool";
+import { SaveMemoryTool } from "./save-memory";
 import { SearchCodeTool } from "./search-code";
 import { loadSshTool } from "./ssh";
 import { SubagentTool } from "./subagent-tool";
@@ -38,6 +42,8 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	python: s => new PythonTool(s),
 	ssh: loadSshTool,
 	edit: s => new EditTool(s),
+	find_thread: s => new FindThreadTool(s),
+	read_thread: s => new ReadThreadTool(s),
 	find: s => new FindTool(s),
 	explore: s => new SubagentTool(s, exploreConfig),
 	github: s => new GitHubTool(s),
@@ -47,6 +53,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	notebook: s => new NotebookTool(s),
 	oracle: s => new SubagentTool(s, oracleConfig),
 	read: s => new ReadTool(s),
+	render_mermaid: s => new RenderMermaidTool(s),
 	browser: s => new BrowserTool(s),
 	task: TaskTool.create,
 	code_review: s => new SubagentTool(s, reviewerConfig),
@@ -55,6 +62,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	fetch: s => new FetchTool(s),
 	web_search: () => new SearchTool(),
 	search_code: () => new SearchCodeTool(),
+	save_memory: s => new SaveMemoryTool(s),
 	write: s => new WriteTool(s),
 };
 
@@ -153,6 +161,7 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		if (name === "web_search") return session.settings.get("web_search.enabled");
 		if (name === "lsp") return session.settings.get("lsp.enabled");
 		if (name === "browser") return session.settings.get("browser.enabled");
+		if (name === "render_mermaid") return session.settings.get("renderMermaid.enabled");
 		if (name === "librarian") return session.settings.get("librarian.enabled");
 		if (name === "oracle") return session.settings.get("oracle.enabled");
 		if (name === "github") return session.settings.get("github.enabled");
@@ -181,6 +190,23 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		}),
 	);
 	const tools = results.filter((r): r is AgentTool => r !== null);
+
+	// Auto-include AST tools when their text-based counterparts are enabled
+	const toolNameSet = new Set(tools.map(t => t.name));
+	if (session.settings.get("astGrep.enabled") && toolNameSet.has("grep") && !toolNameSet.has("ast_grep")) {
+		const astGrepFactory = allTools.ast_grep;
+		if (astGrepFactory) {
+			const astGrepTool = await astGrepFactory(session);
+			if (astGrepTool) tools.push(wrapToolWithMetaNotice(astGrepTool));
+		}
+	}
+	if (session.settings.get("astEdit.enabled") && toolNameSet.has("edit") && !toolNameSet.has("ast_edit")) {
+		const astEditFactory = allTools.ast_edit;
+		if (astEditFactory) {
+			const astEditTool = await astEditFactory(session);
+			if (astEditTool) tools.push(wrapToolWithMetaNotice(astEditTool));
+		}
+	}
 
 	return tools;
 }
