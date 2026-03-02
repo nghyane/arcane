@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-03-02
+
 ### Removed
 
 - `arc commit` command and entire commit pipeline (agentic commit, map-reduce, changelog generation)

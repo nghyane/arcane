@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "@nghyane/arcane-stats",
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"description": "Local observability dashboard for pi AI usage statistics",
 	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
@@ -36,7 +36,7 @@
 		"build": "bun run build.ts"
 	},
 	"dependencies": {
-		"@nghyane/arcane-ai": "^0.1.8",
+		"@nghyane/arcane-ai": "^0.1.9",
 		"@nghyane/arcane-utils": "^0.1.6",
 		"@tailwindcss/node": "4.2.0",
 		"chart.js": "4.5.1",

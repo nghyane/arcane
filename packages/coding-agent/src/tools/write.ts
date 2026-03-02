@@ -179,6 +179,9 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 			for (let i = 0; i < displayLines.length; i++) {
 				bodyLines.push(uiTheme.fg("toolOutput", replaceTabs(displayLines[i])));
 			}
+			if (!expanded && skipped > 0) {
+				bodyLines.push(formatClickHint(uiTheme));
+			}
 		}
 
 		if (diagnostics) {

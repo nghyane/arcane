@@ -544,6 +544,9 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 		if (hasTruncation) {
 			bodyLines.push(uiTheme.fg("warning", "output truncated"));
 		}
+		if (!showAll && skipped > 0) {
+			bodyLines.push(formatClickHint(uiTheme));
+		}
 
 		const lines = bodyLines.length > 0 ? [header, ...bodyLines] : [header];
 		return new Text(lines.join("\n"), 0, 0);
