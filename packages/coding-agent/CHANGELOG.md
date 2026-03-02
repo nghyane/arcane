@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+### Added
+
+- Thread search and retrieval tools (find-thread, read-thread)
+- Save-memory tool for cross-session fact storage
+- Mermaid diagram rendering tool (render-mermaid)
+- Kagi web search provider
+- Codex OAuth authentication support
+- AST auto-inclusion in subagent context
+- Ask tool abort support
+
+### Changed
+
+- Improved Gemini provider retry logic
+- Enhanced hashline tab handling
+
+### Removed
+
+- Memory system (replaced by thread/save-memory tools)
+
 ## [0.1.14] - 2026-03-02
 
 ### Removed
