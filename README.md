@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">A coding agent that builds itself.</h3>
-<p align="center"><em>Fork of <a href="https://github.com/anthropics/claude-code">Claude Code</a> by <a href="https://github.com/can1357">Can Boluk</a>, with a new Code Mode engine and rewritten TUI.</em></p>
+<p align="center"><em>Fork of <a href="https://github.com/can1357/oh-my-pi">oh-my-pi</a> by <a href="https://github.com/can1357">Can Boluk</a>, with a rewritten TUI and redesigned subagent system.</em></p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@nghyane/arcane"><img src="https://img.shields.io/npm/v/%40nghyane%2Farcane?style=flat&colorA=222222&label=%40nghyane%2Farcane" alt="npm"></a>
@@ -14,7 +14,7 @@
 
 ---
 
-Arcane is a terminal-native coding agent. Instead of calling tools one at a time, the LLM writes a JavaScript program that orchestrates reads, edits, and subagents — all in a single turn.
+Arcane is a terminal-native coding agent built on Bun and Rust. It extends the upstream oh-my-pi fork with a rewritten terminal UI, a redesigned subagent system, and streamlined prompt architecture.
 
 > **Note**: Documentation is a work in progress.
 
@@ -40,42 +40,26 @@ bun link --cwd packages/coding-agent
 
 ## Why fork?
 
-Code Mode replaces the core agent loop — instead of calling tools one at a time, the LLM writes a JavaScript program that orchestrates everything in a single turn. This is an architectural change too large for an upstream PR, so Arcane lives as its own project.
+Arcane diverges from upstream in three areas that are too invasive for PRs: a ground-up TUI rewrite with differential rendering, a redesigned subagent/task system with structured delegation, and a simplified prompt architecture that co-locates tool definitions with their guidance. Together these touch nearly every layer of the stack, so Arcane lives as its own project.
 
 ## Design philosophy
 
 Arcane is a **lightweight coding agent**, not a general-purpose AI platform.
 
 - **Fixed tool set** — Five bundled subagents (explore, librarian, oracle, reviewer, task) cover the coding workflow. No plugin marketplace, no custom agent definitions.
-- **Code Mode over tool-calling** — The LLM writes a JS program each turn instead of calling tools sequentially. Parallelism is native, not bolted on.
 - **Depth over breadth** — Every feature serves code editing, search, or review. Features that don't earn their keep get cut.
-- **Single-turn efficiency** — Minimize round-trips. Fan out reads, edits, and subagents in one program. Task complexity (`low`/`high`) routes to the right model automatically.
+- **Single source of truth** — Tool definitions, schemas, and prompt guidance live together. No runtime overrides or dual config.
+- **Task complexity routing** — `low` and `high` complexity levels route subagent work to the right model automatically.
 
 ## What's new in Arcane
 
-**Code Mode engine** — Each turn, the LLM writes a full async program: parallel reads, conditional edits, subagent fan-out. Work that takes 3-4 turns with sequential tool-calling finishes in one.
+**Rewritten TUI** — Differential rendering with double buffering, LeftBorderBox layout, bundled theme presets (Nord Frost), Nerd Font detection, mouse text selection, transparent status line, and declarative tool renderers.
 
-```javascript
-async () => {
-  const [app, utils] = await Promise.all([
-    codemode.read({ path: "src/app.ts" }),
-    codemode.read({ path: "src/utils.ts" }),
-  ]);
+**Redesigned subagent system** — Five specialized subagents with structured delegation: explore (local code search), librarian (cross-repo search), oracle (planning and review), reviewer (code review), and task (fire-and-forget execution with todo tracking).
 
-  await codemode.edit({
-    path: "src/app.ts",
-    edits: [{ op: "set", tag: "3#XK", content: 'import { helper } from "./utils.js";' }],
-  });
+**Streamlined prompt architecture** — Tool descriptions co-located with definitions, agent prompts in static Markdown with Handlebars, no runtime prompt generation. Removed intent tracing, commit pipeline, and custom agent discovery.
 
-  return await codemode.lsp({ action: "diagnostics", files: ["src/app.ts"] });
-}
-```
-
-**Heavily improved TUI** — Surgical differential rendering with double buffering, bundled theme presets (Nord Frost), Nerd Font detection, mouse text selection, transparent status line, and numerous UX refinements over upstream.
-
-**Redesigned task system** — Complete overhaul of the task/subagent mechanism with fan-out delegation and todo-based completion tracking.
-
-**Oracle tool** — Planning and review advisor, inspired by Amp Code's agentic tool design.
+**Declarative tool rendering** — Tool renderers declared alongside tool definitions. No renderer registry, no runtime dispatch.
 
 ## Inherited from upstream
 
