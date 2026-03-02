@@ -484,9 +484,23 @@ fn write_active_codes(state: &AnsiState, out: &mut Vec<u16>) {
 
 #[inline]
 fn write_line_end_reset(state: &AnsiState, out: &mut Vec<u16>) {
-	if state.attrs & ATTR_UNDERLINE != 0 {
-		out.extend_from_slice(&[ESC, b'[' as u16, b'2' as u16, b'4' as u16, b'm' as u16]);
+	let has_underline = state.attrs & ATTR_UNDERLINE != 0;
+	let has_strike = state.attrs & ATTR_STRIKE != 0;
+	if !has_underline && !has_strike {
+		return;
 	}
+
+	out.extend_from_slice(&[ESC, b'[' as u16]);
+	if has_underline {
+		out.extend_from_slice(&[b'2' as u16, b'4' as u16]);
+		if has_strike {
+			out.push(b';' as u16);
+		}
+	}
+	if has_strike {
+		out.extend_from_slice(&[b'2' as u16, b'9' as u16]);
+	}
+	out.push(b'm' as u16);
 }
 
 fn update_state_from_text(data: &[u16], state: &mut AnsiState) {

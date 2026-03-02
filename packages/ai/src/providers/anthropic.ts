@@ -602,6 +602,7 @@ export type AnthropicSystemBlock = {
 type SystemBlockOptions = {
 	includeClaudeCodeInstruction?: boolean;
 	extraInstructions?: string[];
+	cacheControl?: { type: "ephemeral"; ttl?: "1h" | "5m" };
 };
 
 export function buildAnthropicSystemBlocks(
@@ -636,7 +637,13 @@ export function buildAnthropicSystemBlocks(
 		});
 	}
 
-	return blocks.length > 0 ? blocks : undefined;
+	if (blocks.length === 0) return undefined;
+
+	if (options.cacheControl && blocks.length > 0) {
+		blocks[blocks.length - 1].cache_control = options.cacheControl;
+	}
+
+	return blocks;
 }
 
 /**
@@ -891,14 +898,12 @@ function buildParams(
 			{
 				type: "text",
 				text: "You are Claude Code, Anthropic's official CLI for Claude.",
-				...(cacheControl ? { cache_control: cacheControl } : {}),
 			},
 		];
 		if (context.systemPrompt) {
 			params.system.push({
 				type: "text",
 				text: sanitizeSurrogates(context.systemPrompt),
-				...(cacheControl ? { cache_control: cacheControl } : {}),
 			});
 		}
 	} else if (context.systemPrompt) {
@@ -906,7 +911,6 @@ function buildParams(
 			{
 				type: "text",
 				text: sanitizeSurrogates(context.systemPrompt),
-				...(cacheControl ? { cache_control: cacheControl } : {}),
 			},
 		];
 	}

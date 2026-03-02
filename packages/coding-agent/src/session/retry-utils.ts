@@ -17,7 +17,7 @@ export function isRetryableErrorMessage(errorMessage: string): boolean {
  * Check if an error message indicates a usage/billing limit (non-transient).
  */
 export function isUsageLimitErrorMessage(errorMessage: string): boolean {
-	return /usage.?limit|usage_limit_reached|limit_reached/i.test(errorMessage);
+	return /usage.?limit|usage_limit_reached|limit_reached|quota.?exhaust/i.test(errorMessage);
 }
 
 /**
