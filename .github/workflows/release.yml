@@ -147,7 +147,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p packages/natives/native
-          LATEST=$(gh release list --limit 20 --json tagName,assets --jq '[.[] | select(.assets | length > 0) | select(.assets | map(.name) | any(endswith(".node")))][0].tagName')
+          LATEST=$(gh release list --limit 20 --json tagName --jq '.[].tagName' | while read -r tag; do if gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -q '\.node$'; then echo "$tag"; break; fi; done)
           if [ -z "$LATEST" ]; then
             echo "::error::No previous release with native addons found"
             exit 1
@@ -207,7 +207,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p packages/natives/native
-          LATEST=$(gh release list --limit 20 --json tagName,assets --jq '[.[] | select(.assets | length > 0) | select(.assets | map(.name) | any(endswith(".node")))][0].tagName')
+          LATEST=$(gh release list --limit 20 --json tagName --jq '.[].tagName' | while read -r tag; do if gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -q '\.node$'; then echo "$tag"; break; fi; done)
           if [ -z "$LATEST" ]; then
             echo "::error::No previous release with native addons found"
             exit 1
