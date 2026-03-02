@@ -127,9 +127,6 @@ export class BashExecutionComponent extends Container {
 			if (this.#truncation) {
 				bodyLines.push(theme.fg("warning", "output truncated"));
 			}
-			if (!showAll && skipped > 0) {
-				bodyLines.push(theme.fg("dim", "(Ctrl+O for full output)"));
-			}
 		}
 
 		this.#bodyText.setText(bodyLines.length > 0 ? bodyLines.join("\n") : "");

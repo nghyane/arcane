@@ -63,16 +63,5 @@ export class TtsrNotificationComponent extends Container {
 				this.#box.addChild(new Text(theme.italic(displayText), 0, 0));
 			}
 		}
-
-		// Show expand hint if collapsed and there's more content
-		if (!this.#expanded) {
-			const hasMoreContent = this.rules.some(r => {
-				const desc = r.description || r.content;
-				return desc && desc.split("\n").length > 2;
-			});
-			if (hasMoreContent) {
-				this.#box.addChild(new Text(theme.italic(" (ctrl+o to expand)"), 0, 0));
-			}
-		}
 	}
 }

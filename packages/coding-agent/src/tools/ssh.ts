@@ -235,9 +235,6 @@ export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails, Them
 		if (hasTruncation) {
 			bodyLines.push(uiTheme.fg("warning", "output truncated"));
 		}
-		if (!showAll && skipped > 0) {
-			bodyLines.push(uiTheme.fg("dim", "(Ctrl+O for full output)"));
-		}
 
 		const lines = bodyLines.length > 0 ? [header, ...bodyLines] : [header];
 		return new Text(lines.join("\n"), 0, 0);

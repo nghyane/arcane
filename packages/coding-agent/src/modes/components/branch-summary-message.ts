@@ -42,7 +42,7 @@ export class BranchSummaryMessageComponent extends Container {
 				}),
 			);
 		} else {
-			this.#box.addChild(new Text(theme.fg("customMessageText", "Branch summary (ctrl+o to expand)"), 0, 0));
+			this.#box.addChild(new Text(theme.fg("customMessageText", "Branch summary"), 0, 0));
 		}
 	}
 }

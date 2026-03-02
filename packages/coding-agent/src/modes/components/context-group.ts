@@ -1,7 +1,7 @@
 import type { Component } from "@nghyane/arcane-tui";
 import { Spacer } from "@nghyane/arcane-tui";
 import { theme } from "../../theme/theme";
-import { formatCount, formatExpandHint, formatStatusIcon } from "../../ui/render-utils";
+import { formatCount, formatStatusIcon } from "../../ui/render-utils";
 import type { ToolExecutionComponent } from "./tool-execution";
 
 const CONTEXT_TOOL_LABELS: Record<string, string> = {
@@ -18,7 +18,7 @@ const CONTEXT_TOOL_LABELS: Record<string, string> = {
  * Groups consecutive context-gathering tools (read, grep, find, etc.) into
  * a single collapsible summary line to reduce visual noise.
  *
- * Collapsed: "Gathered context  3 reads, 2 greps, 1 find  (Ctrl+O for more)"
+ * Collapsed: "Gathered context  3 reads, 2 greps, 1 find"
  * Expanded: summary + individual tool components
  */
 export class ContextGroupComponent implements Component {
@@ -86,10 +86,7 @@ export class ContextGroupComponent implements Component {
 		}
 		const summary = parts.join(", ");
 
-		let summaryLine = `  ${icon} ${theme.fg("muted", label)}  ${theme.fg("dim", summary)}`;
-		if (!this.#expanded && this.#entries.length > 0) {
-			summaryLine += ` ${formatExpandHint(theme)}`;
-		}
+		const summaryLine = `  ${icon} ${theme.fg("muted", label)}  ${theme.fg("dim", summary)}`;
 		lines.push(summaryLine);
 
 		// Always show individual tool entries, indented under summary

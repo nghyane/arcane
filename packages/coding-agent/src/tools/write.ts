@@ -16,7 +16,6 @@ import { getLanguageFromPath, type Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
 import {
 	formatDiagnostics,
-	formatExpandHint,
 	formatStatusIcon,
 	PREVIEW_LIMITS,
 	replaceTabs,
@@ -178,9 +177,6 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 			}
 			for (let i = 0; i < displayLines.length; i++) {
 				bodyLines.push(uiTheme.fg("toolOutput", replaceTabs(displayLines[i])));
-			}
-			if (!expanded && skipped > 0) {
-				bodyLines.push(formatExpandHint(uiTheme));
 			}
 		}
 

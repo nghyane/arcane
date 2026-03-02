@@ -2,7 +2,7 @@
  * Render a code cell with optional output section.
  */
 import { highlightCode, type Theme } from "../theme/theme";
-import { formatDuration, formatExpandHint, formatMoreItems, replaceTabs } from "../ui/render-utils";
+import { formatDuration, formatMoreItems, replaceTabs } from "../ui/render-utils";
 import { renderOutputBlock } from "./output-block";
 import type { State } from "./types";
 import { getStateIcon } from "./utils";
@@ -78,9 +78,7 @@ export function renderCodeCell(options: CodeCellOptions, theme: Theme): string[]
 	const codeLines = rawCodeLines.slice(0, maxCodeLines);
 	const hiddenCodeLines = rawCodeLines.length - codeLines.length;
 	if (hiddenCodeLines > 0) {
-		const hint = formatExpandHint(theme, expanded, hiddenCodeLines > 0);
-		const moreLine = `${formatMoreItems(hiddenCodeLines, "line")}${hint ? ` ${hint}` : ""}`;
-		codeLines.push(theme.fg("dim", moreLine));
+		codeLines.push(theme.fg("dim", formatMoreItems(hiddenCodeLines, "line")));
 	}
 
 	const outputLines: string[] = [];
@@ -93,9 +91,7 @@ export function renderCodeCell(options: CodeCellOptions, theme: Theme): string[]
 		outputLines.push(...displayLines);
 		const remaining = rawLines.length - maxLines;
 		if (remaining > 0) {
-			const hint = formatExpandHint(theme, expanded, remaining > 0);
-			const moreLine = `${formatMoreItems(remaining, "line")}${hint ? ` ${hint}` : ""}`;
-			outputLines.push(theme.fg("dim", moreLine));
+			outputLines.push(theme.fg("dim", formatMoreItems(remaining, "line")));
 		}
 	}
 

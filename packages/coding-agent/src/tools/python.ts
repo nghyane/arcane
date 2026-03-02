@@ -12,7 +12,7 @@ import type { PythonStatusEvent } from "../ipy/kernel";
 import { DEFAULT_MAX_BYTES, OutputSink, type OutputSummary } from "../session/streaming-output";
 import type { Theme } from "../theme/theme";
 import { renderCodeCell, renderStatusLine } from "../tui";
-import { formatExpandHint, PREVIEW_LIMITS, replaceTabs } from "../ui/render-utils";
+import { PREVIEW_LIMITS, replaceTabs } from "../ui/render-utils";
 import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 import { allocateOutputArtifact, createTailBuffer } from "./output-utils";
@@ -543,9 +543,6 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 		}
 		if (hasTruncation) {
 			bodyLines.push(uiTheme.fg("warning", "output truncated"));
-		}
-		if (!showAll && skipped > 0) {
-			bodyLines.push(formatExpandHint(uiTheme));
 		}
 
 		const lines = bodyLines.length > 0 ? [header, ...bodyLines] : [header];

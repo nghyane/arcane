@@ -119,9 +119,6 @@ export const TRUNCATE_LENGTHS = {
 	TOOL_ARGS: 50,
 } as const;
 
-/** Standard expand hint text */
-const EXPAND_HINT = "(Ctrl+O for more)";
-
 // =============================================================================
 // Text Truncation Utilities
 // =============================================================================
@@ -238,16 +235,6 @@ export function formatStatusIcon(status: ToolUIStatus, theme: Theme, spinnerFram
 		case "aborted":
 			return theme.styledSymbol("status.aborted", "error");
 	}
-}
-
-/**
- * Format the expand hint with proper theming.
- * Returns empty string if already expanded or there is nothing more to show.
- */
-export function formatExpandHint(theme: Theme, expanded?: boolean, hasMore?: boolean): string {
-	if (expanded) return "";
-	if (hasMore === false) return "";
-	return theme.fg("dim", wrapBrackets(EXPAND_HINT, theme));
 }
 
 /**
@@ -438,10 +425,7 @@ export function formatDiagnostics(
 
 	if (totalDiags > diagsShown) {
 		const remaining = totalDiags - diagsShown;
-		output += `\n ${theme.fg("dim", theme.tree.last)} ${theme.fg(
-			"muted",
-			`… ${remaining} more`,
-		)} ${formatExpandHint(theme)}`;
+		output += `\n ${theme.fg("dim", theme.tree.last)} ${theme.fg("muted", `… ${remaining} more`)}`;
 	}
 
 	return output;

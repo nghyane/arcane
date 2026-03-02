@@ -12,7 +12,6 @@ import type { OutputMeta } from "../tools/output-meta";
 import { renderStatusLine } from "../tui";
 import {
 	formatDiagnostics,
-	formatExpandHint,
 	formatStatusIcon,
 	getDiffStats,
 	PREVIEW_LIMITS,
@@ -316,7 +315,6 @@ export const editToolRenderer = {
 		if (!expanded && diffLines.length > maxLines) {
 			const remaining = diffLines.length - maxLines;
 			treeBody.push(uiTheme.fg("dim", `… ${remaining} more lines`));
-			treeBody.push(formatExpandHint(uiTheme));
 		}
 
 		// Diagnostics
