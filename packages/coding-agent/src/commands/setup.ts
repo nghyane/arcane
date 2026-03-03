@@ -5,7 +5,7 @@ import { Args, Command, Flags, renderCommandHelp } from "@nghyane/arcane-utils/c
 import { runSetupCommand, type SetupCommandArgs, type SetupComponent } from "../cli/setup-cli";
 import { initTheme } from "../theme/theme";
 
-const COMPONENTS: SetupComponent[] = ["python", "stt"];
+const COMPONENTS: SetupComponent[] = ["python"];
 
 export default class Setup extends Command {
 	static description = "Install dependencies for optional features";

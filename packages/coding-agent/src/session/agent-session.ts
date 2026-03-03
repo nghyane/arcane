@@ -115,7 +115,6 @@ import {
 	maybeAbortStreamingEdit,
 	preCacheStreamingEditFile,
 	resetStreamingEditState,
-	rewriteToolCallArgs,
 } from "./streaming-edit";
 import {
 	addPendingTtsrInjections,
@@ -523,17 +522,12 @@ export class AgentSession {
 			}
 
 			if (event.message.role === "toolResult") {
-				const { toolName, $normative, toolCallId, details, isError, content } = event.message as {
+				const { toolName, details, isError, content } = event.message as {
 					toolName?: string;
-					toolCallId?: string;
 					details?: { path?: string };
-					$normative?: Record<string, unknown>;
 					isError?: boolean;
 					content?: Array<TextContent | ImageContent>;
 				};
-				if ($normative && toolCallId && this.settings.get("normativeRewrite")) {
-					await rewriteToolCallArgs(this.agent, this.sessionManager, toolCallId, $normative);
-				}
 				// Invalidate streaming edit cache when edit tool completes to prevent stale data
 				if (toolName === "edit" && details?.path) {
 					invalidateFileCacheForPath(this.#streamingEdit, details.path, this.sessionManager.getCwd());

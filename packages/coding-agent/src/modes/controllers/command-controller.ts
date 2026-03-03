@@ -364,7 +364,6 @@ export class CommandController {
 	handleHotkeysCommand(): void {
 		const k = (id: string) => formatKeyHint(id as KeyId);
 		const expandToolsKey = this.ctx.keybindings.getDisplayString("expandTools") || k("ctrl+o");
-		const sttKey = this.ctx.keybindings.getDisplayString("toggleSTT") || k("alt+h");
 		const hotkeys = `
 **Navigation**
 | Key | Action |
@@ -400,7 +399,6 @@ export class CommandController {
 | \`${expandToolsKey}\` | Toggle tool output expansion |
 | \`${k("ctrl+t")}\` | Toggle todo list expansion |
 | \`${k("ctrl+g")}\` | Edit message in external editor |
-| \`${sttKey}\` | Toggle speech-to-text recording |
 | \`/\` | Slash commands |
 | \`!\` | Run bash command |
 | \`!!\` | Run bash command (excluded from context) |

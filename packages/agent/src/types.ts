@@ -178,20 +178,16 @@ export interface AgentState {
 }
 
 /** @intentional-any — TDetails default: variance erasure for heterogeneous tool arrays */
-export interface AgentToolResult<T = any, TNormative extends TSchema = any> {
+export interface AgentToolResult<T = any> {
 	// Content blocks supporting text and images
 	content: (TextContent | ImageContent)[];
 	// Details to be displayed in a UI or logged
 	details?: T;
-	/** Normative input for the tool result */
-	$normative?: Static<TNormative>;
 }
 
 // Callback for streaming tool execution updates
 /** @intentional-any — same variance erasure as AgentToolResult */
-export type AgentToolUpdateCallback<T = any, TNormative extends TSchema = any> = (
-	partialResult: AgentToolResult<T, TNormative>,
-) => void;
+export type AgentToolUpdateCallback<T = any> = (partialResult: AgentToolResult<T>) => void;
 
 /** Options passed to renderResult */
 export interface RenderResultOptions {
@@ -219,9 +215,9 @@ export type AgentToolExecFn<TParameters extends TSchema = TSchema, TDetails = an
 	toolCallId: string,
 	params: Static<TParameters>,
 	signal?: AbortSignal,
-	onUpdate?: AgentToolUpdateCallback<TDetails, TParameters>,
+	onUpdate?: AgentToolUpdateCallback<TDetails>,
 	context?: AgentToolContext,
-) => Promise<AgentToolResult<TDetails, TParameters>>;
+) => Promise<AgentToolResult<TDetails>>;
 
 // AgentTool extends Tool but adds the execute function
 /** @intentional-any — TDetails default: TypeScript lacks existential types, any required for variance erasure */
@@ -244,7 +240,7 @@ export interface AgentTool<TParameters extends TSchema = TSchema, TDetails = any
 	/** Format args into 1-line preview for collapsed display */
 	formatArgs?: (args: Static<TParameters>) => string;
 	/** Extract display lines from result for default renderer */
-	formatResult?: (result: AgentToolResult<TDetails, TParameters>) => string | string[];
+	formatResult?: (result: AgentToolResult<TDetails>) => string | string[];
 	execute: AgentToolExecFn<TParameters, TDetails, TTheme>;
 
 	/** Optional custom rendering for tool call display (returns UI component) */
@@ -252,7 +248,7 @@ export interface AgentTool<TParameters extends TSchema = TSchema, TDetails = any
 
 	/** Optional custom rendering for tool result display (returns UI component) */
 	renderResult?: (
-		result: AgentToolResult<TDetails, TParameters>,
+		result: AgentToolResult<TDetails>,
 		options: RenderResultOptions,
 		theme: TTheme,
 		args?: Static<TParameters>,
@@ -264,7 +260,7 @@ export interface AgentTool<TParameters extends TSchema = TSchema, TDetails = any
 	/** Build tool-specific render context passed to renderCall/renderResult via options.renderContext. */
 	buildRenderContext?: (info: {
 		args: Static<TParameters>;
-		result?: AgentToolResult<TDetails, TParameters>;
+		result?: AgentToolResult<TDetails>;
 		toolState?: unknown;
 		expanded: boolean;
 		getTextOutput: () => string;

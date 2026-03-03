@@ -96,7 +96,7 @@ export class ExtensionToolWrapper<TParameters extends TSchema = TSchema, TDetail
 		toolCallId: string,
 		params: Static<TParameters>,
 		signal?: AbortSignal,
-		onUpdate?: AgentToolUpdateCallback<TDetails, TParameters>,
+		onUpdate?: AgentToolUpdateCallback<TDetails>,
 		context?: AgentToolContext,
 	) {
 		// Emit tool_call event - extensions can block execution

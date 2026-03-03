@@ -37,7 +37,6 @@ import {
 	type ReplaceTextEdit,
 } from "./hashline";
 import { detectLineEnding, normalizeToLF, restoreLineEndings, stripBom } from "./normalize";
-import { buildNormativeUpdateInput } from "./normative";
 import {
 	DEFAULT_EDIT_MODE,
 	type EditMode,
@@ -233,9 +232,9 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 		_toolCallId: string,
 		params: ReplaceParams | PatchParams | HashlineParams,
 		signal?: AbortSignal,
-		_onUpdate?: AgentToolUpdateCallback<EditToolDetails, TInput>,
+		_onUpdate?: AgentToolUpdateCallback<EditToolDetails>,
 		context?: AgentToolContext,
-	): Promise<AgentToolResult<EditToolDetails, TInput>> {
+	): Promise<AgentToolResult<EditToolDetails>> {
 		const batchRequest = getLspBatchRequest(context?.toolCall);
 
 		// ─────────────────────────────────────────────────────────────────
@@ -489,13 +488,6 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 			}
 			const diffResult = generateDiffString(originalNormalized, result.content);
 
-			const normative = buildNormativeUpdateInput({
-				path,
-				...(rename ? { rename } : {}),
-				oldContent: rawContent,
-				newContent: finalContent,
-			});
-
 			const meta = outputMeta()
 				.diagnostics(diagnostics?.summary ?? "", diagnostics?.messages ?? [])
 				.get();
@@ -516,7 +508,6 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 					rename,
 					meta,
 				},
-				$normative: normative,
 			};
 		}
 

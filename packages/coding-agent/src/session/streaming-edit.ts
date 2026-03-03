@@ -1,13 +1,12 @@
 import * as fs from "node:fs";
 
 import type { Agent, AgentEvent } from "@nghyane/arcane-agent";
-import type { AssistantMessage, ToolCall } from "@nghyane/arcane-ai";
+import type { ToolCall } from "@nghyane/arcane-ai";
 import { isEnoent, logger } from "@nghyane/arcane-utils";
 import type { Settings } from "../config/settings";
 import { normalizeDiff, normalizeToLF, ParseError, previewPatch, stripBom } from "../patch";
 import type { SecretObfuscator } from "../secrets/obfuscator";
 import { resolveToCwd } from "../tools/path-utils";
-import type { SessionManager } from "./session-manager";
 
 /**
  * Mutable state for streaming edit abort detection.
@@ -220,39 +219,5 @@ async function checkPreviewPatchAsync(
 			error: error instanceof Error ? error.message : String(error),
 		});
 		agent.abort();
-	}
-}
-
-/**
- * Rewrite tool call arguments in agent state and persisted session history.
- */
-export async function rewriteToolCallArgs(
-	agent: Agent,
-	sessionManager: SessionManager,
-	toolCallId: string,
-	args: Record<string, unknown>,
-): Promise<void> {
-	let updated = false;
-	const messages = agent.state.messages;
-	for (let i = messages.length - 1; i >= 0; i--) {
-		const msg = messages[i];
-		if (msg.role !== "assistant") continue;
-		const assistantMsg = msg as AssistantMessage;
-		if (!Array.isArray(assistantMsg.content)) continue;
-		for (const block of assistantMsg.content) {
-			if (typeof block !== "object" || block === null) continue;
-			if (!("type" in block) || (block as { type?: string }).type !== "toolCall") continue;
-			const toolCall = block as { id?: string; arguments?: Record<string, unknown> };
-			if (toolCall.id === toolCallId) {
-				toolCall.arguments = args;
-				updated = true;
-				break;
-			}
-		}
-		if (updated) break;
-	}
-
-	if (updated) {
-		await sessionManager.rewriteAssistantToolCallArgs(toolCallId, args);
 	}
 }

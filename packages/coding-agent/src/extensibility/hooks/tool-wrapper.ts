@@ -34,7 +34,7 @@ export class HookToolWrapper<TParameters extends TSchema = TSchema, TDetails = u
 		toolCallId: string,
 		params: Static<TParameters>,
 		signal?: AbortSignal,
-		onUpdate?: AgentToolUpdateCallback<TDetails, TParameters>,
+		onUpdate?: AgentToolUpdateCallback<TDetails>,
 		context?: AgentToolContext,
 	) {
 		// Emit tool_call event - hooks can block execution

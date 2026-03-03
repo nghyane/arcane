@@ -204,7 +204,7 @@ export const SETTINGS_SCHEMA = {
 	steeringMode: {
 		type: "enum",
 		values: ["all", "one-at-a-time"] as const,
-		default: "one-at-a-time",
+		default: "all",
 		ui: {
 			tab: "agent",
 			label: "Steering mode",
@@ -214,7 +214,7 @@ export const SETTINGS_SCHEMA = {
 	followUpMode: {
 		type: "enum",
 		values: ["all", "one-at-a-time"] as const,
-		default: "one-at-a-time",
+		default: "all",
 		ui: {
 			tab: "agent",
 			label: "Follow-up mode",
@@ -251,15 +251,6 @@ export const SETTINGS_SCHEMA = {
 			label: "Autocomplete max items",
 			description: "Max visible items in autocomplete dropdown (3-20)",
 			submenu: true,
-		},
-	},
-	normativeRewrite: {
-		type: "boolean",
-		default: false,
-		ui: {
-			tab: "agent",
-			label: "Normative rewrite",
-			description: "Rewrite tool call arguments to normalized format in session history",
 		},
 	},
 	readLineNumbers: {
@@ -797,36 +788,6 @@ export const SETTINGS_SCHEMA = {
 	},
 
 	// ─────────────────────────────────────────────────────────────────────────
-	// STT settings
-	// ─────────────────────────────────────────────────────────────────────────
-	"stt.enabled": {
-		type: "boolean",
-		default: false,
-		ui: { tab: "input", label: "Speech-to-text", description: "Enable speech-to-text input via microphone" },
-	},
-	"stt.language": {
-		type: "string",
-		default: "en",
-		ui: {
-			tab: "input",
-			label: "STT language",
-			description: "Language code for transcription (e.g., en, es, fr)",
-			submenu: true,
-		},
-	},
-	"stt.modelName": {
-		type: "enum",
-		values: ["tiny", "tiny.en", "base", "base.en", "small", "small.en", "medium", "medium.en", "large"] as const,
-		default: "base.en",
-		ui: {
-			tab: "input",
-			label: "STT model",
-			description: "Whisper model size (larger = more accurate but slower)",
-			submenu: true,
-		},
-	},
-
-	// ─────────────────────────────────────────────────────────────────────────
 	// Edit settings
 	// ─────────────────────────────────────────────────────────────────────────
 	"edit.fuzzyMatch": {
@@ -1109,14 +1070,6 @@ export interface ThinkingBudgetsSettings {
 	high: number;
 }
 
-export interface SttSettings {
-	enabled: boolean;
-	language: string | undefined;
-	modelName: string;
-	whisperPath: string | undefined;
-	modelPath: string | undefined;
-}
-
 export interface BashInterceptorRule {
 	pattern: string;
 	flags?: string;
@@ -1136,7 +1089,6 @@ export interface GroupTypeMap {
 	exa: ExaSettings;
 	statusLine: StatusLineSettings;
 	thinkingBudgets: ThinkingBudgetsSettings;
-	stt: SttSettings;
 	modelRoles: Record<string, string>;
 }
 

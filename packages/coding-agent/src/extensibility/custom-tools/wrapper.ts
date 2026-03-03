@@ -26,7 +26,7 @@ export class CustomToolAdapter<TParams extends TSchema = TSchema, TDetails = any
 		toolCallId: string,
 		params: Static<TParams>,
 		signal?: AbortSignal,
-		onUpdate?: AgentToolUpdateCallback<TDetails, TParams>,
+		onUpdate?: AgentToolUpdateCallback<TDetails>,
 		context?: CustomToolContext,
 	) {
 		return this.tool.execute(toolCallId, params, onUpdate, context ?? this.getContext(), signal);
