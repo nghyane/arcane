@@ -4,13 +4,21 @@ import { logger } from "@nghyane/arcane-utils";
 import { hasPendingMermaid, prerenderMermaid } from "../../theme/mermaid-cache";
 import { getMarkdownTheme, theme } from "../../theme/theme";
 
+interface CachedBlock {
+	type: "text" | "thinking" | "thinking-hidden";
+	component: Markdown | Text;
+	text: string;
+}
+
 /**
- * Component that renders a complete assistant message
+ * Component that renders a complete assistant message.
+ * Reuses Markdown/Text instances across updates so unchanged blocks skip re-parsing.
  */
 export class AssistantMessageComponent extends Container {
 	#contentContainer: Container;
 	#lastMessage?: AssistantMessage;
 	#prerenderInFlight = false;
+	#cachedBlocks: CachedBlock[] = [];
 
 	constructor(
 		message?: AssistantMessage,
@@ -69,11 +77,7 @@ export class AssistantMessageComponent extends Container {
 
 	updateContent(message: AssistantMessage): void {
 		this.#lastMessage = message;
-
-		// Clear content container
 		this.#contentContainer.clear();
-
-		// Trigger background mermaid pre-rendering if needed
 		this.#triggerMermaidPrerender(message);
 
 		const hasVisibleContent = message.content.some(
@@ -84,43 +88,73 @@ export class AssistantMessageComponent extends Container {
 			this.#contentContainer.addChild(new Spacer(1));
 		}
 
-		// Render content in order
+		let blockIndex = 0;
 		for (let i = 0; i < message.content.length; i++) {
 			const content = message.content[i];
 			if (content.type === "text" && content.text.trim()) {
-				// Assistant text messages with no background - trim the text
-				// Set paddingY=0 to avoid extra spacing before tool executions
-				this.#contentContainer.addChild(new Markdown(content.text.trim(), 2, 0, getMarkdownTheme()));
+				const text = content.text.trim();
+				const cached = this.#cachedBlocks[blockIndex];
+				let md: Markdown;
+				if (cached?.type === "text") {
+					md = cached.component as Markdown;
+					if (cached.text !== text) {
+						md.setText(text);
+						cached.text = text;
+					}
+				} else {
+					md = new Markdown(text, 2, 0, getMarkdownTheme());
+					this.#cachedBlocks[blockIndex] = { type: "text", component: md, text };
+				}
+				this.#contentContainer.addChild(md);
+				blockIndex++;
 			} else if (content.type === "thinking" && content.thinking.trim()) {
-				// Add spacing only when another visible assistant content block follows.
-				// This avoids a superfluous blank line before separately-rendered tool execution blocks.
 				const hasVisibleContentAfter = message.content
 					.slice(i + 1)
 					.some(c => (c.type === "text" && c.text.trim()) || (c.type === "thinking" && c.thinking.trim()));
 
 				if (this.hideThinkingBlock) {
-					// Show static "Thinking..." label when hidden
-					this.#contentContainer.addChild(new Text(theme.italic(theme.fg("thinkingText", "Thinking...")), 2, 0));
+					const cached = this.#cachedBlocks[blockIndex];
+					let label: Text;
+					if (cached?.type === "thinking-hidden") {
+						label = cached.component as Text;
+					} else {
+						label = new Text(theme.italic(theme.fg("thinkingText", "Thinking...")), 2, 0);
+						this.#cachedBlocks[blockIndex] = { type: "thinking-hidden", component: label, text: "" };
+					}
+					this.#contentContainer.addChild(label);
 					if (hasVisibleContentAfter) {
 						this.#contentContainer.addChild(new Spacer(1));
 					}
 				} else {
-					// Thinking traces in thinkingText color, italic
-					this.#contentContainer.addChild(
-						new Markdown(content.thinking.trim(), 2, 0, getMarkdownTheme(), {
+					const text = content.thinking.trim();
+					const cached = this.#cachedBlocks[blockIndex];
+					let md: Markdown;
+					if (cached?.type === "thinking") {
+						md = cached.component as Markdown;
+						if (cached.text !== text) {
+							md.setText(text);
+							cached.text = text;
+						}
+					} else {
+						md = new Markdown(text, 2, 0, getMarkdownTheme(), {
 							color: (text: string) => theme.fg("thinkingText", text),
 							italic: true,
-						}),
-					);
+						});
+						this.#cachedBlocks[blockIndex] = { type: "thinking", component: md, text };
+					}
+					this.#contentContainer.addChild(md);
 					if (hasVisibleContentAfter) {
 						this.#contentContainer.addChild(new Spacer(1));
 					}
 				}
+				blockIndex++;
 			}
 		}
 
-		// Check if aborted - show after partial content
-		// But only if there are no tool calls (tool execution components will show the error)
+		if (this.#cachedBlocks.length > blockIndex) {
+			this.#cachedBlocks.length = blockIndex;
+		}
+
 		const hasToolCalls = message.content.some(c => c.type === "toolCall");
 		if (!hasToolCalls) {
 			if (message.stopReason === "aborted") {
@@ -128,11 +162,7 @@ export class AssistantMessageComponent extends Container {
 					message.errorMessage && message.errorMessage !== "Request was aborted"
 						? message.errorMessage
 						: "Operation aborted";
-				if (hasVisibleContent) {
-					this.#contentContainer.addChild(new Spacer(1));
-				} else {
-					this.#contentContainer.addChild(new Spacer(1));
-				}
+				this.#contentContainer.addChild(new Spacer(1));
 				this.#contentContainer.addChild(new Text(theme.fg("error", abortMessage), 2, 0));
 			} else if (message.stopReason === "error") {
 				const errorMsg = message.errorMessage || "Unknown error";

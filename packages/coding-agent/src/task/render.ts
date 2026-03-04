@@ -24,7 +24,7 @@ import type { AgentProgress, SingleResult, TaskParams, TaskToolDetails } from ".
 function getStatusIcon(status: AgentProgress["status"], theme: Theme, spinnerFrame?: number): string {
 	switch (status) {
 		case "pending":
-			return formatStatusIcon("pending", theme);
+			return formatStatusIcon("running", theme, spinnerFrame);
 		case "running":
 			return formatStatusIcon("running", theme, spinnerFrame);
 		case "completed":
@@ -274,7 +274,7 @@ export function renderResult(
 					lines.push(...renderConclusionMarkdown(fallbackText, width, expanded, theme));
 				}
 			} else {
-				const icon = formatStatusIcon("pending", theme);
+				const icon = formatStatusIcon("running", theme, spinnerFrame);
 				lines.push(...renderSubagentHeader(taskRenderConfig, args, { icon }, theme));
 			}
 
@@ -417,7 +417,7 @@ export function createUnifiedSubagentRenderer(config: SubagentRenderConfig): {
 							lines.push(...renderConclusionMarkdown(fallbackText, width, expanded, theme));
 						}
 					} else {
-						const icon = formatStatusIcon("pending", theme);
+						const icon = formatStatusIcon("running", theme, spinnerFrame);
 						lines.push(...renderSubagentHeader(config, params, { icon }, theme));
 					}
 

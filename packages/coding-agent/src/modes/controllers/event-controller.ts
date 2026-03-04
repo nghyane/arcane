@@ -11,13 +11,36 @@ import type { AgentSessionEvent } from "../../session/agent-session";
 import { getSymbolTheme, theme } from "../../theme/theme";
 import { getToolTier, isContextTool } from "../../ui/render-utils";
 
+const STREAM_RENDER_INTERVAL_MS = 32;
+
 export class EventController {
 	#lastThinkingCount = 0;
 	#renderedCustomMessages = new Set<string>();
 	#currentContextGroup?: ContextGroupComponent;
 	#toolGroups = new Map<string, ContextGroupComponent>();
+	#streamRenderTimer?: Timer;
+	#pendingStreamMessage?: AgentSessionEvent;
 
 	constructor(private ctx: InteractiveModeContext) {}
+
+	#flushStreamRender(): void {
+		const pending = this.#pendingStreamMessage;
+		if (pending && "message" in pending && pending.message.role === "assistant" && this.ctx.streamingComponent) {
+			this.#pendingStreamMessage = undefined;
+			this.ctx.streamingComponent.updateContent(pending.message);
+			this.ctx.ui.requestRender();
+		}
+		const timer = setTimeout(() => {
+			// Guard against orphan callbacks surviving clearTimeout after message_end
+			if (this.#streamRenderTimer !== timer) return;
+			if (this.#pendingStreamMessage) {
+				this.#flushStreamRender();
+			} else {
+				this.#streamRenderTimer = undefined;
+			}
+		}, STREAM_RENDER_INTERVAL_MS);
+		this.#streamRenderTimer = timer;
+	}
 
 	subscribeToAgent(): void {
 		this.ctx.unsubscribe = this.ctx.session.subscribe(async (event: AgentSessionEvent) => {
@@ -96,18 +119,10 @@ export class EventController {
 			case "message_update":
 				if (this.ctx.streamingComponent && event.message.role === "assistant") {
 					this.ctx.streamingMessage = event.message;
-					this.ctx.streamingComponent.updateContent(this.ctx.streamingMessage);
 
-					const thinkingCount = this.ctx.streamingMessage.content.filter(
-						content => content.type === "thinking" && content.thinking.trim(),
-					).length;
-					if (thinkingCount > this.#lastThinkingCount) {
-						this.#lastThinkingCount = thinkingCount;
-					}
-
+					// Tool calls need immediate processing (new tool components)
 					for (const content of this.ctx.streamingMessage.content) {
 						if (content.type !== "toolCall") continue;
-
 						if (!this.ctx.pendingTools.has(content.id)) {
 							const tool = this.ctx.session.getToolByName(content.name);
 							this.#appendTool(content.id, content.name, content.arguments, tool);
@@ -119,13 +134,30 @@ export class EventController {
 						}
 					}
 
-					this.ctx.ui.requestRender();
+					const thinkingCount = this.ctx.streamingMessage.content.filter(
+						content => content.type === "thinking" && content.thinking.trim(),
+					).length;
+					if (thinkingCount > this.#lastThinkingCount) {
+						this.#lastThinkingCount = thinkingCount;
+					}
+
+					// Throttle text/thinking render updates to avoid re-parsing markdown every token
+					this.#pendingStreamMessage = event;
+					if (!this.#streamRenderTimer) {
+						this.#flushStreamRender();
+					}
 				}
 				break;
 
 			case "message_end":
 				if (event.message.role === "user") break;
 				if (this.ctx.streamingComponent && event.message.role === "assistant") {
+					// Flush any throttled stream render and stop the timer
+					if (this.#streamRenderTimer) {
+						clearTimeout(this.#streamRenderTimer);
+						this.#streamRenderTimer = undefined;
+						this.#pendingStreamMessage = undefined;
+					}
 					this.ctx.streamingMessage = event.message;
 					let errorMessage: string | undefined;
 					if (this.ctx.streamingMessage.stopReason === "aborted" && !this.ctx.session.isTtsrAbortPending) {
