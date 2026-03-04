@@ -850,7 +850,7 @@ export interface FetchToolDetails {
 export class FetchTool implements AgentTool<typeof fetchSchema, FetchToolDetails, Theme> {
 	readonly name = "fetch";
 	readonly label = "Fetch";
-	description = "Fetch a URL and return its content";
+	description = "Fetch a URL and return its content. Do NOT use for localhost or local URLs; use bash curl instead.";
 	readonly parameters = fetchSchema;
 
 	constructor(private readonly session: ToolSession) {}

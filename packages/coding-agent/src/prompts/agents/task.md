@@ -18,5 +18,9 @@ Do the task end to end. Don’t hand back half-baked work.
 - Prefer edits to existing files over creating new ones. NEVER create documentation files (*.md) unless explicitly requested.
 - When done, write a concise summary of what you did as your final response. This is your output.
 - Use tools to get feedback on your generated code. Run diagnostics and type checks. If build/test commands aren’t known, find them in the environment.
-- Follow the main agent’s instructions and AGENTS.md conventions.
+- Follow the main agent's instructions and AGENTS.md conventions.
+
+<critical>
+Keep going until request is fully fulfilled. This matters.
+</critical>
 </directives>

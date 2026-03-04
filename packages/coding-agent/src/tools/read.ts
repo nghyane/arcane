@@ -533,7 +533,8 @@ type ReadParams = ReadToolInput;
 export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails, Theme> {
 	readonly name = "read";
 	readonly label = "Read";
-	description = "Read file contents, list directories, or view images";
+	description =
+		"Read file contents, list directories, or view images. When possible, call in parallel for all files you need. Avoid tiny repeated slices — read a larger range instead.";
 	readonly parameters = readSchema;
 	readonly nonAbortable = true;
 

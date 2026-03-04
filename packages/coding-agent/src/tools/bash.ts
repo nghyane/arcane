@@ -55,7 +55,8 @@ function isInteractiveResult(result: BashResult | BashInteractiveResult): result
 export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, Theme> {
 	readonly name = "bash";
 	readonly label = "Bash";
-	description = "Execute a shell command";
+	description =
+		"Execute a shell command. Use grep/find instead of shell grep/find, read instead of cat/head/tail, edit instead of sed/awk, write instead of echo/printf redirects.";
 	readonly parameters = bashSchema;
 	readonly concurrency = "exclusive";
 

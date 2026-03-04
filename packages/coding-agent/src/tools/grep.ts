@@ -54,7 +54,8 @@ type GrepParams = Static<typeof grepSchema>;
 export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails, Theme> {
 	readonly name = "grep";
 	readonly label = "Grep";
-	description = "Search file contents with regex";
+	description =
+		"Search file contents with regex. Use for exact text matches (variable names, function calls, strings). Use explore for semantic/conceptual searches.";
 	readonly parameters = grepSchema;
 
 	constructor(private readonly session: ToolSession) {}
