@@ -187,10 +187,13 @@ export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails, Them
 		return resultBuilder.done();
 	}
 
-	renderCall(args: SshRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: SshRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const host = args.host || "…";
 		const command = args.command || "…";
-		const text = renderStatusLine({ icon: "pending", title: "SSH", description: `[${host}] $ ${command}` }, uiTheme);
+		const text = renderStatusLine(
+			{ icon: "running", spinnerFrame: options.spinnerFrame, title: "SSH", description: `[${host}] $ ${command}` },
+			uiTheme,
+		);
 		return new Text(text, 0, 0);
 	}
 

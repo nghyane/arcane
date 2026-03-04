@@ -75,10 +75,13 @@ export class UndoEditTool implements AgentTool<typeof undoEditSchema, UndoEditTo
 		});
 	}
 
-	renderCall(args: UndoEditRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: UndoEditRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const filePath = shortenPath(args.path ?? "");
 		const pathDisplay = filePath ? uiTheme.fg("accent", filePath) : uiTheme.fg("toolOutput", "…");
-		const text = renderStatusLine({ icon: "pending", title: "Undo", description: pathDisplay }, uiTheme);
+		const text = renderStatusLine(
+			{ icon: "running", spinnerFrame: options.spinnerFrame, title: "Undo", description: pathDisplay },
+			uiTheme,
+		);
 		return new Text(text, 0, 0);
 	}
 

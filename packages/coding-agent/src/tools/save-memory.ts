@@ -153,10 +153,13 @@ export class SaveMemoryTool implements AgentTool<typeof saveMemorySchema, SaveMe
 		};
 	}
 
-	renderCall(args: SaveMemoryRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: SaveMemoryRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const preview = args.fact ? truncateToWidth(args.fact, TRUNCATE_LENGTHS.CONTENT) : "";
 		const meta = preview ? [preview] : [];
-		const text = renderStatusLine({ icon: "pending", title: "Save Memory", meta }, uiTheme);
+		const text = renderStatusLine(
+			{ icon: "running", spinnerFrame: options.spinnerFrame, title: "Save Memory", meta },
+			uiTheme,
+		);
 		return new Text(text, 0, 0);
 	}
 

@@ -79,9 +79,12 @@ export class FindThreadTool implements AgentTool<typeof findThreadSchema, FindTh
 		};
 	}
 
-	renderCall(args: FindThreadRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: FindThreadRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const meta = args.query ? [`"${args.query}"`] : [];
-		const text = renderStatusLine({ icon: "pending", title: "Find Thread", meta }, uiTheme);
+		const text = renderStatusLine(
+			{ icon: "running", spinnerFrame: options.spinnerFrame, title: "Find Thread", meta },
+			uiTheme,
+		);
 		return new Text(text, 0, 0);
 	}
 

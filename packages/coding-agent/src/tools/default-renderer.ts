@@ -3,7 +3,7 @@ import { Text } from "@nghyane/arcane-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../theme/theme";
 import { renderStatusLine } from "../tui";
-import { formatMoreItems, PREVIEW_LIMITS, TRUNCATE_LENGTHS, truncateToWidth } from "../ui/render-utils";
+import { formatMoreItems, PREVIEW_LIMITS, replaceTabs, TRUNCATE_LENGTHS, truncateToWidth } from "../ui/render-utils";
 import {
 	formatArgsInline,
 	JSON_TREE_MAX_DEPTH_COLLAPSED,
@@ -36,7 +36,7 @@ export const defaultRenderer: DefaultRenderer = {
 	renderCall(args: unknown, options: RenderResultOptions, theme: Theme): Component {
 		const label = options.label ?? "Tool";
 		const lines: string[] = [];
-		lines.push(renderStatusLine({ icon: "pending", title: label }, theme));
+		lines.push(renderStatusLine({ icon: "running", spinnerFrame: options.spinnerFrame, title: label }, theme));
 
 		const argsObject = asRecord(args);
 		if (argsObject && Object.keys(argsObject).length > 0) {
@@ -92,7 +92,7 @@ export const defaultRenderer: DefaultRenderer = {
 		const maxOutputLines = expanded ? PREVIEW_LIMITS.OUTPUT_EXPANDED : PREVIEW_LIMITS.OUTPUT_COLLAPSED;
 		const displayLines = outputLines.slice(0, maxOutputLines);
 		for (const line of displayLines) {
-			lines.push(theme.fg("toolOutput", truncateToWidth(line, TRUNCATE_LENGTHS.CONTENT)));
+			lines.push(theme.fg("toolOutput", truncateToWidth(replaceTabs(line), TRUNCATE_LENGTHS.CONTENT)));
 		}
 		if (outputLines.length > maxOutputLines) {
 			const remaining = outputLines.length - maxOutputLines;

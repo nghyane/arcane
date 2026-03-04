@@ -381,12 +381,12 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails, T
 		});
 	}
 
-	renderCall(args: FindRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: FindRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const meta: string[] = [];
 		if (args.limit !== undefined) meta.push(`limit:${args.limit}`);
 
 		const text = renderStatusLine(
-			{ icon: "pending", title: "Find", description: args.pattern || "*", meta },
+			{ icon: "running", spinnerFrame: options.spinnerFrame, title: "Find", description: args.pattern || "*", meta },
 			uiTheme,
 		);
 		return new Text(text, 0, 0);

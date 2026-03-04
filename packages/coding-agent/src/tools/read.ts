@@ -1055,7 +1055,7 @@ export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails, T
 		return resultBuilder.done();
 	}
 
-	renderCall(args: ReadRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: ReadRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const rawPath = args.file_path || args.path || "";
 		const filePath = shortenPath(rawPath);
 		const offset = args.offset;
@@ -1068,7 +1068,10 @@ export class ReadTool implements AgentTool<typeof readSchema, ReadToolDetails, T
 			pathDisplay += `:${startLine}${endLine ? `-${endLine}` : ""}`;
 		}
 
-		const text = renderStatusLine({ icon: "pending", title: "Read", description: pathDisplay }, uiTheme);
+		const text = renderStatusLine(
+			{ icon: "running", spinnerFrame: options.spinnerFrame, title: "Read", description: pathDisplay },
+			uiTheme,
+		);
 		return new Text(text, 0, 0);
 	}
 

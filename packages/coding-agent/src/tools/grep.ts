@@ -278,7 +278,7 @@ export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails, T
 		});
 	}
 
-	renderCall(args: GrepRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: GrepRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const meta: string[] = [];
 		if (args.path) meta.push(`in ${args.path}`);
 		if (args.glob) meta.push(`glob:${args.glob}`);
@@ -295,7 +295,7 @@ export class GrepTool implements AgentTool<typeof grepSchema, GrepToolDetails, T
 		if (args.offset !== undefined && args.offset > 0) meta.push(`offset:${args.offset}`);
 
 		const text = renderStatusLine(
-			{ icon: "pending", title: "Grep", description: args.pattern || "?", meta },
+			{ icon: "running", spinnerFrame: options.spinnerFrame, title: "Grep", description: args.pattern || "?", meta },
 			uiTheme,
 		);
 		return new Text(text, 0, 0);

@@ -377,9 +377,12 @@ export class ReadThreadTool implements AgentTool<typeof readThreadSchema, ReadTh
 		};
 	}
 
-	renderCall(args: ReadThreadRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: ReadThreadRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const meta = args.threadId ? [args.threadId] : [];
-		const text = renderStatusLine({ icon: "pending", title: "Read Thread", meta }, uiTheme);
+		const text = renderStatusLine(
+			{ icon: "running", spinnerFrame: options.spinnerFrame, title: "Read Thread", meta },
+			uiTheme,
+		);
 		return new Text(text, 0, 0);
 	}
 
