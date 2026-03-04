@@ -4,11 +4,13 @@ import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallb
 import type { ImageContent } from "@nghyane/arcane-ai";
 import type { Component } from "@nghyane/arcane-tui";
 import { Text } from "@nghyane/arcane-tui";
+import { $env, logger } from "@nghyane/arcane-utils";
 import { getProjectDir } from "@nghyane/arcane-utils/dirs";
 import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import { executePython, type PythonExecutorOptions } from "../ipy/executor";
+import { executePython, getPreludeDocs, type PythonExecutorOptions, warmPythonEnvironment } from "../ipy/executor";
 import type { PythonStatusEvent } from "../ipy/kernel";
+import { checkPythonKernelAvailability } from "../ipy/kernel";
 import { DEFAULT_MAX_BYTES, OutputSink, type OutputSummary } from "../session/streaming-output";
 import type { Theme } from "../theme/theme";
 import { renderCodeCell, renderStatusLine } from "../tui";
@@ -76,12 +78,60 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 	readonly concurrency = "exclusive";
 
 	readonly #proxyExecutor?: PythonProxyExecutor;
+	#initialized = false;
+	#initPromise: Promise<void> | undefined;
 
 	constructor(
 		private readonly session: ToolSession | null,
 		options?: PythonToolOptions,
 	) {
 		this.#proxyExecutor = options?.proxyExecutor;
+	}
+
+	async #ensureInitialized(): Promise<void> {
+		if (this.#initialized) return;
+		if (this.#initPromise) return this.#initPromise;
+		this.#initPromise = this.#doInit();
+		return this.#initPromise;
+	}
+
+	async #doInit(): Promise<void> {
+		try {
+			const isTestEnv = Bun.env.BUN_ENV === "test" || Bun.env.NODE_ENV === "test";
+			if (isTestEnv || $env.ARCANE_PYTHON_SKIP_CHECK === "1") {
+				this.#initialized = true;
+				return;
+			}
+			if (!this.session) {
+				this.#initialized = true;
+				return;
+			}
+			const availability = await checkPythonKernelAvailability(this.session.cwd);
+			if (!availability.ok) {
+				throw new ToolError(`Python kernel unavailable: ${availability.reason}`);
+			}
+			if (getPreludeDocs().length === 0) {
+				const sessionFile = this.session.getSessionFile?.() ?? undefined;
+				const warmSessionId = sessionFile
+					? `session:${sessionFile}:cwd:${this.session.cwd}`
+					: `cwd:${this.session.cwd}`;
+				try {
+					await warmPythonEnvironment(
+						this.session.cwd,
+						warmSessionId,
+						this.session.settings.get("python.sharedGateway"),
+					);
+				} catch (err) {
+					logger.warn("Failed to warm Python environment", {
+						error: err instanceof Error ? err.message : String(err),
+					});
+				}
+			}
+			this.#initialized = true;
+		} catch (err) {
+			this.#initPromise = undefined;
+			throw err;
+		}
 	}
 
 	async execute(
@@ -98,6 +148,8 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 		if (!this.session) {
 			throw new ToolError("Python tool requires a session when not using proxy executor");
 		}
+
+		await this.#ensureInitialized();
 
 		const { cells, timeout: rawTimeout = 30, cwd, reset } = params;
 		// Clamp to reasonable range: 1s - 600s (10 min)

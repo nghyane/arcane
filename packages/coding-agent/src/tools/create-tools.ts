@@ -1,7 +1,5 @@
 import type { AgentTool } from "@nghyane/arcane-agent";
-import { $env, logger } from "@nghyane/arcane-utils";
-import { getPreludeDocs, warmPythonEnvironment } from "../ipy/executor";
-import { checkPythonKernelAvailability } from "../ipy/kernel";
+import { $env } from "@nghyane/arcane-utils";
 import { LspTool } from "../lsp";
 import { EditTool } from "../patch";
 import { TaskTool } from "../task";
@@ -106,37 +104,8 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 	const enableLsp = session.enableLsp ?? true;
 	const requestedTools = toolNames && toolNames.length > 0 ? [...new Set(toolNames)] : undefined;
 	const pythonMode = getPythonModeFromEnv() ?? session.settings.get("python.toolMode");
-	const skipPythonPreflight = session.skipPythonPreflight === true;
-	let pythonAvailable = true;
-	const shouldCheckPython =
-		!skipPythonPreflight &&
-		pythonMode !== "bash-only" &&
-		(requestedTools === undefined || requestedTools.includes("python"));
-	const isTestEnv = Bun.env.BUN_ENV === "test" || Bun.env.NODE_ENV === "test";
-	const skipPythonWarm = isTestEnv || $env.ARCANE_PYTHON_SKIP_CHECK === "1";
-	if (shouldCheckPython) {
-		const availability = await checkPythonKernelAvailability(session.cwd);
-		time("createTools:pythonCheck");
-		pythonAvailable = availability.ok;
-		if (!availability.ok) {
-			logger.warn("Python kernel unavailable, falling back to bash", {
-				reason: availability.reason,
-			});
-		} else if (!skipPythonWarm && getPreludeDocs().length === 0) {
-			const sessionFile = session.getSessionFile?.() ?? undefined;
-			const warmSessionId = sessionFile ? `session:${sessionFile}:cwd:${session.cwd}` : `cwd:${session.cwd}`;
-			try {
-				await warmPythonEnvironment(session.cwd, warmSessionId, session.settings.get("python.sharedGateway"));
-				time("createTools:warmPython");
-			} catch (err) {
-				logger.warn("Failed to warm Python environment", {
-					error: err instanceof Error ? err.message : String(err),
-				});
-			}
-		}
-	}
 
-	const effectiveMode = pythonAvailable ? pythonMode : "bash-only";
+	const effectiveMode = pythonMode;
 	const allowBash = effectiveMode !== "ipy-only";
 	const allowPython = effectiveMode !== "bash-only";
 	if (

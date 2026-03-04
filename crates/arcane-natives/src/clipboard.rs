@@ -92,3 +92,22 @@ pub fn read_image_from_clipboard() -> task::Async<Option<ClipboardImage>> {
 		}
 	})
 }
+
+/// Read plain text from the system clipboard.
+///
+/// Returns `Ok(None)` when no text data is available.
+///
+/// # Errors
+/// Returns an error if clipboard access fails.
+#[napi(js_name = "readTextFromClipboard")]
+pub fn read_text_from_clipboard() -> task::Async<Option<String>> {
+	task::blocking("clipboard.read_text", (), move |_| -> Result<Option<String>> {
+		let mut clipboard = Clipboard::new()
+			.map_err(|err| Error::from_reason(format!("Failed to access clipboard: {err}")))?;
+		match clipboard.get_text() {
+			Ok(text) => Ok(Some(text)),
+			Err(ClipboardError::ContentNotAvailable) => Ok(None),
+			Err(err) => Err(Error::from_reason(format!("Failed to read clipboard text: {err}"))),
+		}
+	})
+}

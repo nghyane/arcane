@@ -23,5 +23,10 @@ declare module "../bindings" {
 		 * @returns PNG payload or null when no image is available.
 		 */
 		readImageFromClipboard(): Promise<ClipboardImage | null>;
+		/**
+		 * Read plain text from the clipboard.
+		 * @returns Text or null when no text is available.
+		 */
+		readTextFromClipboard(): Promise<string | null>;
 	}
 }

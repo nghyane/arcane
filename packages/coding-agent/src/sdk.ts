@@ -930,16 +930,10 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		}
 	}
 
-	// Discover custom commands (TypeScript slash commands)
-	const customCommandsResult: CustomCommandsLoadResult = options.disableExtensionDiscovery
-		? { commands: [], errors: [] }
-		: await loadCustomCommandsInternal({ cwd, agentDir });
-	time("discoverCustomCommands");
-	if (!options.disableExtensionDiscovery) {
-		for (const { path, error } of customCommandsResult.errors) {
-			logger.error("Failed to load custom command", { path, error });
-		}
-	}
+	// Start custom commands discovery early (awaited later in parallel)
+	const customCommandsPromise = options.disableExtensionDiscovery
+		? Promise.resolve({ commands: [], errors: [] } as CustomCommandsLoadResult)
+		: loadCustomCommandsInternal({ cwd, agentDir });
 
 	let extensionRunner: ExtensionRunner | undefined;
 	if (extensionsResult.extensions.length > 0) {
@@ -1066,15 +1060,14 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		}
 	}
 
-	const systemPrompt = await rebuildSystemPrompt(initialToolNames, toolRegistry);
-	time("buildSystemPrompt");
-
-	const promptTemplates = options.promptTemplates ?? (await discoverPromptTemplates(cwd, agentDir));
-	time("discoverPromptTemplates");
+	const [systemPrompt, promptTemplates, slashCommands, customCommandsResult] = await Promise.all([
+		rebuildSystemPrompt(initialToolNames, toolRegistry),
+		options.promptTemplates ?? discoverPromptTemplates(cwd, agentDir),
+		options.slashCommands ?? discoverSlashCommands(cwd),
+		customCommandsPromise,
+	]);
+	time("buildSystemPrompt+discoverPromptTemplates+discoverSlashCommands");
 	toolSession.promptTemplates = promptTemplates;
-
-	const slashCommands = options.slashCommands ?? (await discoverSlashCommands(cwd));
-	time("discoverSlashCommands");
 
 	// Create convertToLlm wrapper that filters images if blockImages is enabled (defense-in-depth)
 	const convertToLlmWithBlockImages = (messages: AgentMessage[]): Message[] => {

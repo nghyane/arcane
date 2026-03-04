@@ -577,7 +577,7 @@ export const SETTINGS_SCHEMA = {
 		type: "boolean",
 		default: true,
 		ui: {
-			tab: "display",
+			tab: "input",
 			label: "Auto-resize images",
 			description: "Resize large images to 2000x2000 max for better model compatibility",
 		},
@@ -585,7 +585,7 @@ export const SETTINGS_SCHEMA = {
 	"images.blockImages": {
 		type: "boolean",
 		default: false,
-		ui: { tab: "display", label: "Block images", description: "Prevent images from being sent to LLM providers" },
+		ui: { tab: "input", label: "Block images", description: "Prevent images from being sent to LLM providers" },
 	},
 
 	// ─────────────────────────────────────────────────────────────────────────

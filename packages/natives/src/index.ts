@@ -6,7 +6,7 @@
 // Clipboard
 // =============================================================================
 
-export { type ClipboardImage, copyToClipboard, readImageFromClipboard } from "./clipboard";
+export { type ClipboardImage, copyToClipboard, readImageFromClipboard, readTextFromClipboard } from "./clipboard";
 
 // =============================================================================
 // Grep (ripgrep-based regex search)

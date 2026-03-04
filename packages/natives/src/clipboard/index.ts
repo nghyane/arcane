@@ -90,3 +90,20 @@ export async function readImageFromClipboard(): Promise<ClipboardImage | null> {
 
 	return native.readImageFromClipboard();
 }
+
+/**
+ * Read plain text from the system clipboard.
+ *
+ * Returns null on Termux or when no display server is available.
+ */
+export async function readTextFromClipboard(): Promise<string | null> {
+	if (process.env.TERMUX_VERSION) {
+		return null;
+	}
+
+	if (!hasDisplay) {
+		return null;
+	}
+
+	return native.readTextFromClipboard();
+}

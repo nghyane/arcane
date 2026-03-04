@@ -59,9 +59,13 @@ export class CustomEditor extends Editor {
 			return;
 		}
 
-		// Intercept Ctrl+V for image paste (async - fires and handles result)
+		// Intercept Ctrl+V for image paste — fall through to text paste if no image handled
 		if (matchesKey(data, "ctrl+v") && this.onCtrlV) {
-			void this.onCtrlV();
+			void this.onCtrlV().then(handled => {
+				if (!handled) {
+					super.handleInput(data);
+				}
+			});
 			return;
 		}
 

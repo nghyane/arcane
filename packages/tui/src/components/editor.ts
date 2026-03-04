@@ -365,6 +365,10 @@ export class Editor implements Component, Focusable {
 	onAltEnter?: (text: string) => void;
 	onChange?: (text: string) => void;
 	onAutocompleteCancel?: () => void;
+	/** Called before processing a bracketed paste. Return true to suppress default paste handling. */
+	onPaste?: (text: string) => boolean;
+	/** Apply syntax highlighting to a display line after cursor rendering. Must preserve visible width. */
+	onHighlightLine?: (text: string) => string;
 	disableSubmit: boolean = false;
 
 	// Custom top border (for status line integration)
@@ -651,6 +655,11 @@ export class Editor implements Component, Focusable {
 						cursorInPadding = true;
 					}
 				}
+			}
+
+			// Apply optional syntax highlighting
+			if (this.onHighlightLine) {
+				displayText = this.onHighlightLine(displayText);
 			}
 
 			// All lines have consistent borders based on padding
@@ -1245,6 +1254,8 @@ export class Editor implements Component, Focusable {
 	}
 
 	#handlePaste(pastedText: string): void {
+		if (this.onPaste?.(pastedText)) return;
+
 		this.#historyIndex = -1; // Exit history browsing mode
 		this.#resetKillSequence();
 		this.#recordUndoState();

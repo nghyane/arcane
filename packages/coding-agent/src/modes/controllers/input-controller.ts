@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import type { AgentMessage } from "@nghyane/arcane-agent";
-import { copyToClipboard, readImageFromClipboard, sanitizeText } from "@nghyane/arcane-natives";
+import { copyToClipboard, readImageFromClipboard, readTextFromClipboard, sanitizeText } from "@nghyane/arcane-natives";
 import { $env } from "@nghyane/arcane-utils";
 import { settings } from "../../config/settings";
 import type { InteractiveModeContext } from "../../modes/types";
@@ -10,8 +10,10 @@ import { executeBuiltinSlashCommand } from "../../slash-commands/builtin-registr
 import { theme } from "../../theme/theme";
 import { getEditorCommand, openInEditor } from "../../utils/external-editor";
 import { resizeImage } from "../../utils/image-resize";
+import { detectSupportedImageMimeTypeFromFile } from "../../utils/mime";
 import { generateSessionTitle, setTerminalTitle } from "../../utils/title-generator";
 
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
 interface Expandable {
 	setExpanded(expanded: boolean): void;
 }
@@ -134,6 +136,9 @@ export class InputController {
 				this.ctx.updateEditorBorderColor();
 			}
 		};
+
+		this.ctx.editor.onPaste = (text: string) => this.handlePastedImagePaths(text);
+		this.ctx.editor.onHighlightLine = (text: string) => this.#highlightEditorLine(text);
 	}
 
 	setupEditorSubmitHandler(): void {
@@ -475,6 +480,20 @@ export class InputController {
 					}
 				}
 
+				const sizeBytes = (imageData.data.length * 3) / 4;
+				if (sizeBytes > MAX_IMAGE_BYTES) {
+					try {
+						const compressed = await resizeImage(
+							{ type: "image", data: imageData.data, mimeType: imageData.mimeType },
+							{ maxBytes: MAX_IMAGE_BYTES },
+						);
+						imageData = { data: compressed.data, mimeType: compressed.mimeType };
+					} catch {
+						this.ctx.showStatus(`Image too large (${(sizeBytes / 1024 / 1024).toFixed(1)} MB, max 5 MB)`);
+						return true;
+					}
+				}
+
 				this.ctx.pendingImages.push({
 					type: "image",
 					data: imageData.data,
@@ -487,13 +506,114 @@ export class InputController {
 				this.ctx.ui.requestRender();
 				return true;
 			}
-			// No image in clipboard - show hint
-			this.ctx.showStatus("No image in clipboard (use terminal paste for text)");
+
+			// No image data — try text clipboard for file paths
+			const clipText = await readTextFromClipboard();
+			if (clipText && this.handlePastedImagePaths(clipText)) {
+				return true;
+			}
+
+			// Not an image — let caller fall through to normal text paste
 			return false;
 		} catch {
 			this.ctx.showStatus("Failed to read clipboard");
 			return false;
 		}
+	}
+
+	/**
+	 * Detect image file paths in pasted text (e.g., drag-drop from file manager).
+	 * Returns true if all pasted content was image paths (suppresses normal paste).
+	 */
+	handlePastedImagePaths(text: string): boolean {
+		const trimmed = text.trim();
+		if (!trimmed) return false;
+
+		// Split by newlines — drag-drop can paste multiple file paths
+		const lines = trimmed
+			.split(/\r?\n/)
+			.map(l => l.trim())
+			.filter(Boolean);
+		if (lines.length === 0 || lines.length > 20) return false;
+
+		// Check if ALL lines look like file paths to images
+		const IMAGE_EXT = /\.(png|jpe?g|gif|webp)$/i;
+		const paths: string[] = [];
+		for (const line of lines) {
+			// Terminals may quote or add file:// prefix
+			let p = line.replace(/^['"]|['"]$/g, "").replace(/^file:\/\//, "");
+			// Must look like an absolute or home-relative path with image extension
+			if (!/^[/~]/.test(p) || !IMAGE_EXT.test(p)) return false;
+			// Expand ~ to home dir
+			if (p.startsWith("~/")) {
+				p = `${process.env.HOME ?? ""}${p.slice(1)}`;
+			}
+			paths.push(p);
+		}
+
+		// Process asynchronously, return true to suppress normal paste
+		void this.#loadImageFiles(paths);
+		return true;
+	}
+
+	async #loadImageFiles(paths: string[]): Promise<void> {
+		let loaded = 0;
+		for (const filePath of paths) {
+			try {
+				const mimeType = await detectSupportedImageMimeTypeFromFile(filePath);
+				if (!mimeType) {
+					this.ctx.showStatus(`Not a supported image: ${filePath}`);
+					continue;
+				}
+				const data = await Bun.file(filePath).bytes();
+				let base64Data = data.toBase64();
+				let finalMime = mimeType;
+
+				if (settings.get("images.autoResize")) {
+					try {
+						const resized = await resizeImage({ type: "image", data: base64Data, mimeType });
+						base64Data = resized.data;
+						finalMime = resized.mimeType;
+					} catch {
+						// Use original on resize failure
+					}
+				}
+
+				const sizeBytes = (base64Data.length * 3) / 4;
+				if (sizeBytes > MAX_IMAGE_BYTES) {
+					try {
+						const compressed = await resizeImage(
+							{ type: "image", data: base64Data, mimeType: finalMime },
+							{ maxBytes: MAX_IMAGE_BYTES },
+						);
+						base64Data = compressed.data;
+						finalMime = compressed.mimeType;
+					} catch {
+						this.ctx.showStatus(
+							`Image too large: ${filePath} (${(sizeBytes / 1024 / 1024).toFixed(1)} MB, max 5 MB)`,
+						);
+						continue;
+					}
+				}
+
+				this.ctx.pendingImages.push({ type: "image", data: base64Data, mimeType: finalMime });
+				const imageNum = this.ctx.pendingImages.length;
+				this.ctx.editor.insertText(`[Image #${imageNum}] `);
+				loaded++;
+			} catch {
+				this.ctx.showStatus(`Failed to read image: ${filePath}`);
+			}
+		}
+		if (loaded > 0) {
+			this.ctx.ui.requestRender();
+		}
+	}
+
+	#highlightEditorLine(text: string): string {
+		// Highlight [Image #N] and [paste #N ...] markers with accent color
+		return text.replace(/\[(Image #\d+|paste #\d+[^\]]*)\]/g, match => {
+			return theme.fg("accent", match);
+		});
 	}
 
 	/** Copy current prompt text to system clipboard. */
