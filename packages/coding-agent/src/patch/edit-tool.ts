@@ -212,7 +212,7 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 	}
 
 	description =
-		"Apply edits to existing files (create, update, delete, rename). The diff is shown to the user, so do not repeat or summarize the changes.";
+		"Apply edits to existing files (create, update, delete, rename). Diff shown to user — do not repeat changes. Re-read before editing same file again (tags shift). On mismatch, retry with fresh tags from error.";
 
 	/**
 	 * Dynamic parameters schema based on current edit mode (which depends on current model).

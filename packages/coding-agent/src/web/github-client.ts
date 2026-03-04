@@ -197,7 +197,8 @@ async function request<T = unknown>(endpoint: string, options: RequestOptions = 
 					return { data: null as T, ok: false, status: response.status, rateLimit };
 				}
 
-				const data = (await response.json()) as T;
+				const isRaw = response.headers.get("content-type")?.includes("application/json") === false;
+				const data = (isRaw ? await response.text() : await response.json()) as T;
 
 				// Cache with ETag
 				const etag = response.headers.get("etag");
