@@ -1,8 +1,6 @@
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { type AsciiRenderOptions, renderMermaidAscii } from "@nghyane/arcane-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import { renderPromptTemplate } from "../config/prompt-templates";
-import renderMermaidDescription from "../prompts/tools/render-mermaid.md" with { type: "text" };
 import type { ToolSession } from "./index";
 import { allocateOutputArtifact } from "./output-utils";
 
@@ -38,14 +36,12 @@ export interface RenderMermaidToolDetails {
 export class RenderMermaidTool implements AgentTool<typeof renderMermaidSchema, RenderMermaidToolDetails> {
 	readonly name = "render_mermaid";
 	readonly label = "RenderMermaid";
-	readonly description: string;
+	readonly description =
+		"Convert Mermaid graph source into ASCII diagram output. Returns ASCII diagram text. Saves full output to an artifact URL when artifact storage is available.";
 	readonly parameters = renderMermaidSchema;
 	readonly strict = true;
 
-	constructor(private readonly session: ToolSession) {
-		this.description = renderPromptTemplate(renderMermaidDescription);
-	}
-
+	constructor(private readonly session: ToolSession) {}
 	async execute(
 		_toolCallId: string,
 		params: RenderMermaidParams,
