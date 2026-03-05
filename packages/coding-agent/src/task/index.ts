@@ -227,16 +227,8 @@ export class TaskTool implements AgentTool<TaskSchema, TaskToolDetails, Theme> {
 			const totalDuration = Date.now() - startTime;
 			const output = agentOutput.trim() || result.stderr.trim() || "(no output)";
 
-			// Return structured result as JSON for code tool composability
-			const structured = {
-				exitCode: result.exitCode,
-				output,
-				tokens: result.tokens,
-				durationMs: result.durationMs,
-			};
-
 			return {
-				content: [{ type: "text", text: JSON.stringify(structured) }],
+				content: [{ type: "text", text: output }],
 				details: {
 					results: [result],
 					totalDurationMs: totalDuration,
