@@ -231,6 +231,7 @@ export class AgentSession {
 	// Verification loop state
 	#verificationReminderCount = 0;
 	#turnHasFileModifications = false;
+	#editErrorSteerCount = 0;
 
 	// Bash execution state
 	#bashAbortController: AbortController | undefined = undefined;
@@ -555,7 +556,8 @@ export class AgentSession {
 						{ deliverAs: "nextTurn" },
 					);
 				}
-				if (toolName === "edit" && isError) {
+				if (toolName === "edit" && isError && this.#editErrorSteerCount < 2) {
+					this.#editErrorSteerCount++;
 					const errorText = content?.find(part => part.type === "text")?.text;
 					const reminderText = [
 						"<system_reminder>",
@@ -570,7 +572,7 @@ export class AgentSession {
 							display: false,
 							details: { toolName, errorText },
 						},
-						{ deliverAs: "nextTurn" },
+						{ deliverAs: "steer" },
 					);
 				}
 			}
@@ -1121,6 +1123,7 @@ export class AgentSession {
 			this.#todoReminderCount = 0;
 			this.#verificationReminderCount = 0;
 			this.#turnHasFileModifications = false;
+			this.#editErrorSteerCount = 0;
 
 			// Validate model
 			if (!this.model) {

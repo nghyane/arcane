@@ -231,7 +231,7 @@ export class UiHelpers {
 
 					if (isContextTool(content.name)) {
 						if (!currentGroup) {
-							currentGroup = new ContextGroupComponent();
+							currentGroup = new ContextGroupComponent(this.ctx.ui);
 							currentGroup.setExpanded(this.ctx.toolOutputExpanded);
 							this.ctx.chatContainer.addChild(currentGroup);
 						}

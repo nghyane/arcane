@@ -381,7 +381,7 @@ export class EventController {
 
 		if (isContextTool(toolName)) {
 			if (!this.#currentContextGroup) {
-				this.#currentContextGroup = new ContextGroupComponent();
+				this.#currentContextGroup = new ContextGroupComponent(this.ctx.ui);
 				this.#currentContextGroup.setExpanded(this.ctx.toolOutputExpanded);
 				this.ctx.chatContainer.addChild(this.#currentContextGroup);
 			}

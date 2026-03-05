@@ -25,7 +25,7 @@ const TOOL_TIERS: Record<string, ToolTier> = {
 	search_code: "quiet",
 	lsp: "quiet",
 	browser: "quiet",
-	github: "quiet",
+	github: "action",
 	notebook: "quiet",
 	undo_edit: "quiet",
 	generate_image: "quiet",

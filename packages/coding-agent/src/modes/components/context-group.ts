@@ -1,4 +1,4 @@
-import type { Component } from "@nghyane/arcane-tui";
+import type { Component, TUI } from "@nghyane/arcane-tui";
 import { Spacer } from "@nghyane/arcane-tui";
 import { theme } from "../../theme/theme";
 import { formatCount, formatStatusIcon } from "../../ui/render-utils";
@@ -26,19 +26,27 @@ export class ContextGroupComponent implements Component {
 	#expanded = false;
 	#pendingCount = 0;
 	#spacer: Spacer;
+	#spinnerFrame = 0;
+	#spinnerInterval?: NodeJS.Timeout;
+	#ui: TUI;
 
-	constructor() {
+	constructor(ui: TUI) {
 		this.#spacer = new Spacer(1);
+		this.#ui = ui;
 	}
 
 	addTool(name: string, component: ToolExecutionComponent): void {
 		this.#entries.push({ name, component });
 		this.#pendingCount++;
 		component.setExpanded(this.#expanded);
+		this.#startSpinner();
 	}
 
 	markDone(): void {
 		this.#pendingCount = Math.max(0, this.#pendingCount - 1);
+		if (this.#pendingCount <= 0) {
+			this.#stopSpinner();
+		}
 	}
 
 	setExpanded(expanded: boolean): void {
@@ -63,6 +71,23 @@ export class ContextGroupComponent implements Component {
 		}
 	}
 
+	#startSpinner(): void {
+		if (this.#spinnerInterval) return;
+		this.#spinnerInterval = setInterval(() => {
+			const frameCount = theme.spinnerFrames.length;
+			if (frameCount === 0) return;
+			this.#spinnerFrame = (this.#spinnerFrame + 1) % frameCount;
+			this.#ui.requestRender();
+		}, 80);
+	}
+
+	#stopSpinner(): void {
+		if (this.#spinnerInterval) {
+			clearInterval(this.#spinnerInterval);
+			this.#spinnerInterval = undefined;
+		}
+	}
+
 	render(width: number): string[] {
 		const lines: string[] = [];
 
@@ -71,7 +96,9 @@ export class ContextGroupComponent implements Component {
 
 		// Summary line
 		const allDone = this.#pendingCount <= 0;
-		const icon = allDone ? formatStatusIcon("success", theme) : formatStatusIcon("running", theme);
+		const icon = allDone
+			? formatStatusIcon("success", theme)
+			: formatStatusIcon("running", theme, this.#spinnerFrame);
 		const label = allDone ? "Gathered context" : "Gathering context…";
 
 		// Count by tool type

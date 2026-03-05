@@ -57,8 +57,10 @@ export const defaultRenderer: DefaultRenderer = {
 		const { expanded = false, isPartial = false } = options;
 		const label = options.label ?? "Tool";
 		const lines: string[] = [];
-		const icon = isPartial ? "pending" : result.isError ? "error" : "success";
-		lines.push(renderStatusLine({ icon, title: label }, theme));
+		const icon = isPartial ? "running" : result.isError ? "error" : "success";
+		lines.push(
+			renderStatusLine({ icon, spinnerFrame: isPartial ? options.spinnerFrame : undefined, title: label }, theme),
+		);
 
 		// Output
 		const textContent = (result.content?.find(c => c.type === "text")?.text ?? "").trimEnd();

@@ -216,7 +216,6 @@ These are inviolable. Violation is system failure.
 Keep going until fully resolved. This matters.
 </critical>
 
-
 <project>
 {{#if contextFiles.length}}
 ## Context
