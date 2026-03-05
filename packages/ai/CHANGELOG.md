@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- OpenAI-compatible provider model handling
+
 ## [0.1.10] - 2026-03-02
 
 ### Added

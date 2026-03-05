@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+### Added
+
+- Spinner animation on tool calls while running
+
+### Changed
+
+- Stricter tool schemas and simplified edit tool insert operation
+- Improved edit error steering and diff preview
+- Normalize node:path/fs imports to namespace style
+
+### Fixed
+
+- Task tool returns plain text instead of JSON-serialized result
+- GitHub client non-JSON response handling
+- Tab sanitization in hashline
+
+### Performance
+
+- Reuse markdown components and throttle stream renders
+
 ## [0.1.17] - 2026-03-02
 
 ### Added
