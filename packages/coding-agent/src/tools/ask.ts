@@ -73,8 +73,6 @@ export interface AskToolDetails {
 
 const OTHER_OPTION = "Other (type your own)";
 const RECOMMENDED_SUFFIX = " (Recommended)";
-/** Default timeout in milliseconds (used when settings unavailable) */
-const _DEFAULT_ASK_TIMEOUT_MS = 30000;
 
 function getDoneOptionLabel(): string {
 	return `${theme.status.success} Done selecting`;

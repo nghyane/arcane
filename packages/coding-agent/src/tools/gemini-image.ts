@@ -584,8 +584,6 @@ interface AntigravitySseResult {
 	usage?: GeminiUsageMetadata;
 }
 
-const _prefix = Buffer.from("data: ", "utf-8");
-
 async function parseAntigravitySseForImage(response: Response, signal?: AbortSignal): Promise<AntigravitySseResult> {
 	if (!response.body) {
 		throw new Error("No response body");

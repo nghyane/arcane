@@ -1,5 +1,5 @@
 import * as fs from "node:fs";
-import path from "node:path";
+import * as path from "node:path";
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import { logger, once, untilAborted } from "@nghyane/arcane-utils";
 import type { BunFile } from "bun";

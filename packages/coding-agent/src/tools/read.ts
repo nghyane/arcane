@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import path from "node:path";
+import * as path from "node:path";
 import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@nghyane/arcane-agent";
 import type { ImageContent, TextContent } from "@nghyane/arcane-ai";
 import { FileType, glob } from "@nghyane/arcane-natives";

@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import path from "node:path";
+import * as path from "node:path";
 import type { CreateFile, DeleteFile, RenameFile, TextDocumentEdit, TextEdit, WorkspaceEdit } from "./types";
 import { uriToFile } from "./utils";
 

@@ -1,4 +1,4 @@
-import path from "node:path";
+import * as path from "node:path";
 import { type Theme, theme } from "../theme/theme";
 import type {
 	Diagnostic,

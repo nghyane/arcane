@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
-import path from "node:path";
+import * as path from "node:path";
 import { ptree, Snowflake } from "@nghyane/arcane-utils";
 import { throwIfAborted } from "../../tools/tool-errors";
 import { ensureTool } from "../../utils/tools-manager";

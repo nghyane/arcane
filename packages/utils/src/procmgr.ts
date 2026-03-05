@@ -1,5 +1,5 @@
 import * as fs from "node:fs";
-import path from "node:path";
+import * as path from "node:path";
 import * as timers from "node:timers";
 import type { Subprocess } from "bun";
 import { $env } from "./env";

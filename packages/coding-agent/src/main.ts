@@ -5,7 +5,7 @@
  * createAgentSession() options. The SDK does the heavy lifting.
  */
 
-import { realpathSync } from "node:fs";
+import * as nodeFs from "node:fs";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -284,7 +284,7 @@ async function maybeAutoChdir(parsed: Args): Promise<void> {
 	}
 
 	const normalizePath = (value: string) => {
-		const resolved = realpathSync(path.resolve(value));
+		const resolved = nodeFs.realpathSync(path.resolve(value));
 		return process.platform === "win32" ? resolved.toLowerCase() : resolved;
 	};
 

@@ -6,7 +6,7 @@
  * so the agent doesn't need to read them manually.
  */
 import * as fs from "node:fs/promises";
-import path from "node:path";
+import * as path from "node:path";
 import type { AgentMessage } from "@nghyane/arcane-agent";
 import { glob } from "@nghyane/arcane-natives";
 import { formatHashLines } from "../patch/hashline";
