@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.20] - 2026-03-05
+
 ### Added
 
 - Spinner animation on tool calls while running
