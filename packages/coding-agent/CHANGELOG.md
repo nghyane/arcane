@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix crash when extension tools define renderCall/renderResult (readonly property assignment)
+
 ## [0.1.20] - 2026-03-05
 
 ### Added

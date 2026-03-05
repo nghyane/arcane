@@ -25,16 +25,24 @@ export class RegisteredToolAdapter implements AgentTool<any, any, any> {
 
 		const def = registeredTool.definition;
 		if (def.renderCall) {
-			(this as any).renderCall = (args: any, options: any, theme: any) => def.renderCall!(args, options, theme);
+			Object.defineProperty(this, "renderCall", {
+				value: (args: any, options: any, theme: any) => def.renderCall!(args, options, theme),
+				enumerable: true,
+				configurable: true,
+			});
 		}
 		if (def.renderResult) {
-			(this as any).renderResult = (result: any, options: any, theme: any, args?: any) =>
-				def.renderResult!(
-					result,
-					{ expanded: options.expanded, isPartial: options.isPartial, spinnerFrame: options.spinnerFrame },
-					theme,
-					args,
-				);
+			Object.defineProperty(this, "renderResult", {
+				value: (result: any, options: any, theme: any, args?: any) =>
+					def.renderResult!(
+						result,
+						{ expanded: options.expanded, isPartial: options.isPartial, spinnerFrame: options.spinnerFrame },
+						theme,
+						args,
+					),
+				enumerable: true,
+				configurable: true,
+			});
 		}
 	}
 
