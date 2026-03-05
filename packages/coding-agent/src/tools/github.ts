@@ -429,10 +429,10 @@ export class GitHubTool implements AgentTool<typeof schema, GitHubToolDetails, T
 
 	async execute(
 		_toolCallId: string,
-		params: Record<string, unknown>,
+		params: GitHubInput,
 		signal?: AbortSignal,
 	): Promise<AgentToolResult<GitHubToolDetails>> {
-		const input = params as unknown as GitHubInput;
+		const input = params;
 		const details: GitHubToolDetails = {
 			action: input.action,
 			owner: input.owner,

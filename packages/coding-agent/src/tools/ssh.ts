@@ -22,7 +22,7 @@ const sshSchema = Type.Object({
 	host: Type.String({ description: "SSH host alias (from ~/.ssh/config)" }),
 	command: Type.String({ description: "Shell command to execute on the remote host" }),
 	cwd: Type.Optional(Type.String({ description: "Working directory on the remote host" })),
-	timeout: Type.Optional(Type.Number({ description: "Timeout in milliseconds" })),
+	timeout: Type.Optional(Type.Number({ description: "Timeout in seconds" })),
 });
 
 export interface SSHToolDetails {

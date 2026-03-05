@@ -344,28 +344,12 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 					}
 					case "insert": {
 						const { before, after, content } = edit;
-						if (before && !after) {
-							anchorEdits.push({
-								op: "prepend",
-								before: parseTag(before),
-								content: hashlineParseContent(content),
-							});
-						} else if (after && !before) {
-							anchorEdits.push({
-								op: "append",
-								after: parseTag(after),
-								content: hashlineParseContent(content),
-							});
-						} else if (before && after) {
-							anchorEdits.push({
-								op: "insert",
-								before: parseTag(before),
-								after: parseTag(after),
-								content: hashlineParseContent(content),
-							});
-						} else {
-							throw new Error(`Insert must have both before and after tags.`);
-						}
+						anchorEdits.push({
+							op: "insert",
+							before: parseTag(before),
+							after: parseTag(after),
+							content: hashlineParseContent(content),
+						});
 						break;
 					}
 					case "replaceText": {

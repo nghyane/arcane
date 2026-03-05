@@ -144,8 +144,8 @@ const hashlineRangeEditSchema = Type.Object(
 const hashlineInsertEditSchema = Type.Object(
 	{
 		op: Type.Literal("insert"),
-		before: Type.Optional(hashlineTagFormat("line before which to insert")),
-		after: Type.Optional(hashlineTagFormat("line after which to insert")),
+		before: hashlineTagFormat("line before which to insert"),
+		after: hashlineTagFormat("line after which to insert"),
 		content: hashlineInsertContentFormat("Inserted"),
 	},
 	{ additionalProperties: false },

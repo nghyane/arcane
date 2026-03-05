@@ -858,11 +858,7 @@ export function applyHashlineEdits(
 					: edit.content;
 				stripped = autocorrect ? restoreOldWrappedLines(origLines, stripped) : stripped;
 				const newLines = autocorrect ? restoreIndentForPairedReplacement(origLines, stripped) : stripped;
-				if (
-					autocorrect &&
-					origLines.length === newLines.length &&
-					origLines.every((line, i) => line === newLines[i])
-				) {
+				if (origLines.length === newLines.length && origLines.every((line, i) => line === newLines[i])) {
 					noopEdits.push({
 						editIndex: idx,
 						loc: `${edit.first.line}#${edit.first.hash}`,

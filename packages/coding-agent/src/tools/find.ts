@@ -19,7 +19,7 @@ import { resolveToCwd } from "./path-utils";
 import { ToolAbortError, ToolError, throwIfAborted } from "./tool-errors";
 
 const findSchema = Type.Object({
-	pattern: Type.String({ description: "Glob pattern to match file paths" }),
+	pattern: Type.String({ description: "Glob pattern to match file paths", minLength: 1 }),
 	hidden: Type.Optional(Type.Boolean({ description: "Include hidden files and directories" })),
 	limit: Type.Optional(Type.Number({ description: "Max number of results to return" })),
 });

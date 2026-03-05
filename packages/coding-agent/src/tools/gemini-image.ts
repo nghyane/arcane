@@ -33,14 +33,24 @@ const imageSizeSchema = StringEnum(["1024x1024", "1536x1024", "1024x1536"], {
 	description: "Image size, mainly for gemini-3-pro-image-preview.",
 });
 
-const inputImageSchema = Type.Object(
-	{
-		path: Type.Optional(Type.String({ description: "Path to an input image file." })),
-		data: Type.Optional(Type.String({ description: "Base64 image data or a data: URL." })),
-		mime_type: Type.Optional(Type.String({ description: "Required for raw base64 data." })),
-	},
-	{ additionalProperties: false },
-);
+const inputImageSchema = Type.Union([
+	Type.Object(
+		{
+			path: Type.String({ description: "Path to an input image file." }),
+			data: Type.Optional(Type.String({ description: "Base64 image data or a data: URL." })),
+			mime_type: Type.Optional(Type.String({ description: "Required for raw base64 data." })),
+		},
+		{ additionalProperties: false },
+	),
+	Type.Object(
+		{
+			path: Type.Optional(Type.String({ description: "Path to an input image file." })),
+			data: Type.String({ description: "Base64 image data or a data: URL." }),
+			mime_type: Type.Optional(Type.String({ description: "Required for raw base64 data." })),
+		},
+		{ additionalProperties: false },
+	),
+]);
 
 const baseImageSchema = Type.Object(
 	{

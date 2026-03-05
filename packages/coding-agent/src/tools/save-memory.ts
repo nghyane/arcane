@@ -11,7 +11,7 @@ import { shortenPath, TRUNCATE_LENGTHS, truncateToWidth } from "../ui/render-uti
 import type { ToolSession } from ".";
 
 const saveMemorySchema = Type.Object({
-	fact: Type.String({ description: "A clear, self-contained statement to remember across sessions" }),
+	fact: Type.String({ description: "A clear, self-contained statement to remember across sessions", minLength: 1 }),
 });
 
 type SaveMemoryParams = Static<typeof saveMemorySchema>;

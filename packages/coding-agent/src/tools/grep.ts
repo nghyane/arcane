@@ -18,7 +18,7 @@ import { resolveToCwd } from "./path-utils";
 import { ToolError } from "./tool-errors";
 
 const grepSchema = Type.Object({
-	pattern: Type.String({ description: "Regex pattern to search for" }),
+	pattern: Type.String({ description: "Regex pattern to search for", minLength: 1 }),
 	path: Type.Optional(Type.String({ description: "Directory or file to search (default: cwd)" })),
 	glob: Type.Optional(Type.String({ description: 'Glob filter for file paths (e.g. "*.ts")' })),
 	type: Type.Optional(Type.String({ description: 'File extension filter without dot (e.g. "ts")' })),
