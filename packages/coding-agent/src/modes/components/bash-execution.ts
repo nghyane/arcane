@@ -22,6 +22,9 @@ export class BashExecutionComponent extends Container {
 	#expanded = false;
 	#headerText: Text;
 	#bodyText: Text;
+	#spinnerFrame = 0;
+	#spinnerInterval?: NodeJS.Timeout;
+	#ui: TUI;
 
 	constructor(
 		private readonly command: string,
@@ -29,6 +32,7 @@ export class BashExecutionComponent extends Container {
 		_excludeFromContext = false,
 	) {
 		super();
+		this.#ui = ui;
 		this.addChild(new Spacer(1));
 
 		this.#headerText = new Text(
@@ -49,6 +53,7 @@ export class BashExecutionComponent extends Container {
 			getSymbolTheme().spinnerFrames,
 		);
 		this.addChild(this.#loader);
+		this.#startSpinner();
 	}
 
 	setExpanded(expanded: boolean): void {
@@ -91,7 +96,26 @@ export class BashExecutionComponent extends Container {
 			this.#setOutput(options.output);
 		}
 		this.#loader.stop();
+		this.#stopSpinner();
 		this.#updateDisplay();
+	}
+
+	#startSpinner(): void {
+		if (this.#spinnerInterval) return;
+		this.#spinnerInterval = setInterval(() => {
+			const frameCount = theme.spinnerFrames.length;
+			if (frameCount === 0) return;
+			this.#spinnerFrame = (this.#spinnerFrame + 1) % frameCount;
+			this.#updateDisplay();
+			this.#ui.requestRender();
+		}, 80);
+	}
+
+	#stopSpinner(): void {
+		if (this.#spinnerInterval) {
+			clearInterval(this.#spinnerInterval);
+			this.#spinnerInterval = undefined;
+		}
 	}
 
 	#updateDisplay(): void {
@@ -108,6 +132,13 @@ export class BashExecutionComponent extends Container {
 			if (total > 0) meta.push(formatCount("line", total));
 			this.#headerText.setText(
 				renderStatusLine({ icon, title: "Bash", description: `$ ${this.command}`, meta }, theme),
+			);
+		} else {
+			this.#headerText.setText(
+				renderStatusLine(
+					{ icon: "running", spinnerFrame: this.#spinnerFrame, title: "Bash", description: `$ ${this.command}` },
+					theme,
+				),
 			);
 		}
 

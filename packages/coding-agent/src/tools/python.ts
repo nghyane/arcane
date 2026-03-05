@@ -476,7 +476,7 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 		return context;
 	}
 
-	renderCall(args: PythonRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
+	renderCall(args: PythonRenderArgs, options: RenderResultOptions, uiTheme: Theme): Component {
 		const cells = args.cells ?? [];
 		const cwd = getProjectDir();
 		let displayWorkdir = args.cwd;
@@ -526,8 +526,9 @@ export class PythonTool implements AgentTool<typeof pythonSchema, any, Theme> {
 							index: i,
 							total: cells.length,
 							title: combinedTitle,
-							status: "pending",
+							status: "running",
 							width,
+							spinnerFrame: options.spinnerFrame,
 							codeMaxLines: PYTHON_DEFAULT_PREVIEW_LINES,
 							expanded: true,
 						},

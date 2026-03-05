@@ -818,7 +818,7 @@ export function applyHashlineEdits(
 					let nextLines = merged.newLines;
 					nextLines = restoreIndentForPairedReplacement([origLines[0] ?? ""], nextLines);
 
-					if (origLines.every((line, i) => line === nextLines[i])) {
+					if (origLines.length === nextLines.length && origLines.every((line, i) => line === nextLines[i])) {
 						noopEdits.push({
 							editIndex: idx,
 							loc: `${edit.tag.line}#${edit.tag.hash}`,
@@ -838,7 +838,7 @@ export function applyHashlineEdits(
 					: edit.content;
 				stripped = autocorrect ? restoreOldWrappedLines(origLines, stripped) : stripped;
 				const newLines = autocorrect ? restoreIndentForPairedReplacement(origLines, stripped) : stripped;
-				if (origLines.every((line, i) => line === newLines[i])) {
+				if (origLines.length === newLines.length && origLines.every((line, i) => line === newLines[i])) {
 					noopEdits.push({
 						editIndex: idx,
 						loc: `${edit.tag.line}#${edit.tag.hash}`,
@@ -858,7 +858,11 @@ export function applyHashlineEdits(
 					: edit.content;
 				stripped = autocorrect ? restoreOldWrappedLines(origLines, stripped) : stripped;
 				const newLines = autocorrect ? restoreIndentForPairedReplacement(origLines, stripped) : stripped;
-				if (autocorrect && origLines.every((line, i) => line === newLines[i])) {
+				if (
+					autocorrect &&
+					origLines.length === newLines.length &&
+					origLines.every((line, i) => line === newLines[i])
+				) {
 					noopEdits.push({
 						editIndex: idx,
 						loc: `${edit.first.line}#${edit.first.hash}`,

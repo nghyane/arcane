@@ -130,6 +130,7 @@ export class ToolExecutionComponent extends Container {
 			this.addChild(this.#contentBox);
 		}
 
+		this.#updateSpinnerAnimation();
 		this.#updateDisplay();
 	}
 
@@ -212,10 +213,8 @@ export class ToolExecutionComponent extends Container {
 	 * Start or stop spinner animation based on whether this is a partial task result.
 	 */
 	#updateSpinnerAnimation(): void {
-		// Spinner for: task tool with partial result, or edit/write while args streaming
-		const isStreamingArgs = !this.#argsComplete && (this.#toolName === "edit" || this.#toolName === "write");
-		const isPartialTask = this.#isPartial && this.#tool?.mergeCallAndResult === true;
-		const needsSpinner = isStreamingArgs || isPartialTask;
+		// Spinner runs whenever the tool hasn't produced a final result
+		const needsSpinner = this.#isPartial || !this.#result || !this.#argsComplete;
 		if (needsSpinner && !this.#spinnerInterval) {
 			this.#spinnerInterval = setInterval(() => {
 				const frameCount = theme.spinnerFrames.length;
