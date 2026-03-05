@@ -12,7 +12,7 @@ import {
 	visibleWidth,
 } from "@nghyane/arcane-tui";
 import { MODEL_ROLE_IDS, MODEL_ROLES, type ModelRegistry, type ModelRole } from "../../config/model-registry";
-import { parseModelString } from "../../config/model-resolver";
+import { parseModelPattern, parseModelString } from "../../config/model-resolver";
 import type { Settings } from "../../config/settings";
 import { type ThemeColor, theme } from "../../theme/theme";
 import { fuzzyFilter } from "../../utils/fuzzy";
@@ -22,6 +22,19 @@ function makeInvertedBadge(label: string, color: ThemeColor): string {
 	const fgAnsi = theme.getFgAnsi(color);
 	const bgAnsi = fgAnsi.replace(/\x1b\[38;/g, "\x1b[48;");
 	return `${bgAnsi}\x1b[30m ${label} \x1b[39m${theme.getAppBgAnsi()}`;
+}
+
+function formatRoleThinkingLabel(thinkingLevel: string | undefined): string {
+	if (!thinkingLevel || thinkingLevel === "default") return "inherit";
+	const labels: Record<string, string> = {
+		minimal: "min",
+		low: "low",
+		medium: "med",
+		high: "high",
+		xhigh: "xhi",
+		off: "off",
+	};
+	return labels[thinkingLevel] ?? thinkingLevel;
 }
 
 interface ModelItem {
@@ -40,7 +53,11 @@ interface MenuAction {
 	role: ModelRole;
 }
 
-const MENU_ACTIONS: MenuAction[] = MODEL_ROLE_IDS.map(role => ({ label: `Set as ${MODEL_ROLES[role].name}`, role }));
+const MENU_ACTIONS: MenuAction[] = MODEL_ROLE_IDS.map(role => {
+	const roleInfo = MODEL_ROLES[role];
+	const roleLabel = roleInfo.tag ? `${roleInfo.tag} (${roleInfo.name})` : roleInfo.name;
+	return { label: `Set as ${roleLabel}`, role };
+});
 
 const ALL_TAB = "ALL";
 
@@ -69,7 +86,7 @@ export class ModelSelectorComponent extends Container {
 	#allModels: ModelItem[] = [];
 	#filteredModels: ModelItem[] = [];
 	#selectedIndex: number = 0;
-	#roles: { [key in ModelRole]?: Model } = {};
+	#roles: { [key in ModelRole]?: { model: Model; thinkingLevel?: string } } = {};
 	#settings: Settings;
 	#modelRegistry: ModelRegistry;
 	#onSelectCallback: (model: Model, role: ModelRole | null) => void;
@@ -183,8 +200,14 @@ export class ModelSelectorComponent extends Container {
 			if (parsed) {
 				const model = allModels.find(m => m.provider === parsed.provider && m.id === parsed.id);
 				if (model) {
-					this.#roles[role] = model;
+					this.#roles[role] = { model };
+					continue;
 				}
+			}
+			// Fallback: parse as pattern to extract thinking level from suffix
+			const result = parseModelPattern(modelId, allModels);
+			if (result.model) {
+				this.#roles[role] = { model: result.model, thinkingLevel: result.thinkingLevel };
 			}
 		}
 	}
@@ -198,7 +221,7 @@ export class ModelSelectorComponent extends Container {
 			let i = 0;
 			while (i < MODEL_ROLE_IDS.length) {
 				const role = MODEL_ROLE_IDS[i];
-				if (this.#roles[role] && modelsAreEqual(this.#roles[role], model.model)) {
+				if (this.#roles[role] && modelsAreEqual(this.#roles[role]!.model, model.model)) {
 					break;
 				}
 				i++;
@@ -395,9 +418,12 @@ export class ModelSelectorComponent extends Container {
 			const badges: string[] = [];
 			for (const role of MODEL_ROLE_IDS) {
 				const { tag, color } = MODEL_ROLES[role];
-				if (tag && modelsAreEqual(this.#roles[role], item.model)) {
-					badges.push(makeInvertedBadge(tag, color ?? "success"));
-				}
+				const assigned = this.#roles[role];
+				if (!tag || !assigned || !modelsAreEqual(assigned.model, item.model)) continue;
+
+				const badge = makeInvertedBadge(tag, color ?? "success");
+				const thinkingLabel = formatRoleThinkingLabel(assigned.thinkingLevel);
+				badges.push(`${badge} ${theme.fg("dim", `(${thinkingLabel})`)}`);
 			}
 			const badgeText = badges.length > 0 ? ` ${badges.join(" ")}` : "";
 
@@ -596,7 +622,7 @@ export class ModelSelectorComponent extends Container {
 		this.#settings.setModelRole(role, `${model.provider}/${model.id}`);
 
 		// Update local state for UI
-		this.#roles[role] = model;
+		this.#roles[role] = { model };
 
 		// Notify caller (for updating agent state if needed)
 		this.#onSelectCallback(model, role);

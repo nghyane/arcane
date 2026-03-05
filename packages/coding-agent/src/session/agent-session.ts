@@ -555,6 +555,24 @@ export class AgentSession {
 						{ deliverAs: "nextTurn" },
 					);
 				}
+				if (toolName === "edit" && isError) {
+					const errorText = content?.find(part => part.type === "text")?.text;
+					const reminderText = [
+						"<system_reminder>",
+						"The edit tool failed. Re-read the file to get fresh line tags, then retry the edit.",
+						errorText ? `Failure: ${errorText}` : "Failure: edit returned an error.",
+						"</system_reminder>",
+					].join("\n");
+					await this.sendCustomMessage(
+						{
+							customType: "edit-error-reminder",
+							content: reminderText,
+							display: false,
+							details: { toolName, errorText },
+						},
+						{ deliverAs: "nextTurn" },
+					);
+				}
 			}
 		}
 
@@ -2335,33 +2353,13 @@ Be thorough - include exact file paths, function names, error messages, and tech
 		const availableModels = this.#model.registry.getAvailable();
 		if (availableModels.length === 0) return undefined;
 
-		const candidates: Model[] = [];
-		const seen = new Set<string>();
-		const addCandidate = (candidate: Model | undefined): void => {
-			if (!candidate) return;
-			const key = this.#model.getModelKey(candidate);
-			if (seen.has(key)) return;
-			seen.add(key);
-			candidates.push(candidate);
-		};
-
-		addCandidate(this.#model.resolveContextPromotionTarget(currentModel, availableModels));
-
-		const sameProviderLarger = [...availableModels]
-			.filter(
-				m => m.provider === currentModel.provider && m.api === currentModel.api && m.contextWindow > contextWindow,
-			)
-			.sort((a, b) => a.contextWindow - b.contextWindow);
-		addCandidate(sameProviderLarger[0]);
-		for (const candidate of candidates) {
-			if (modelsAreEqual(candidate, currentModel)) continue;
-			if (candidate.contextWindow <= contextWindow) continue;
-			const apiKey = await this.#model.registry.getApiKey(candidate, this.sessionId);
-			if (!apiKey) continue;
-			return candidate;
-		}
-
-		return undefined;
+		const candidate = this.#model.resolveContextPromotionTarget(currentModel, availableModels);
+		if (!candidate) return undefined;
+		if (modelsAreEqual(candidate, currentModel)) return undefined;
+		if (candidate.contextWindow <= contextWindow) return undefined;
+		const apiKey = await this.#model.registry.getApiKey(candidate, this.sessionId);
+		if (!apiKey) return undefined;
+		return candidate;
 	}
 	/**
 	 * Internal: Run auto-compaction with events.

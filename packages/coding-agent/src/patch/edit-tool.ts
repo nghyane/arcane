@@ -30,6 +30,7 @@ import {
 import { findMatch } from "./fuzzy";
 import {
 	applyHashlineEdits,
+	buildCompactDiffPreview,
 	computeLineHash,
 	type HashlineEdit,
 	type LineTag,
@@ -493,11 +494,15 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 				.get();
 
 			const resultText = rename ? `Updated and moved ${path} to ${rename}` : `Updated ${path}`;
+			const preview = buildCompactDiffPreview(diffResult.diff);
+			const summaryLine = `Changes: +${preview.addedLines} -${preview.removedLines}`;
+			const previewBlock = preview.preview ? `\n\nDiff preview:\n${preview.preview}` : "";
+			const warningsBlock = result.warnings?.length ? `\n\nWarnings:\n${result.warnings.join("\n")}` : "";
 			return {
 				content: [
 					{
 						type: "text",
-						text: `${resultText}${result.warnings?.length ? `\n\nWarnings:\n${result.warnings.join("\n")}` : ""}`,
+						text: `${resultText}\n${summaryLine}${previewBlock}${warningsBlock}`,
 					},
 				],
 				details: {

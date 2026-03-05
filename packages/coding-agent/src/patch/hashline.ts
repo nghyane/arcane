@@ -1012,3 +1012,105 @@ export function applyHashlineEdits(
 		return null;
 	}
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Compact diff preview for model-visible tool responses
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface CompactDiffPreview {
+	preview: string;
+	addedLines: number;
+	removedLines: number;
+}
+
+export interface CompactDiffOptions {
+	maxUnchangedRun?: number;
+	maxAdditionRun?: number;
+	maxDeletionRun?: number;
+	maxOutputLines?: number;
+}
+
+const NUMBERED_DIFF_LINE_RE = /^([ +-])\d+\|/;
+
+type RunPosition = "first" | "last" | "middle";
+
+function collapseRun(lines: string[], max: number, label: string, position: RunPosition): string[] {
+	const len = lines.length;
+	if (position === "first") {
+		if (len <= max) return lines;
+		return [` ... ${len - max} more ${label} lines`, ...lines.slice(-max)];
+	}
+	if (position === "last") {
+		if (len <= max) return lines;
+		return [...lines.slice(0, max), ` ... ${len - max} more ${label} lines`];
+	}
+	if (len <= max * 2) return lines;
+	return [...lines.slice(0, max), ` ... ${len - max * 2} more ${label} lines`, ...lines.slice(-max)];
+}
+
+/**
+ * Build a compact diff preview for model-visible tool responses.
+ * Collapses long unchanged/added/removed runs so the model sees the shape
+ * of edits without replaying full file content.
+ */
+export function buildCompactDiffPreview(diff: string, options: CompactDiffOptions = {}): CompactDiffPreview {
+	const maxCtx = options.maxUnchangedRun ?? 2;
+	const maxAdd = options.maxAdditionRun ?? 2;
+	const maxDel = options.maxDeletionRun ?? 2;
+	const maxOut = options.maxOutputLines ?? 16;
+
+	if (diff.length === 0) return { preview: "", addedLines: 0, removedLines: 0 };
+
+	const inputLines = diff.split("\n");
+
+	// Single-pass: group consecutive lines by kind into run spans
+	type Kind = " " | "+" | "-" | "meta";
+	const runs: { kind: Kind; start: number; end: number }[] = [];
+	for (let i = 0; i < inputLines.length; i++) {
+		const m = NUMBERED_DIFF_LINE_RE.exec(inputLines[i]);
+		const kind: Kind = (m?.[1] as " " | "+" | "-" | undefined) ?? "meta";
+		const prev = runs[runs.length - 1];
+		if (prev && prev.kind === kind) {
+			prev.end = i;
+		} else {
+			runs.push({ kind, start: i, end: i });
+		}
+	}
+
+	const out: string[] = [];
+	let addedLines = 0;
+	let removedLines = 0;
+
+	for (let ri = 0; ri < runs.length; ri++) {
+		const { kind, start, end } = runs[ri];
+		const slice = inputLines.slice(start, end + 1);
+		switch (kind) {
+			case "meta":
+				out.push(...slice);
+				break;
+			case "+":
+				addedLines += slice.length;
+				out.push(...collapseRun(slice, maxAdd, "added", "last"));
+				break;
+			case "-":
+				removedLines += slice.length;
+				out.push(...collapseRun(slice, maxDel, "removed", "last"));
+				break;
+			case " ": {
+				const pos: RunPosition = ri === 0 ? "first" : ri === runs.length - 1 ? "last" : "middle";
+				out.push(...collapseRun(slice, maxCtx, "unchanged", pos));
+				break;
+			}
+		}
+	}
+
+	if (out.length > maxOut) {
+		return {
+			preview: [...out.slice(0, maxOut), ` ... ${out.length - maxOut} more preview lines`].join("\n"),
+			addedLines,
+			removedLines,
+		};
+	}
+
+	return { preview: out.join("\n"), addedLines, removedLines };
+}

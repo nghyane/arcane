@@ -315,9 +315,15 @@ const NANO_GPT_NON_TEXT_MODEL_TOKENS = [
 	"tts",
 ] as const;
 
+/** Regex matching NanoGPT `:thinking` suffixed model IDs (with or without a level). */
+const NANO_GPT_THINKING_SUFFIX_RE = /:thinking(:[^:]+)?$/;
+
 function isLikelyNanoGptTextModelId(id: string): boolean {
 	const normalized = id.trim().toLowerCase();
 	if (!normalized) {
+		return false;
+	}
+	if (NANO_GPT_THINKING_SUFFIX_RE.test(normalized)) {
 		return false;
 	}
 	return !NANO_GPT_NON_TEXT_MODEL_TOKENS.some(token => normalized.includes(token));
@@ -1182,8 +1188,9 @@ export function nanoGptModelManagerOptions(
 	return {
 		providerId: "nanogpt",
 		...(apiKey && {
-			fetchDynamicModels: () =>
-				fetchOpenAICompatibleModels({
+			fetchDynamicModels: async () => {
+				const thinkingBaseIds = new Set<string>();
+				const models = await fetchOpenAICompatibleModels({
 					api: "openai-completions",
 					provider: "nanogpt",
 					baseUrl,
@@ -1200,8 +1207,23 @@ export function nanoGptModelManagerOptions(
 						const mapped = mapWithBundledReference(entry, defaults, reference);
 						return { ...mapped, api: "openai-completions", provider: "nanogpt" };
 					},
-					filterModel: (_entry, model) => isLikelyNanoGptTextModelId(model.id),
-				}),
+					filterModel: (_entry, model) => {
+						const match = NANO_GPT_THINKING_SUFFIX_RE.exec(model.id);
+						if (match) {
+							thinkingBaseIds.add(model.id.slice(0, match.index));
+							return false;
+						}
+						return isLikelyNanoGptTextModelId(model.id);
+					},
+				});
+				if (!models) return null;
+				for (const model of models) {
+					if (!model.reasoning && thinkingBaseIds.has(model.id)) {
+						(model as { reasoning: boolean }).reasoning = true;
+					}
+				}
+				return models;
+			},
 		}),
 	};
 }
