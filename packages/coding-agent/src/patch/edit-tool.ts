@@ -314,10 +314,10 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 						});
 						break;
 					}
-					case "replace": {
+					case "replace_range": {
 						const { first, last, content } = edit;
 						anchorEdits.push({
-							op: "replace",
+							op: "replace_range",
 							first: parseTag(first),
 							last: parseTag(last),
 							content: hashlineParseContent(content),
@@ -419,7 +419,7 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 							case "set":
 								refs.push(edit.tag);
 								break;
-							case "replace":
+							case "replace_range":
 								refs.push(edit.first, edit.last);
 								break;
 							case "append":

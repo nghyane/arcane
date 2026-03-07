@@ -241,7 +241,7 @@ describe("applyHashlineEdits — replace", () => {
 	it("range replace (shrink)", () => {
 		const content = "aaa\nbbb\nccc\nddd";
 		const edits: HashlineEdit[] = [
-			{ op: "replace", first: makeTag(2, "bbb"), last: makeTag(3, "ccc"), content: ["ONE"] },
+			{ op: "replace_range", first: makeTag(2, "bbb"), last: makeTag(3, "ccc"), content: ["ONE"] },
 		];
 
 		const result = applyHashlineEdits(content, edits);
@@ -251,7 +251,7 @@ describe("applyHashlineEdits — replace", () => {
 	it("range replace (same count)", () => {
 		const content = "aaa\nbbb\nccc\nddd";
 		const edits: HashlineEdit[] = [
-			{ op: "replace", first: makeTag(2, "bbb"), last: makeTag(3, "ccc"), content: ["XXX", "YYY"] },
+			{ op: "replace_range", first: makeTag(2, "bbb"), last: makeTag(3, "ccc"), content: ["XXX", "YYY"] },
 		];
 
 		const result = applyHashlineEdits(content, edits);
@@ -294,7 +294,9 @@ describe("applyHashlineEdits — delete", () => {
 
 	it("deletes range of lines", () => {
 		const content = "aaa\nbbb\nccc\nddd";
-		const edits: HashlineEdit[] = [{ op: "replace", first: makeTag(2, "bbb"), last: makeTag(3, "ccc"), content: [] }];
+		const edits: HashlineEdit[] = [
+			{ op: "replace_range", first: makeTag(2, "bbb"), last: makeTag(3, "ccc"), content: [] },
+		];
 
 		const result = applyHashlineEdits(content, edits);
 		expect(result.content).toBe("aaa\nddd");
@@ -534,7 +536,7 @@ describe("applyHashlineEdits — heuristics", () => {
 		const end = 6;
 		const edits: HashlineEdit[] = [
 			{
-				op: "replace",
+				op: "replace_range",
 				first: makeTag(start, "if (cond) {"),
 				last: makeTag(end, "}"),
 				// Echoes line after the range ("after();") and also reformats the import line.
@@ -552,7 +554,7 @@ describe("applyHashlineEdits — heuristics", () => {
 		const content = ["import { foo } from 'x';", "import { bar } from 'y';", "const x = 1;"].join("\n");
 		const edits: HashlineEdit[] = [
 			{
-				op: "replace",
+				op: "replace_range",
 				first: makeTag(1, "import { foo } from 'x';"),
 				last: makeTag(2, "import { bar } from 'y';"),
 				content: ["import {foo} from 'x';", "import { bar } from 'y';", "// added"],
@@ -657,7 +659,7 @@ describe("applyHashlineEdits — heuristics", () => {
 	it("treats same-line ranges as single-line replacements", () => {
 		const content = "aaa\nbbb\nccc";
 		const good = makeTag(2, "bbb");
-		const edits: HashlineEdit[] = [{ op: "replace", first: good, last: good, content: ["BBB"] }];
+		const edits: HashlineEdit[] = [{ op: "replace_range", first: good, last: good, content: ["BBB"] }];
 		const result = applyHashlineEdits(content, edits);
 		expect(result.content).toBe("aaa\nBBB\nccc");
 	});
@@ -706,7 +708,7 @@ describe("applyHashlineEdits — multiple edits", () => {
 		const content = "one\ntwo\nthree\nfour\nfive\nsix";
 		const edits: HashlineEdit[] = [
 			{
-				op: "replace",
+				op: "replace_range",
 				first: makeTag(2, "two"),
 				last: makeTag(3, "three"),
 				content: ["TWO_THREE"],
@@ -815,7 +817,7 @@ describe("applyHashlineEdits — errors", () => {
 	it("rejects range with start > end", () => {
 		const content = "aaa\nbbb\nccc\nddd\neee";
 		const edits: HashlineEdit[] = [
-			{ op: "replace", first: makeTag(5, "eee"), last: makeTag(2, "bbb"), content: ["X"] },
+			{ op: "replace_range", first: makeTag(5, "eee"), last: makeTag(2, "bbb"), content: ["X"] },
 		];
 
 		expect(() => applyHashlineEdits(content, edits)).toThrow();

@@ -17,7 +17,7 @@ import type { HashMismatch } from "./types";
 export type LineTag = { line: number; hash: string };
 export type HashlineEdit =
 	| { op: "set"; tag: LineTag; content: string[] }
-	| { op: "replace"; first: LineTag; last: LineTag; content: string[] }
+	| { op: "replace_range"; first: LineTag; last: LineTag; content: string[] }
 	| { op: "append"; after?: LineTag; content: string[] }
 	| { op: "prepend"; before?: LineTag; content: string[] }
 	| { op: "insert"; after: LineTag; before: LineTag; content: string[] };
@@ -647,7 +647,7 @@ export function applyHashlineEdits(
 				case "set":
 					touched.add(edit.tag.line);
 					break;
-				case "replace":
+				case "replace_range":
 					for (let ln = edit.first.line; ln <= edit.last.line; ln++) touched.add(ln);
 					break;
 				case "append":
@@ -715,7 +715,7 @@ export function applyHashlineEdits(
 				if (!afterValid || !beforeValid) continue;
 				break;
 			}
-			case "replace": {
+			case "replace_range": {
 				if (edit.first.line > edit.last.line) {
 					throw new Error(`Range start line ${edit.first.line} must be <= end line ${edit.last.line}`);
 				}
@@ -740,7 +740,7 @@ export function applyHashlineEdits(
 			case "set":
 				lineKey = `s:${edit.tag.line}`;
 				break;
-			case "replace":
+			case "replace_range":
 				lineKey = `r:${edit.first.line}:${edit.last.line}`;
 				break;
 			case "append":
@@ -783,7 +783,7 @@ export function applyHashlineEdits(
 				sortLine = edit.tag.line;
 				precedence = 0;
 				break;
-			case "replace":
+			case "replace_range":
 				sortLine = edit.last.line;
 				precedence = 0;
 				break;
@@ -850,7 +850,7 @@ export function applyHashlineEdits(
 				trackFirstChanged(edit.tag.line);
 				break;
 			}
-			case "replace": {
+			case "replace_range": {
 				const count = edit.last.line - edit.first.line + 1;
 				const origLines = originalFileLines.slice(edit.first.line - 1, edit.first.line - 1 + count);
 				let stripped = autocorrect

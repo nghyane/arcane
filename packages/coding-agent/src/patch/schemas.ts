@@ -133,7 +133,7 @@ const hashlinePrependEditSchema = Type.Object(
 
 const hashlineRangeEditSchema = Type.Object(
 	{
-		op: Type.Literal("replace"),
+		op: Type.Literal("replace_range"),
 		first: hashlineTagFormat("first line"),
 		last: hashlineTagFormat("last line"),
 		content: hashlineReplaceContentFormat("Replacement"),
