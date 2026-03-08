@@ -336,6 +336,7 @@ function coerceArgsFromErrors(
 const ajv = new Ajv({
 	allErrors: true,
 	strict: false,
+	discriminator: true,
 });
 addFormats(ajv);
 

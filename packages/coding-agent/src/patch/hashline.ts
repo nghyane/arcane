@@ -16,13 +16,8 @@ import type { HashMismatch } from "./types";
 
 export type LineTag = { line: number; hash: string };
 export type HashlineEdit =
-	| { op: "set"; tag: LineTag; content: string[] }
-	| { op: "replace_range"; first: LineTag; last: LineTag; content: string[] }
-	| { op: "append"; after?: LineTag; content: string[] }
-	| { op: "prepend"; before?: LineTag; content: string[] }
-	| { op: "insert"; after: LineTag; before: LineTag; content: string[] };
-export type ReplaceTextEdit = { op: "replaceText"; old_text: string; new_text: string; all?: boolean };
-export type EditSpec = HashlineEdit | ReplaceTextEdit;
+	| { op: "replace"; target: LineTag; end?: LineTag; content: string[] }
+	| { op: "insert"; target: LineTag; position: "before" | "after"; content: string[] };
 
 /**
  * Compare two strings ignoring all whitespace differences.
@@ -138,17 +133,6 @@ function stripInsertAnchorEchoBefore(anchorLine: string, dstLines: string[]): st
 		return dstLines.slice(0, -1);
 	}
 	return dstLines;
-}
-
-function stripInsertBoundaryEcho(afterLine: string, beforeLine: string, dstLines: string[]): string[] {
-	let out = dstLines;
-	if (out.length > 1 && equalsIgnoringWhitespace(out[0], afterLine)) {
-		out = out.slice(1);
-	}
-	if (out.length > 1 && equalsIgnoringWhitespace(out[out.length - 1], beforeLine)) {
-		out = out.slice(0, -1);
-	}
-	return out;
 }
 
 function stripRangeBoundaryEcho(fileLines: string[], startLine: number, endLine: number, dstLines: string[]): string[] {
@@ -644,25 +628,14 @@ export function applyHashlineEdits(
 		const touched = new Set<number>();
 		for (const edit of edits) {
 			switch (edit.op) {
-				case "set":
-					touched.add(edit.tag.line);
-					break;
-				case "replace_range":
-					for (let ln = edit.first.line; ln <= edit.last.line; ln++) touched.add(ln);
-					break;
-				case "append":
-					if (edit.after) {
-						touched.add(edit.after.line);
-					}
-					break;
-				case "prepend":
-					if (edit.before) {
-						touched.add(edit.before.line);
+				case "replace":
+					touched.add(edit.target.line);
+					if (edit.end) {
+						for (let ln = edit.target.line; ln <= edit.end.line; ln++) touched.add(ln);
 					}
 					break;
 				case "insert":
-					touched.add(edit.after.line);
-					touched.add(edit.before.line);
+					touched.add(edit.target.line);
 					break;
 			}
 		}
@@ -685,44 +658,21 @@ export function applyHashlineEdits(
 	}
 	for (const edit of edits) {
 		switch (edit.op) {
-			case "set": {
-				if (!validateRef(edit.tag)) continue;
-				break;
-			}
-			case "append": {
-				if (edit.content.length === 0) {
-					throw new Error('Insert-after edit (src "N#HH..") requires non-empty dst');
+			case "replace": {
+				if (!validateRef(edit.target)) continue;
+				if (edit.end) {
+					if (edit.target.line > edit.end.line) {
+						throw new Error(`Range start line ${edit.target.line} must be <= end line ${edit.end.line}`);
+					}
+					if (!validateRef(edit.end)) continue;
 				}
-				if (edit.after && !validateRef(edit.after)) continue;
-				break;
-			}
-			case "prepend": {
-				if (edit.content.length === 0) {
-					throw new Error('Insert-before edit (src "N#HH..") requires non-empty dst');
-				}
-				if (edit.before && !validateRef(edit.before)) continue;
 				break;
 			}
 			case "insert": {
 				if (edit.content.length === 0) {
-					throw new Error('Insert-between edit (src "A#HH.. B#HH..") requires non-empty dst');
+					throw new Error("Insert edit requires non-empty content");
 				}
-				if (edit.before.line <= edit.after.line) {
-					throw new Error(`insert requires after (${edit.after.line}) < before (${edit.before.line})`);
-				}
-				const afterValid = validateRef(edit.after);
-				const beforeValid = validateRef(edit.before);
-				if (!afterValid || !beforeValid) continue;
-				break;
-			}
-			case "replace_range": {
-				if (edit.first.line > edit.last.line) {
-					throw new Error(`Range start line ${edit.first.line} must be <= end line ${edit.last.line}`);
-				}
-
-				const startValid = validateRef(edit.first);
-				const endValid = validateRef(edit.last);
-				if (!startValid || !endValid) continue;
+				if (!validateRef(edit.target)) continue;
 				break;
 			}
 		}
@@ -737,28 +687,11 @@ export function applyHashlineEdits(
 		const edit = edits[i];
 		let lineKey: string;
 		switch (edit.op) {
-			case "set":
-				lineKey = `s:${edit.tag.line}`;
-				break;
-			case "replace_range":
-				lineKey = `r:${edit.first.line}:${edit.last.line}`;
-				break;
-			case "append":
-				if (edit.after) {
-					lineKey = `i:${edit.after.line}`;
-					break;
-				}
-				lineKey = "ieof";
-				break;
-			case "prepend":
-				if (edit.before) {
-					lineKey = `ib:${edit.before.line}`;
-					break;
-				}
-				lineKey = "ibef";
+			case "replace":
+				lineKey = edit.end ? `r:${edit.target.line}:${edit.end.line}` : `s:${edit.target.line}`;
 				break;
 			case "insert":
-				lineKey = `ix:${edit.after.line}:${edit.before.line}`;
+				lineKey = `i:${edit.target.line}:${edit.position}`;
 				break;
 		}
 		const dstKey = `${lineKey}:${edit.content.join("\n")}`;
@@ -779,25 +712,13 @@ export function applyHashlineEdits(
 		let sortLine: number;
 		let precedence: number;
 		switch (edit.op) {
-			case "set":
-				sortLine = edit.tag.line;
+			case "replace":
+				sortLine = edit.end ? edit.end.line : edit.target.line;
 				precedence = 0;
-				break;
-			case "replace_range":
-				sortLine = edit.last.line;
-				precedence = 0;
-				break;
-			case "append":
-				sortLine = edit.after ? edit.after.line : fileLines.length + 1;
-				precedence = 1;
-				break;
-			case "prepend":
-				sortLine = edit.before ? edit.before.line : 0;
-				precedence = 2;
 				break;
 			case "insert":
-				sortLine = edit.before.line;
-				precedence = 3;
+				sortLine = edit.target.line;
+				precedence = edit.position === "before" ? 2 : 1;
 				break;
 		}
 		return { edit, idx, sortLine, precedence };
@@ -808,137 +729,76 @@ export function applyHashlineEdits(
 	// Apply edits bottom-up
 	for (const { edit, idx } of annotated) {
 		switch (edit.op) {
-			case "set": {
-				const merged = autocorrect ? maybeExpandSingleLineMerge(edit.tag.line, edit.content) : null;
-				if (merged) {
-					const origLines = originalFileLines.slice(
-						merged.startLine - 1,
-						merged.startLine - 1 + merged.deleteCount,
-					);
-					let nextLines = merged.newLines;
-					nextLines = restoreIndentForPairedReplacement([origLines[0] ?? ""], nextLines);
+			case "replace": {
+				const startLine = edit.target.line;
+				const endLine = edit.end ? edit.end.line : edit.target.line;
+				const count = endLine - startLine + 1;
 
-					if (origLines.length === nextLines.length && origLines.every((line, i) => line === nextLines[i])) {
-						noopEdits.push({
-							editIndex: idx,
-							loc: `${edit.tag.line}#${edit.tag.hash}`,
-							currentContent: origLines.join("\n"),
-						});
+				// Single-line merge expansion (autocorrect)
+				if (!edit.end) {
+					const merged = autocorrect ? maybeExpandSingleLineMerge(startLine, edit.content) : null;
+					if (merged) {
+						const origLines = originalFileLines.slice(
+							merged.startLine - 1,
+							merged.startLine - 1 + merged.deleteCount,
+						);
+						let nextLines = merged.newLines;
+						nextLines = restoreIndentForPairedReplacement([origLines[0] ?? ""], nextLines);
+
+						if (origLines.length === nextLines.length && origLines.every((line, i) => line === nextLines[i])) {
+							noopEdits.push({
+								editIndex: idx,
+								loc: `${edit.target.line}#${edit.target.hash}`,
+								currentContent: origLines.join("\n"),
+							});
+							break;
+						}
+						fileLines.splice(merged.startLine - 1, merged.deleteCount, ...nextLines);
+						trackFirstChanged(merged.startLine);
 						break;
 					}
-					fileLines.splice(merged.startLine - 1, merged.deleteCount, ...nextLines);
-					trackFirstChanged(merged.startLine);
-					break;
 				}
 
-				const count = 1;
-				const origLines = originalFileLines.slice(edit.tag.line - 1, edit.tag.line);
+				const origLines = originalFileLines.slice(startLine - 1, startLine - 1 + count);
 				let stripped = autocorrect
-					? stripRangeBoundaryEcho(originalFileLines, edit.tag.line, edit.tag.line, edit.content)
+					? stripRangeBoundaryEcho(originalFileLines, startLine, endLine, edit.content)
 					: edit.content;
 				stripped = autocorrect ? restoreOldWrappedLines(origLines, stripped) : stripped;
 				const newLines = autocorrect ? restoreIndentForPairedReplacement(origLines, stripped) : stripped;
 				if (origLines.length === newLines.length && origLines.every((line, i) => line === newLines[i])) {
 					noopEdits.push({
 						editIndex: idx,
-						loc: `${edit.tag.line}#${edit.tag.hash}`,
+						loc: `${edit.target.line}#${edit.target.hash}`,
 						currentContent: origLines.join("\n"),
 					});
 					break;
 				}
-				fileLines.splice(edit.tag.line - 1, count, ...newLines);
-				trackFirstChanged(edit.tag.line);
-				break;
-			}
-			case "replace_range": {
-				const count = edit.last.line - edit.first.line + 1;
-				const origLines = originalFileLines.slice(edit.first.line - 1, edit.first.line - 1 + count);
-				let stripped = autocorrect
-					? stripRangeBoundaryEcho(originalFileLines, edit.first.line, edit.last.line, edit.content)
-					: edit.content;
-				stripped = autocorrect ? restoreOldWrappedLines(origLines, stripped) : stripped;
-				const newLines = autocorrect ? restoreIndentForPairedReplacement(origLines, stripped) : stripped;
-				if (origLines.length === newLines.length && origLines.every((line, i) => line === newLines[i])) {
-					noopEdits.push({
-						editIndex: idx,
-						loc: `${edit.first.line}#${edit.first.hash}`,
-						currentContent: origLines.join("\n"),
-					});
-					break;
-				}
-				fileLines.splice(edit.first.line - 1, count, ...newLines);
-				trackFirstChanged(edit.first.line);
-				break;
-			}
-			case "append": {
-				const inserted = edit.after
-					? autocorrect
-						? stripInsertAnchorEchoAfter(originalFileLines[edit.after.line - 1], edit.content)
-						: edit.content
-					: edit.content;
-				if (inserted.length === 0) {
-					noopEdits.push({
-						editIndex: idx,
-						loc: edit.after ? `${edit.after.line}#${edit.after.hash}` : "EOF",
-						currentContent: edit.after ? originalFileLines[edit.after.line - 1] : "",
-					});
-					break;
-				}
-				if (edit.after) {
-					fileLines.splice(edit.after.line, 0, ...inserted);
-					trackFirstChanged(edit.after.line + 1);
-				} else {
-					if (fileLines.length === 1 && fileLines[0] === "") {
-						fileLines.splice(0, 1, ...inserted);
-						trackFirstChanged(1);
-					} else {
-						fileLines.splice(fileLines.length, 0, ...inserted);
-						trackFirstChanged(fileLines.length - inserted.length + 1);
-					}
-				}
-				break;
-			}
-			case "prepend": {
-				const inserted = edit.before
-					? autocorrect
-						? stripInsertAnchorEchoBefore(originalFileLines[edit.before.line - 1], edit.content)
-						: edit.content
-					: edit.content;
-				if (inserted.length === 0) {
-					noopEdits.push({
-						editIndex: idx,
-						loc: edit.before ? `${edit.before.line}#${edit.before.hash}` : "BOF",
-						currentContent: edit.before ? originalFileLines[edit.before.line - 1] : "",
-					});
-					break;
-				}
-				if (edit.before) {
-					fileLines.splice(edit.before.line - 1, 0, ...inserted);
-					trackFirstChanged(edit.before.line);
-				} else {
-					if (fileLines.length === 1 && fileLines[0] === "") {
-						fileLines.splice(0, 1, ...inserted);
-					} else {
-						fileLines.splice(0, 0, ...inserted);
-					}
-					trackFirstChanged(1);
-				}
+				fileLines.splice(startLine - 1, count, ...newLines);
+				trackFirstChanged(startLine);
 				break;
 			}
 			case "insert": {
-				const afterLine = originalFileLines[edit.after.line - 1];
-				const beforeLine = originalFileLines[edit.before.line - 1];
-				const inserted = autocorrect ? stripInsertBoundaryEcho(afterLine, beforeLine, edit.content) : edit.content;
+				const anchorLine = originalFileLines[edit.target.line - 1];
+				const inserted = autocorrect
+					? edit.position === "after"
+						? stripInsertAnchorEchoAfter(anchorLine, edit.content)
+						: stripInsertAnchorEchoBefore(anchorLine, edit.content)
+					: edit.content;
 				if (inserted.length === 0) {
 					noopEdits.push({
 						editIndex: idx,
-						loc: `${edit.after.line}#${edit.after.hash}..${edit.before.line}#${edit.before.hash}`,
-						currentContent: `${afterLine}\n${beforeLine}`,
+						loc: `${edit.target.line}#${edit.target.hash}`,
+						currentContent: anchorLine,
 					});
 					break;
 				}
-				fileLines.splice(edit.before.line - 1, 0, ...inserted);
-				trackFirstChanged(edit.before.line);
+				if (edit.position === "after") {
+					fileLines.splice(edit.target.line, 0, ...inserted);
+					trackFirstChanged(edit.target.line + 1);
+				} else {
+					fileLines.splice(edit.target.line - 1, 0, ...inserted);
+					trackFirstChanged(edit.target.line);
+				}
 				break;
 			}
 		}

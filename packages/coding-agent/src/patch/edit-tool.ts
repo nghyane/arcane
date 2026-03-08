@@ -35,7 +35,6 @@ import {
 	type HashlineEdit,
 	type LineTag,
 	parseTag,
-	type ReplaceTextEdit,
 } from "./hashline";
 import { detectLineEnding, normalizeToLF, restoreLineEndings, stripBom } from "./normalize";
 import {
@@ -44,7 +43,6 @@ import {
 	type HashlineParams,
 	hashlineEditSchema,
 	hashlineParseContent,
-	hashlineParseContentString,
 	normalizeEditMode,
 	type PatchParams,
 	patchEditSchema,
@@ -268,97 +266,29 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 			}
 
 			if (!(await file.exists())) {
-				const content: string[] = [];
-				for (const edit of edits) {
-					switch (edit.op) {
-						case "append": {
-							if (edit.after) {
-								throw new Error(`File not found: ${path}`);
-							}
-							content.push(...hashlineParseContent(edit.content));
-							break;
-						}
-						case "prepend": {
-							if (edit.before) {
-								throw new Error(`File not found: ${path}`);
-							}
-							content.unshift(...hashlineParseContent(edit.content));
-							break;
-						}
-						default: {
-							throw new Error(`File not found: ${path}`);
-						}
-					}
-				}
-				await file.write(content.join("\n"));
-				return {
-					content: [{ type: "text", text: `Created ${path}` }],
-					details: {
-						diff: "",
-						op: "create",
-						meta: outputMeta().get(),
-					},
-				};
+				throw new Error(`File not found: ${path}`);
 			}
 
 			const anchorEdits: HashlineEdit[] = [];
-			const replaceEdits: ReplaceTextEdit[] = [];
 			for (const edit of edits) {
 				switch (edit.op) {
-					case "set": {
-						const { tag, content } = edit;
+					case "replace": {
+						const { target, end, content } = edit;
 						anchorEdits.push({
-							op: "set",
-							tag: parseTag(tag),
-							content: hashlineParseContent(content),
-						});
-						break;
-					}
-					case "replace_range": {
-						const { first, last, content } = edit;
-						anchorEdits.push({
-							op: "replace_range",
-							first: parseTag(first),
-							last: parseTag(last),
-							content: hashlineParseContent(content),
-						});
-						break;
-					}
-					case "append": {
-						const { after, content } = edit;
-						anchorEdits.push({
-							op: "append",
-							...(after ? { after: parseTag(after) } : {}),
-							content: hashlineParseContent(content),
-						});
-						break;
-					}
-					case "prepend": {
-						const { before, content } = edit;
-						anchorEdits.push({
-							op: "prepend",
-							...(before ? { before: parseTag(before) } : {}),
+							op: "replace",
+							target: parseTag(target),
+							...(end ? { end: parseTag(end) } : {}),
 							content: hashlineParseContent(content),
 						});
 						break;
 					}
 					case "insert": {
-						const { before, after, content } = edit;
+						const { target, position, content } = edit;
 						anchorEdits.push({
 							op: "insert",
-							before: parseTag(before),
-							after: parseTag(after),
+							target: parseTag(target),
+							position,
 							content: hashlineParseContent(content),
-						});
-						break;
-					}
-					case "replaceText": {
-						const { old_text, new_text, all } = edit;
-						replaceEdits.push({
-							op: "replaceText",
-							old_text: old_text,
-							new_text: hashlineParseContentString(new_text),
-							all: all ?? false,
 						});
 						break;
 					}
@@ -371,31 +301,8 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 			const { bom, text: content } = stripBom(rawContent);
 			const originalEnding = detectLineEnding(content);
 			const originalNormalized = normalizeToLF(content);
-			let normalizedContent = originalNormalized;
 
-			// Apply anchor-based edits first (set, set_range, insert)
-			const anchorResult = applyHashlineEdits(normalizedContent, anchorEdits);
-			normalizedContent = anchorResult.content;
-
-			// Apply content-replace edits (substr-style fuzzy replace)
-			for (const r of replaceEdits) {
-				if (r.old_text.length === 0) {
-					throw new Error("old_text must not be empty.");
-				}
-				const rep = replaceText(normalizedContent, r.old_text, r.new_text, {
-					fuzzy: this.#allowFuzzy,
-					all: r.all ?? false,
-					threshold: this.#fuzzyThreshold,
-				});
-				normalizedContent = rep.content;
-			}
-
-			const result = {
-				content: normalizedContent,
-				firstChangedLine: anchorResult.firstChangedLine,
-				warnings: anchorResult.warnings,
-				noopEdits: anchorResult.noopEdits,
-			};
+			const result = applyHashlineEdits(originalNormalized, anchorEdits);
 			if (originalNormalized === result.content && !rename) {
 				let diagnostic = `No changes made to ${path}. The edits produced identical content.`;
 				if (result.noopEdits && result.noopEdits.length > 0) {
@@ -416,22 +323,12 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 					for (const edit of anchorEdits) {
 						refs.length = 0;
 						switch (edit.op) {
-							case "set":
-								refs.push(edit.tag);
-								break;
-							case "replace_range":
-								refs.push(edit.first, edit.last);
-								break;
-							case "append":
-								if (edit.after) refs.push(edit.after);
-								break;
-							case "prepend":
-								if (edit.before) refs.push(edit.before);
+							case "replace":
+								refs.push(edit.target);
+								if (edit.end) refs.push(edit.end);
 								break;
 							case "insert":
-								refs.push(edit.after, edit.before);
-								break;
-							default:
+								refs.push(edit.target);
 								break;
 						}
 

@@ -280,6 +280,7 @@ const UNSUPPORTED_SCHEMA_FIELDS = new Set([
 	"exclusiveMaximum",
 	"pattern",
 	"format",
+	"discriminator",
 ]);
 
 interface SanitizeSchemaOptions {

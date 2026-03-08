@@ -104,73 +104,36 @@ export function hashlineParseContentString(edit: string | string[] | null): stri
 	return edit;
 }
 
-const hashlineTargetEditSchema = Type.Object(
+const hashlineReplaceOpSchema = Type.Object(
 	{
-		op: Type.Literal("set"),
-		tag: hashlineTagFormat("line being replaced"),
+		op: Type.Literal("replace"),
+		target: hashlineTagFormat("line to replace (or start of range)"),
+		end: Type.Optional(hashlineTagFormat("last line of range")),
 		content: hashlineReplaceContentFormat("Replacement"),
 	},
 	{ additionalProperties: false },
 );
 
-const hashlineAppendEditSchema = Type.Object(
-	{
-		op: Type.Literal("append"),
-		after: Type.Optional(hashlineTagFormat("line after which to append")),
-		content: hashlineInsertContentFormat("Appended"),
-	},
-	{ additionalProperties: false },
-);
-
-const hashlinePrependEditSchema = Type.Object(
-	{
-		op: Type.Literal("prepend"),
-		before: Type.Optional(hashlineTagFormat("line before which to prepend")),
-		content: hashlineInsertContentFormat("Prepended"),
-	},
-	{ additionalProperties: false },
-);
-
-const hashlineRangeEditSchema = Type.Object(
-	{
-		op: Type.Literal("replace_range"),
-		first: hashlineTagFormat("first line"),
-		last: hashlineTagFormat("last line"),
-		content: hashlineReplaceContentFormat("Replacement"),
-	},
-	{ additionalProperties: false },
-);
-
-const hashlineInsertEditSchema = Type.Object(
+const hashlineInsertOpSchema = Type.Object(
 	{
 		op: Type.Literal("insert"),
-		before: hashlineTagFormat("line before which to insert"),
-		after: hashlineTagFormat("line after which to insert"),
+		target: hashlineTagFormat("anchor line"),
+		position: StringEnum(["before", "after"], { description: "Insert before or after the anchor" }),
 		content: hashlineInsertContentFormat("Inserted"),
 	},
 	{ additionalProperties: false },
 );
 
-const hashlineReplaceTextEditSchema = Type.Object(
-	{
-		op: Type.Literal("replaceText"),
-		old_text: Type.String({ description: "Text to find", minLength: 1 }),
-		new_text: hashlineReplaceContentFormat("Replacement"),
-		all: Type.Optional(Type.Boolean({ description: "Replace all occurrences" })),
-	},
-	{ additionalProperties: false },
-);
+const hashlineEditSpecUnion = Type.Union([hashlineReplaceOpSchema, hashlineInsertOpSchema], {
+	discriminator: { propertyName: "op" },
+});
 
-const HL_REPLACE_ENABLED = Bun.env.ARCANE_HL_REPLACETXT === "1";
-
-export const hashlineEditSpecSchema = Type.Union([
-	hashlineTargetEditSchema,
-	hashlineRangeEditSchema,
-	hashlineAppendEditSchema,
-	hashlinePrependEditSchema,
-	hashlineInsertEditSchema,
-	...(HL_REPLACE_ENABLED ? [hashlineReplaceTextEditSchema] : []),
-]);
+// AJV discriminator requires `oneOf`, but TypeBox emits `anyOf`.
+// Swap to `oneOf` so AJV validates only the matching sub-schema.
+export const hashlineEditSpecSchema = (() => {
+	const { anyOf, ...rest } = hashlineEditSpecUnion;
+	return { ...rest, oneOf: anyOf } as unknown as typeof hashlineEditSpecUnion;
+})();
 
 export const hashlineEditSchema = Type.Object(
 	{

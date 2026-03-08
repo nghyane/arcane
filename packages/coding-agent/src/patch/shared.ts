@@ -86,10 +86,8 @@ interface EditRenderArgs {
 }
 
 type HashlineEditPreview =
-	| { target: string; new_content: string[] }
-	| { first: string; last: string; new_content: string[] }
-	| { before?: string; after?: string; inserted_lines: string[] }
-	| { old_text: string; new_text: string; all?: boolean };
+	| { op: "replace"; target: string; end?: string; content: string[] | string | null }
+	| { op: "insert"; target: string; position: "before" | "after"; content: string[] | string };
 
 /** Extended context for edit tool rendering */
 export interface EditRenderContext {
@@ -163,39 +161,29 @@ function formatStreamingHashlineEdits(edits: unknown[], uiTheme: Theme): string 
 				dst: "",
 			};
 		}
-		if ("target" in editRecord) {
-			const target = typeof editRecord.target === "string" ? editRecord.target : "…";
-			const newContent = editRecord.new_content;
+		const op = editRecord.op;
+		const target = typeof editRecord.target === "string" ? editRecord.target : "…";
+		const content = editRecord.content;
+		const contentStr =
+			content === null
+				? ""
+				: Array.isArray(content)
+					? (content as string[]).join("\n")
+					: typeof content === "string"
+						? content
+						: "";
+		if (op === "replace") {
+			const end = typeof editRecord.end === "string" ? editRecord.end : undefined;
 			return {
-				srcLabel: `• line ${target}`,
-				dst: Array.isArray(newContent) ? (newContent as string[]).join("\n") : "",
+				srcLabel: end ? `• range ${target}..${end}` : `• line ${target}`,
+				dst: contentStr,
 			};
 		}
-		if ("first" in editRecord || "last" in editRecord) {
-			const first = typeof editRecord.first === "string" ? editRecord.first : "…";
-			const last = typeof editRecord.last === "string" ? editRecord.last : "…";
-			const newContent = editRecord.new_content;
+		if (op === "insert") {
+			const position = typeof editRecord.position === "string" ? editRecord.position : "after";
 			return {
-				srcLabel: `• range ${first}..${last}`,
-				dst: Array.isArray(newContent) ? (newContent as string[]).join("\n") : "",
-			};
-		}
-		if ("old_text" in editRecord || "new_text" in editRecord) {
-			const all = typeof editRecord.all === "boolean" ? editRecord.all : false;
-			return {
-				srcLabel: `• replace old_text→new_text${all ? " (all)" : ""}`,
-				dst: typeof editRecord.new_text === "string" ? editRecord.new_text : "",
-			};
-		}
-		if ("inserted_lines" in editRecord || "before" in editRecord || "after" in editRecord) {
-			const after = typeof editRecord.after === "string" ? editRecord.after : undefined;
-			const before = typeof editRecord.before === "string" ? editRecord.before : undefined;
-			const insertedLines = editRecord.inserted_lines;
-			const text = Array.isArray(insertedLines) ? (insertedLines as string[]).join("\n") : "";
-			const refs = [after, before].filter(Boolean).join("..") || "…";
-			return {
-				srcLabel: `• insert ${refs}`,
-				dst: text,
+				srcLabel: `• insert ${position} ${target}`,
+				dst: contentStr,
 			};
 		}
 		return {
