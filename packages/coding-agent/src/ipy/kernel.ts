@@ -129,8 +129,7 @@ export async function checkPythonKernelAvailability(cwd: string): Promise<Python
 		return {
 			ok: false,
 			pythonPath: runtime.pythonPath,
-			reason:
-				"kernel_gateway (jupyter-kernel-gateway) or ipykernel not installed. Run: python -m pip install jupyter_kernel_gateway ipykernel",
+			reason: "kernel_gateway (jupyter-kernel-gateway) or ipykernel not installed. Run: arcane setup python",
 		};
 	} catch (err: unknown) {
 		return { ok: false, reason: err instanceof Error ? err.message : String(err) };

@@ -160,7 +160,18 @@ async function installPythonPackages(
 	pythonPath: string,
 	uvPath?: string,
 	pipPath?: string,
+	usingManagedEnv?: boolean,
 ): Promise<{ success: boolean; usedManagedEnv: boolean }> {
+	const managedPython = managedPythonPath();
+	const hasManagedEnv = await Bun.file(managedPython).exists();
+
+	// If the managed venv already exists, install directly into it.
+	// resolvePythonRuntime prefers managed venv over system Python,
+	// so installing into system Python would be invisible to the check.
+	if (hasManagedEnv || usingManagedEnv) {
+		return installIntoManagedEnv(packages, pythonPath, uvPath);
+	}
+
 	if (uvPath) {
 		console.log(chalk.dim(`Installing via uv: ${packages.join(" ")}`));
 		const result = await $`${uvPath} pip install ${packages}`.nothrow();
@@ -178,24 +189,35 @@ async function installPythonPackages(
 	}
 
 	console.log(chalk.dim(`Falling back to managed virtual environment: ${MANAGED_PYTHON_ENV}`));
+	return installIntoManagedEnv(packages, pythonPath, uvPath);
+}
+
+async function installIntoManagedEnv(
+	packages: string[],
+	pythonPath: string,
+	uvPath?: string,
+): Promise<{ success: boolean; usedManagedEnv: boolean }> {
+	console.log(chalk.dim(`Installing into managed environment: ${MANAGED_PYTHON_ENV}`));
 
 	if (uvPath) {
-		const createEnv = await $`${uvPath} venv ${MANAGED_PYTHON_ENV}`.quiet().nothrow();
-		if (createEnv.exitCode !== 0) {
-			return { success: false, usedManagedEnv: true };
-		}
-		const installInManagedEnv = await $`${uvPath} pip install --python ${MANAGED_PYTHON_ENV} ${packages}`.nothrow();
-		return { success: installInManagedEnv.exitCode === 0, usedManagedEnv: true };
-	}
-
-	const createEnv = await $`${pythonPath} -m venv ${MANAGED_PYTHON_ENV}`.quiet().nothrow();
-	if (createEnv.exitCode !== 0) {
-		return { success: false, usedManagedEnv: true };
+		// Ensure venv exists (no-op if already created)
+		await $`${uvPath} venv ${MANAGED_PYTHON_ENV}`.quiet().nothrow();
+		const result = await $`${uvPath} pip install --python ${MANAGED_PYTHON_ENV} ${packages}`.nothrow();
+		return { success: result.exitCode === 0, usedManagedEnv: true };
 	}
 
 	const managedPython = managedPythonPath();
-	const installInManagedEnv = await $`${managedPython} -m pip install ${packages}`.nothrow();
-	return { success: installInManagedEnv.exitCode === 0, usedManagedEnv: true };
+	if (!(await Bun.file(managedPython).exists())) {
+		const createEnv = await $`${pythonPath} -m venv ${MANAGED_PYTHON_ENV}`.quiet().nothrow();
+		if (createEnv.exitCode !== 0) {
+			return { success: false, usedManagedEnv: true };
+		}
+	}
+
+	// Ensure pip is available in the managed env
+	await $`${managedPython} -m ensurepip`.quiet().nothrow();
+	const result = await $`${managedPython} -m pip install ${packages}`.nothrow();
+	return { success: result.exitCode === 0, usedManagedEnv: true };
 }
 
 /**
@@ -258,7 +280,13 @@ async function handlePythonSetup(flags: { json?: boolean; check?: boolean }): Pr
 	}
 
 	console.log("");
-	const install = await installPythonPackages(check.missingPackages, check.pythonPath, check.uvPath, check.pipPath);
+	const install = await installPythonPackages(
+		check.missingPackages,
+		check.pythonPath,
+		check.uvPath,
+		check.pipPath,
+		check.usingManagedEnv,
+	);
 
 	if (!install.success) {
 		console.error(chalk.red(`\n${theme.status.error} Installation failed`));

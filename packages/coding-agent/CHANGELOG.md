@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix Python setup installing packages into system Python instead of managed venv, causing "kernel unavailable" even after install
+- Fix missing `ensurepip` step when managed venv lacks pip
+- Fix misleading error message to point users to `arcane setup python`
+
 ## [0.1.22] - 2026-03-08
 
 ### Changed
