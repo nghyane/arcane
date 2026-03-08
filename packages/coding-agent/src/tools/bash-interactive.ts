@@ -303,15 +303,29 @@ export async function runInteractiveBashPty(
 				component.setComplete({ exitCode: run.exitCode, cancelled: run.cancelled, timedOut: run.timedOut });
 				tui.requestRender();
 				void (async () => {
-					await component.flushOutput();
-					await pendingChunks;
-					const summary = await sink.dump();
-					done({
-						exitCode: run.exitCode,
-						cancelled: run.cancelled,
-						timedOut: run.timedOut,
-						...summary,
-					});
+					try {
+						await component.flushOutput();
+						await pendingChunks;
+						const summary = await sink.dump();
+						done({
+							exitCode: run.exitCode,
+							cancelled: run.cancelled,
+							timedOut: run.timedOut,
+							...summary,
+						});
+					} catch {
+						done({
+							exitCode: run.exitCode,
+							cancelled: run.cancelled,
+							timedOut: run.timedOut,
+							output: "",
+							truncated: false,
+							totalLines: 0,
+							totalBytes: 0,
+							outputLines: 0,
+							outputBytes: 0,
+						});
+					}
 				})();
 			};
 			const cols = Math.max(20, tui.terminal.columns - 2);

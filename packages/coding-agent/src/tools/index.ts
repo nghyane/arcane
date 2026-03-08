@@ -59,7 +59,6 @@ export {
 	BashTool,
 	type BashToolDetails,
 	type BashToolInput,
-	type BashToolOptions,
 } from "./bash";
 export { BrowserTool, type BrowserToolDetails } from "./browser";
 export { exploreConfig } from "./explore";

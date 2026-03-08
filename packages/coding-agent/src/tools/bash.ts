@@ -38,20 +38,10 @@ export interface BashToolDetails {
 	meta?: OutputMeta;
 }
 
-export interface BashToolOptions {}
-
 function normalizeResultOutput(result: BashResult | BashInteractiveResult): string {
 	return result.output || "";
 }
 
-function isInteractiveResult(result: BashResult | BashInteractiveResult): result is BashInteractiveResult {
-	return "timedOut" in result;
-}
-/**
- * Bash tool implementation.
- *
- * Executes bash commands with optional timeout and working directory.
- */
 export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, Theme> {
 	readonly name = "bash";
 	readonly label = "Bash";
@@ -71,11 +61,9 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 	): Promise<AgentToolResult<BashToolDetails>> {
 		let command = rawCommand;
 
-		// Only apply explicit head/tail params from tool input.
 		const headLines = head;
 		const tailLines = tail;
 
-		// Check interception if enabled and available tools are known
 		if (this.session.settings.get("bashInterceptor.enabled")) {
 			const rules = this.session.settings.getBashInterceptorRules();
 			const interception = checkBashInterception(command, ctx?.toolNames ?? [], rules);
@@ -103,14 +91,11 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 			throw new ToolError(`Working directory is not a directory: ${commandCwd}`);
 		}
 
-		// Clamp to reasonable range: 1s - 3600s (1 hour)
 		const timeoutSec = Math.max(1, Math.min(3600, rawTimeout));
 		const timeoutMs = timeoutSec * 1000;
 
-		// Track output for streaming updates (tail only)
 		const tailBuffer = createTailBuffer(DEFAULT_MAX_BYTES);
 
-		// Set up artifacts environment and allocation
 		const artifactsDir = this.session.getArtifactsDir?.();
 		const extraEnv = artifactsDir ? { ARTIFACTS: artifactsDir } : undefined;
 		const { artifactPath, artifactId } = await allocateOutputArtifact(this.session, "bash");
@@ -148,16 +133,15 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 						}
 					},
 				});
+		if (result.timedOut) {
+			throw new ToolError(normalizeResultOutput(result) || `Command timed out after ${timeoutSec} seconds`);
+		}
 		if (result.cancelled) {
 			if (signal?.aborted) {
 				throw new ToolAbortError(normalizeResultOutput(result) || "Command aborted");
 			}
 			throw new ToolError(normalizeResultOutput(result) || "Command aborted");
 		}
-		if (isInteractiveResult(result) && result.timedOut) {
-			throw new ToolError(normalizeResultOutput(result) || `Command timed out after ${timeoutSec} seconds`);
-		}
-		// Apply head/tail filtering if specified
 		let outputText = normalizeResultOutput(result);
 		const headTailResult = applyHeadTail(outputText, headLines, tailLines);
 		if (headTailResult.applied) {
@@ -171,7 +155,7 @@ export class BashTool implements AgentTool<typeof bashSchema, BashToolDetails, T
 		if (result.exitCode === undefined) {
 			throw new ToolError(`${outputText}\n\nCommand failed: missing exit status`);
 		}
-		if (result.exitCode !== 0 && result.exitCode !== undefined) {
+		if (result.exitCode !== 0) {
 			throw new ToolError(`${outputText}\n\nCommand exited with code ${result.exitCode}`);
 		}
 

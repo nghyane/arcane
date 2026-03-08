@@ -27,6 +27,7 @@ export interface BashResult {
 	output: string;
 	exitCode: number | undefined;
 	cancelled: boolean;
+	timedOut: boolean;
 	truncated: boolean;
 	totalLines: number;
 	totalBytes: number;
@@ -44,11 +45,8 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 	const { shell, env: shellEnv, prefix } = settings.getShellConfig();
 	const snapshotPath = shell.includes("bash") ? await getOrCreateSnapshot(shell, shellEnv) : null;
 
-	// Apply command prefix if configured
 	const prefixedCommand = prefix ? `${prefix} ${command}` : command;
-	const finalCommand = prefixedCommand;
 
-	// Create output sink for truncation and artifact handling
 	const sink = new OutputSink({
 		onChunk: options?.onChunk,
 		artifactPath: options?.artifactPath,
@@ -64,6 +62,7 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 		return {
 			exitCode: undefined,
 			cancelled: true,
+			timedOut: false,
 			...(await sink.dump("Command cancelled")),
 		};
 	}
@@ -96,7 +95,7 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 	try {
 		const runPromise = shellSession.run(
 			{
-				command: finalCommand,
+				command: prefixedCommand,
 				cwd: options?.cwd,
 				env: options?.env ? { ...NON_INTERACTIVE_ENV, ...options.env } : NON_INTERACTIVE_ENV,
 				timeoutMs: options?.timeout,
@@ -121,11 +120,11 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 			return {
 				exitCode: undefined,
 				cancelled: true,
+				timedOut: true,
 				...(await sink.dump(`Command exceeded hard timeout after ${Math.round(hardTimeoutMs / 1000)} seconds`)),
 			};
 		}
 
-		// Handle timeout
 		if (winner.result.timedOut) {
 			const annotation = options?.timeout
 				? `Command timed out after ${Math.round(options.timeout / 1000)} seconds`
@@ -133,25 +132,26 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 			resetSession = true;
 			return {
 				exitCode: undefined,
-				cancelled: true,
+				cancelled: false,
+				timedOut: true,
 				...(await sink.dump(annotation)),
 			};
 		}
 
-		// Handle cancellation
 		if (winner.result.cancelled) {
 			resetSession = true;
 			return {
 				exitCode: undefined,
 				cancelled: true,
+				timedOut: false,
 				...(await sink.dump("Command cancelled")),
 			};
 		}
 
-		// Normal completion
 		return {
 			exitCode: winner.result.exitCode,
 			cancelled: false,
+			timedOut: false,
 			...(await sink.dump()),
 		};
 	} catch (err) {

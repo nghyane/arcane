@@ -82,7 +82,6 @@ export function checkBashInterception(
 	availableTools: string[],
 	rules: BashInterceptorRule[] = DEFAULT_BASH_INTERCEPTOR_RULES,
 ): InterceptionResult {
-	// Normalize command for pattern matching
 	const normalizedCommand = command.trim();
 	const compiled = compileRules(rules);
 

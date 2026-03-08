@@ -4,9 +4,6 @@ import { validateRelativePath } from "../internal-urls/skill-protocol";
 import type { InternalResource } from "../internal-urls/types";
 import { ToolError } from "./tool-errors";
 
-/** Regex to find skill:// tokens in command text. */
-const SKILL_URL_PATTERN = /'skill:\/\/[^'\s")`\\]+'|"skill:\/\/[^"\s')`\\]+"|skill:\/\/[^\s'")`\\]+/g;
-
 /** Regex to find supported internal URL tokens in command text. */
 const INTERNAL_URL_PATTERN =
 	/'(?:skill|agent|artifact|plan|rule):\/\/[^'\s")`\\]+'|"(?:skill|agent|artifact|plan|rule):\/\/[^"\s')`\\]+"|(?:skill|agent|artifact|plan|rule):\/\/[^\s'")`\\]+/g;
@@ -131,23 +128,6 @@ async function resolveInternalUrlToPath(
 	}
 
 	return path.resolve(resource.sourcePath);
-}
-
-/**
- * Expand all skill:// URIs in a bash command string.
- * Returns the command with URIs replaced by shell-escaped absolute paths.
- * Throws ToolError if any URI cannot be resolved.
- */
-export function expandSkillUrls(command: string, skills: readonly Skill[]): string {
-	if (skills.length === 0 || !command.includes("skill://")) {
-		return command;
-	}
-
-	return command.replace(SKILL_URL_PATTERN, token => {
-		const url = unquoteToken(token);
-		const resolvedPath = resolveSkillUrlToPath(url, skills);
-		return shellEscape(resolvedPath);
-	});
 }
 
 /**
