@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.26] - 2026-03-08
+
 ### Fixed
 
 - Improve session search by indexing all user messages instead of only the first
