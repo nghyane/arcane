@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Improve session search by indexing all user messages instead of only the first
+- Fix quoted phrase parsing in find_thread search queries
+- Sort search results by relevance instead of date
+
+### Removed
+
+- Remove gemini-image and save-memory tools
+
+### Changed
+
+- Rename reviewer-tool.ts to reviewer.ts, subagent-tool.ts to subagent.ts
+- RenderMermaid tool now displays diagram directly in TUI output
+
 ## [0.1.25] - 2026-03-08
 
 ### Added
