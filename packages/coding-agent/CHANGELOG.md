@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix GitHub tool: typed API interfaces replacing `any`, cache key collision with different media types, 403 rate limit not retried, `retry-after` NaN crash, raw file detection returning `[object Object]` for JSON files
+- Fix bash timeout misreported as "Command aborted" instead of "Command timed out"
+- Fix unhandled promise rejection crash in interactive bash PTY finalization
+- Reorder HTML render pipeline to native-first, avoiding unnecessary network calls to jina.ai
+
+### Changed
+
+- Add GitHub tool guidance to system prompt
+- Remove dead code: `normalizeBashCommand`, `expandSkillUrls`, `BashToolOptions`, `isInteractiveResult`
+
 ## [0.1.26] - 2026-03-08
 
 ### Fixed
