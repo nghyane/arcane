@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.23] - 2026-03-08
+
 ### Fixed
 
 - Fix Python setup installing packages into system Python instead of managed venv, causing "kernel unavailable" even after install
