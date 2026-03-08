@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- `isOAuth` option in `StreamOptions` and `AnthropicClientOptionsArgs` to explicitly signal OAuth authentication
+
+### Changed
+
+- Update stealth Claude Code version to 2.1.71 and Stainless package version to 0.78.0
+
 ## [0.1.13] - 2026-03-08
 
 ### Fixed

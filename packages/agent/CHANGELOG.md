@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- `ResolvedApiKey` type for `getApiKey` to return both key and OAuth flag
+
+### Changed
+
+- `getApiKey` now accepts `ResolvedApiKey | string | undefined` return type
+
 ## [0.1.12] - 2026-03-02
 
 ### Removed
