@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-03-08
+
 ### Fixed
 
 - Add `discriminator` to unsupported schema fields for Google providers

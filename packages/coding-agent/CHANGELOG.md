@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.24] - 2026-03-08
+
 ### Changed
 
 - Simplify hashline edit API to two operations: replace and insert
