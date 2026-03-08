@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix edit tool: hashline delete missing `saveForUndo` causing unrecoverable file deletion
+- Fix `any` types on `EditTool` class — replaced with `EditToolDetails`
+- Fix `applyHashlineEdits` mutating caller's input array via splice
+
 ## [0.1.27] - 2026-03-08
 
 ### Fixed
