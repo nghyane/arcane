@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.27] - 2026-03-08
+
 ### Fixed
 
 - Fix GitHub tool: typed API interfaces replacing `any`, cache key collision with different media types, 403 rate limit not retried, `retry-after` NaN crash, raw file detection returning `[object Object]` for JSON files
