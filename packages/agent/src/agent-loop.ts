@@ -17,6 +17,7 @@ import type {
 	AgentMessage,
 	AgentTool,
 	AgentToolResult,
+	ResolvedApiKey,
 	StreamFn,
 } from "./types";
 
@@ -267,12 +268,15 @@ async function streamAssistantResponse(
 	const streamFunction = streamFn || streamSimple;
 
 	// Resolve API key (important for expiring tokens)
-	const resolvedApiKey =
-		(config.getApiKey ? await config.getApiKey(config.model.provider) : undefined) || config.apiKey;
+	const rawKey = config.getApiKey ? await config.getApiKey(config.model.provider) : undefined;
+	const resolved: ResolvedApiKey = typeof rawKey === "object" && rawKey !== null ? rawKey : { key: rawKey ?? "" };
+	const resolvedApiKey = resolved.key || config.apiKey;
+	const isOAuth = resolved.key ? resolved.isOAuth : undefined;
 
 	const response = await streamFunction(config.model, llmContext, {
 		...config,
 		apiKey: resolvedApiKey,
+		isOAuth,
 		signal,
 	});
 

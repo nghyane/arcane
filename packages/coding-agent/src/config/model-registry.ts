@@ -979,6 +979,10 @@ export class ModelRegistry {
 		return this.authStorage.getApiKey(provider, sessionId, { baseUrl });
 	}
 
+	isOAuthProvider(provider: string): boolean {
+		return this.authStorage.hasOAuth(provider);
+	}
+
 	async #peekApiKeyForProvider(provider: string): Promise<string | undefined> {
 		if (this.#keylessProviders.has(provider)) {
 			return kNoAuth;

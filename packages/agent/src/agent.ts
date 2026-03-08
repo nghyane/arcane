@@ -26,6 +26,7 @@ import type {
 	AgentState,
 	AgentTool,
 	AgentToolContext,
+	ResolvedApiKey,
 	StreamFn,
 	ThinkingLevel,
 	ToolCallContext,
@@ -105,7 +106,7 @@ export interface AgentOptions {
 	 * Resolves an API key dynamically for each LLM call.
 	 * Useful for expiring tokens (e.g., GitHub Copilot OAuth).
 	 */
-	getApiKey?: (provider: string) => Promise<string | undefined> | string | undefined;
+	getApiKey?: (provider: string) => Promise<ResolvedApiKey | string | undefined> | ResolvedApiKey | string | undefined;
 
 	/**
 	 * Custom token budgets for thinking levels (token-based providers only).
@@ -198,7 +199,7 @@ export class Agent {
 	#cursorToolResultBuffer: CursorToolResultEntry[] = [];
 
 	streamFn: StreamFn;
-	getApiKey?: (provider: string) => Promise<string | undefined> | string | undefined;
+	getApiKey?: (provider: string) => Promise<ResolvedApiKey | string | undefined> | ResolvedApiKey | string | undefined;
 
 	constructor(opts: AgentOptions = {}) {
 		this.#state = { ...this.#state, ...opts.initialState };

@@ -141,14 +141,14 @@ function getCacheControl(
 }
 
 // Stealth mode: Mimic Claude Code headers and tool prefixing.
-export const claudeCodeVersion = "2.1.39";
+export const claudeCodeVersion = "2.1.71";
 export const claudeToolPrefix = "proxy_";
 export const claudeCodeSystemInstruction = "You are Claude Code, Anthropic's official CLI for Claude.";
 export const claudeCodeHeaders = {
 	"X-Stainless-Helper-Method": "stream",
 	"X-Stainless-Retry-Count": "0",
 	"X-Stainless-Runtime-Version": "v24.13.1",
-	"X-Stainless-Package-Version": "0.73.0",
+	"X-Stainless-Package-Version": "0.78.0",
 	"X-Stainless-Runtime": "node",
 	"X-Stainless-Lang": "js",
 	"X-Stainless-Arch": "arm64",
@@ -265,6 +265,7 @@ export interface AnthropicOptions extends StreamOptions {
 export type AnthropicClientOptionsArgs = {
 	model: Model<"anthropic-messages">;
 	apiKey: string;
+	isOAuth?: boolean;
 	extraBetas?: string[];
 	stream?: boolean;
 	interleavedThinking?: boolean;
@@ -350,6 +351,7 @@ export const streamAnthropic: StreamFunction<"anthropic-messages"> = (
 			const { client, isOAuthToken } = createClient(model, {
 				model,
 				apiKey,
+				isOAuth: options?.isOAuth,
 				extraBetas: normalizeExtraBetas(options?.betas),
 				stream: true,
 				interleavedThinking: options?.interleavedThinking ?? true,
@@ -677,8 +679,17 @@ export function normalizeExtraBetas(betas?: string[] | string): string[] {
 }
 
 export function buildAnthropicClientOptions(args: AnthropicClientOptionsArgs): AnthropicClientOptionsResult {
-	const { model, apiKey, extraBetas = [], stream = true, interleavedThinking = true, headers, dynamicHeaders } = args;
-	const oauthToken = isOAuthToken(apiKey);
+	const {
+		model,
+		apiKey,
+		isOAuth,
+		extraBetas = [],
+		stream = true,
+		interleavedThinking = true,
+		headers,
+		dynamicHeaders,
+	} = args;
+	const oauthToken = isOAuth ?? isOAuthToken(apiKey);
 
 	if (model.provider === "github-copilot") {
 		const betaFeatures = [...extraBetas];

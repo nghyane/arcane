@@ -17,6 +17,8 @@ export type StreamFn = (
 	...args: Parameters<typeof streamSimple>
 ) => AssistantMessageEventStream | Promise<AssistantMessageEventStream>;
 
+export type ResolvedApiKey = { key: string; isOAuth?: boolean };
+
 /**
  * Configuration for the agent loop.
  */
@@ -86,7 +88,7 @@ export interface AgentLoopConfig extends SimpleStreamOptions {
 	 * Useful for short-lived OAuth tokens (e.g., GitHub Copilot) that may expire
 	 * during long-running tool execution phases.
 	 */
-	getApiKey?: (provider: string) => Promise<string | undefined> | string | undefined;
+	getApiKey?: (provider: string) => Promise<ResolvedApiKey | string | undefined> | ResolvedApiKey | string | undefined;
 
 	/**
 	 * Returns steering messages to inject into the conversation mid-run.

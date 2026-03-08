@@ -1164,7 +1164,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			if (!key) {
 				throw new Error(`No API key found for provider "${provider}"`);
 			}
-			return key;
+			return { key, isOAuth: modelRegistry.isOAuthProvider(provider) };
 		},
 		cursorExecHandlers,
 		transformToolCallArguments: obfuscator?.hasSecrets() ? args => obfuscator!.deobfuscateObject(args) : undefined,
