@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Simplify hashline edit API to two operations: replace and insert
+- Remove redundant comments from patch module
+
 ## [0.1.23] - 2026-03-08
 
 ### Fixed

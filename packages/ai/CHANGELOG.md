@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Add `discriminator` to unsupported schema fields for Google providers
+- Enable discriminator support in AJV validation
+- Fix Codex provider arguments type to accept any value
+
 ## [0.1.12] - 2026-03-05
 
 ### Fixed
