@@ -20,9 +20,9 @@
     },
     "packages/agent": {
       "name": "@nghyane/arcane-agent",
-      "version": "0.1.17",
+      "version": "0.1.18",
       "dependencies": {
-        "@nghyane/arcane-ai": "^0.1.13",
+        "@nghyane/arcane-ai": "^0.1.14",
         "@nghyane/arcane-tui": "^0.1.15",
         "@nghyane/arcane-utils": "^0.1.8",
       },
@@ -33,7 +33,7 @@
     },
     "packages/ai": {
       "name": "@nghyane/arcane-ai",
-      "version": "0.1.13",
+      "version": "0.1.14",
       "bin": {
         "pi-ai": "./src/cli.ts",
       },
@@ -62,16 +62,16 @@
     },
     "packages/coding-agent": {
       "name": "@nghyane/arcane",
-      "version": "0.1.24",
+      "version": "0.1.25",
       "bin": {
         "arc": "src/cli.ts",
       },
       "dependencies": {
         "@mozilla/readability": "0.6.0",
-        "@nghyane/arcane-agent": "^0.1.17",
-        "@nghyane/arcane-ai": "^0.1.13",
+        "@nghyane/arcane-agent": "^0.1.18",
+        "@nghyane/arcane-ai": "^0.1.14",
         "@nghyane/arcane-natives": "^0.1.11",
-        "@nghyane/arcane-stats": "^0.1.13",
+        "@nghyane/arcane-stats": "^0.1.14",
         "@nghyane/arcane-tui": "^0.1.15",
         "@nghyane/arcane-utils": "^0.1.8",
         "@sinclair/typebox": "^0.34.48",
@@ -132,12 +132,12 @@
     },
     "packages/stats": {
       "name": "@nghyane/arcane-stats",
-      "version": "0.1.13",
+      "version": "0.1.14",
       "bin": {
         "arc-stats": "./src/index.ts",
       },
       "dependencies": {
-        "@nghyane/arcane-ai": "^0.1.13",
+        "@nghyane/arcane-ai": "^0.1.14",
         "@nghyane/arcane-utils": "^0.1.8",
         "@tailwindcss/node": "4.2.0",
         "chart.js": "4.5.1",

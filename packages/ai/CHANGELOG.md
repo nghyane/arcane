@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-03-08
+
 ### Added
 
 - `isOAuth` option in `StreamOptions` and `AnthropicClientOptionsArgs` to explicitly signal OAuth authentication

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.25] - 2026-03-08
+
 ### Added
 
 - Propagate OAuth flag from auth storage to Anthropic client, replacing token-format heuristic

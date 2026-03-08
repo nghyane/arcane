@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.18] - 2026-03-08
+
 ### Added
 
 - `ResolvedApiKey` type for `getApiKey` to return both key and OAuth flag
