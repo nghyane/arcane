@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.28] - 2026-03-08
+
 ### Fixed
 
 - Fix edit tool: hashline delete missing `saveForUndo` causing unrecoverable file deletion
