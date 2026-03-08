@@ -592,7 +592,7 @@ function autocorrectEscapedTabs(lines: string[]): string[] {
  */
 export function applyHashlineEdits(
 	content: string,
-	edits: HashlineEdit[],
+	edits: readonly HashlineEdit[],
 ): {
 	content: string;
 	firstChangedLine: number | undefined;
@@ -603,6 +603,8 @@ export function applyHashlineEdits(
 		return { content, firstChangedLine: undefined };
 	}
 
+	const mutableEdits: HashlineEdit[] = edits.map(e => ({ ...e, content: [...e.content] }));
+
 	const fileLines = content.split("\n");
 	const hadFinalNewline = content.endsWith("\n");
 	const originalFileLines = [...fileLines];
@@ -612,7 +614,7 @@ export function applyHashlineEdits(
 	const autocorrect = Bun.env.ARCANE_HL_AUTOCORRECT === "1";
 
 	const warnings: string[] = [];
-	for (const edit of edits) {
+	for (const edit of mutableEdits) {
 		const unicodeWarning = detectUnicodeEscapePlaceholders(edit.content);
 		if (unicodeWarning && !warnings.includes(unicodeWarning)) {
 			warnings.push(unicodeWarning);
@@ -622,7 +624,7 @@ export function applyHashlineEdits(
 
 	function collectExplicitlyTouchedLines(): Set<number> {
 		const touched = new Set<number>();
-		for (const edit of edits) {
+		for (const edit of mutableEdits) {
 			switch (edit.op) {
 				case "replace":
 					touched.add(edit.target.line);
@@ -652,7 +654,7 @@ export function applyHashlineEdits(
 		mismatches.push({ line: ref.line, expected: ref.hash, actual: actualHash });
 		return false;
 	}
-	for (const edit of edits) {
+	for (const edit of mutableEdits) {
 		switch (edit.op) {
 			case "replace": {
 				if (!validateRef(edit.target)) continue;
@@ -678,8 +680,8 @@ export function applyHashlineEdits(
 	}
 	const seenEditKeys = new Map<string, number>();
 	const dedupIndices = new Set<number>();
-	for (let i = 0; i < edits.length; i++) {
-		const edit = edits[i];
+	for (let i = 0; i < mutableEdits.length; i++) {
+		const edit = mutableEdits[i];
 		let lineKey: string;
 		switch (edit.op) {
 			case "replace":
@@ -697,13 +699,13 @@ export function applyHashlineEdits(
 		}
 	}
 	if (dedupIndices.size > 0) {
-		for (let i = edits.length - 1; i >= 0; i--) {
-			if (dedupIndices.has(i)) edits.splice(i, 1);
+		for (let i = mutableEdits.length - 1; i >= 0; i--) {
+			if (dedupIndices.has(i)) mutableEdits.splice(i, 1);
 		}
 	}
 
 	// Compute sort key (descending) — bottom-up application
-	const annotated = edits.map((edit, idx) => {
+	const annotated = mutableEdits.map((edit, idx) => {
 		let sortLine: number;
 		let precedence: number;
 		switch (edit.op) {

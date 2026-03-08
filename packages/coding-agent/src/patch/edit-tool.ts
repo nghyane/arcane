@@ -134,13 +134,21 @@ function mergeDiagnosticsWithWarnings(
 	};
 }
 
-export class EditTool implements AgentTool<TInput, any, Theme> {
+export class EditTool implements AgentTool<TInput, EditToolDetails, Theme> {
 	readonly name = "edit";
 	readonly label = "Edit";
 	readonly nonAbortable = true;
 	readonly concurrency = "exclusive";
-	readonly renderCall = editToolRenderer.renderCall as unknown as AgentTool<TInput, any, Theme>["renderCall"];
-	readonly renderResult = editToolRenderer.renderResult as unknown as AgentTool<TInput, any, Theme>["renderResult"];
+	readonly renderCall = editToolRenderer.renderCall as unknown as AgentTool<
+		TInput,
+		EditToolDetails,
+		Theme
+	>["renderCall"];
+	readonly renderResult = editToolRenderer.renderResult as unknown as AgentTool<
+		TInput,
+		EditToolDetails,
+		Theme
+	>["renderResult"];
 
 	readonly #allowFuzzy: boolean;
 	readonly #fuzzyThreshold: number;
@@ -252,6 +260,7 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 
 			if (deleteFile) {
 				if (await file.exists()) {
+					saveForUndo(absolutePath, await file.text());
 					await file.unlink();
 				}
 				invalidateFsScanAfterDelete(absolutePath);
