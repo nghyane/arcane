@@ -6,9 +6,107 @@ import type { ToolSession } from ".";
 import { type OutputMeta, toolResult } from "./output-meta";
 
 // =============================================================================
-// Schema
+// GitHub API Types
 // =============================================================================
 
+interface GitHubUser {
+	login: string;
+}
+
+interface GitHubLabel {
+	name: string;
+}
+
+interface GitHubLicense {
+	spdx_id: string;
+}
+
+interface GitHubRepo {
+	full_name: string;
+	description: string | null;
+	default_branch: string;
+	language: string | null;
+	stargazers_count: number;
+	forks_count: number;
+	topics: string[];
+	license: GitHubLicense | null;
+	created_at: string;
+	updated_at: string;
+	homepage: string | null;
+}
+
+interface GitHubTreeEntry {
+	type: string;
+	path?: string;
+	name?: string;
+	size?: number;
+}
+
+interface GitHubIssue {
+	number: number;
+	title: string;
+	state: string;
+	user: GitHubUser | null;
+	labels: GitHubLabel[];
+	assignees: GitHubUser[];
+	body: string | null;
+	created_at: string;
+	pull_request?: unknown;
+}
+
+interface GitHubComment {
+	user: GitHubUser | null;
+	created_at: string;
+	body: string | null;
+}
+
+interface GitHubPR {
+	number: number;
+	title: string;
+	state: string;
+	merged: boolean;
+	merged_at: string | null;
+	user: GitHubUser | null;
+	base: { ref: string };
+	head: { ref: string };
+	changed_files: number | null;
+	additions: number;
+	deletions: number;
+	body: string | null;
+}
+
+interface GitHubCommitAuthor {
+	name: string;
+	email: string;
+	date: string;
+}
+
+interface GitHubCommitFile {
+	status: string;
+	filename: string;
+	additions: number;
+	deletions: number;
+}
+
+interface GitHubCommit {
+	sha: string;
+	commit: {
+		author: GitHubCommitAuthor;
+		message: string;
+	};
+	author: GitHubUser | null;
+	stats?: { total: number; additions: number; deletions: number };
+	files?: GitHubCommitFile[];
+}
+
+interface GitHubSearchResult<T> {
+	total_count: number;
+	items: T[];
+}
+
+// =============================================================================
+// Schema
+// =============================================================================
 const ActionEnum = Type.Union([
 	Type.Literal("get_repo"),
 	Type.Literal("get_file"),
@@ -55,7 +153,7 @@ export interface GitHubToolDetails {
 // Response Formatters
 // =============================================================================
 
-function formatRepo(data: any): string {
+function formatRepo(data: GitHubRepo): string {
 	return [
 		`# ${data.full_name}`,
 		data.description ? `${data.description}` : "",
@@ -72,7 +170,7 @@ function formatRepo(data: any): string {
 		.join("\n");
 }
 
-function formatTreeEntry(entry: any): string {
+function formatTreeEntry(entry: GitHubTreeEntry): string {
 	const icon = entry.type === "dir" || entry.type === "tree" ? "dir" : "file";
 	const size = entry.size ? ` (${formatSize(entry.size)})` : "";
 	const name = entry.path ?? entry.name;
@@ -85,12 +183,12 @@ function formatSize(bytes: number): string {
 	return `${(bytes / (1024 * 1024)).toFixed(1)}M`;
 }
 
-function formatIssue(data: any, comments: any[] = []): string {
+function formatIssue(data: GitHubIssue, comments: GitHubComment[] = []): string {
 	const lines = [
 		`# #${data.number}: ${data.title}`,
 		`State: ${data.state} | Author: @${data.user?.login} | Created: ${data.created_at}`,
-		data.labels?.length ? `Labels: ${data.labels.map((l: any) => l.name).join(", ")}` : "",
-		data.assignees?.length ? `Assignees: ${data.assignees.map((a: any) => `@${a.login}`).join(", ")}` : "",
+		data.labels?.length ? `Labels: ${data.labels.map(l => l.name).join(", ")}` : "",
+		data.assignees?.length ? `Assignees: ${data.assignees.map(a => `@${a.login}`).join(", ")}` : "",
 		"",
 		data.body ?? "(no description)",
 	].filter(l => l !== "");
@@ -102,12 +200,12 @@ function formatIssue(data: any, comments: any[] = []): string {
 	return lines.join("\n");
 }
 
-function formatIssueMinimal(issue: any): string {
-	const labels = issue.labels?.length ? ` [${issue.labels.map((l: any) => l.name).join(", ")}]` : "";
+function formatIssueMinimal(issue: GitHubIssue): string {
+	const labels = issue.labels?.length ? ` [${issue.labels.map(l => l.name).join(", ")}]` : "";
 	return `#${issue.number} [${issue.state}] ${issue.title}${labels} (@${issue.user?.login}, ${issue.created_at})`;
 }
 
-function formatPR(data: any, diff?: string): string {
+function formatPR(data: GitHubPR, diff?: string): string {
 	const lines = [
 		`# PR #${data.number}: ${data.title}`,
 		`State: ${data.state}${data.merged ? " (merged)" : ""} | Author: @${data.user?.login}`,
@@ -124,12 +222,12 @@ function formatPR(data: any, diff?: string): string {
 	return lines.join("\n");
 }
 
-function formatPRMinimal(pr: any): string {
+function formatPRMinimal(pr: GitHubPR): string {
 	const merged = pr.merged_at ? " (merged)" : "";
 	return `#${pr.number} [${pr.state}${merged}] ${pr.title} (@${pr.user?.login}, ${pr.base?.ref} <- ${pr.head?.ref})`;
 }
 
-function formatCommit(data: any, diff?: string): string {
+function formatCommit(data: GitHubCommit, diff?: string): string {
 	const lines = [
 		`Commit: ${data.sha}`,
 		`Author: ${data.commit?.author?.name} <${data.commit?.author?.email}>`,
@@ -156,7 +254,7 @@ function formatCommit(data: any, diff?: string): string {
 	return lines.join("\n");
 }
 
-function formatCommitMinimal(c: any): string {
+function formatCommitMinimal(c: GitHubCommit): string {
 	const sha = (c.sha ?? "").slice(0, 7);
 	const msg = (c.commit?.message ?? "").split("\n")[0];
 	const author = c.commit?.author?.name ?? c.author?.login ?? "?";
@@ -164,7 +262,7 @@ function formatCommitMinimal(c: any): string {
 	return `${sha} ${msg} (${author}, ${date})`;
 }
 
-function formatSearchReposResult(data: any): string {
+function formatSearchReposResult(data: GitHubSearchResult<GitHubRepo>): string {
 	const items = data.items ?? [];
 	const lines = [`Found ${data.total_count} repositories (showing ${items.length}):`, ""];
 	for (const item of items) {
@@ -188,7 +286,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 
 	switch (action) {
 		case "get_repo": {
-			const res = await githubClient.request(base, opts);
+			const res = await githubClient.request<GitHubRepo>(base, opts);
 			if (!res.ok) return error(res, "repository");
 			return { text: formatRepo(res.data), url: `https://github.com/${owner}/${repo}` };
 		}
@@ -216,7 +314,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 							blobRes.data.encoding === "base64"
 								? Buffer.from(blobRes.data.content, "base64").toString("utf-8")
 								: blobRes.data.content;
-						res = { data: decoded as any, ok: true, status: 200 };
+						res = { data: decoded as string, ok: true, status: 200 };
 					}
 				}
 			}
@@ -236,10 +334,13 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			const treePath = input.path ?? "";
 			if (input.recursive) {
 				const ref = input.ref ?? "HEAD";
-				const res = await githubClient.request<any>(`${base}/git/trees/${ref}?recursive=1`, opts);
+				const res = await githubClient.request<{ tree: GitHubTreeEntry[]; truncated: boolean }>(
+					`${base}/git/trees/${ref}?recursive=1`,
+					opts,
+				);
 				if (!res.ok) return error(res, "tree");
 				const entries = (res.data.tree ?? [])
-					.filter((e: any) => !treePath || e.path.startsWith(treePath))
+					.filter(e => !treePath || (e.path ?? "").startsWith(treePath))
 					.slice(0, 500);
 				return {
 					text: `# Tree: ${owner}/${repo}${treePath ? `/${treePath}` : ""} (recursive)\n\n${entries.map(formatTreeEntry).join("\n")}`,
@@ -247,7 +348,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			}
 			const ref = input.ref ? `?ref=${input.ref}` : "";
 			const endpoint = treePath ? `${base}/contents/${treePath}${ref}` : `${base}/contents${ref}`;
-			const res = await githubClient.request<any[]>(endpoint, opts);
+			const res = await githubClient.request<GitHubTreeEntry[]>(endpoint, opts);
 			if (!res.ok) return error(res, "directory");
 			const entries = Array.isArray(res.data) ? res.data : [res.data];
 			return {
@@ -258,7 +359,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 		case "search_repos": {
 			const q = input.query ?? `${owner}/${repo}`;
 			const perPage = Math.min(input.limit ?? 30, 100);
-			const res = await githubClient.request<any>(
+			const res = await githubClient.request<GitHubSearchResult<GitHubRepo>>(
 				`/search/repositories?q=${encodeURIComponent(q)}&per_page=${perPage}`,
 				opts,
 			);
@@ -270,8 +371,8 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			const num = input.number;
 			if (!num) return { text: "Error: 'number' is required for get_issue" };
 			const [issueRes, commentsRes] = await Promise.all([
-				githubClient.request<any>(`${base}/issues/${num}`, opts),
-				githubClient.requestPaginated<any>(`${base}/issues/${num}/comments`, {
+				githubClient.request<GitHubIssue>(`${base}/issues/${num}`, opts),
+				githubClient.requestPaginated<GitHubComment>(`${base}/issues/${num}/comments`, {
 					...opts,
 					perPage: 100,
 					maxPages: MAX_COMMENTS_PAGES,
@@ -291,13 +392,13 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			const limit = Math.min(input.limit ?? 100, 500);
 			const perPage = Math.min(limit, 100);
 			const maxPages = Math.ceil(limit / perPage);
-			const res = await githubClient.requestPaginated<any>(`${base}/issues?${params}`, {
+			const res = await githubClient.requestPaginated<GitHubIssue>(`${base}/issues?${params}`, {
 				...opts,
 				perPage,
 				maxPages,
 			});
 			if (!res.ok) return error(res, "issues");
-			const issues = (res.data ?? []).filter((i: any) => !i.pull_request).slice(0, limit);
+			const issues = (res.data ?? []).filter(i => !i.pull_request).slice(0, limit);
 			const header = `${issues.length} issue(s)${issues.length >= limit ? " (limit reached, increase limit for more)" : ""}`;
 			return {
 				text: issues.length ? `${header}\n${issues.map(formatIssueMinimal).join("\n")}` : "No issues found.",
@@ -307,7 +408,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 		case "get_pull": {
 			const num = input.number;
 			if (!num) return { text: "Error: 'number' is required for get_pull" };
-			const prRes = await githubClient.request<any>(`${base}/pulls/${num}`, opts);
+			const prRes = await githubClient.request<GitHubPR>(`${base}/pulls/${num}`, opts);
 			if (!prRes.ok) return error(prRes, `PR #${num}`);
 
 			let diff: string | undefined;
@@ -336,7 +437,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			const limit = Math.min(input.limit ?? 100, 500);
 			const perPage = Math.min(limit, 100);
 			const maxPages = Math.ceil(limit / perPage);
-			const res = await githubClient.requestPaginated<any>(`${base}/pulls?${params}`, {
+			const res = await githubClient.requestPaginated<GitHubPR>(`${base}/pulls?${params}`, {
 				...opts,
 				perPage,
 				maxPages,
@@ -356,7 +457,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			const limit = Math.min(input.limit ?? 100, 500);
 			const perPage = Math.min(limit, 100);
 			const maxPages = Math.ceil(limit / perPage);
-			const res = await githubClient.requestPaginated<any>(`${base}/commits?${params}`, {
+			const res = await githubClient.requestPaginated<GitHubCommit>(`${base}/commits?${params}`, {
 				...opts,
 				perPage,
 				maxPages,
@@ -372,7 +473,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 		case "get_commit": {
 			const sha = input.sha;
 			if (!sha) return { text: "Error: 'sha' is required for get_commit" };
-			const res = await githubClient.request<any>(`${base}/commits/${sha}`, opts);
+			const res = await githubClient.request<GitHubCommit>(`${base}/commits/${sha}`, opts);
 			if (!res.ok) return error(res, `commit ${sha}`);
 
 			let diff: string | undefined;
@@ -423,7 +524,8 @@ export class GitHubTool implements AgentTool<typeof schema, GitHubToolDetails, T
 	readonly name = "github";
 	readonly label = "GitHub";
 	readonly parameters = schema;
-	description = "Interact with GitHub API: repos, issues, PRs, commits";
+	description =
+		"Interact with GitHub API: repos, issues, PRs, commits. For remote repositories only — use read/grep for local files.";
 
 	constructor(readonly _session: ToolSession) {}
 

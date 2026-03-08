@@ -182,6 +182,16 @@ Tools: `find_thread`, `read_thread`
 - Generic coding question with no project-specific history
 - User explicitly provides all needed context
 
+{{#has tools "github"}}
+### GitHub
+
+Tool: `github`
+Use for **remote** GitHub API calls — repos, issues, PRs, commits, file contents, tree listings. Never use for the local repo; use read/grep/explore for local files.
+- **Use `github`** for: reading issues/PRs, listing commits, fetching files from remote repos, searching repos, getting repo metadata.
+- **Use `librarian`** for: cross-repo exploration, understanding architectural patterns, tracing how other projects solve problems.
+- **Avoid `bash gh`** when `github` covers the action — the tool has caching, pagination, and structured output.
+{{/has}}
+
 ### Verification
 Work incrementally. Make a small change, verify it works, then continue. Prefer a sequence of small, validated edits over one large change. Use commands from AGENTS.md or the project's config to verify. Address all errors caused by your changes before yielding.
 

@@ -76,8 +76,8 @@ const etagCache = new Map<string, CacheEntry>();
 const CACHE_MAX_SIZE = 200;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-function getCacheKey(endpoint: string): string {
-	return endpoint;
+function getCacheKey(endpoint: string, mediaType?: string): string {
+	return mediaType ? `${endpoint}::${mediaType}` : endpoint;
 }
 
 function pruneCache(): void {
@@ -122,8 +122,7 @@ async function request<T = unknown>(endpoint: string, options: RequestOptions = 
 		headers.Accept = options.mediaType;
 	}
 
-	// ETag conditional request
-	const cacheKey = getCacheKey(endpoint);
+	const cacheKey = getCacheKey(endpoint, options.mediaType);
 	const cached = etagCache.get(cacheKey);
 	if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
 		headers["If-None-Match"] = cached.etag;
@@ -177,11 +176,20 @@ async function request<T = unknown>(endpoint: string, options: RequestOptions = 
 				}
 
 				// Retry on transient errors
-				if (RETRY_STATUS_CODES.has(response.status) && attempt < MAX_RETRIES) {
-					const retryAfter = response.headers.get("retry-after");
-					const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : Math.min(1000 * 2 ** attempt, 10_000);
+				const isRateLimited =
+					response.status === 429 ||
+					(response.status === 403 && (rateLimit.remaining === 0 || response.headers.has("retry-after")));
+				const isTransient = RETRY_STATUS_CODES.has(response.status) || isRateLimited;
 
-					if (response.status === 429 && rateLimit.remaining === 0) {
+				if (isTransient && attempt < MAX_RETRIES) {
+					await response.text().catch(() => {});
+					const retryAfter = response.headers.get("retry-after");
+					const retrySeconds = retryAfter ? parseInt(retryAfter, 10) : Number.NaN;
+					const waitMs = Number.isFinite(retrySeconds)
+						? retrySeconds * 1000
+						: Math.min(1000 * 2 ** attempt, 10_000);
+
+					if (isRateLimited && rateLimit.remaining === 0) {
 						const resetMs = rateLimit.reset * 1000 - Date.now();
 						if (resetMs > 30_000) {
 							return { data: null as T, ok: false, status: response.status, rateLimit };
@@ -197,8 +205,8 @@ async function request<T = unknown>(endpoint: string, options: RequestOptions = 
 					return { data: null as T, ok: false, status: response.status, rateLimit };
 				}
 
-				const isRaw = response.headers.get("content-type")?.includes("application/json") === false;
-				const data = (isRaw ? await response.text() : await response.json()) as T;
+				const wantsRaw = options.mediaType !== undefined;
+				const data = (wantsRaw ? await response.text() : await response.json()) as T;
 
 				// Cache with ETag
 				const etag = response.headers.get("etag");
