@@ -441,7 +441,6 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 			}
 			const effRename = result.change.newPath ? rename : undefined;
 
-			// Generate diff for display
 			let diffResult = {
 				diff: "",
 				firstChangedLine: undefined as number | undefined,
@@ -524,7 +523,6 @@ export class EditTool implements AgentTool<TInput, any, Theme> {
 		});
 
 		if (result.count === 0) {
-			// Get error details
 			const matchOutcome = findMatch(normalizedContent, normalizedOldText, {
 				allowFuzzy: this.#allowFuzzy,
 				threshold: this.#fuzzyThreshold,

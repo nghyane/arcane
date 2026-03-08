@@ -114,7 +114,6 @@ function adjustLinesIndentation(patternLines: string[], actualLines: string[], n
 		}
 	}
 
-	// Detect indent character from actual content
 	let indentChar = " ";
 	for (const line of actualLines) {
 		const ws = getLeadingWhitespace(line);
@@ -220,7 +219,6 @@ function adjustLinesIndentation(patternLines: string[], actualLines: string[], n
 					const w = (s2 - s1) / (t2 - t1);
 					if (w > 0 && Number.isInteger(w)) {
 						const b = s1 - t1 * w;
-						// Validate all samples against this model
 						let valid = true;
 						for (const [t, s] of samples) {
 							if (t * w + b !== s) {
@@ -308,7 +306,6 @@ function adjustLinesIndentation(patternLines: string[], actualLines: string[], n
 		const trimmed = newLine.trim();
 		const matchingActualLines = contentToActualLines.get(trimmed);
 
-		// Check if this is a context line (same trimmed content exists in actual)
 		if (matchingActualLines && matchingActualLines.length > 0) {
 			if (matchingActualLines.length === 1) {
 				return matchingActualLines[0];
@@ -319,12 +316,10 @@ function adjustLinesIndentation(patternLines: string[], actualLines: string[], n
 			const usedCount = usedActualLines.get(trimmed) ?? 0;
 			if (usedCount < matchingActualLines.length) {
 				usedActualLines.set(trimmed, usedCount + 1);
-				// Use actual file content directly for context lines
 				return matchingActualLines[usedCount];
 			}
 		}
 
-		// This is a new/added line - apply consistent delta if safe
 		if (delta && delta !== 0) {
 			const newIndent = countLeadingWhitespace(newLine);
 			if (newIndent === patternMin) {
@@ -573,7 +568,6 @@ function findHierarchicalContext(
 	lineHint: number | undefined,
 	allowFuzzy: boolean,
 ): ContextLineResult {
-	// Check for newline-separated hierarchical contexts (from nested @@ anchors)
 	if (context.includes("\n")) {
 		const parts = context
 			.split("\n")
@@ -627,7 +621,6 @@ function findHierarchicalContext(
 		return { index: undefined, confidence: 0 };
 	}
 
-	// Try literal context first
 	const spaceParts = context.split(/\s+/).filter(p => p.length > 0);
 	const hasSignatureChars = /[(){}[\]]/.test(context);
 	if (!hasSignatureChars && spaceParts.length > 2) {
@@ -662,7 +655,6 @@ function findHierarchicalContext(
 
 	const result = findContextLine(lines, context, startFrom, { allowFuzzy });
 
-	// If line hint exists and result is ambiguous or missing, try from hint
 	if ((result.index === undefined || (result.matchCount ?? 0) > 1) && lineHint !== undefined) {
 		const hintStart = Math.max(0, lineHint - 1);
 		const hintedResult = findContextLine(lines, context, hintStart, { allowFuzzy });
@@ -671,7 +663,6 @@ function findHierarchicalContext(
 		}
 	}
 
-	// If found uniquely, return it
 	if (result.index !== undefined && (result.matchCount ?? 0) <= 1) {
 		return result;
 	}
@@ -679,7 +670,6 @@ function findHierarchicalContext(
 		return result;
 	}
 
-	// Try from beginning if not found from current position
 	if (result.index === undefined && startFrom !== 0) {
 		const fromStartResult = findContextLine(lines, context, 0, { allowFuzzy });
 		if (fromStartResult.index !== undefined && (fromStartResult.matchCount ?? 0) <= 1) {
@@ -738,7 +728,6 @@ function findSequenceWithHint(
 	eof: boolean,
 	allowFuzzy: boolean,
 ): import("./types").SequenceSearchResult {
-	// Prefer content-based search starting from currentIndex
 	const primaryResult = seekSequence(lines, pattern, currentIndex, eof, { allowFuzzy });
 	if (
 		primaryResult.matchCount &&
@@ -758,7 +747,6 @@ function findSequenceWithHint(
 		return primaryResult;
 	}
 
-	// Use line hint as a secondary bias only if needed
 	if (hintIndex !== undefined && hintIndex !== currentIndex) {
 		const hintedResult = seekSequence(lines, pattern, hintIndex, eof, { allowFuzzy });
 		if (hintedResult.index !== undefined || (hintedResult.matchCount && hintedResult.matchCount > 1)) {
@@ -857,7 +845,6 @@ function applyCharacterMatch(
 		}
 	}
 
-	// Check for multiple exact occurrences
 	if (matchOutcome.occurrences && matchOutcome.occurrences > 1) {
 		const previews = matchOutcome.occurrencePreviews?.join("\n\n") ?? "";
 		const moreMsg = matchOutcome.occurrences > 5 ? ` (showing first 5 of ${matchOutcome.occurrences})` : "";
@@ -886,7 +873,6 @@ function applyCharacterMatch(
 		throw new ApplyPatchError(`Failed to find expected lines in ${path}:\n${oldText}`);
 	}
 
-	// Adjust indentation to match what was actually found
 	const adjustedNewText = adjustIndentation(normalizedOldText, matchOutcome.match.actualText, newText);
 
 	const warnings: string[] = [];
@@ -898,7 +884,6 @@ function applyCharacterMatch(
 		);
 	}
 
-	// Apply the replacement
 	const before = normalizedContent.substring(0, matchOutcome.match.startIndex);
 	const after = normalizedContent.substring(matchOutcome.match.startIndex + matchOutcome.match.actualText.length);
 	return { content: before + adjustedNewText + after, warnings };
@@ -942,9 +927,7 @@ function computeReplacements(
 			lineIndex = Math.max(0, Math.min(lineHint - 1, originalLines.length - 1));
 		}
 
-		// If hunk has a changeContext, find it and adjust lineIndex
 		if (hunk.changeContext !== undefined) {
-			// Use hierarchical context matching for nested @@ anchors and space-separated contexts
 			const result = findHierarchicalContext(originalLines, hunk.changeContext, lineIndex, lineHint, allowFuzzy);
 			const idx = result.index;
 			contextIndex = idx;
@@ -995,7 +978,6 @@ function computeReplacements(
 		}
 
 		if (hunk.oldLines.length === 0) {
-			// Pure addition - prefer changeContext position, then line hint, then end of file
 			let insertionIdx: number;
 			if (hunk.changeContext !== undefined) {
 				// changeContext was processed above; lineIndex is set to the context line or after it
@@ -1030,7 +1012,6 @@ function computeReplacements(
 			continue;
 		}
 
-		// Try to find the old lines in the file
 		let pattern = [...hunk.oldLines];
 		const matchHint = getHunkHintIndex(hunk, lineIndex);
 		let searchResult = findSequenceWithHint(
@@ -1043,7 +1024,6 @@ function computeReplacements(
 		);
 		let newSlice = [...hunk.newLines];
 
-		// Retry without trailing empty line if present
 		if (searchResult.index === undefined && pattern.length > 0 && pattern[pattern.length - 1] === "") {
 			pattern = pattern.slice(0, -1);
 			if (newSlice.length > 0 && newSlice[newSlice.length - 1] === "") {
@@ -1165,7 +1145,6 @@ function computeReplacements(
 			);
 		}
 
-		// Reject if match is ambiguous (prefix/substring matching found multiple matches)
 		if (searchResult.matchCount !== undefined && searchResult.matchCount > 1) {
 			const previews = formatSequenceMatchPreviews(
 				originalLines,
@@ -1186,7 +1165,6 @@ function computeReplacements(
 		if (hunk.changeContext === undefined && !hunk.hasContextLines && !hunk.isEndOfFile && lineHint === undefined) {
 			const secondMatch = seekSequence(originalLines, pattern, found + 1, false, { allowFuzzy });
 			if (secondMatch.index !== undefined) {
-				// Extract 3-line previews for each match
 				const formatPreview = (startIdx: number) => {
 					const contextLines = 2;
 					const maxLineLength = 80;
@@ -1210,7 +1188,6 @@ function computeReplacements(
 			}
 		}
 
-		// Adjust indentation if needed (handles fuzzy matches where indentation differs)
 		const actualMatchedLines = originalLines.slice(found, found + pattern.length);
 
 		// Skip pure-context hunks (no +/- lines — oldLines === newLines).
@@ -1235,7 +1212,6 @@ function computeReplacements(
 		lineIndex = found + pattern.length;
 	}
 
-	// Sort by start index
 	replacements.sort((a, b) => a.startIndex - b.startIndex);
 
 	for (let i = 1; i < replacements.length; i++) {
@@ -1319,14 +1295,12 @@ function applyHunksToContent(
 	const { replacements, warnings } = computeReplacements(originalLines, path, hunks, allowFuzzy);
 	const newLines = applyReplacements(originalLines, replacements);
 
-	// Restore the trailing empty element if we stripped it
 	if (strippedTrailingEmpty) {
 		newLines.push("");
 	}
 
 	const content = newLines.join("\n");
 
-	// Preserve original trailing newline behavior
 	if (hadFinalNewline && !content.endsWith("\n")) {
 		return { content: `${content}\n`, warnings };
 	}
@@ -1374,7 +1348,6 @@ async function applyNormalizedPatch(
 		}
 	}
 
-	// Handle CREATE operation
 	if (input.op === "create") {
 		if (!input.diff) {
 			throw new ApplyPatchError("Create operation requires diff (file content)");
@@ -1400,7 +1373,6 @@ async function applyNormalizedPatch(
 		};
 	}
 
-	// Handle DELETE operation
 	if (input.op === "delete") {
 		if (!(await fs.exists(absolutePath))) {
 			throw new ApplyPatchError(`File not found: ${input.path}`);
@@ -1420,7 +1392,6 @@ async function applyNormalizedPatch(
 		};
 	}
 
-	// Handle UPDATE operation
 	if (!input.diff) {
 		throw new ApplyPatchError("Update operation requires diff (hunks)");
 	}

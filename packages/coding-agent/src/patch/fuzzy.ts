@@ -220,7 +220,6 @@ export function findMatch(
 		return {};
 	}
 
-	// Try exact match first
 	const exactIndex = content.indexOf(target);
 	if (exactIndex !== -1) {
 		const occurrences = content.split(target).length - 1;
@@ -260,7 +259,6 @@ export function findMatch(
 		};
 	}
 
-	// Try fuzzy match
 	const threshold = options.threshold ?? DEFAULT_FUZZY_THRESHOLD;
 	const { best, aboveThresholdCount, secondBestScore } = findBestFuzzyMatch(content, target, threshold);
 
@@ -384,7 +382,6 @@ export function seekSequence(
 		return { index: undefined, confidence: 0 };
 	}
 
-	// Determine search start position
 	const searchStart = eof && lines.length >= pattern.length ? lines.length - pattern.length : start;
 	const maxStart = lines.length - pattern.length;
 
@@ -547,7 +544,6 @@ export function seekSequence(
 	});
 
 	if (matchOutcome.match) {
-		// Convert character index back to line index
 		const matchedContent = contentText.substring(0, matchOutcome.match.startIndex);
 		const lineIndex = start + matchedContent.split("\n").length - 1;
 		const fallbackMatchCount = matchOutcome.occurrences ?? matchOutcome.fuzzyMatches ?? 1;

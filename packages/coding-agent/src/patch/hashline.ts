@@ -26,9 +26,7 @@ export type HashlineEdit =
  * the only differences are in spaces, tabs, or other whitespace.
  */
 function equalsIgnoringWhitespace(a: string, b: string): boolean {
-	// Fast path: identical strings
 	if (a === b) return true;
-	// Compare with all whitespace removed
 	return a.replace(/\s+/g, "") === b.replace(/\s+/g, "");
 }
 
@@ -488,7 +486,6 @@ export class HashlineMismatchError extends Error {
 			mismatchSet.set(m.line, m);
 		}
 
-		// Collect line ranges to display (mismatch lines + context)
 		const displayLines = new Set<number>();
 		for (const m of mismatches) {
 			const lo = Math.max(1, m.line - MISMATCH_CONTEXT);
@@ -614,7 +611,6 @@ export function applyHashlineEdits(
 
 	const autocorrect = Bun.env.ARCANE_HL_AUTOCORRECT === "1";
 
-	// Collect warnings and auto-correct edit content
 	const warnings: string[] = [];
 	for (const edit of edits) {
 		const unicodeWarning = detectUnicodeEscapePlaceholders(edit.content);
@@ -680,7 +676,6 @@ export function applyHashlineEdits(
 	if (mismatches.length > 0) {
 		throw new HashlineMismatchError(mismatches, fileLines);
 	}
-	// Deduplicate identical edits targeting the same line(s)
 	const seenEditKeys = new Map<string, number>();
 	const dedupIndices = new Set<number>();
 	for (let i = 0; i < edits.length; i++) {
@@ -726,7 +721,6 @@ export function applyHashlineEdits(
 
 	annotated.sort((a, b) => b.sortLine - a.sortLine || a.precedence - b.precedence || a.idx - b.idx);
 
-	// Apply edits bottom-up
 	for (const { edit, idx } of annotated) {
 		switch (edit.op) {
 			case "replace": {
@@ -734,7 +728,6 @@ export function applyHashlineEdits(
 				const endLine = edit.end ? edit.end.line : edit.target.line;
 				const count = endLine - startLine + 1;
 
-				// Single-line merge expansion (autocorrect)
 				if (!edit.end) {
 					const merged = autocorrect ? maybeExpandSingleLineMerge(startLine, edit.content) : null;
 					if (merged) {
@@ -805,7 +798,6 @@ export function applyHashlineEdits(
 	}
 
 	let finalContent = fileLines.join("\n");
-	// Preserve trailing newline behavior of original content
 	if (hadFinalNewline && !finalContent.endsWith("\n")) {
 		finalContent += "\n";
 	} else if (!hadFinalNewline && finalContent.endsWith("\n")) {
@@ -923,7 +915,6 @@ export function buildCompactDiffPreview(diff: string, options: CompactDiffOption
 
 	const inputLines = diff.split("\n");
 
-	// Single-pass: group consecutive lines by kind into run spans
 	type Kind = " " | "+" | "-" | "meta";
 	const runs: { kind: Kind; start: number; end: number }[] = [];
 	for (let i = 0; i < inputLines.length; i++) {

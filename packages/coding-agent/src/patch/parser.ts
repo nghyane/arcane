@@ -228,7 +228,6 @@ function parseOneHunk(lines: string[], lineNumber: number, allowMissingContext: 
 	const unifiedHeader = isHeaderLine ? parseUnifiedHunkHeader(headerTrimmed) : undefined;
 	const isEmptyContextMarker = /^@@\s*@@$/.test(headerTrimmed);
 
-	// Check for context marker
 	if (isHeaderLine && (headerTrimmed === EMPTY_CHANGE_CONTEXT_MARKER || isEmptyContextMarker)) {
 		startIndex = 1;
 	} else if (unifiedHeader) {
@@ -280,7 +279,6 @@ function parseOneHunk(lines: string[], lineNumber: number, allowMissingContext: 
 		throw new ParseError(`Line numbers must be >= 1 (got ${newStartLine})`, lineNumber);
 	}
 
-	// Check for nested @@ anchors on subsequent lines
 	// Format: @@ class Foo
 	//         @@   method
 	while (startIndex < lines.length) {
@@ -290,7 +288,6 @@ function parseOneHunk(lines: string[], lineNumber: number, allowMissingContext: 
 		}
 		const trimmed = nextLine.trimEnd();
 
-		// Check if it's another @@ line (nested anchor)
 		if (trimmed.startsWith(CHANGE_CONTEXT_MARKER)) {
 			const nestedContext = trimmed.slice(CHANGE_CONTEXT_MARKER.length);
 			if (nestedContext.trim().length > 0) {
@@ -301,7 +298,6 @@ function parseOneHunk(lines: string[], lineNumber: number, allowMissingContext: 
 			// Empty @@ as separator - skip it
 			startIndex++;
 		} else {
-			// Not an @@ line, stop accumulating
 			break;
 		}
 	}
@@ -505,7 +501,6 @@ export function parseHunks(diff: string): DiffHunk[] {
 		const line = lines[i];
 		const trimmed = line.trim();
 
-		// Skip blank lines between hunks
 		if (trimmed === "") {
 			i++;
 			continue;

@@ -55,12 +55,10 @@ export function generateDiffString(oldContent: string, newContent: string, conte
 		}
 
 		if (part.added || part.removed) {
-			// Capture the first changed line (in the new file)
 			if (firstChangedLine === undefined) {
 				firstChangedLine = newLineNum;
 			}
 
-			// Show the change
 			for (const line of raw) {
 				if (part.added) {
 					output.push(formatNumberedDiffLine("+", newLineNum, lineNumWidth, line));
@@ -72,7 +70,6 @@ export function generateDiffString(oldContent: string, newContent: string, conte
 			}
 			lastWasChange = true;
 		} else {
-			// Context lines - only show a few before/after changes
 			const nextPartIsChange = i < parts.length - 1 && (parts[i + 1].added || parts[i + 1].removed);
 
 			if (lastWasChange || nextPartIsChange) {
@@ -81,18 +78,15 @@ export function generateDiffString(oldContent: string, newContent: string, conte
 				let skipEnd = 0;
 
 				if (!lastWasChange) {
-					// Show only last N lines as leading context
 					skipStart = Math.max(0, raw.length - contextLines);
 					linesToShow = raw.slice(skipStart);
 				}
 
 				if (!nextPartIsChange && linesToShow.length > contextLines) {
-					// Show only first N lines as trailing context
 					skipEnd = linesToShow.length - contextLines;
 					linesToShow = linesToShow.slice(0, contextLines);
 				}
 
-				// Add ellipsis if we skipped lines at start
 				if (skipStart > 0) {
 					output.push(formatNumberedDiffLine(" ", oldLineNum, lineNumWidth, "..."));
 					oldLineNum += skipStart;
@@ -105,14 +99,12 @@ export function generateDiffString(oldContent: string, newContent: string, conte
 					newLineNum++;
 				}
 
-				// Add ellipsis if we skipped lines at end
 				if (skipEnd > 0) {
 					output.push(formatNumberedDiffLine(" ", oldLineNum, lineNumWidth, "..."));
 					oldLineNum += skipEnd;
 					newLineNum += skipEnd;
 				}
 			} else {
-				// Skip these context lines entirely
 				oldLineNum += raw.length;
 				newLineNum += raw.length;
 			}
@@ -198,7 +190,6 @@ export function replaceText(content: string, oldText: string, newText: string, o
 	let count = 0;
 
 	if (options.all) {
-		// Check for exact matches first
 		const exactCount = normalizedContent.split(normalizedOldText).length - 1;
 		if (exactCount > 0) {
 			return {
@@ -207,7 +198,6 @@ export function replaceText(content: string, oldText: string, newText: string, o
 			};
 		}
 
-		// No exact matches - try fuzzy matching iteratively
 		while (true) {
 			const matchOutcome = findMatch(normalizedContent, normalizedOldText, {
 				allowFuzzy: options.fuzzy,
@@ -238,7 +228,6 @@ export function replaceText(content: string, oldText: string, newText: string, o
 		return { content: normalizedContent, count };
 	}
 
-	// Single replacement mode
 	const matchOutcome = findMatch(normalizedContent, normalizedOldText, {
 		allowFuzzy: options.fuzzy,
 		threshold,
@@ -319,7 +308,6 @@ export async function computeEditDiff(
 		});
 
 		if (result.count === 0) {
-			// Get closest match for error message
 			const matchOutcome = findMatch(normalizedContent, normalizedOldText, {
 				allowFuzzy: fuzzy,
 				threshold: threshold ?? DEFAULT_FUZZY_THRESHOLD,

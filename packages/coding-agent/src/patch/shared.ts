@@ -73,7 +73,6 @@ interface EditRenderArgs {
 	newText?: string;
 	patch?: string;
 	all?: boolean;
-	// Patch mode fields
 	op?: Operation;
 	rename?: string;
 	diff?: string;
@@ -81,7 +80,6 @@ interface EditRenderArgs {
 	 * Computed preview diff (used when tool args don't include a diff, e.g. hashline mode).
 	 */
 	previewDiff?: string;
-	// Hashline mode fields
 	edits?: HashlineEditPreview[];
 }
 
@@ -205,19 +203,16 @@ export const editToolRenderer = {
 		const editIcon = uiTheme.fg("muted", uiTheme.getLangIcon(editLanguage));
 		let pathDisplay = filePath ? uiTheme.fg("accent", filePath) : uiTheme.fg("toolOutput", "…");
 
-		// Add arrow for move/rename operations
 		if (args.rename) {
 			pathDisplay += ` ${uiTheme.fg("dim", "→")} ${uiTheme.fg("accent", shortenPath(args.rename))}`;
 		}
 
-		// Show operation type for patch mode
 		const opTitle = args.op === "create" ? "Create" : args.op === "delete" ? "Delete" : "Edit";
 		const spinner =
 			options?.spinnerFrame !== undefined ? formatStatusIcon("running", uiTheme, options.spinnerFrame) : "";
 		const title = uiTheme.fg("toolTitle", uiTheme.bold(opTitle));
 		let text = `${title} ${spinner ? `${spinner} ` : ""}${editIcon} ${pathDisplay}`;
 
-		// Show streaming preview of diff/content
 		const previewDiffText =
 			args.previewDiff ??
 			(options.renderContext?.editDiffPreview && "diff" in options.renderContext.editDiffPreview
@@ -270,7 +265,6 @@ export const editToolRenderer = {
 			return new Text(`${header}\n${uiTheme.fg("error", replaceTabs(errorText))}`, 0, 0);
 		}
 
-		// Get diff text from result or preview
 		const { renderContext } = options;
 		const editDiffPreview = renderContext?.editDiffPreview;
 		const diffText =
@@ -280,7 +274,6 @@ export const editToolRenderer = {
 
 		const diffStats = diffText ? getDiffStats(diffText) : { added: 0, removed: 0, hunks: 0, lines: 0 };
 
-		// Build header with diff stats
 		let description = filePath || "file";
 		if (rename) description += ` ${uiTheme.fg("dim", "→")} ${shortenPath(rename)}`;
 		const meta: string[] = [];
@@ -290,7 +283,6 @@ export const editToolRenderer = {
 
 		const header = renderStatusLine({ icon: "success", title: opTitle, description, meta }, uiTheme);
 
-		// Tree-style diff body
 		const expanded = options.expanded;
 		const diffLines = diffText ? diffText.split("\n") : [];
 		const maxLines = expanded ? diffLines.length : Math.min(diffLines.length, PREVIEW_LIMITS.DIFF_COLLAPSED_LINES);
@@ -306,7 +298,6 @@ export const editToolRenderer = {
 			treeBody.push(`${uiTheme.fg("dim", `… ${remaining} more lines`)} ${formatClickHint(uiTheme)}`);
 		}
 
-		// Diagnostics
 		if (result.details?.diagnostics) {
 			const diagText = formatDiagnostics(result.details.diagnostics, expanded, uiTheme, (fp: string) =>
 				uiTheme.getLangIcon(getLanguageFromPath(fp)),
