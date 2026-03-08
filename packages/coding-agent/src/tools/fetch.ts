@@ -399,7 +399,31 @@ async function renderHtmlToText(
 		signal,
 	};
 
-	// Try jina first (reader API)
+	try {
+		const content = await htmlToMarkdown(html, { cleanContent: true });
+		if (content.trim().length > 100 && !isLowQualityOutput(content)) {
+			return { content, ok: true, method: "native" };
+		}
+	} catch {
+		signal?.throwIfAborted();
+	}
+
+	const trafilatura = await ensureTool("trafilatura", { signal, silent: true });
+	if (trafilatura) {
+		const result = await ptree.exec([trafilatura, "-u", url, "--output-format", "markdown"], execOptions);
+		if (result.ok && result.stdout.trim().length > 100) {
+			return { content: result.stdout, ok: true, method: "trafilatura" };
+		}
+	}
+
+	const lynx = hasCommand("lynx");
+	if (lynx) {
+		const result = await ptree.exec(["lynx", "-dump", "-nolist", "-width", "250", url], execOptions);
+		if (result.ok) {
+			return { content: result.stdout, ok: true, method: "lynx" };
+		}
+	}
+
 	try {
 		const jinaUrl = `https://r.jina.ai/${url}`;
 		const response = await fetch(jinaUrl, {
@@ -413,36 +437,6 @@ async function renderHtmlToText(
 			}
 		}
 	} catch {
-		// Jina failed, continue to next method
-		signal?.throwIfAborted();
-	}
-
-	// Try trafilatura (auto-install via uv/pip)
-	const trafilatura = await ensureTool("trafilatura", { signal, silent: true });
-	if (trafilatura) {
-		const result = await ptree.exec([trafilatura, "-u", url, "--output-format", "markdown"], execOptions);
-		if (result.ok && result.stdout.trim().length > 100) {
-			return { content: result.stdout, ok: true, method: "trafilatura" };
-		}
-	}
-
-	// Try lynx (can't auto-install, system package)
-	const lynx = hasCommand("lynx");
-	if (lynx) {
-		const result = await ptree.exec(["lynx", "-dump", "-nolist", "-width", "250", url], execOptions);
-		if (result.ok) {
-			return { content: result.stdout, ok: true, method: "lynx" };
-		}
-	}
-
-	// Fall back to native converter (fastest, no network/subprocess)
-	try {
-		const content = await htmlToMarkdown(html, { cleanContent: true });
-		if (content.trim().length > 100 && !isLowQualityOutput(content)) {
-			return { content, ok: true, method: "native" };
-		}
-	} catch {
-		// Native converter failed, continue to next method
 		signal?.throwIfAborted();
 	}
 	return { content: "", ok: false, method: "none" };
