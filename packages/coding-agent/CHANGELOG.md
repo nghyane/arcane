@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.22] - 2026-03-08
+
 ### Changed
 
 - Rename edit operation `replace` to `replace_range` for clarity
