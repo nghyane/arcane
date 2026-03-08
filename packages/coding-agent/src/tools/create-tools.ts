@@ -23,11 +23,10 @@ import { PythonTool } from "./python";
 import { ReadTool } from "./read";
 import { ReadThreadTool } from "./read-thread";
 import { RenderMermaidTool } from "./render-mermaid";
-import { reviewerConfig } from "./reviewer-tool";
-import { SaveMemoryTool } from "./save-memory";
+import { reviewerConfig } from "./reviewer";
 import { SearchCodeTool } from "./search-code";
 import { loadSshTool } from "./ssh";
-import { SubagentTool } from "./subagent-tool";
+import { SubagentTool } from "./subagent";
 import { TodoWriteTool } from "./todo-write";
 import { UndoEditTool } from "./undo-edit";
 import { WriteTool } from "./write";
@@ -60,7 +59,6 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	fetch: s => new FetchTool(s),
 	web_search: () => new SearchTool(),
 	search_code: () => new SearchCodeTool(),
-	save_memory: s => new SaveMemoryTool(s),
 	write: s => new WriteTool(s),
 };
 

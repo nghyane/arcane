@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import type { SubagentConfig } from "./subagent-tool";
+import type { SubagentConfig } from "./subagent";
 
 const schema = Type.Object({
 	query: Type.String({ description: "What to search for in the codebase" }),

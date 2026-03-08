@@ -415,9 +415,7 @@ export class CommandController {
 	}
 
 	async handleMemoryCommand(_text: string): Promise<void> {
-		this.ctx.showWarning(
-			"The /memory command has been removed. Use save_memory tool or add facts to AGENTS.md directly.",
-		);
+		this.ctx.showWarning("The /memory command has been removed. Add facts to AGENTS.md directly.");
 	}
 
 	async handleClearCommand(): Promise<void> {

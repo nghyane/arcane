@@ -171,7 +171,7 @@ Best practices:
 
 ### Cross-session Knowledge
 
-Tools: `find_thread`, `read_thread`, `save_memory`
+Tools: `find_thread`, `read_thread`
 **Proactive search triggers** — use `find_thread` when:
 - User mentions past work: "we did this before", "last time", "in a previous session"
 - User asks "what did we do about X" or "how did we solve Y"
@@ -181,7 +181,6 @@ Tools: `find_thread`, `read_thread`, `save_memory`
 - Question is about current session context
 - Generic coding question with no project-specific history
 - User explicitly provides all needed context
-**save_memory**: only when user says "remember this" or states a clear preference. If unsure, ask.
 
 ### Verification
 Work incrementally. Make a small change, verify it works, then continue. Prefer a sequence of small, validated edits over one large change. Use commands from AGENTS.md or the project's config to verify. Address all errors caused by your changes before yielding.

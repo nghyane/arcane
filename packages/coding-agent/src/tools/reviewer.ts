@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import type { SubagentConfig } from "./subagent-tool";
+import type { SubagentConfig } from "./subagent";
 
 const schema = Type.Object({
 	diff_description: Type.String({ description: "Description of the diff or change to review" }),

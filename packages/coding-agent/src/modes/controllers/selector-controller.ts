@@ -18,7 +18,7 @@ import {
 	setTheme,
 	theme,
 } from "../../theme/theme";
-import { setPreferredImageProvider, setPreferredSearchProvider } from "../../tools";
+import { setPreferredSearchProvider } from "../../tools";
 import { AssistantMessageComponent } from "../components/assistant-message";
 import { ExtensionDashboard } from "../components/extensions";
 import { HistorySearchComponent } from "../components/history-search";
@@ -288,9 +288,6 @@ export class SelectorController {
 				setPreferredSearchProvider(
 					value as "auto" | "exa" | "jina" | "zai" | "perplexity" | "anthropic" | "gemini" | "codex",
 				);
-				break;
-			case "imageProvider":
-				setPreferredImageProvider(value as "auto" | "gemini" | "openrouter");
 				break;
 
 			// All other settings are handled by the definitions (get/set on SettingsManager)

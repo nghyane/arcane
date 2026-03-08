@@ -72,7 +72,6 @@ export {
 	type FindToolOptions,
 } from "./find";
 export { FindThreadTool, type FindThreadToolDetails } from "./find-thread";
-export { setPreferredImageProvider } from "./gemini-image";
 export { GitHubTool, type GitHubToolDetails } from "./github";
 export { GrepTool, type GrepToolDetails, type GrepToolInput } from "./grep";
 export { librarianConfig } from "./librarian";
@@ -86,10 +85,9 @@ export {
 export { ReadTool, type ReadToolDetails, type ReadToolInput } from "./read";
 export { ReadThreadTool, type ReadThreadToolDetails } from "./read-thread";
 export { RenderMermaidTool, type RenderMermaidToolDetails } from "./render-mermaid";
-export { reviewerConfig } from "./reviewer-tool";
-export { SaveMemoryTool, type SaveMemoryToolDetails } from "./save-memory";
+export { reviewerConfig } from "./reviewer";
 export { loadSshTool, type SSHToolDetails, SshTool } from "./ssh";
-export { type SubagentConfig, SubagentTool } from "./subagent-tool";
+export { type SubagentConfig, SubagentTool } from "./subagent";
 export {
 	type TodoItem,
 	TodoWriteTool,

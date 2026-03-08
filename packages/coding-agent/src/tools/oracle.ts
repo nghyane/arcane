@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import type { SubagentConfig } from "./subagent-tool";
+import type { SubagentConfig } from "./subagent";
 
 const schema = Type.Object({
 	task: Type.String({ description: "Question or task for the oracle to reason about" }),

@@ -71,7 +71,6 @@ import {
 	PythonTool,
 	ReadTool,
 	type SubagentContext,
-	setPreferredImageProvider,
 	setPreferredSearchProvider,
 	type Tool,
 	type ToolSession,
@@ -79,7 +78,6 @@ import {
 	warmupLspServers,
 } from "./tools";
 import { ToolContextStore } from "./tools/context";
-import { getGeminiImageTools } from "./tools/gemini-image";
 import { EventBus } from "./utils/event-bus";
 import { time } from "./utils/timings";
 
@@ -559,7 +557,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 
 	// Initialize provider preferences from settings
 	setPreferredSearchProvider(settings.get("providers.webSearch") ?? "auto");
-	setPreferredImageProvider(settings.get("providers.image") ?? "auto");
 
 	const sessionManager = options.sessionManager ?? SessionManager.create(cwd);
 	time("sessionManager");
@@ -801,13 +798,6 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			// MCP tools are LoadedCustomTool, extract the tool property
 			customTools.push(...mcpResult.tools.map(loaded => loaded.tool));
 		}
-	}
-
-	// Add Gemini image tools if GEMINI_AARCANE_KEY (or GOOGLE_AARCANE_KEY) is available
-	const geminiImageTools = await getGeminiImageTools();
-	time("getGeminiImageTools");
-	if (geminiImageTools.length > 0) {
-		customTools.push(...(geminiImageTools as unknown as CustomTool[]));
 	}
 
 	// Add specialized Exa web search tools if EXA_AARCANE_KEY is available
