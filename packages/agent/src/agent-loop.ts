@@ -10,6 +10,7 @@ import {
 	type ToolResultMessage,
 	validateToolArguments,
 } from "@nghyane/arcane-ai";
+import { logger } from "@nghyane/arcane-utils";
 import type {
 	AgentContext,
 	AgentEvent,
@@ -186,6 +187,10 @@ async function runLoop(
 			}
 
 			if (message.stopReason === "error") {
+				logger.warn("Agent stream error", {
+					errorMessage: message.errorMessage,
+					toolCalls: message.content.filter(c => c.type === "toolCall").map(c => c.name),
+				});
 				type ToolCallContent = Extract<AssistantMessage["content"][number], { type: "toolCall" }>;
 				const toolCalls = message.content.filter((c): c is ToolCallContent => c.type === "toolCall");
 				const toolResults: ToolResultMessage[] = [];
