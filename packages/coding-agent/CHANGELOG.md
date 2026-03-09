@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.29] - 2026-03-09
+
 ### Changed
 
 - Split GitHub tool into `github` (issues/PRs/commits) and `github_fs` (file/tree browsing) with auto-detect owner/repo from git remote
