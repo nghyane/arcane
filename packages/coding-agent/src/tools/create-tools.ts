@@ -13,6 +13,7 @@ import { FetchTool } from "./fetch";
 import { FindTool } from "./find";
 import { FindThreadTool } from "./find-thread";
 import { GitHubTool } from "./github";
+import { GitHubFsTool } from "./github-fs";
 import { GrepTool } from "./grep";
 import type { ToolSession } from "./index";
 import { librarianConfig } from "./librarian";
@@ -44,6 +45,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	find: s => new FindTool(s),
 	explore: s => new SubagentTool(s, exploreConfig),
 	github: s => new GitHubTool(s),
+	github_fs: s => new GitHubFsTool(s),
 	grep: s => new GrepTool(s),
 	librarian: s => new SubagentTool(s, librarianConfig),
 	lsp: LspTool.createIf,
@@ -132,6 +134,7 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		if (name === "librarian") return session.settings.get("librarian.enabled");
 		if (name === "oracle") return session.settings.get("oracle.enabled");
 		if (name === "github") return session.settings.get("github.enabled");
+		if (name === "github_fs") return session.isSubagent && session.settings.get("github.enabled");
 		if (name === "search_code") return session.isSubagent;
 		if (name === "task") {
 			return !session.isSubagent;

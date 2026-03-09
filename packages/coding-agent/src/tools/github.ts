@@ -1,8 +1,9 @@
 import type { AgentTool, AgentToolResult } from "@nghyane/arcane-agent";
 import { type Static, Type } from "@sinclair/typebox";
 import type { Theme } from "../theme/theme";
-import { type GitHubResponse, githubClient } from "../web/github-client";
+import { githubClient } from "../web/github-client";
 import type { ToolSession } from ".";
+import { formatGitHubError, resolveOwnerRepo } from "./github-utils";
 import { type OutputMeta, toolResult } from "./output-meta";
 
 // =============================================================================
@@ -33,13 +34,6 @@ interface GitHubRepo {
 	created_at: string;
 	updated_at: string;
 	homepage: string | null;
-}
-
-interface GitHubTreeEntry {
-	type: string;
-	path?: string;
-	name?: string;
-	size?: number;
 }
 
 interface GitHubIssue {
@@ -109,8 +103,6 @@ interface GitHubSearchResult<T> {
 // =============================================================================
 const ActionEnum = Type.Union([
 	Type.Literal("get_repo"),
-	Type.Literal("get_file"),
-	Type.Literal("get_tree"),
 	Type.Literal("search_repos"),
 	Type.Literal("get_issue"),
 	Type.Literal("list_issues"),
@@ -122,8 +114,10 @@ const ActionEnum = Type.Union([
 
 const schema = Type.Object({
 	action: ActionEnum,
-	owner: Type.String({ description: "Repository owner (user or org)" }),
-	repo: Type.String({ description: "Repository name" }),
+	owner: Type.Optional(
+		Type.String({ description: "Repository owner (user or org). Auto-detected from git remote if omitted." }),
+	),
+	repo: Type.Optional(Type.String({ description: "Repository name. Auto-detected from git remote if omitted." })),
 	path: Type.Optional(Type.String({ description: "File or directory path within the repo" })),
 	ref: Type.Optional(Type.String({ description: "Branch, tag, or commit SHA" })),
 	number: Type.Optional(Type.Number({ description: "Issue or PR number" })),
@@ -132,7 +126,6 @@ const schema = Type.Object({
 	labels: Type.Optional(Type.String({ description: "Comma-separated label filter" })),
 	sha: Type.Optional(Type.String({ description: "Commit SHA" })),
 	include_diff: Type.Optional(Type.Boolean({ description: "Include diff in commit details" })),
-	recursive: Type.Optional(Type.Boolean({ description: "Recursively list tree contents" })),
 	limit: Type.Optional(Type.Number({ description: "Max number of results" })),
 });
 
@@ -168,19 +161,6 @@ function formatRepo(data: GitHubRepo): string {
 	]
 		.filter(Boolean)
 		.join("\n");
-}
-
-function formatTreeEntry(entry: GitHubTreeEntry): string {
-	const icon = entry.type === "dir" || entry.type === "tree" ? "dir" : "file";
-	const size = entry.size ? ` (${formatSize(entry.size)})` : "";
-	const name = entry.path ?? entry.name;
-	return `[${icon}] ${name}${size}`;
-}
-
-function formatSize(bytes: number): string {
-	if (bytes < 1024) return `${bytes}B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}K`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)}M`;
 }
 
 function formatIssue(data: GitHubIssue, comments: GitHubComment[] = []): string {
@@ -275,85 +255,24 @@ function formatSearchReposResult(data: GitHubSearchResult<GitHubRepo>): string {
 // Action Handlers
 // =============================================================================
 
-const MAX_FILE_LINES = 500;
 const MAX_DIFF_CHARS = 50_000;
 const MAX_COMMENTS_PAGES = 5;
 
-async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{ text: string; url?: string }> {
-	const { action, owner, repo } = input;
+async function handleAction(
+	input: GitHubInput,
+	owner: string,
+	repo: string,
+	signal?: AbortSignal,
+): Promise<{ text: string; url?: string }> {
+	const { action } = input;
 	const opts = { signal };
 	const base = `/repos/${owner}/${repo}`;
 
 	switch (action) {
 		case "get_repo": {
 			const res = await githubClient.request<GitHubRepo>(base, opts);
-			if (!res.ok) return error(res, "repository");
+			if (!res.ok) return formatGitHubError(res, "repository");
 			return { text: formatRepo(res.data), url: `https://github.com/${owner}/${repo}` };
-		}
-
-		case "get_file": {
-			const filePath = input.path ?? "README.md";
-			const ref = input.ref ? `?ref=${input.ref}` : "";
-			let res = await githubClient.request<string>(`${base}/contents/${filePath}${ref}`, {
-				...opts,
-				mediaType: "application/vnd.github.v3.raw",
-			});
-			// Fallback to Blob API for files >1MB (raw mediaType returns 403)
-			if (!res.ok && res.status === 403) {
-				const metaRes = await githubClient.request<{ sha: string; size: number }>(
-					`${base}/contents/${filePath}${ref}`,
-					opts,
-				);
-				if (metaRes.ok && metaRes.data?.sha) {
-					const blobRes = await githubClient.request<{ content: string; encoding: string }>(
-						`${base}/git/blobs/${metaRes.data.sha}`,
-						opts,
-					);
-					if (blobRes.ok && blobRes.data?.content) {
-						const decoded =
-							blobRes.data.encoding === "base64"
-								? Buffer.from(blobRes.data.content, "base64").toString("utf-8")
-								: blobRes.data.content;
-						res = { data: decoded as string, ok: true, status: 200 };
-					}
-				}
-			}
-			if (!res.ok) return error(res, `file ${filePath}`);
-			const content = String(res.data);
-			const lines = content.split("\n");
-			const truncated = lines.length > MAX_FILE_LINES;
-			const output = truncated ? lines.slice(0, MAX_FILE_LINES).join("\n") : content;
-			const note = truncated ? `\n\n[Truncated: showing ${MAX_FILE_LINES}/${lines.length} lines]` : "";
-			return {
-				text: `# ${owner}/${repo}:${filePath}${input.ref ? ` @${input.ref}` : ""}\n\n${output}${note}`,
-				url: `https://github.com/${owner}/${repo}/blob/${input.ref ?? "HEAD"}/${filePath}`,
-			};
-		}
-
-		case "get_tree": {
-			const treePath = input.path ?? "";
-			if (input.recursive) {
-				const ref = input.ref ?? "HEAD";
-				const res = await githubClient.request<{ tree: GitHubTreeEntry[]; truncated: boolean }>(
-					`${base}/git/trees/${ref}?recursive=1`,
-					opts,
-				);
-				if (!res.ok) return error(res, "tree");
-				const entries = (res.data.tree ?? [])
-					.filter(e => !treePath || (e.path ?? "").startsWith(treePath))
-					.slice(0, 500);
-				return {
-					text: `# Tree: ${owner}/${repo}${treePath ? `/${treePath}` : ""} (recursive)\n\n${entries.map(formatTreeEntry).join("\n")}`,
-				};
-			}
-			const ref = input.ref ? `?ref=${input.ref}` : "";
-			const endpoint = treePath ? `${base}/contents/${treePath}${ref}` : `${base}/contents${ref}`;
-			const res = await githubClient.request<GitHubTreeEntry[]>(endpoint, opts);
-			if (!res.ok) return error(res, "directory");
-			const entries = Array.isArray(res.data) ? res.data : [res.data];
-			return {
-				text: `# ${owner}/${repo}/${treePath}\n\n${entries.map(formatTreeEntry).join("\n")}`,
-			};
 		}
 
 		case "search_repos": {
@@ -363,7 +282,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 				`/search/repositories?q=${encodeURIComponent(q)}&per_page=${perPage}`,
 				opts,
 			);
-			if (!res.ok) return error(res, "repository search");
+			if (!res.ok) return formatGitHubError(res, "repository search");
 			return { text: formatSearchReposResult(res.data) };
 		}
 
@@ -378,7 +297,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 					maxPages: MAX_COMMENTS_PAGES,
 				}),
 			]);
-			if (!issueRes.ok) return error(issueRes, `issue #${num}`);
+			if (!issueRes.ok) return formatGitHubError(issueRes, `issue #${num}`);
 			return {
 				text: formatIssue(issueRes.data, commentsRes.ok ? commentsRes.data : []),
 				url: `https://github.com/${owner}/${repo}/issues/${num}`,
@@ -397,7 +316,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 				perPage,
 				maxPages,
 			});
-			if (!res.ok) return error(res, "issues");
+			if (!res.ok) return formatGitHubError(res, "issues");
 			const issues = (res.data ?? []).filter(i => !i.pull_request).slice(0, limit);
 			const header = `${issues.length} issue(s)${issues.length >= limit ? " (limit reached, increase limit for more)" : ""}`;
 			return {
@@ -409,7 +328,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			const num = input.number;
 			if (!num) return { text: "Error: 'number' is required for get_pull" };
 			const prRes = await githubClient.request<GitHubPR>(`${base}/pulls/${num}`, opts);
-			if (!prRes.ok) return error(prRes, `PR #${num}`);
+			if (!prRes.ok) return formatGitHubError(prRes, `PR #${num}`);
 
 			let diff: string | undefined;
 			if (input.include_diff) {
@@ -442,7 +361,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 				perPage,
 				maxPages,
 			});
-			if (!res.ok) return error(res, "pull requests");
+			if (!res.ok) return formatGitHubError(res, "pull requests");
 			const pulls = (res.data ?? []).slice(0, limit);
 			const header = `${pulls.length} PR(s)${pulls.length >= limit ? " (limit reached, increase limit for more)" : ""}`;
 			return {
@@ -462,7 +381,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 				perPage,
 				maxPages,
 			});
-			if (!res.ok) return error(res, "commits");
+			if (!res.ok) return formatGitHubError(res, "commits");
 			const commits = (res.data ?? []).slice(0, limit);
 			const header = `${commits.length} commit(s)${commits.length >= limit ? " (limit reached, increase limit for more)" : ""}`;
 			return {
@@ -474,7 +393,7 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			const sha = input.sha;
 			if (!sha) return { text: "Error: 'sha' is required for get_commit" };
 			const res = await githubClient.request<GitHubCommit>(`${base}/commits/${sha}`, opts);
-			if (!res.ok) return error(res, `commit ${sha}`);
+			if (!res.ok) return formatGitHubError(res, `commit ${sha}`);
 
 			let diff: string | undefined;
 			if (input.include_diff) {
@@ -500,22 +419,6 @@ async function handleAction(input: GitHubInput, signal?: AbortSignal): Promise<{
 			return { text: `Unknown action: ${action}` };
 	}
 }
-
-function error(res: GitHubResponse, resource: string): { text: string } {
-	const status = res.status;
-	if (status === 404) return { text: `Error: ${resource} not found (404)` };
-	if (status === 403) {
-		const rl = res.rateLimit;
-		if (rl && rl.remaining === 0) {
-			return { text: `Error: GitHub API rate limit exceeded. Resets at ${new Date(rl.reset * 1000).toISOString()}` };
-		}
-		return { text: `Error: Access denied to ${resource} (403). Check token permissions.` };
-	}
-	if (status === 401)
-		return { text: `Error: Authentication failed (401). Check GITHUB_TOKEN or run 'gh auth login'.` };
-	return { text: `Error: Failed to fetch ${resource} (HTTP ${status})` };
-}
-
 // =============================================================================
 // Tool Class
 // =============================================================================
@@ -534,14 +437,23 @@ export class GitHubTool implements AgentTool<typeof schema, GitHubToolDetails, T
 		params: GitHubInput,
 		signal?: AbortSignal,
 	): Promise<AgentToolResult<GitHubToolDetails>> {
-		const input = params;
+		const resolved = await resolveOwnerRepo(params, this._session.cwd);
+		if (!resolved) {
+			return toolResult({ action: params.action, owner: "", repo: "" } as GitHubToolDetails)
+				.text(
+					"Error: owner and repo are required. Provide them explicitly or run from a git repo with a GitHub remote.",
+				)
+				.done();
+		}
+
+		const { owner, repo } = resolved;
 		const details: GitHubToolDetails = {
-			action: input.action,
-			owner: input.owner,
-			repo: input.repo,
+			action: params.action,
+			owner,
+			repo,
 		};
 
-		const result = await handleAction(input, signal);
+		const result = await handleAction(params, owner, repo, signal);
 
 		const builder = toolResult(details).text(result.text);
 		if (result.url) {

@@ -72,6 +72,7 @@ export {
 } from "./find";
 export { FindThreadTool, type FindThreadToolDetails } from "./find-thread";
 export { GitHubTool, type GitHubToolDetails } from "./github";
+export { GitHubFsTool, type GitHubFsToolDetails } from "./github-fs";
 export { GrepTool, type GrepToolDetails, type GrepToolInput } from "./grep";
 export { librarianConfig } from "./librarian";
 export { NotebookTool, type NotebookToolDetails } from "./notebook";
