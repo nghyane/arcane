@@ -136,6 +136,7 @@ async function runLoop(
 	streamFn?: StreamFn,
 ): Promise<void> {
 	let firstTurn = true;
+	let consecutiveErrors = 0;
 	// Check for steering messages at start (user may have typed while waiting)
 	let pendingMessages: AgentMessage[] = (await config.getSteeringMessages?.()) || [];
 
@@ -167,14 +168,14 @@ async function runLoop(
 			const message = await streamAssistantResponse(currentContext, config, signal, stream, streamFn);
 			newMessages.push(message);
 
-			if (message.stopReason === "error" || message.stopReason === "aborted") {
+			if (message.stopReason === "aborted") {
 				// Create placeholder tool results for any tool calls in the aborted message
 				// This maintains the tool_use/tool_result pairing that the API requires
 				type ToolCallContent = Extract<AssistantMessage["content"][number], { type: "toolCall" }>;
 				const toolCalls = message.content.filter((c): c is ToolCallContent => c.type === "toolCall");
 				const toolResults: ToolResultMessage[] = [];
 				for (const toolCall of toolCalls) {
-					const result = createAbortedToolResult(toolCall, stream, message.stopReason);
+					const result = createAbortedToolResult(toolCall, stream, "aborted");
 					currentContext.messages.push(result);
 					newMessages.push(result);
 					toolResults.push(result);
@@ -185,6 +186,32 @@ async function runLoop(
 				return;
 			}
 
+			if (message.stopReason === "error") {
+				// Retry once for transient errors (rate limits, server errors mid-stream)
+				if (consecutiveErrors === 0 && isRetryableStreamError(message.errorMessage)) {
+					consecutiveErrors++;
+					const idx = currentContext.messages.indexOf(message);
+					if (idx !== -1) currentContext.messages.splice(idx, 1);
+					newMessages.pop();
+					await Bun.sleep(getRetryDelay(message.errorMessage));
+					continue;
+				}
+				type ToolCallContent = Extract<AssistantMessage["content"][number], { type: "toolCall" }>;
+				const toolCalls = message.content.filter((c): c is ToolCallContent => c.type === "toolCall");
+				const toolResults: ToolResultMessage[] = [];
+				for (const toolCall of toolCalls) {
+					const result = createAbortedToolResult(toolCall, stream, "error");
+					currentContext.messages.push(result);
+					newMessages.push(result);
+					toolResults.push(result);
+				}
+				stream.push({ type: "turn_end", message, toolResults });
+				stream.push({ type: "agent_end", messages: newMessages });
+				stream.end(newMessages);
+				return;
+			}
+
+			consecutiveErrors = 0;
 			// Check for tool calls
 			const toolCalls = message.content.filter(c => c.type === "toolCall");
 			hasMoreToolCalls = toolCalls.length > 0;
@@ -604,4 +631,40 @@ function createAbortedToolResult(
 	stream.push({ type: "message_end", message: toolResultMessage });
 
 	return toolResultMessage;
+}
+
+/**
+ * Non-retryable error patterns — retrying these wastes time and tokens.
+ */
+const NON_RETRYABLE_PATTERNS = [
+	/prompt is too long/i,
+	/maximum context length/i,
+	/content length exceeds/i,
+	/invalid.*api.?key/i,
+	/authentication/i,
+	/permission/i,
+	/unauthorized/i,
+	/forbidden/i,
+	/invalid.*request/i,
+	/malformed/i,
+];
+
+function isRetryableStreamError(errorMessage?: string): boolean {
+	if (!errorMessage) return true;
+	return !NON_RETRYABLE_PATTERNS.some(pattern => pattern.test(errorMessage));
+}
+
+const RETRY_AFTER_HINT = "retry-after-ms=";
+
+function getRetryDelay(errorMessage?: string): number {
+	if (errorMessage) {
+		const idx = errorMessage.indexOf(RETRY_AFTER_HINT);
+		if (idx !== -1) {
+			const ms = Number.parseInt(errorMessage.slice(idx + RETRY_AFTER_HINT.length), 10);
+			if (Number.isFinite(ms) && ms > 0) {
+				return Math.min(ms, 60_000);
+			}
+		}
+	}
+	return 2000;
 }
