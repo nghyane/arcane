@@ -196,7 +196,10 @@ export type AgentSessionEvent =
 	| { type: "auto_retry_start"; attempt: number; maxAttempts: number; delayMs: number; errorMessage: string }
 	| { type: "auto_retry_end"; success: boolean; attempt: number; finalError?: string }
 	| { type: "ttsr_triggered"; rules: Rule[] }
-	| { type: "todo_reminder"; todos: TodoItem[]; attempt: number; maxAttempts: number };
+	| { type: "todo_reminder"; todos: TodoItem[]; attempt: number; maxAttempts: number }
+	| { type: "context_warning"; percent: number; tokens: number; contextWindow: number }
+	| { type: "auto_handoff_start"; percent: number }
+	| { type: "auto_handoff_end"; success: boolean; error?: string };
 
 /** Listener function for agent session events */
 export type AgentSessionEventListener = (event: AgentSessionEvent) => void;

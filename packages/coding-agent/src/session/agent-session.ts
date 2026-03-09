@@ -212,6 +212,8 @@ export class AgentSession {
 	// Todo completion reminder state
 	#todoReminderCount = 0;
 
+	// Auto-handoff state
+	#contextWarningEmitted = false;
 	// Verification loop state
 	#verificationReminderCount = 0;
 	#turnHasFileModifications = false;
@@ -566,6 +568,10 @@ export class AgentSession {
 				this.#skipPostTurnMaintenanceAssistantTimestamp = undefined;
 				return;
 			}
+
+			// Check for auto-handoff (context overflow or high usage)
+			const didHandoff = await this.#checkAutoHandoff(msg);
+			if (didHandoff) return;
 
 			// Check for retryable errors first (overloaded, rate limit, server errors)
 			if (this.#isRetryableError(msg)) {
@@ -1861,6 +1867,7 @@ Be thorough - include exact file paths, function names, error messages, and tech
 			this.#followUpMessages = [];
 			this.#pendingNextTurnMessages = [];
 			this.#todoReminderCount = 0;
+			this.#contextWarningEmitted = false;
 
 			// Inject the handoff document as a custom message
 			const handoffContent = `<handoff-context thread="${parentThreadId}">\n${handoffText}\n</handoff-context>\n\nThe above is a handoff document from thread \`${parentThreadId}\`. Use this context to continue the work seamlessly. If you need additional details not covered above, use \`read_thread("${parentThreadId}", "your specific question")\` to query the original session.`;
@@ -2015,6 +2022,91 @@ Be thorough - include exact file paths, function names, error messages, and tech
 		this.agent.continue().catch(() => {});
 	}
 
+	// =========================================================================
+	// Auto-Handoff
+	// =========================================================================
+
+	async #checkAutoHandoff(message: AssistantMessage): Promise<boolean> {
+		const handoffSettings = this.settings.getGroup("autoHandoff");
+		if (!handoffSettings.enabled) return false;
+
+		// Check if this was a context overflow error
+		const contextWindow = this.model?.contextWindow ?? 0;
+		if (message.stopReason === "error" && isContextOverflow(message, contextWindow)) {
+			return this.#handleContextOverflow();
+		}
+
+		// Skip threshold-based handoff if this turn ended with an error
+		// (e.g., 429 rate limit) — let retry logic handle those
+		if (message.stopReason === "error") return false;
+
+		// Check context usage percentage
+		const usage = this.getContextUsage();
+		if (!usage || usage.percent == null) return false;
+
+		// Auto-handoff at high threshold
+		if (usage.percent >= handoffSettings.handoffThreshold) {
+			await this.#emitSessionEvent({ type: "auto_handoff_start", percent: usage.percent });
+			try {
+				const result = await this.handoff();
+				await this.#emitSessionEvent({ type: "auto_handoff_end", success: !!result });
+				if (result) {
+					this.agent.continue().catch(() => {});
+				}
+				return !!result;
+			} catch (err) {
+				// handoff() failed (likely context too full to generate doc) — fall back to lightweight handoff
+				// Skip emitting auto_handoff_end here; #handleContextOverflow will emit its own start/end
+				return this.#handleContextOverflow();
+			}
+		}
+
+		// Warning at lower threshold (once per session)
+		if (usage.percent >= handoffSettings.warningThreshold && !this.#contextWarningEmitted) {
+			this.#contextWarningEmitted = true;
+			await this.#emitSessionEvent({
+				type: "context_warning",
+				percent: usage.percent,
+				tokens: usage.tokens ?? 0,
+				contextWindow: usage.contextWindow,
+			});
+		}
+
+		return false;
+	}
+
+	async #handleContextOverflow(): Promise<boolean> {
+		await this.#emitSessionEvent({ type: "auto_handoff_start", percent: 100 });
+		try {
+			// Can't prompt agent (context full), build lightweight handoff from session state
+			const parentThreadId = this.sessionManager.getSessionId();
+			await this.sessionManager.flush();
+			await this.sessionManager.newSession({ parentSession: parentThreadId });
+			this.agent.reset();
+			this.agent.sessionId = this.sessionManager.getSessionId();
+			this.#steeringMessages = [];
+			this.#followUpMessages = [];
+			this.#pendingNextTurnMessages = [];
+			this.#todoReminderCount = 0;
+			this.#contextWarningEmitted = false;
+
+			// Inject a minimal handoff message pointing back to the parent thread
+			const handoffContent = `<handoff-context thread="${parentThreadId}">\nContext window reached capacity. This session was automatically created to continue the work.\n\nUse \`read_thread("${parentThreadId}", "your specific question")\` to retrieve context from the previous session as needed.\n</handoff-context>\n\nThe previous session ran out of context space. Read the parent thread to understand what was being worked on and continue.`;
+			this.sessionManager.appendCustomMessageEntry("handoff", handoffContent, true);
+
+			// Rebuild agent messages from session
+			const sessionContext = this.sessionManager.buildSessionContext();
+			this.agent.replaceMessages(sessionContext.messages);
+
+			await this.#emitSessionEvent({ type: "auto_handoff_end", success: true });
+			this.agent.continue().catch(() => {});
+			return true;
+		} catch (err) {
+			logger.error("Auto-handoff overflow fallback failed", { error: String(err) });
+			await this.#emitSessionEvent({ type: "auto_handoff_end", success: false, error: String(err) });
+			return false;
+		}
+	}
 	// =========================================================================
 	// Auto-Retry
 	// =========================================================================

@@ -300,6 +300,18 @@ export const SETTINGS_SCHEMA = {
 		},
 	},
 
+	"autoHandoff.enabled": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "agent",
+			label: "Auto-handoff",
+			description: "Automatically hand off to a new session when context window is nearly full",
+		},
+	},
+	"autoHandoff.warningThreshold": { type: "number", default: 80 },
+	"autoHandoff.handoffThreshold": { type: "number", default: 95 },
+
 	// ─────────────────────────────────────────────────────────────────────────
 	// Secrets settings
 	// ─────────────────────────────────────────────────────────────────────────
@@ -983,6 +995,11 @@ export type StatusLineSeparatorStyle = SettingValue<"statusLine.separator">;
 export interface ContextPromotionSettings {
 	enabled: boolean;
 }
+export interface AutoHandoffSettings {
+	enabled: boolean;
+	warningThreshold: number;
+	handoffThreshold: number;
+}
 export interface RetrySettings {
 	enabled: boolean;
 	maxRetries: number;
@@ -1056,6 +1073,7 @@ export interface BashInterceptorRule {
 /** Map group prefix -> typed settings interface */
 export interface GroupTypeMap {
 	contextPromotion: ContextPromotionSettings;
+	autoHandoff: AutoHandoffSettings;
 	retry: RetrySettings;
 	branchSummary: BranchSummarySettings;
 	skills: SkillsSettings;

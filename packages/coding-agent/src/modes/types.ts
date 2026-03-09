@@ -64,6 +64,7 @@ export interface InteractiveModeContext {
 	streamingMessage: AssistantMessage | undefined;
 	loadingAnimation: Loader | undefined;
 	retryLoader: Loader | undefined;
+	handoffLoader?: Loader;
 	retryEscapeHandler?: () => void;
 	unsubscribe?: () => void;
 	onInputCallback?: (input: { text: string; images?: ImageContent[] }) => void;

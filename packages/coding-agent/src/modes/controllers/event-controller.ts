@@ -1,5 +1,5 @@
 import { type AgentTool, toolDetails } from "@nghyane/arcane-agent";
-import { Loader, TERMINAL } from "@nghyane/arcane-tui";
+import { Loader, TERMINAL, Text } from "@nghyane/arcane-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
 import { ContextGroupComponent } from "../../modes/components/context-group";
@@ -292,6 +292,51 @@ export class EventController {
 					this.ctx.showError(
 						`Retry failed after ${event.attempt} attempts: ${event.finalError || "Unknown error"}`,
 					);
+				}
+				this.ctx.ui.requestRender();
+				break;
+			}
+
+			case "context_warning": {
+				this.ctx.statusContainer.clear();
+				const warningMsg = `Context usage at ${event.percent}% — session will auto-handoff soon`;
+				this.ctx.statusContainer.addChild(
+					new Text(theme.fg("warning", `${theme.status.warning} ${warningMsg}`), 0, 0),
+				);
+				this.ctx.ui.requestRender();
+				break;
+			}
+
+			case "auto_handoff_start": {
+				this.ctx.statusContainer.clear();
+				this.ctx.handoffLoader = new Loader(
+					this.ctx.ui,
+					spinner => theme.fg("warning", spinner),
+					text => theme.fg("muted", text),
+					"Auto-handoff in progress…",
+					getSymbolTheme().spinnerFrames,
+				);
+				this.ctx.statusContainer.addChild(this.ctx.handoffLoader);
+				this.ctx.ui.requestRender();
+				break;
+			}
+
+			case "auto_handoff_end": {
+				if (this.ctx.handoffLoader) {
+					this.ctx.handoffLoader.stop();
+					this.ctx.handoffLoader = undefined;
+					this.ctx.statusContainer.clear();
+				}
+				if (event.success) {
+					this.ctx.statusContainer.addChild(
+						new Text(
+							theme.fg("success", `${theme.status.success} Session handed off — continuing in new session`),
+							0,
+							0,
+						),
+					);
+				} else if (event.error) {
+					this.ctx.showError(`Auto-handoff failed: ${event.error}`);
 				}
 				this.ctx.ui.requestRender();
 				break;
