@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Split GitHub tool into `github` (issues/PRs/commits) and `github_fs` (file/tree browsing) with auto-detect owner/repo from git remote
+- Restrict `github_fs` to subagents only (librarian); main agent delegates remote code reading via librarian
+
 ## [0.1.28] - 2026-03-08
 
 ### Fixed
