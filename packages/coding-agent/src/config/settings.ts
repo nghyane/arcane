@@ -4,11 +4,11 @@
  * Usage:
  *   import { settings } from "./settings";
  *
- *   const enabled = settings.get("compaction.enabled");  // sync read
+ *   const enabled = settings.get("retry.enabled");  // sync read
  *   settings.set("theme.dark", "titanium");               // sync write, saves in background
  *
  * For tests:
- *   const isolated = Settings.isolated({ "compaction.enabled": false });
+ *   const isolated = Settings.isolated({ "retry.enabled": false });
  */
 
 import * as fs from "node:fs";
@@ -37,7 +37,6 @@ import {
 export type {
 	BashInterceptorRule,
 	BranchSummarySettings,
-	CompactionSettings,
 	ContextPromotionSettings,
 	ExaSettings,
 	GroupPrefix,
@@ -79,7 +78,7 @@ export interface SettingsOptions {
 
 /**
  * Parse a dotted path into segments.
- * "compaction.enabled" → ["compaction", "enabled"]
+ * "retry.enabled" → ["retry", "enabled"]
  * "theme.dark" → ["theme", "dark"]
  */
 function parsePath(path: string): string[] {

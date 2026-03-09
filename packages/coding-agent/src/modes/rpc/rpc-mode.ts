@@ -358,14 +358,6 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 				},
 				getContextUsage: () => session.getContextUsage(),
 				getSystemPrompt: () => session.systemPrompt,
-				compact: async instructionsOrOptions => {
-					const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-					const options =
-						instructionsOrOptions && typeof instructionsOrOptions === "object"
-							? instructionsOrOptions
-							: undefined;
-					await session.compact(instructions, options);
-				},
 			},
 			// ExtensionCommandContextActions - commands invokable via prompt("/command")
 			{
@@ -393,14 +385,6 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 				},
 				reload: async () => {
 					await session.reload();
-				},
-				compact: async instructionsOrOptions => {
-					const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-					const options =
-						instructionsOrOptions && typeof instructionsOrOptions === "object"
-							? instructionsOrOptions
-							: undefined;
-					await session.compact(instructions, options);
 				},
 			},
 			new RpcExtensionUIContext(pendingExtensionRequests, output),
@@ -479,14 +463,12 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 					model: session.model,
 					thinkingLevel: session.thinkingLevel,
 					isStreaming: session.isStreaming,
-					isCompacting: session.isCompacting,
 					steeringMode: session.steeringMode,
 					followUpMode: session.followUpMode,
 					interruptMode: session.interruptMode,
 					sessionFile: session.sessionFile,
 					sessionId: session.sessionId,
 					sessionName: session.sessionName,
-					autoCompactionEnabled: session.autoCompactionEnabled,
 					messageCount: session.messages.length,
 					queuedMessageCount: session.queuedMessageCount,
 				};
@@ -554,20 +536,6 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 			case "set_interrupt_mode": {
 				session.setInterruptMode(command.mode);
 				return success(id, "set_interrupt_mode");
-			}
-
-			// =================================================================
-			// Compaction
-			// =================================================================
-
-			case "compact": {
-				const result = await session.compact(command.customInstructions);
-				return success(id, "compact", result);
-			}
-
-			case "set_auto_compaction": {
-				session.setAutoCompactionEnabled(command.enabled);
-				return success(id, "set_auto_compaction");
 			}
 
 			// =================================================================

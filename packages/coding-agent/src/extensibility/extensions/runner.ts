@@ -11,7 +11,6 @@ import { type Theme, theme } from "../../theme/theme";
 import type {
 	BeforeAgentStartEvent,
 	BeforeAgentStartEventResult,
-	CompactOptions,
 	ContextEvent,
 	ContextEventResult,
 	ContextUsage,
@@ -35,10 +34,8 @@ import type {
 	ResourcesDiscoverEvent,
 	ResourcesDiscoverResult,
 	SessionBeforeBranchResult,
-	SessionBeforeCompactResult,
 	SessionBeforeSwitchResult,
 	SessionBeforeTreeResult,
-	SessionCompactingResult,
 	ToolCallEvent,
 	ToolCallEventResult,
 	ToolResultEvent,
@@ -74,26 +71,18 @@ type RunnerEmitEvent = Exclude<
 
 type SessionBeforeEvent = Extract<
 	RunnerEmitEvent,
-	{ type: "session_before_switch" | "session_before_branch" | "session_before_compact" | "session_before_tree" }
+	{ type: "session_before_switch" | "session_before_branch" | "session_before_tree" }
 >;
 
-type SessionBeforeEventResult =
-	| SessionBeforeSwitchResult
-	| SessionBeforeBranchResult
-	| SessionBeforeCompactResult
-	| SessionBeforeTreeResult;
+type SessionBeforeEventResult = SessionBeforeSwitchResult | SessionBeforeBranchResult | SessionBeforeTreeResult;
 
 type RunnerEmitResult<TEvent extends RunnerEmitEvent> = TEvent extends { type: "session_before_switch" }
 	? SessionBeforeSwitchResult | undefined
 	: TEvent extends { type: "session_before_branch" }
 		? SessionBeforeBranchResult | undefined
-		: TEvent extends { type: "session_before_compact" }
-			? SessionBeforeCompactResult | undefined
-			: TEvent extends { type: "session_before_tree" }
-				? SessionBeforeTreeResult | undefined
-				: TEvent extends { type: "session.compacting" }
-					? SessionCompactingResult | undefined
-					: undefined;
+		: TEvent extends { type: "session_before_tree" }
+			? SessionBeforeTreeResult | undefined
+			: undefined;
 
 export type NewSessionHandler = (options?: {
 	parentSession?: string;
@@ -162,7 +151,6 @@ export class ExtensionRunner {
 	#abortFn: () => void = () => {};
 	#hasPendingMessagesFn: () => boolean = () => false;
 	#getContextUsageFn: () => ContextUsage | undefined = () => undefined;
-	#compactFn: (instructionsOrOptions?: string | CompactOptions) => Promise<void> = async () => {};
 	#getSystemPromptFn: () => string = () => "";
 	#newSessionHandler: NewSessionHandler = async () => ({ cancelled: false });
 	#branchHandler: BranchHandler = async () => ({ cancelled: false });
@@ -217,7 +205,6 @@ export class ExtensionRunner {
 			this.#switchSessionHandler = commandContextActions.switchSession;
 			this.#reloadHandler = commandContextActions.reload;
 			this.#getContextUsageFn = commandContextActions.getContextUsage;
-			this.#compactFn = commandContextActions.compact;
 		}
 
 		this.#uiContext = uiContext ?? noOpUIContext;
@@ -376,7 +363,6 @@ export class ExtensionRunner {
 		return {
 			ui: this.#uiContext,
 			getContextUsage: () => this.#getContextUsageFn(),
-			compact: instructionsOrOptions => this.#compactFn(instructionsOrOptions),
 			hasUI: this.hasUI(),
 			cwd: this.cwd,
 			sessionManager: this.sessionManager,
@@ -410,7 +396,6 @@ export class ExtensionRunner {
 			navigateTree: (targetId, options) => this.#navigateTreeHandler(targetId, options),
 			switchSession: sessionPath => this.#switchSessionHandler(sessionPath),
 			reload: () => this.#reloadHandler(),
-			compact: instructionsOrOptions => this.#compactFn(instructionsOrOptions),
 		};
 	}
 
@@ -418,14 +403,13 @@ export class ExtensionRunner {
 		return (
 			event.type === "session_before_switch" ||
 			event.type === "session_before_branch" ||
-			event.type === "session_before_compact" ||
 			event.type === "session_before_tree"
 		);
 	}
 
 	async emit<TEvent extends RunnerEmitEvent>(event: TEvent): Promise<RunnerEmitResult<TEvent>> {
 		const ctx = this.createContext();
-		let result: SessionBeforeEventResult | SessionCompactingResult | undefined;
+		let result: SessionBeforeEventResult | undefined;
 
 		for (const ext of this.extensions) {
 			const handlers = ext.handlers.get(event.type);
@@ -440,10 +424,6 @@ export class ExtensionRunner {
 						if (result.cancel) {
 							return result as RunnerEmitResult<TEvent>;
 						}
-					}
-
-					if (event.type === "session.compacting" && handlerResult) {
-						result = handlerResult as SessionCompactingResult;
 					}
 				} catch (err) {
 					const message = err instanceof Error ? err.message : String(err);

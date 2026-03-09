@@ -13,7 +13,7 @@ export { ModelRegistry } from "./config/model-registry";
 // Prompt templates
 export type { PromptTemplate } from "./config/prompt-templates";
 export { renderPromptTemplate } from "./config/prompt-templates";
-export type { CompactionSettings, RetrySettings, SkillsSettings } from "./config/settings";
+export type { RetrySettings, SkillsSettings } from "./config/settings";
 export { Settings, settings } from "./config/settings";
 // Custom commands
 export type {
@@ -114,7 +114,6 @@ export {
 	BashExecutionComponent,
 	BorderedLoader,
 	BranchSummaryMessageComponent,
-	CompactionSummaryMessageComponent,
 	CustomEditor,
 	CustomMessageComponent,
 	DynamicBorder,
@@ -181,39 +180,29 @@ export {
 } from "./session/agent-session";
 // Auth and model registry
 export { type ApiKeyCredential, type AuthCredential, AuthStorage, type OAuthCredential } from "./session/auth-storage";
-// Compaction
+// Branch summarization and utilities
 export {
 	type BranchPreparation,
 	type BranchSummaryResult,
 	type CollectEntriesResult,
-	type CompactionResult,
-	type CutPointResult,
 	calculateContextTokens,
 	collectEntriesForBranchSummary,
-	compact,
-	DEFAULT_COMPACTION_SETTINGS,
 	estimateTokens,
 	type FileOperations,
-	findCutPoint,
-	findTurnStartIndex,
 	type GenerateBranchSummaryOptions,
 	generateBranchSummary,
-	generateSummary,
 	getLastAssistantUsage,
 	prepareBranchEntries,
 	serializeConversation,
-	shouldCompact,
 } from "./session/compaction";
 export { convertToLlm } from "./session/messages";
 export {
 	type BranchSummaryEntry,
 	buildSessionContext,
-	type CompactionEntry,
 	CURRENT_SESSION_VERSION,
 	type CustomEntry,
 	type CustomMessageEntry,
 	type FileEntry,
-	getLatestCompactionEntry,
 	type ModeChangeEntry,
 	type ModelChangeEntry,
 	migrateSessionEntries,

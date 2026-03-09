@@ -259,57 +259,6 @@ export class EventController {
 				this.sendCompletionNotification();
 				break;
 
-			case "auto_compaction_start": {
-				this.ctx.autoCompactionEscapeHandler = this.ctx.editor.onEscape;
-				this.ctx.editor.onEscape = () => {
-					this.ctx.session.abortCompaction();
-				};
-				this.ctx.statusContainer.clear();
-				const reasonText = event.reason === "overflow" ? "Context overflow detected, " : "";
-				this.ctx.autoCompactionLoader = new Loader(
-					this.ctx.ui,
-					spinner => theme.fg("accent", spinner),
-					text => theme.fg("muted", text),
-					`${reasonText}Auto-compacting… (esc to cancel)`,
-					getSymbolTheme().spinnerFrames,
-				);
-				this.ctx.statusContainer.addChild(this.ctx.autoCompactionLoader);
-				this.ctx.ui.requestRender();
-				break;
-			}
-
-			case "auto_compaction_end": {
-				if (this.ctx.autoCompactionEscapeHandler) {
-					this.ctx.editor.onEscape = this.ctx.autoCompactionEscapeHandler;
-					this.ctx.autoCompactionEscapeHandler = undefined;
-				}
-				if (this.ctx.autoCompactionLoader) {
-					this.ctx.autoCompactionLoader.stop();
-					this.ctx.autoCompactionLoader = undefined;
-					this.ctx.statusContainer.clear();
-				}
-				if (event.aborted) {
-					this.ctx.showStatus("Auto-compaction cancelled");
-				} else if (event.result) {
-					this.ctx.chatContainer.clear();
-					this.ctx.rebuildChatFromMessages();
-					this.ctx.addMessageToChat({
-						role: "compactionSummary",
-						tokensBefore: event.result.tokensBefore,
-						summary: event.result.summary,
-						shortSummary: event.result.shortSummary,
-						timestamp: Date.now(),
-					});
-					this.ctx.statusLine.invalidate();
-					this.ctx.updateEditorTopBorder();
-				} else {
-					this.ctx.showWarning("Auto-compaction failed; continuing without compaction");
-				}
-				await this.ctx.flushCompactionQueue({ willRetry: event.willRetry });
-				this.ctx.ui.requestRender();
-				break;
-			}
-
 			case "auto_retry_start": {
 				this.ctx.retryEscapeHandler = this.ctx.editor.onEscape;
 				this.ctx.editor.onEscape = () => {

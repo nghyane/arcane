@@ -8,7 +8,6 @@ import type { AgentMessage, ThinkingLevel } from "@nghyane/arcane-agent";
 import type { ImageContent, Model } from "@nghyane/arcane-ai";
 import type { BashResult } from "../../exec/bash-executor";
 import type { SessionStats } from "../../session/agent-session";
-import type { CompactionResult } from "../../session/compaction";
 
 // ============================================================================
 // RPC Commands (stdin)
@@ -40,10 +39,6 @@ export type RpcCommand =
 	| { id?: string; type: "set_follow_up_mode"; mode: "all" | "one-at-a-time" }
 	| { id?: string; type: "set_interrupt_mode"; mode: "immediate" | "wait" }
 
-	// Compaction
-	| { id?: string; type: "compact"; customInstructions?: string }
-	| { id?: string; type: "set_auto_compaction"; enabled: boolean }
-
 	// Retry
 	| { id?: string; type: "set_auto_retry"; enabled: boolean }
 	| { id?: string; type: "abort_retry" }
@@ -72,14 +67,12 @@ export interface RpcSessionState {
 	model?: Model;
 	thinkingLevel: ThinkingLevel;
 	isStreaming: boolean;
-	isCompacting: boolean;
 	steeringMode: "all" | "one-at-a-time";
 	followUpMode: "all" | "one-at-a-time";
 	interruptMode: "immediate" | "wait";
 	sessionFile?: string;
 	sessionId: string;
 	sessionName?: string;
-	autoCompactionEnabled: boolean;
 	messageCount: number;
 	queuedMessageCount: number;
 }
@@ -140,8 +133,6 @@ export type RpcResponse =
 	| { id?: string; type: "response"; command: "set_interrupt_mode"; success: true }
 
 	// Compaction
-	| { id?: string; type: "response"; command: "compact"; success: true; data: CompactionResult }
-	| { id?: string; type: "response"; command: "set_auto_compaction"; success: true }
 
 	// Retry
 	| { id?: string; type: "response"; command: "set_auto_retry"; success: true }

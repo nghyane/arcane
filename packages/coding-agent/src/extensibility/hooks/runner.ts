@@ -26,9 +26,7 @@ import type {
 	HookMessageRenderer,
 	HookUIContext,
 	RegisteredCommand,
-	SessionBeforeCompactResult,
 	SessionBeforeTreeResult,
-	SessionCompactingResult,
 	ToolCallEvent,
 	ToolCallEventResult,
 	ToolResultEventResult,
@@ -270,31 +268,17 @@ export class HookRunner {
 	 */
 	#isSessionBeforeEvent(
 		type: string,
-	): type is "session_before_switch" | "session_before_branch" | "session_before_compact" | "session_before_tree" {
-		return (
-			type === "session_before_switch" ||
-			type === "session_before_branch" ||
-			type === "session_before_compact" ||
-			type === "session_before_tree"
-		);
+	): type is "session_before_switch" | "session_before_branch" | "session_before_tree" {
+		return type === "session_before_switch" || type === "session_before_branch" || type === "session_before_tree";
 	}
 
 	/**
 	 * Emit an event to all hooks.
 	 * Returns the result from session before_* / tool_result events (if any handler returns one).
 	 */
-	async emit(
-		event: HookEvent,
-	): Promise<
-		SessionBeforeCompactResult | SessionBeforeTreeResult | SessionCompactingResult | ToolResultEventResult | undefined
-	> {
+	async emit(event: HookEvent): Promise<SessionBeforeTreeResult | ToolResultEventResult | undefined> {
 		const ctx = this.#createContext();
-		let result:
-			| SessionBeforeCompactResult
-			| SessionBeforeTreeResult
-			| SessionCompactingResult
-			| ToolResultEventResult
-			| undefined;
+		let result: SessionBeforeTreeResult | ToolResultEventResult | undefined;
 
 		for (const hook of this.hooks) {
 			const handlers = hook.handlers.get(event.type);
@@ -306,7 +290,7 @@ export class HookRunner {
 
 					// For session before_* events, capture the result (for cancellation)
 					if (this.#isSessionBeforeEvent(event.type) && handlerResult) {
-						result = handlerResult as SessionBeforeCompactResult | SessionBeforeTreeResult;
+						result = handlerResult as SessionBeforeTreeResult;
 						// If cancelled, stop processing further hooks
 						if (result.cancel) {
 							return result;
@@ -316,9 +300,6 @@ export class HookRunner {
 					// For tool_result events, capture the result
 					if (event.type === "tool_result" && handlerResult) {
 						result = handlerResult as ToolResultEventResult;
-					}
-					if (event.type === "session.compacting" && handlerResult) {
-						result = handlerResult as SessionCompactingResult;
 					}
 				} catch (err) {
 					const message = err instanceof Error ? err.message : String(err);

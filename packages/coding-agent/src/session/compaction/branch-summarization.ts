@@ -10,17 +10,12 @@ import { completeSimple } from "@nghyane/arcane-ai";
 import { renderPromptTemplate } from "../../config/prompt-templates";
 import branchSummaryPrompt from "../../prompts/compaction/branch-summary.md" with { type: "text" };
 import branchSummaryPreamble from "../../prompts/compaction/branch-summary-preamble.md" with { type: "text" };
-import {
-	convertToLlm,
-	createBranchSummaryMessage,
-	createCompactionSummaryMessage,
-	createCustomMessage,
-} from "../../session/messages";
+import { convertToLlm, createBranchSummaryMessage, createCustomMessage } from "../../session/messages";
 import type { ReadonlySessionManager, SessionEntry } from "../../session/session-manager";
-import { estimateTokens } from "./compaction";
 import {
 	computeFileLists,
 	createFileOps,
+	estimateTokens,
 	extractFileOpsFromMessage,
 	type FileOperations,
 	SUMMARIZATION_SYSTEM_PROMPT,
@@ -85,7 +80,7 @@ export interface GenerateBranchSummaryOptions {
  * Collect entries that should be summarized when navigating from one position to another.
  *
  * Walks from oldLeafId back to the common ancestor with targetId, collecting entries
- * along the way. Does NOT stop at compaction boundaries - those are included and their
+ * along the way.
  * summaries become context.
  *
  * @param session - Session manager (read-only access)
@@ -139,7 +134,7 @@ export function collectEntriesForBranchSummary(
 
 /**
  * Extract AgentMessage from a session entry.
- * Similar to getMessageFromEntry in compaction.ts but also handles compaction entries.
+ * Extract AgentMessage from a session entry.
  */
 function getMessageFromEntry(entry: SessionEntry): AgentMessage | undefined {
 	switch (entry.type) {
@@ -153,9 +148,6 @@ function getMessageFromEntry(entry: SessionEntry): AgentMessage | undefined {
 
 		case "branch_summary":
 			return createBranchSummaryMessage(entry.summary, entry.fromId, entry.timestamp);
-
-		case "compaction":
-			return createCompactionSummaryMessage(entry.summary, entry.tokensBefore, entry.timestamp, entry.shortSummary);
 
 		// These don't contribute to conversation content
 		case "thinking_level_change":
@@ -216,7 +208,7 @@ export function prepareBranchEntries(entries: SessionEntry[], tokenBudget: numbe
 		// Check budget before adding
 		if (tokenBudget > 0 && totalTokens + tokens > tokenBudget) {
 			// If this is a summary entry, try to fit it anyway as it's important context
-			if (entry.type === "compaction" || entry.type === "branch_summary") {
+			if (entry.type === "branch_summary") {
 				if (totalTokens < tokenBudget * 0.9) {
 					messages.unshift(message);
 					totalTokens += tokens;

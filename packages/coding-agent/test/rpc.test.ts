@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { type CompactionEntry, type FileEntry, parseSessionEntries, type SessionMessageEntry } from "@nghyane/arcane";
+import { type FileEntry, parseSessionEntries, type SessionMessageEntry } from "@nghyane/arcane";
 import { RpcClient } from "@nghyane/arcane/modes/rpc/rpc-client";
 import type { BashExecutionMessage } from "@nghyane/arcane/session/messages";
 import type { AgentEvent, AgentMessage } from "@nghyane/arcane-agent";
@@ -17,8 +17,6 @@ const isMessageEndEvent = (event: AgentEvent): event is MessageEndEvent => event
 const isAssistantMessage = (message: AgentMessage): message is AssistantMessage => message.role === "assistant";
 
 const isSessionMessageEntry = (entry: FileEntry): entry is SessionMessageEntry => entry.type === "message";
-
-const isCompactionEntry = (entry: FileEntry): entry is CompactionEntry => entry.type === "compaction";
 
 /**
  * RPC mode tests.
@@ -94,33 +92,6 @@ describe.skipIf(!e2eApiKey("ANTHROPIC_AARCANE_KEY"))("RPC mode", () => {
 		expect(roles).toContain("user");
 		expect(roles).toContain("assistant");
 	}, 90000);
-
-	test("should handle manual compaction", async () => {
-		await client.start();
-
-		// First send a prompt to have messages to compact
-		await client.promptAndWait("Say hello");
-
-		// Compact
-		const result = await client.compact();
-		expect(result.summary).toBeDefined();
-		expect(result.tokensBefore).toBeGreaterThan(0);
-
-		// Wait for file writes
-		await Bun.sleep(200);
-
-		// Verify compaction in session file
-		const sessionsPath = path.join(sessionDir, "sessions");
-		const sessionDirs = fs.readdirSync(sessionsPath);
-		const cwdSessionDir = path.join(sessionsPath, sessionDirs[0]);
-		const sessionFiles = fs.readdirSync(cwdSessionDir).filter(f => f.endsWith(".jsonl"));
-		const sessionContent = await Bun.file(path.join(cwdSessionDir, sessionFiles[0])).text();
-		const entries = parseSessionEntries(sessionContent);
-
-		const compactionEntries = entries.filter(isCompactionEntry);
-		expect(compactionEntries.length).toBe(1);
-		expect(compactionEntries[0].summary).toBeDefined();
-	}, 120000);
 
 	test("should execute bash command", async () => {
 		await client.start();

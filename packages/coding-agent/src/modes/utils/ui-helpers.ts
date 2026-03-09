@@ -6,7 +6,6 @@ import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
 import { BashExecutionComponent } from "../../modes/components/bash-execution";
 import { BranchSummaryMessageComponent } from "../../modes/components/branch-summary-message";
-import { CompactionSummaryMessageComponent } from "../../modes/components/compaction-summary-message";
 import { ContextGroupComponent } from "../../modes/components/context-group";
 import { CustomMessageComponent } from "../../modes/components/custom-message";
 import { DynamicBorder } from "../../modes/components/dynamic-border";
@@ -14,7 +13,7 @@ import { PythonExecutionComponent } from "../../modes/components/python-executio
 import { SkillMessageComponent } from "../../modes/components/skill-message";
 import { ToolExecutionComponent } from "../../modes/components/tool-execution";
 import { UserMessageComponent } from "../../modes/components/user-message";
-import type { CompactionQueuedMessage, InteractiveModeContext } from "../../modes/types";
+import type { InteractiveModeContext } from "../../modes/types";
 import { type CustomMessage, SKILL_PROMPT_MESSAGE_TYPE, type SkillPromptDetails } from "../../session/messages";
 import type { SessionContext } from "../../session/session-manager";
 import { formatBytes } from "../../session/streaming-output";
@@ -113,13 +112,6 @@ export class UiHelpers {
 				}
 				break;
 			}
-			case "compactionSummary": {
-				this.ctx.chatContainer.addChild(new Spacer(1));
-				const component = new CompactionSummaryMessageComponent(message);
-				component.setExpanded(this.ctx.toolOutputExpanded);
-				this.ctx.chatContainer.addChild(component);
-				break;
-			}
 			case "branchSummary": {
 				this.ctx.chatContainer.addChild(new Spacer(1));
 				const component = new BranchSummaryMessageComponent(message);
@@ -176,7 +168,7 @@ export class UiHelpers {
 	}
 
 	/**
-	 * Render session context to chat. Used for initial load and rebuild after compaction.
+	 * Render session context to chat. Used for initial load and rebuild after handoff.
 	 * @param sessionContext Session context to render
 	 * @param options.updateFooter Update footer state
 	 * @param options.populateHistory Add user messages to editor history
@@ -294,19 +286,6 @@ export class UiHelpers {
 			updateFooter: true,
 			populateHistory: true,
 		});
-
-		// Show compaction info if session was compacted
-		const allEntries = this.ctx.sessionManager.getEntries();
-		let compactionCount = 0;
-		for (const entry of allEntries) {
-			if (entry.type === "compaction") {
-				compactionCount++;
-			}
-		}
-		if (compactionCount > 0) {
-			const times = compactionCount === 1 ? "1 time" : `${compactionCount} times`;
-			this.ctx.showStatus(`Session compacted ${times}`);
-		}
 	}
 
 	clearEditor(): void {
@@ -363,20 +342,10 @@ export class UiHelpers {
 		for (const message of queuedMessages.steering) {
 			steeringMessages.push({ message, label: "Steer" });
 		}
-		for (const entry of this.ctx.compactionQueuedMessages as CompactionQueuedMessage[]) {
-			if (entry.mode === "steer") {
-				steeringMessages.push({ message: entry.text, label: "Steer" });
-			}
-		}
 
 		const followUpMessages: Array<{ message: string; label: string }> = [];
 		for (const message of queuedMessages.followUp) {
 			followUpMessages.push({ message, label: "Follow-up" });
-		}
-		for (const entry of this.ctx.compactionQueuedMessages as CompactionQueuedMessage[]) {
-			if (entry.mode === "followUp") {
-				followUpMessages.push({ message: entry.text, label: "Follow-up" });
-			}
 		}
 
 		const allMessages = [...steeringMessages, ...followUpMessages];
@@ -390,14 +359,6 @@ export class UiHelpers {
 			const hintText = theme.fg("dim", `${theme.tree.hook} ${dequeueKey} to edit`);
 			this.ctx.pendingMessagesContainer.addChild(new TruncatedText(hintText, 1, 0));
 		}
-	}
-
-	queueCompactionMessage(text: string, mode: "steer" | "followUp"): void {
-		this.ctx.compactionQueuedMessages.push({ text, mode } as CompactionQueuedMessage);
-		this.ctx.editor.addToHistory(text);
-		this.ctx.editor.setText("");
-		this.ctx.updatePendingMessagesDisplay();
-		this.ctx.showStatus("Queued message for after compaction");
 	}
 
 	isKnownSlashCommand(text: string): boolean {
@@ -417,83 +378,6 @@ export class UiHelpers {
 		}
 
 		return this.ctx.fileSlashCommands.has(commandName);
-	}
-
-	async flushCompactionQueue(options?: { willRetry?: boolean }): Promise<void> {
-		if (this.ctx.compactionQueuedMessages.length === 0) {
-			return;
-		}
-
-		const queuedMessages = [...(this.ctx.compactionQueuedMessages as CompactionQueuedMessage[])];
-		this.ctx.compactionQueuedMessages = [] as CompactionQueuedMessage[];
-		this.ctx.updatePendingMessagesDisplay();
-
-		const restoreQueue = (error: unknown) => {
-			this.ctx.session.clearQueue();
-			this.ctx.compactionQueuedMessages = queuedMessages;
-			this.ctx.updatePendingMessagesDisplay();
-			this.ctx.showError(
-				`Failed to send queued message${queuedMessages.length > 1 ? "s" : ""}: ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-			);
-		};
-
-		try {
-			if (options?.willRetry) {
-				for (const message of queuedMessages) {
-					if (this.ctx.isKnownSlashCommand(message.text)) {
-						await this.ctx.session.prompt(message.text);
-					} else if (message.mode === "followUp") {
-						await this.ctx.session.followUp(message.text);
-					} else {
-						await this.ctx.session.steer(message.text);
-					}
-				}
-				this.ctx.updatePendingMessagesDisplay();
-				return;
-			}
-
-			let firstPromptIndex = -1;
-			for (let i = 0; i < queuedMessages.length; i++) {
-				if (!this.ctx.isKnownSlashCommand(queuedMessages[i].text)) {
-					firstPromptIndex = i;
-					break;
-				}
-			}
-			if (firstPromptIndex === -1) {
-				for (const message of queuedMessages) {
-					await this.ctx.session.prompt(message.text);
-				}
-				return;
-			}
-
-			const preCommands = queuedMessages.slice(0, firstPromptIndex);
-			const firstPrompt = queuedMessages[firstPromptIndex];
-			const rest = queuedMessages.slice(firstPromptIndex + 1);
-
-			for (const message of preCommands) {
-				await this.ctx.session.prompt(message.text);
-			}
-
-			const promptPromise = this.ctx.session.prompt(firstPrompt.text).catch((error: unknown) => {
-				restoreQueue(error);
-			});
-
-			for (const message of rest) {
-				if (this.ctx.isKnownSlashCommand(message.text)) {
-					await this.ctx.session.prompt(message.text);
-				} else if (message.mode === "followUp") {
-					await this.ctx.session.followUp(message.text);
-				} else {
-					await this.ctx.session.steer(message.text);
-				}
-			}
-			this.ctx.updatePendingMessagesDisplay();
-			void promptPromise;
-		} catch (error) {
-			restoreQueue(error);
-		}
 	}
 
 	/** Move pending bash components from pending area to chat */

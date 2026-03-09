@@ -417,14 +417,6 @@ export async function runAgent(options: ExecutorOptions): Promise<SingleResult> 
 						shutdown: () => {},
 						getContextUsage: () => session.getContextUsage(),
 						getSystemPrompt: () => session.systemPrompt,
-						compact: async instructionsOrOptions => {
-							const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-							const compactOptions =
-								instructionsOrOptions && typeof instructionsOrOptions === "object"
-									? instructionsOrOptions
-									: undefined;
-							await session.compact(instructions, compactOptions);
-						},
 					},
 				);
 				await extensionRunner.emit({ type: "session_start" });

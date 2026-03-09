@@ -6,7 +6,7 @@
  * - Optional UI metadata (label, description, tab)
  *
  * The Settings singleton provides type-safe path-based access:
- *   settings.get("compaction.enabled")  // => boolean
+ *   settings.get("retry.enabled")  // => boolean
  *   settings.set("theme.dark", "titanium")  // sync, saves in background
  */
 
@@ -296,7 +296,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "agent",
 			label: "Auto-promote context",
-			description: "Promote to a larger-context model on context overflow instead of compacting",
+			description: "Promote to a larger-context model on context overflow",
 		},
 	},
 
@@ -308,23 +308,6 @@ export const SETTINGS_SCHEMA = {
 		default: false,
 		ui: { tab: "config", label: "Hide secrets", description: "Obfuscate secrets before sending to AI providers" },
 	},
-
-	// ─────────────────────────────────────────────────────────────────────────
-	// Compaction settings
-	// ─────────────────────────────────────────────────────────────────────────
-	"compaction.enabled": {
-		type: "boolean",
-		default: true,
-		ui: {
-			tab: "agent",
-			label: "Auto-compact",
-			description: "Automatically compact context when it gets too large",
-		},
-	},
-	"compaction.reserveTokens": { type: "number", default: 16384 },
-	"compaction.keepRecentTokens": { type: "number", default: 20000 },
-	"compaction.autoContinue": { type: "boolean", default: true },
-	"compaction.remoteEndpoint": { type: "string", default: undefined },
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// Branch summary settings
@@ -997,14 +980,6 @@ export type StatusLineSeparatorStyle = SettingValue<"statusLine.separator">;
 // Typed Group Definitions
 // ═══════════════════════════════════════════════════════════════════════════
 
-export interface CompactionSettings {
-	enabled: boolean;
-	reserveTokens: number;
-	keepRecentTokens: number;
-	autoContinue: boolean;
-	remoteEndpoint: string | undefined;
-}
-
 export interface ContextPromotionSettings {
 	enabled: boolean;
 }
@@ -1080,7 +1055,6 @@ export interface BashInterceptorRule {
 
 /** Map group prefix -> typed settings interface */
 export interface GroupTypeMap {
-	compaction: CompactionSettings;
 	contextPromotion: ContextPromotionSettings;
 	retry: RetrySettings;
 	branchSummary: BranchSummarySettings;

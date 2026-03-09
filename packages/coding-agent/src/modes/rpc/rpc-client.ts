@@ -8,7 +8,6 @@ import type { ImageContent } from "@nghyane/arcane-ai";
 import { ptree, readJsonl } from "@nghyane/arcane-utils";
 import type { BashResult } from "../../exec/bash-executor";
 import type { SessionStats } from "../../session/agent-session";
-import type { CompactionResult } from "../../session/compaction";
 import type { RpcCommand, RpcResponse, RpcSessionState } from "./rpc-types";
 
 /** Distributive Omit that works with union types */
@@ -330,21 +329,6 @@ export class RpcClient {
 	 */
 	async setFollowUpMode(mode: "all" | "one-at-a-time"): Promise<void> {
 		await this.#send({ type: "set_follow_up_mode", mode });
-	}
-
-	/**
-	 * Compact session context.
-	 */
-	async compact(customInstructions?: string): Promise<CompactionResult> {
-		const response = await this.#send({ type: "compact", customInstructions });
-		return this.#getData(response);
-	}
-
-	/**
-	 * Set auto-compaction enabled/disabled.
-	 */
-	async setAutoCompaction(enabled: boolean): Promise<void> {
-		await this.#send({ type: "set_auto_compaction", enabled });
 	}
 
 	/**

@@ -82,14 +82,6 @@ export async function runPrintMode(session: AgentSession, options: PrintModeOpti
 				shutdown: () => {},
 				getContextUsage: () => session.getContextUsage(),
 				getSystemPrompt: () => session.systemPrompt,
-				compact: async instructionsOrOptions => {
-					const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-					const options =
-						instructionsOrOptions && typeof instructionsOrOptions === "object"
-							? instructionsOrOptions
-							: undefined;
-					await session.compact(instructions, options);
-				},
 			},
 			// ExtensionCommandContextActions - commands invokable via prompt("/command")
 			{
@@ -116,14 +108,6 @@ export async function runPrintMode(session: AgentSession, options: PrintModeOpti
 				},
 				reload: async () => {
 					await session.reload();
-				},
-				compact: async instructionsOrOptions => {
-					const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-					const options =
-						instructionsOrOptions && typeof instructionsOrOptions === "object"
-							? instructionsOrOptions
-							: undefined;
-					await session.compact(instructions, options);
 				},
 			},
 			// No UI context

@@ -9,14 +9,13 @@ import {
 	type UsageReport,
 } from "@nghyane/arcane-ai";
 import { copyToClipboard } from "@nghyane/arcane-natives";
-import { Loader, Markdown, padding, Spacer, Text, visibleWidth } from "@nghyane/arcane-tui";
+import { Markdown, padding, Spacer, Text, visibleWidth } from "@nghyane/arcane-tui";
 import { Snowflake } from "@nghyane/arcane-utils";
 import { setProjectDir } from "@nghyane/arcane-utils/dirs";
 import { $ } from "bun";
 import { reset as resetCapabilities } from "../../capability";
 import { formatKeyHint, type KeyId } from "../../config/keybindings";
 import { loadCustomShare } from "../../export/custom-share";
-import type { CompactOptions } from "../../extensibility/extensions/types";
 import { getGatewayStatus } from "../../ipy/gateway-coordinator";
 import { BashExecutionComponent } from "../../modes/components/bash-execution";
 import { BorderedLoader } from "../../modes/components/bordered-loader";
@@ -24,8 +23,7 @@ import { DynamicBorder } from "../../modes/components/dynamic-border";
 import { PythonExecutionComponent } from "../../modes/components/python-execution";
 import type { InteractiveModeContext } from "../../modes/types";
 import type { AuthStorage } from "../../session/auth-storage";
-import { createCompactionSummaryMessage } from "../../session/messages";
-import { getMarkdownTheme, getSymbolTheme, theme } from "../../theme/theme";
+import { getMarkdownTheme, theme } from "../../theme/theme";
 import { outputMeta } from "../../tools/output-meta";
 import { resolveToCwd } from "../../tools/path-utils";
 import { getChangelogPath, parseChangelog } from "../../utils/changelog";
@@ -425,12 +423,6 @@ export class CommandController {
 		}
 		this.ctx.statusContainer.clear();
 
-		if (this.ctx.session.isCompacting) {
-			this.ctx.session.abortCompaction();
-			while (this.ctx.session.isCompacting) {
-				await Bun.sleep(10);
-			}
-		}
 		await this.ctx.session.newSession();
 
 		this.ctx.statusLine.invalidate();
@@ -438,7 +430,6 @@ export class CommandController {
 
 		this.ctx.chatContainer.clear();
 		this.ctx.pendingMessagesContainer.clear();
-		this.ctx.compactionQueuedMessages = [];
 		this.ctx.streamingComponent = undefined;
 		this.ctx.streamingMessage = undefined;
 		this.ctx.pendingTools.clear();
@@ -604,92 +595,6 @@ export class CommandController {
 		this.ctx.ui.requestRender();
 	}
 
-	async handleCompactCommand(customInstructions?: string): Promise<void> {
-		const entries = this.ctx.sessionManager.getEntries();
-		const messageCount = entries.filter(e => e.type === "message").length;
-
-		if (messageCount < 2) {
-			this.ctx.showWarning("Nothing to compact (no messages yet)");
-			return;
-		}
-
-		await this.executeCompaction(customInstructions, false);
-	}
-
-	async handleSkillCommand(skillPath: string, args: string): Promise<void> {
-		try {
-			const content = await Bun.file(skillPath).text();
-			const body = content.replace(/^---\n[\s\S]*?\n---\n/, "").trim();
-			const metaLines = [`Skill: ${skillPath}`];
-			if (args) {
-				metaLines.push(`User: ${args}`);
-			}
-			const message = `${body}\n\n---\n\n${metaLines.join("\n")}`;
-			await this.ctx.session.prompt(message);
-		} catch (err) {
-			this.ctx.showError(`Failed to load skill: ${err instanceof Error ? err.message : String(err)}`);
-		}
-	}
-
-	async executeCompaction(customInstructionsOrOptions?: string | CompactOptions, isAuto = false): Promise<void> {
-		if (this.ctx.loadingAnimation) {
-			this.ctx.loadingAnimation.stop();
-			this.ctx.loadingAnimation = undefined;
-		}
-		this.ctx.statusContainer.clear();
-
-		const originalOnEscape = this.ctx.editor.onEscape;
-		this.ctx.editor.onEscape = () => {
-			this.ctx.session.abortCompaction();
-		};
-
-		this.ctx.chatContainer.addChild(new Spacer(1));
-		const label = isAuto ? "Auto-compacting context... (esc to cancel)" : "Compacting context... (esc to cancel)";
-		const compactingLoader = new Loader(
-			this.ctx.ui,
-			spinner => theme.fg("accent", spinner),
-			text => theme.fg("muted", text),
-			label,
-			getSymbolTheme().spinnerFrames,
-		);
-		this.ctx.statusContainer.addChild(compactingLoader);
-		this.ctx.ui.requestRender();
-
-		try {
-			const instructions = typeof customInstructionsOrOptions === "string" ? customInstructionsOrOptions : undefined;
-			const options =
-				customInstructionsOrOptions && typeof customInstructionsOrOptions === "object"
-					? customInstructionsOrOptions
-					: undefined;
-			const result = await this.ctx.session.compact(instructions, options);
-
-			this.ctx.rebuildChatFromMessages();
-
-			const msg = createCompactionSummaryMessage(
-				result.summary,
-				result.tokensBefore,
-				new Date().toISOString(),
-				result.shortSummary,
-			);
-			this.ctx.addMessageToChat(msg);
-
-			this.ctx.statusLine.invalidate();
-			this.ctx.updateEditorTopBorder();
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			if (message === "Compaction cancelled" || (error instanceof Error && error.name === "AbortError")) {
-				this.ctx.showError("Compaction cancelled");
-			} else {
-				this.ctx.showError(`Compaction failed: ${message}`);
-			}
-		} finally {
-			compactingLoader.stop();
-			this.ctx.statusContainer.clear();
-			this.ctx.editor.onEscape = originalOnEscape;
-		}
-		await this.ctx.flushCompactionQueue({ willRetry: false });
-	}
-
 	async handleHandoffCommand(customInstructions?: string): Promise<void> {
 		const entries = this.ctx.sessionManager.getEntries();
 		const messageCount = entries.filter(e => e.type === "message").length;
@@ -772,7 +677,6 @@ function formatDurationShort(ms: number): string {
 	const hrs = hours % 24;
 	if (days > 0) return `${days}d${hrs > 0 ? ` ${hrs}h` : ""}`;
 	if (hours > 0) return `${hours}h${mins > 0 ? ` ${mins}m` : ""}`;
-	if (minutes > 0) return `${minutes}m`;
 	return `${totalSeconds}s`;
 }
 

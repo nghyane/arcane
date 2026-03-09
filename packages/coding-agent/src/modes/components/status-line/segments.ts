@@ -211,8 +211,7 @@ const contextPctSegment: StatusLineSegment = {
 		const pct = ctx.contextPercent;
 		const window = ctx.contextWindow;
 
-		const autoIcon = ctx.autoCompactEnabled && theme.icon.auto ? ` ${theme.icon.auto}` : "";
-		const text = `${pct.toFixed(1)}%/${formatTokens(window)}${autoIcon}`;
+		const text = `${pct.toFixed(1)}%/${formatTokens(window)}`;
 
 		let content: string;
 		if (pct > 90) {

@@ -11,11 +11,9 @@ import type { Rule } from "../../capability/rule";
 import type { ModelRegistry } from "../../config/model-registry";
 import type { ExecOptions, ExecResult } from "../../exec/exec";
 import type { EditToolDetails } from "../../patch";
-import type { CompactionPreparation, CompactionResult } from "../../session/compaction";
 import type { HookMessage } from "../../session/messages";
 import type {
 	BranchSummaryEntry,
-	CompactionEntry,
 	ReadonlySessionManager,
 	SessionEntry,
 	SessionManager,
@@ -249,34 +247,6 @@ export interface SessionBranchEvent {
 	previousSessionFile: string | undefined;
 }
 
-/** Fired before context compaction (can be cancelled) */
-export interface SessionBeforeCompactEvent {
-	type: "session_before_compact";
-	/** Compaction preparation with messages to summarize, file ops, previous summary, etc. */
-	preparation: CompactionPreparation;
-	/** Branch entries (root to current leaf). Use to inspect custom state or previous compactions. */
-	branchEntries: SessionEntry[];
-	/** Optional user-provided instructions for the summary */
-	customInstructions?: string;
-	/** Abort signal - hooks should pass this to LLM calls and check it periodically */
-	signal: AbortSignal;
-}
-
-/** Fired before compaction summarization to customize prompts/context */
-export interface SessionCompactingEvent {
-	type: "session.compacting";
-	sessionId: string;
-	messages: AgentMessage[];
-}
-
-/** Fired after context compaction */
-export interface SessionCompactEvent {
-	type: "session_compact";
-	compactionEntry: CompactionEntry;
-	/** Whether the compaction entry was provided by a hook */
-	fromExtension: boolean;
-}
-
 /** Fired on process exit (SIGINT/SIGTERM) */
 export interface SessionShutdownEvent {
 	type: "session_shutdown";
@@ -290,7 +260,7 @@ export interface TreePreparation {
 	oldLeafId: string | null;
 	/** Common ancestor of target and old leaf, null if no common ancestor */
 	commonAncestorId: string | null;
-	/** Entries to summarize (old leaf back to common ancestor or compaction) */
+	/** Entries to summarize (old leaf back to common ancestor) */
 	entriesToSummarize: SessionEntry[];
 	/** Whether user chose to summarize */
 	userWantsSummary: boolean;
@@ -325,9 +295,6 @@ export type SessionEvent =
 	| SessionSwitchEvent
 	| SessionBeforeBranchEvent
 	| SessionBranchEvent
-	| SessionBeforeCompactEvent
-	| SessionCompactingEvent
-	| SessionCompactEvent
 	| SessionShutdownEvent
 	| SessionBeforeTreeEvent
 	| SessionTreeEvent;
@@ -389,21 +356,6 @@ export interface TurnEndEvent {
 	turnIndex: number;
 	message: AgentMessage;
 	toolResults: ToolResultMessage[];
-}
-
-/** Event data for auto_compaction_start event. */
-export interface AutoCompactionStartEvent {
-	type: "auto_compaction_start";
-	reason: "threshold" | "overflow";
-}
-
-/** Event data for auto_compaction_end event. */
-export interface AutoCompactionEndEvent {
-	type: "auto_compaction_end";
-	result: CompactionResult | undefined;
-	aborted: boolean;
-	willRetry: boolean;
-	errorMessage?: string;
 }
 
 /** Event data for auto_retry_start event. */
@@ -533,8 +485,6 @@ export type HookEvent =
 	| AgentEndEvent
 	| TurnStartEvent
 	| TurnEndEvent
-	| AutoCompactionStartEvent
-	| AutoCompactionEndEvent
 	| AutoRetryStartEvent
 	| AutoRetryEndEvent
 	| TtsrTriggeredEvent
@@ -616,24 +566,6 @@ export interface SessionBeforeBranchResult {
 	skipConversationRestore?: boolean;
 }
 
-/** Return type for session_before_compact handlers */
-export interface SessionBeforeCompactResult {
-	/** If true, cancel the compaction */
-	cancel?: boolean;
-	/** Custom compaction result - SessionManager adds id/parentId */
-	compaction?: CompactionResult;
-}
-
-/** Return type for session.compacting handlers */
-export interface SessionCompactingResult {
-	/** Additional context lines to include in summary */
-	context?: string[];
-	/** Override the default compaction prompt */
-	prompt?: string;
-	/** Custom data to store in compaction entry */
-	preserveData?: Record<string, unknown>;
-}
-
 /** Return type for session_before_tree handlers */
 export interface SessionBeforeTreeResult {
 	/** If true, cancel the navigation entirely */
@@ -695,12 +627,6 @@ export interface HookAPI {
 	on(event: "session_switch", handler: HookHandler<SessionSwitchEvent>): void;
 	on(event: "session_before_branch", handler: HookHandler<SessionBeforeBranchEvent, SessionBeforeBranchResult>): void;
 	on(event: "session_branch", handler: HookHandler<SessionBranchEvent>): void;
-	on(
-		event: "session_before_compact",
-		handler: HookHandler<SessionBeforeCompactEvent, SessionBeforeCompactResult>,
-	): void;
-	on(event: "session.compacting", handler: HookHandler<SessionCompactingEvent, SessionCompactingResult>): void;
-	on(event: "session_compact", handler: HookHandler<SessionCompactEvent>): void;
 	on(event: "session_shutdown", handler: HookHandler<SessionShutdownEvent>): void;
 	on(event: "session_before_tree", handler: HookHandler<SessionBeforeTreeEvent, SessionBeforeTreeResult>): void;
 	on(event: "session_tree", handler: HookHandler<SessionTreeEvent>): void;
@@ -712,8 +638,6 @@ export interface HookAPI {
 	on(event: "agent_end", handler: HookHandler<AgentEndEvent>): void;
 	on(event: "turn_start", handler: HookHandler<TurnStartEvent>): void;
 	on(event: "turn_end", handler: HookHandler<TurnEndEvent>): void;
-	on(event: "auto_compaction_start", handler: HookHandler<AutoCompactionStartEvent>): void;
-	on(event: "auto_compaction_end", handler: HookHandler<AutoCompactionEndEvent>): void;
 	on(event: "auto_retry_start", handler: HookHandler<AutoRetryStartEvent>): void;
 	on(event: "auto_retry_end", handler: HookHandler<AutoRetryEndEvent>): void;
 	on(event: "ttsr_triggered", handler: HookHandler<TtsrTriggeredEvent>): void;

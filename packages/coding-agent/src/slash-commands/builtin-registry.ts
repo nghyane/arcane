@@ -303,17 +303,6 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<BuiltinSlashCommandSpec> = [
 		},
 	},
 	{
-		name: "compact",
-		description: "Manually compact the session context",
-		inlineHint: "[focus instructions]",
-		allowArgs: true,
-		handle: async (command, runtime) => {
-			const customInstructions = command.args || undefined;
-			runtime.ctx.editor.setText("");
-			await runtime.ctx.handleCompactCommand(customInstructions);
-		},
-	},
-	{
 		name: "handoff",
 		description: "Hand off session context to a new session",
 		inlineHint: "[focus instructions]",

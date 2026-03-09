@@ -4,7 +4,6 @@ import type { Component, Container, Loader, Spacer, Text, TUI } from "@nghyane/a
 import type { KeybindingsManager } from "../config/keybindings";
 import type { Settings } from "../config/settings";
 import type { ExtensionUIContext, ExtensionUIDialogOptions } from "../extensibility/extensions";
-import type { CompactOptions } from "../extensibility/extensions/types";
 import type { MCPManager } from "../mcp";
 import type { AgentSession, AgentSessionEvent } from "../session/agent-session";
 import type { HistoryStorage } from "../session/history-storage";
@@ -19,11 +18,6 @@ import type { HookSelectorComponent } from "./components/hook-selector";
 import type { PythonExecutionComponent } from "./components/python-execution";
 import type { StatusLineComponent } from "./components/status-line";
 import type { ToolExecutionHandle } from "./components/tool-execution";
-
-export type CompactionQueuedMessage = {
-	text: string;
-	mode: "steer" | "followUp";
-};
 
 export type TodoItem = {
 	id: string;
@@ -60,7 +54,6 @@ export interface InteractiveModeContext {
 	todoExpanded: boolean;
 	hideThinkingBlock: boolean;
 	pendingImages: ImageContent[];
-	compactionQueuedMessages: CompactionQueuedMessage[];
 	pendingTools: Map<string, ToolExecutionHandle>;
 	pendingBashComponents: BashExecutionComponent[];
 	bashComponent: BashExecutionComponent | undefined;
@@ -70,9 +63,7 @@ export interface InteractiveModeContext {
 	streamingComponent: AssistantMessageComponent | undefined;
 	streamingMessage: AssistantMessage | undefined;
 	loadingAnimation: Loader | undefined;
-	autoCompactionLoader: Loader | undefined;
 	retryLoader: Loader | undefined;
-	autoCompactionEscapeHandler?: () => void;
 	retryEscapeHandler?: () => void;
 	unsubscribe?: () => void;
 	onInputCallback?: (input: { text: string; images?: ImageContent[] }) => void;
@@ -108,8 +99,6 @@ export interface InteractiveModeContext {
 	showNewVersionNotification(newVersion: string): void;
 	clearEditor(): void;
 	updatePendingMessagesDisplay(): void;
-	queueCompactionMessage(text: string, mode: "steer" | "followUp"): void;
-	flushCompactionQueue(options?: { willRetry?: boolean }): Promise<void>;
 	flushPendingBashComponents(): void;
 	setWorkingMessage(message?: string): void;
 	applyPendingWorkingMessage(): void;
@@ -145,11 +134,9 @@ export interface InteractiveModeContext {
 	handlePythonCommand(code: string, excludeFromContext?: boolean): Promise<void>;
 	handleMCPCommand(text: string): Promise<void>;
 	handleSSHCommand(text: string): Promise<void>;
-	handleCompactCommand(customInstructions?: string): Promise<void>;
 	handleHandoffCommand(customInstructions?: string): Promise<void>;
 	handleMoveCommand(targetPath: string): Promise<void>;
 	handleMemoryCommand(text: string): Promise<void>;
-	executeCompaction(customInstructionsOrOptions?: string | CompactOptions, isAuto?: boolean): Promise<void>;
 	openInBrowser(urlOrPath: string): void;
 	refreshSlashCommandState(cwd?: string): Promise<void>;
 

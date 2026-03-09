@@ -133,12 +133,6 @@ export class ExtensionUiController {
 				// Signal shutdown request (will be handled by main loop)
 			},
 			getContextUsage: () => this.ctx.session.getContextUsage(),
-			compact: async instructionsOrOptions => {
-				const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-				const options =
-					instructionsOrOptions && typeof instructionsOrOptions === "object" ? instructionsOrOptions : undefined;
-				await this.ctx.session.compact(instructions, options);
-			},
 			getSystemPrompt: () => this.ctx.session.systemPrompt,
 		};
 		const commandActions: ExtensionCommandContextActions = {
@@ -174,7 +168,6 @@ export class ExtensionUiController {
 				// Clear UI state
 				this.ctx.chatContainer.clear();
 				this.ctx.pendingMessagesContainer.clear();
-				this.ctx.compactionQueuedMessages = [];
 				this.ctx.streamingComponent = undefined;
 				this.ctx.streamingMessage = undefined;
 				this.ctx.pendingTools.clear();
@@ -219,16 +212,6 @@ export class ExtensionUiController {
 				this.ctx.showStatus("Navigated to selected point");
 
 				return { cancelled: false };
-			},
-			compact: async instructionsOrOptions => {
-				const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-				const options =
-					instructionsOrOptions && typeof instructionsOrOptions === "object" ? instructionsOrOptions : undefined;
-				if (this.ctx.isBackgrounded) {
-					await this.ctx.session.compact(instructions, options);
-					return;
-				}
-				await this.ctx.executeCompaction(instructionsOrOptions, false);
 			},
 			switchSession: async sessionPath => {
 				const result = await this.ctx.session.switchSession(sessionPath);
@@ -322,12 +305,6 @@ export class ExtensionUiController {
 				// Signal shutdown request (will be handled by main loop)
 			},
 			getContextUsage: () => this.ctx.session.getContextUsage(),
-			compact: async instructionsOrOptions => {
-				const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-				const options =
-					instructionsOrOptions && typeof instructionsOrOptions === "object" ? instructionsOrOptions : undefined;
-				await this.ctx.session.compact(instructions, options);
-			},
 			getSystemPrompt: () => this.ctx.session.systemPrompt,
 		};
 		const commandActions: ExtensionCommandContextActions = {
@@ -369,7 +346,6 @@ export class ExtensionUiController {
 				// Clear UI state
 				this.ctx.chatContainer.clear();
 				this.ctx.pendingMessagesContainer.clear();
-				this.ctx.compactionQueuedMessages = [];
 				this.ctx.streamingComponent = undefined;
 				this.ctx.streamingMessage = undefined;
 				this.ctx.pendingTools.clear();
@@ -420,16 +396,6 @@ export class ExtensionUiController {
 				this.ctx.showStatus("Navigated to selected point");
 
 				return { cancelled: false };
-			},
-			compact: async instructionsOrOptions => {
-				const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-				const options =
-					instructionsOrOptions && typeof instructionsOrOptions === "object" ? instructionsOrOptions : undefined;
-				if (this.ctx.isBackgrounded) {
-					await this.ctx.session.compact(instructions, options);
-					return;
-				}
-				await this.ctx.executeCompaction(instructionsOrOptions, false);
 			},
 			switchSession: async sessionPath => {
 				if (this.ctx.isBackgrounded) {
@@ -497,14 +463,6 @@ export class ExtensionUiController {
 					await registeredTool.definition.onSession(event, {
 						ui: uiContext,
 						getContextUsage: () => this.ctx.session.getContextUsage(),
-						compact: async instructionsOrOptions => {
-							const instructions = typeof instructionsOrOptions === "string" ? instructionsOrOptions : undefined;
-							const options =
-								instructionsOrOptions && typeof instructionsOrOptions === "object"
-									? instructionsOrOptions
-									: undefined;
-							await this.ctx.session.compact(instructions, options);
-						},
 						hasUI: !this.ctx.isBackgrounded,
 						cwd: this.ctx.sessionManager.getCwd(),
 						sessionManager: this.ctx.session.sessionManager,

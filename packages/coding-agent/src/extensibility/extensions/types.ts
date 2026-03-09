@@ -32,11 +32,9 @@ import type { BashResult } from "../../exec/bash-executor";
 import type { ExecOptions, ExecResult } from "../../exec/exec";
 import type { PythonResult } from "../../ipy/executor";
 import type { EditToolDetails } from "../../patch";
-import type { CompactionPreparation, CompactionResult } from "../../session/compaction";
 import type { CustomMessage } from "../../session/messages";
 import type {
 	BranchSummaryEntry,
-	CompactionEntry,
 	ReadonlySessionManager,
 	SessionEntry,
 	SessionManager,
@@ -176,16 +174,11 @@ export interface ExtensionUIContext {
 // ============================================================================
 
 export interface ContextUsage {
-	/** Estimated context tokens, or null if unknown (e.g. right after compaction, before next LLM response). */
+	/** Estimated context tokens, or null if unknown. */
 	tokens: number | null;
 	contextWindow: number;
 	/** Context usage as percentage of context window, or null if tokens is unknown. */
 	percent: number | null;
-}
-
-export interface CompactOptions {
-	onComplete?: (result: CompactionResult) => void;
-	onError?: (error: Error) => void;
 }
 
 /**
@@ -196,8 +189,6 @@ export interface ExtensionContext {
 	ui: ExtensionUIContext;
 	/** Get current context usage for the active model. */
 	getContextUsage(): ContextUsage | undefined;
-	/** Compact the session context (interactive mode shows UI). */
-	compact(instructionsOrOptions?: string | CompactOptions): Promise<void>;
 	/** Whether UI is available (false in print/RPC mode) */
 	hasUI: boolean;
 	/** Current working directory */
@@ -250,9 +241,6 @@ export interface ExtensionCommandContext extends ExtensionContext {
 
 	/** Reload the current session/runtime state. */
 	reload(): Promise<void>;
-
-	/** Compact the session context (interactive mode shows UI). */
-	compact(instructionsOrOptions?: string | CompactOptions): Promise<void>;
 }
 
 // ============================================================================
@@ -369,29 +357,6 @@ export interface SessionBranchEvent {
 	previousSessionFile: string | undefined;
 }
 
-/** Fired before context compaction (can be cancelled or customized) */
-export interface SessionBeforeCompactEvent {
-	type: "session_before_compact";
-	preparation: CompactionPreparation;
-	branchEntries: SessionEntry[];
-	customInstructions?: string;
-	signal: AbortSignal;
-}
-
-/** Fired before compaction summarization to customize prompts/context */
-export interface SessionCompactingEvent {
-	type: "session.compacting";
-	sessionId: string;
-	messages: AgentMessage[];
-}
-
-/** Fired after context compaction */
-export interface SessionCompactEvent {
-	type: "session_compact";
-	compactionEntry: CompactionEntry;
-	fromExtension: boolean;
-}
-
 /** Fired on process exit */
 export interface SessionShutdownEvent {
 	type: "session_shutdown";
@@ -428,9 +393,6 @@ export type SessionEvent =
 	| SessionSwitchEvent
 	| SessionBeforeBranchEvent
 	| SessionBranchEvent
-	| SessionBeforeCompactEvent
-	| SessionCompactingEvent
-	| SessionCompactEvent
 	| SessionShutdownEvent
 	| SessionBeforeTreeEvent
 	| SessionTreeEvent;
@@ -523,21 +485,6 @@ export interface ToolExecutionEndEvent {
 	toolName: string;
 	result: unknown;
 	isError: boolean;
-}
-
-/** Fired when auto-compaction starts */
-export interface AutoCompactionStartEvent {
-	type: "auto_compaction_start";
-	reason: "threshold" | "overflow";
-}
-
-/** Fired when auto-compaction ends */
-export interface AutoCompactionEndEvent {
-	type: "auto_compaction_end";
-	result: CompactionResult | undefined;
-	aborted: boolean;
-	willRetry: boolean;
-	errorMessage?: string;
 }
 
 /** Fired when auto-retry starts */
@@ -770,8 +717,6 @@ export type ExtensionEvent =
 	| ToolExecutionStartEvent
 	| ToolExecutionUpdateEvent
 	| ToolExecutionEndEvent
-	| AutoCompactionStartEvent
-	| AutoCompactionEndEvent
 	| AutoRetryStartEvent
 	| AutoRetryEndEvent
 	| TtsrTriggeredEvent
@@ -836,17 +781,6 @@ export interface SessionBeforeSwitchResult {
 export interface SessionBeforeBranchResult {
 	cancel?: boolean;
 	skipConversationRestore?: boolean;
-}
-
-export interface SessionBeforeCompactResult {
-	cancel?: boolean;
-	compaction?: CompactionResult;
-}
-
-export interface SessionCompactingResult {
-	context?: string[];
-	prompt?: string;
-	preserveData?: Record<string, unknown>;
 }
 
 export interface SessionBeforeTreeResult {
@@ -923,12 +857,6 @@ export interface ExtensionAPI {
 		handler: ExtensionHandler<SessionBeforeBranchEvent, SessionBeforeBranchResult>,
 	): void;
 	on(event: "session_branch", handler: ExtensionHandler<SessionBranchEvent>): void;
-	on(
-		event: "session_before_compact",
-		handler: ExtensionHandler<SessionBeforeCompactEvent, SessionBeforeCompactResult>,
-	): void;
-	on(event: "session.compacting", handler: ExtensionHandler<SessionCompactingEvent, SessionCompactingResult>): void;
-	on(event: "session_compact", handler: ExtensionHandler<SessionCompactEvent>): void;
 	on(event: "session_shutdown", handler: ExtensionHandler<SessionShutdownEvent>): void;
 	on(event: "session_before_tree", handler: ExtensionHandler<SessionBeforeTreeEvent, SessionBeforeTreeResult>): void;
 	on(event: "session_tree", handler: ExtensionHandler<SessionTreeEvent>): void;
@@ -944,8 +872,6 @@ export interface ExtensionAPI {
 	on(event: "tool_execution_start", handler: ExtensionHandler<ToolExecutionStartEvent>): void;
 	on(event: "tool_execution_update", handler: ExtensionHandler<ToolExecutionUpdateEvent>): void;
 	on(event: "tool_execution_end", handler: ExtensionHandler<ToolExecutionEndEvent>): void;
-	on(event: "auto_compaction_start", handler: ExtensionHandler<AutoCompactionStartEvent>): void;
-	on(event: "auto_compaction_end", handler: ExtensionHandler<AutoCompactionEndEvent>): void;
 	on(event: "auto_retry_start", handler: ExtensionHandler<AutoRetryStartEvent>): void;
 	on(event: "auto_retry_end", handler: ExtensionHandler<AutoRetryEndEvent>): void;
 	on(event: "ttsr_triggered", handler: ExtensionHandler<TtsrTriggeredEvent>): void;
@@ -1239,7 +1165,6 @@ export interface ExtensionContextActions {
 	hasPendingMessages: () => boolean;
 	shutdown: () => void;
 	getContextUsage: () => ContextUsage | undefined;
-	compact: (instructionsOrOptions?: string | CompactOptions) => Promise<void>;
 	getSystemPrompt: () => string;
 }
 
@@ -1253,7 +1178,6 @@ export interface ExtensionCommandContextActions {
 	}) => Promise<{ cancelled: boolean }>;
 	branch: (entryId: string) => Promise<{ cancelled: boolean }>;
 	navigateTree: (targetId: string, options?: { summarize?: boolean }) => Promise<{ cancelled: boolean }>;
-	compact: (instructionsOrOptions?: string | CompactOptions) => Promise<void>;
 	switchSession: (sessionPath: string) => Promise<{ cancelled: boolean }>;
 	reload: () => Promise<void>;
 }

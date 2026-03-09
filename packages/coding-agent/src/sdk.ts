@@ -442,21 +442,6 @@ function createCustomToolsExtension(tools: CustomTool[]): ExtensionFactory {
 		api.on("session_shutdown", async (_event, ctx) =>
 			runOnSession({ reason: "shutdown", previousSessionFile: undefined }, ctx),
 		);
-		api.on("auto_compaction_start", async (event, ctx) =>
-			runOnSession({ reason: "auto_compaction_start", trigger: event.reason }, ctx),
-		);
-		api.on("auto_compaction_end", async (event, ctx) =>
-			runOnSession(
-				{
-					reason: "auto_compaction_end",
-					result: event.result,
-					aborted: event.aborted,
-					willRetry: event.willRetry,
-					errorMessage: event.errorMessage,
-				},
-				ctx,
-			),
-		);
 		api.on("auto_retry_start", async (event, ctx) =>
 			runOnSession(
 				{

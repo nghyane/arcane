@@ -5,9 +5,8 @@ import { exportSessionToHtml } from "../export/html";
 import type { ContextUsage } from "../extensibility/extensions/types";
 import { getCurrentThemeName } from "../theme/theme";
 import { calculateContextTokens, estimateTokens } from "./compaction";
-import type { CompactionSummaryMessage, FileMentionMessage } from "./messages";
+import type { FileMentionMessage } from "./messages";
 import type { SessionManager } from "./session-manager";
-import { getLatestCompactionEntry } from "./session-manager";
 import type { SessionStats } from "./session-types";
 
 /**
@@ -82,41 +81,11 @@ export function getSessionStats(
 /**
  * Get current context usage statistics.
  */
-export function getContextUsage(
-	model: Model | undefined,
-	messages: AgentMessage[],
-	sessionManager: SessionManager,
-): ContextUsage | undefined {
+export function getContextUsage(model: Model | undefined, messages: AgentMessage[]): ContextUsage | undefined {
 	if (!model) return undefined;
 
 	const contextWindow = model.contextWindow ?? 0;
 	if (contextWindow <= 0) return undefined;
-
-	const branchEntries = sessionManager.getBranch();
-	const latestCompaction = getLatestCompactionEntry(branchEntries);
-
-	if (latestCompaction) {
-		const compactionIndex = branchEntries.lastIndexOf(latestCompaction);
-		let hasPostCompactionUsage = false;
-		for (let i = compactionIndex + 1; i < branchEntries.length; i++) {
-			const entry = branchEntries[i];
-			if (entry.type === "message" && entry.message.role === "assistant") {
-				const msg = entry.message as AssistantMessage;
-				if (msg.usage) {
-					hasPostCompactionUsage = true;
-					break;
-				}
-			}
-		}
-
-		if (!hasPostCompactionUsage) {
-			return {
-				tokens: 0,
-				contextWindow,
-				percent: 0,
-			};
-		}
-	}
 
 	const { tokens } = estimateContextTokensFromMessages(messages);
 	const percent = Math.round((tokens / contextWindow) * 100);
@@ -373,12 +342,6 @@ export function formatCompactContext(messages: AgentMessage[]): string {
 			const fileMsg = msg as FileMentionMessage;
 			const paths = fileMsg.files.map(f => f.path).join(", ");
 			lines.push(`[Files referenced: ${paths}]`);
-			lines.push("");
-		} else if (msg.role === "compactionSummary") {
-			const compactMsg = msg as CompactionSummaryMessage;
-			lines.push("## Earlier Context (Summarized)");
-			lines.push("");
-			lines.push(compactMsg.summary);
 			lines.push("");
 		}
 	}

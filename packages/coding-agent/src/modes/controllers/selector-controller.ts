@@ -179,10 +179,6 @@ export class SelectorController {
 
 		switch (id) {
 			// Session-managed settings (not in SettingsManager)
-			case "autoCompact":
-				this.ctx.session.setAutoCompactionEnabled(value as boolean);
-				this.ctx.statusLine.setAutoCompactEnabled(value as boolean);
-				break;
 			case "steeringMode":
 				this.ctx.session.setSteeringMode(value as "all" | "one-at-a-time");
 				break;
@@ -536,7 +532,6 @@ export class SelectorController {
 
 		// Clear UI state
 		this.ctx.pendingMessagesContainer.clear();
-		this.ctx.compactionQueuedMessages = [];
 		this.ctx.streamingComponent = undefined;
 		this.ctx.streamingMessage = undefined;
 		this.ctx.pendingTools.clear();

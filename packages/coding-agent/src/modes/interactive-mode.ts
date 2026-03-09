@@ -21,7 +21,6 @@ import chalk from "chalk";
 import { KeybindingsManager } from "../config/keybindings";
 import { type Settings, settings } from "../config/settings";
 import type { ExtensionUIContext, ExtensionUIDialogOptions } from "../extensibility/extensions";
-import type { CompactOptions } from "../extensibility/extensions/types";
 import { BUILTIN_SLASH_COMMANDS, loadSlashCommands } from "../extensibility/slash-commands";
 import type { AgentSession, AgentSessionEvent } from "../session/agent-session";
 import { HistoryStorage } from "../session/history-storage";
@@ -50,7 +49,7 @@ import { InputController } from "./controllers/input-controller";
 import { MCPCommandController } from "./controllers/mcp-command-controller";
 import { SelectorController } from "./controllers/selector-controller";
 import { SSHCommandController } from "./controllers/ssh-command-controller";
-import type { CompactionQueuedMessage, InteractiveModeContext, TodoItem } from "./types";
+import type { InteractiveModeContext, TodoItem } from "./types";
 import { UiHelpers } from "./utils/ui-helpers";
 
 const TODO_FILE_NAME = "todos.json";
@@ -98,7 +97,6 @@ export class InteractiveMode implements InteractiveModeContext {
 	todoItems: TodoItem[] = [];
 	hideThinkingBlock = false;
 	pendingImages: ImageContent[] = [];
-	compactionQueuedMessages: CompactionQueuedMessage[] = [];
 	pendingTools = new Map<string, ToolExecutionHandle>();
 	pendingBashComponents: BashExecutionComponent[] = [];
 	bashComponent: BashExecutionComponent | undefined = undefined;
@@ -108,11 +106,7 @@ export class InteractiveMode implements InteractiveModeContext {
 	streamingComponent: AssistantMessageComponent | undefined = undefined;
 	streamingMessage: AssistantMessage | undefined = undefined;
 	loadingAnimation: Loader | undefined = undefined;
-	autoCompactionLoader: Loader | undefined = undefined;
 	retryLoader: Loader | undefined = undefined;
-	#pendingWorkingMessage: string | undefined;
-	readonly #defaultWorkingMessage = `Working… (esc to interrupt)`;
-	autoCompactionEscapeHandler?: () => void;
 	retryEscapeHandler?: () => void;
 	unsubscribe?: () => void;
 	onInputCallback?: (input: { text: string; images?: ImageContent[] }) => void;
@@ -130,6 +124,8 @@ export class InteractiveMode implements InteractiveModeContext {
 
 	#pendingSlashCommands: SlashCommand[] = [];
 	#cleanupUnsubscribe?: () => void;
+	#pendingWorkingMessage: string | undefined = undefined;
+	#defaultWorkingMessage = "Working…";
 	readonly #version: string;
 	readonly #changelogMarkdown: string | undefined;
 	readonly lspServers:
@@ -198,7 +194,6 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.editorContainer = new Container();
 		this.editorContainer.addChild(this.editor);
 		this.statusLine = new StatusLineComponent(session);
-		this.statusLine.setAutoCompactEnabled(session.autoCompactionEnabled);
 
 		this.hideThinkingBlock = settings.get("hideThinkingBlock");
 
@@ -622,14 +617,6 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#uiHelpers.updatePendingMessagesDisplay();
 	}
 
-	queueCompactionMessage(text: string, mode: "steer" | "followUp"): void {
-		this.#uiHelpers.queueCompactionMessage(text, mode);
-	}
-
-	flushCompactionQueue(options?: { willRetry?: boolean }): Promise<void> {
-		return this.#uiHelpers.flushCompactionQueue(options);
-	}
-
 	flushPendingBashComponents(): void {
 		this.#uiHelpers.flushPendingBashComponents();
 	}
@@ -737,16 +724,8 @@ export class InteractiveMode implements InteractiveModeContext {
 		await controller.handle(text);
 	}
 
-	handleCompactCommand(customInstructions?: string): Promise<void> {
-		return this.#commandController.handleCompactCommand(customInstructions);
-	}
-
 	handleHandoffCommand(customInstructions?: string): Promise<void> {
 		return this.#commandController.handleHandoffCommand(customInstructions);
-	}
-
-	executeCompaction(customInstructionsOrOptions?: string | CompactOptions, isAuto?: boolean): Promise<void> {
-		return this.#commandController.executeCompaction(customInstructionsOrOptions, isAuto);
 	}
 
 	openInBrowser(urlOrPath: string): void {

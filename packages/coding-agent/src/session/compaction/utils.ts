@@ -1,8 +1,8 @@
 /**
- * Shared utilities for compaction and branch summarization.
+ * Shared utilities for branch summarization.
  */
 import type { AgentMessage } from "@nghyane/arcane-agent";
-import type { Message } from "@nghyane/arcane-ai";
+import type { AssistantMessage, Message, Usage } from "@nghyane/arcane-ai";
 import { renderPromptTemplate } from "../../config/prompt-templates";
 import fileOperationsTemplate from "../../prompts/system/file-operations.md" with { type: "text" };
 import summarizationSystemPrompt from "../../prompts/system/summarization-system.md" with { type: "text" };
@@ -169,3 +169,95 @@ export function serializeConversation(messages: Message[]): string {
 // ============================================================================
 
 export const SUMMARIZATION_SYSTEM_PROMPT = renderPromptTemplate(summarizationSystemPrompt);
+
+// ============================================================================
+// Token Estimation
+// ============================================================================
+
+/**
+ * Estimate token count for a message using chars/4 heuristic.
+ * This is conservative (overestimates tokens).
+ */
+export function estimateTokens(message: AgentMessage): number {
+	let chars = 0;
+
+	switch (message.role) {
+		case "user": {
+			const content = (message as { content: string | Array<{ type: string; text?: string }> }).content;
+			if (typeof content === "string") {
+				chars = content.length;
+			} else if (Array.isArray(content)) {
+				for (const block of content) {
+					if (block.type === "text" && block.text) {
+						chars += block.text.length;
+					}
+				}
+			}
+			return Math.ceil(chars / 4);
+		}
+		case "assistant": {
+			const assistant = message as AssistantMessage;
+			for (const block of assistant.content) {
+				if (block.type === "text") {
+					chars += block.text.length;
+				} else if (block.type === "thinking") {
+					chars += block.thinking.length;
+				} else if (block.type === "toolCall") {
+					chars += block.name.length + JSON.stringify(block.arguments).length;
+				}
+			}
+			return Math.ceil(chars / 4);
+		}
+		case "hookMessage":
+		case "toolResult": {
+			if (typeof message.content === "string") {
+				chars = message.content.length;
+			} else {
+				for (const block of message.content) {
+					if (block.type === "text" && block.text) {
+						chars += block.text.length;
+					}
+					if (block.type === "image") {
+						chars += 4800; // Estimate images as 4000 chars, or 1200 tokens
+					}
+				}
+			}
+			return Math.ceil(chars / 4);
+		}
+		case "bashExecution": {
+			chars = message.command.length + message.output.length;
+			return Math.ceil(chars / 4);
+		}
+		case "branchSummary": {
+			chars = message.summary.length;
+			return Math.ceil(chars / 4);
+		}
+	}
+
+	return 0;
+}
+
+// ============================================================================
+// Context Token Calculation
+// ============================================================================
+
+/**
+ * Calculate context tokens from usage report.
+ * Uses the native totalTokens field when available, falls back to computing from components.
+ */
+export function calculateContextTokens(usage: Usage): number {
+	return usage.totalTokens || usage.input + usage.output + usage.cacheRead + usage.cacheWrite;
+}
+
+/**
+ * Get the last assistant message's usage data.
+ */
+export function getLastAssistantUsage(messages: AgentMessage[]): Usage | undefined {
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const msg = messages[i];
+		if (msg.role === "assistant") {
+			return (msg as AssistantMessage).usage;
+		}
+	}
+	return undefined;
+}

@@ -65,7 +65,6 @@ export class StatusLineComponent implements Component {
 	#cachedBranch: string | null | undefined = undefined;
 	#gitWatcher: fs.FSWatcher | null = null;
 	#onBranchChange: (() => void) | null = null;
-	#autoCompactEnabled: boolean = true;
 	#hookStatuses: Map<string, string> = new Map();
 	#subagentCount: number = 0;
 	#sessionStartTime: number = Date.now();
@@ -87,10 +86,6 @@ export class StatusLineComponent implements Component {
 
 	updateSettings(settings: StatusLineSettings): void {
 		this.#settings = settings;
-	}
-
-	setAutoCompactEnabled(enabled: boolean): void {
-		this.#autoCompactEnabled = enabled;
 	}
 
 	setSubagentCount(count: number): void {
@@ -258,7 +253,6 @@ export class StatusLineComponent implements Component {
 			usageStats,
 			contextPercent,
 			contextWindow,
-			autoCompactEnabled: this.#autoCompactEnabled,
 			subagentCount: this.#subagentCount,
 			sessionStartTime: this.#sessionStartTime,
 			git: {

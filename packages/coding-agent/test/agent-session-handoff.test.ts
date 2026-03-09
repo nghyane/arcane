@@ -42,10 +42,7 @@ describe("AgentSession handoff", () => {
 		session = new AgentSession({
 			agent,
 			sessionManager,
-			settings: Settings.isolated({
-				"compaction.enabled": true,
-				"compaction.autoContinue": false,
-			}),
+			settings: Settings.isolated({}),
 			modelRegistry,
 		});
 
@@ -121,8 +118,5 @@ describe("AgentSession handoff", () => {
 
 		expect(promptSpy).toHaveBeenCalledTimes(1);
 		expect(result?.document).toBe(handoffText);
-		expect(events.filter(event => event.type === "auto_compaction_start")).toHaveLength(0);
-		expect(events.filter(event => event.type === "auto_compaction_end")).toHaveLength(0);
-		expect(sessionManager.getEntries().filter(entry => entry.type === "compaction")).toHaveLength(0);
 	});
 });

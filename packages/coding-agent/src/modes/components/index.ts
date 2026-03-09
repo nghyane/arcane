@@ -3,7 +3,6 @@ export { AssistantMessageComponent } from "./assistant-message";
 export { BashExecutionComponent } from "./bash-execution";
 export { BorderedLoader } from "./bordered-loader";
 export { BranchSummaryMessageComponent } from "./branch-summary-message";
-export { CompactionSummaryMessageComponent } from "./compaction-summary-message";
 export { CountdownTimer } from "./countdown-timer";
 export { CustomEditor } from "./custom-editor";
 export { CustomMessageComponent } from "./custom-message";

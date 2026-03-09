@@ -30,13 +30,9 @@ export class InputController {
 			Boolean(
 				this.ctx.loadingAnimation ||
 					this.ctx.session.isStreaming ||
-					this.ctx.session.isCompacting ||
 					this.ctx.session.isGeneratingHandoff ||
 					this.ctx.session.isBashRunning ||
 					this.ctx.session.isPythonRunning ||
-					this.ctx.autoCompactionLoader ||
-					this.ctx.retryLoader ||
-					this.ctx.autoCompactionEscapeHandler ||
 					this.ctx.retryEscapeHandler,
 			);
 		this.ctx.editor.onEscape = () => {
@@ -270,16 +266,6 @@ export class InputController {
 				}
 			}
 
-			// Queue input during compaction
-			if (this.ctx.session.isCompacting) {
-				if (this.ctx.pendingImages.length > 0) {
-					this.ctx.showStatus("Compaction in progress. Retry after it completes to send images.");
-					return;
-				}
-				this.ctx.queueCompactionMessage(text, "steer");
-				return;
-			}
-
 			// If streaming, use prompt() with steer behavior
 			// This handles extension commands (execute immediately), prompt template expansion, and queueing
 			if (this.ctx.session.isStreaming) {
@@ -365,11 +351,6 @@ export class InputController {
 		const text = this.ctx.editor.getText().trim();
 		if (!text) return;
 
-		if (this.ctx.session.isCompacting) {
-			this.ctx.queueCompactionMessage(text, "followUp");
-			return;
-		}
-
 		if (this.ctx.session.isStreaming) {
 			this.ctx.editor.addToHistory(text);
 			this.ctx.editor.setText("");
@@ -426,10 +407,6 @@ export class InputController {
 		if (this.ctx.loadingAnimation) {
 			this.ctx.loadingAnimation.stop();
 			this.ctx.loadingAnimation = undefined;
-		}
-		if (this.ctx.autoCompactionLoader) {
-			this.ctx.autoCompactionLoader.stop();
-			this.ctx.autoCompactionLoader = undefined;
 		}
 		if (this.ctx.retryLoader) {
 			this.ctx.retryLoader.stop();

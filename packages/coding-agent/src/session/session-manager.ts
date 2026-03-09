@@ -11,7 +11,6 @@ import {
 	type BashExecutionMessage,
 	type CustomMessage,
 	createBranchSummaryMessage,
-	createCompactionSummaryMessage,
 	createCustomMessage,
 	type FileMentionMessage,
 	type HookMessage,
@@ -24,7 +23,6 @@ export * from "./session-types";
 
 import {
 	type BranchSummaryEntry,
-	type CompactionEntry,
 	CURRENT_SESSION_VERSION,
 	type CustomEntry,
 	type CustomMessageEntry,
@@ -85,18 +83,6 @@ function migrateV1ToV2(entries: FileEntry[]): void {
 		entry.id = generateId(ids);
 		entry.parentId = prevId;
 		prevId = entry.id;
-
-		// Convert firstKeptEntryIndex to firstKeptEntryId for compaction
-		if (entry.type === "compaction") {
-			const comp = entry as CompactionEntry & { firstKeptEntryIndex?: number };
-			if (typeof comp.firstKeptEntryIndex === "number") {
-				const targetEntry = entries[comp.firstKeptEntryIndex];
-				if (targetEntry && targetEntry.type !== "session") {
-					comp.firstKeptEntryId = targetEntry.id;
-				}
-				delete comp.firstKeptEntryIndex;
-			}
-		}
 	}
 }
 
@@ -199,18 +185,8 @@ function migrateHomeSessionDirs(): void {
 	}
 }
 
-/** Exported for compaction.test.ts */
 export function parseSessionEntries(content: string): FileEntry[] {
 	return parseJsonlLenient<FileEntry>(content);
-}
-
-export function getLatestCompactionEntry(entries: SessionEntry[]): CompactionEntry | null {
-	for (let i = entries.length - 1; i >= 0; i--) {
-		if (entries[i].type === "compaction") {
-			return entries[i] as CompactionEntry;
-		}
-	}
-	return null;
 }
 
 function toError(value: unknown): Error {
@@ -220,7 +196,7 @@ function toError(value: unknown): Error {
 /**
  * Build the session context from entries using tree traversal.
  * If leafId is provided, walks from that entry to root.
- * Handles compaction and branch summaries along the path.
+ * Handles branch summaries along the path.
  */
 export function buildSessionContext(
 	entries: SessionEntry[],
@@ -261,10 +237,9 @@ export function buildSessionContext(
 		current = current.parentId ? byId.get(current.parentId) : undefined;
 	}
 
-	// Extract settings and find compaction
+	// Extract settings
 	let thinkingLevel = "off";
 	const models: Record<string, string> = {};
-	let compaction: CompactionEntry | null = null;
 	const injectedTtsrRulesSet = new Set<string>();
 	let mode = "none";
 	let modeData: Record<string, unknown> | undefined;
@@ -281,8 +256,6 @@ export function buildSessionContext(
 		} else if (entry.type === "message" && entry.message.role === "assistant") {
 			// Infer default model from assistant messages
 			models.default = `${entry.message.provider}/${entry.message.model}`;
-		} else if (entry.type === "compaction") {
-			compaction = entry;
 		} else if (entry.type === "ttsr_injection") {
 			// Collect injected TTSR rule names
 			for (const ruleName of entry.injectedRules) {
@@ -296,14 +269,10 @@ export function buildSessionContext(
 
 	const injectedTtsrRules = Array.from(injectedTtsrRulesSet);
 
-	// Build messages and collect corresponding entries
-	// When there's a compaction, we need to:
-	// 1. Emit summary first (entry = compaction)
-	// 2. Emit kept messages (from firstKeptEntryId up to compaction)
-	// 3. Emit messages after compaction
+	// Build messages
 	const messages: AgentMessage[] = [];
 
-	const appendMessage = (entry: SessionEntry) => {
+	for (const entry of path) {
 		if (entry.type === "message") {
 			messages.push(entry.message);
 		} else if (entry.type === "custom_message") {
@@ -312,44 +281,6 @@ export function buildSessionContext(
 			);
 		} else if (entry.type === "branch_summary" && entry.summary) {
 			messages.push(createBranchSummaryMessage(entry.summary, entry.fromId, entry.timestamp));
-		}
-	};
-
-	if (compaction) {
-		// Emit summary first
-		messages.push(
-			createCompactionSummaryMessage(
-				compaction.summary,
-				compaction.tokensBefore,
-				compaction.timestamp,
-				compaction.shortSummary,
-			),
-		);
-
-		// Find compaction index in path
-		const compactionIdx = path.findIndex(e => e.type === "compaction" && e.id === compaction.id);
-
-		// Emit kept messages (before compaction, starting from firstKeptEntryId)
-		let foundFirstKept = false;
-		for (let i = 0; i < compactionIdx; i++) {
-			const entry = path[i];
-			if (entry.id === compaction.firstKeptEntryId) {
-				foundFirstKept = true;
-			}
-			if (foundFirstKept) {
-				appendMessage(entry);
-			}
-		}
-
-		// Emit messages after compaction
-		for (let i = compactionIdx + 1; i < path.length; i++) {
-			const entry = path[i];
-			appendMessage(entry);
-		}
-	} else {
-		// No compaction - emit all messages, handle branch summaries and custom messages
-		for (const entry of path) {
-			appendMessage(entry);
 		}
 	}
 
@@ -858,7 +789,7 @@ export async function getRecentSessions(
  * modifying history.
  *
  * Use buildSessionContext() to get the resolved message list for the LLM, which
- * handles compaction summaries and follows the path from root to current leaf.
+ * handles branch summaries and follows the path from root to current leaf.
  */
 export interface UsageStatistics {
 	input: number;
@@ -907,10 +838,6 @@ async function collectSessionsFromFiles(files: string[], storage: SessionStorage
 
 				for (let i = 1; i < entries.length; i++) {
 					const entry = entries[i] as { type?: string; message?: Message; shortSummary?: string };
-
-					if (entry.type === "compaction" && typeof entry.shortSummary === "string") {
-						shortSummary = entry.shortSummary;
-					}
 
 					if (entry.type === "message" && entry.message) {
 						messageCount++;
@@ -1448,10 +1375,10 @@ export class SessionManager {
 	}
 
 	/** Append a message as child of current leaf, then advance leaf. Returns entry id.
-	 * Does not allow writing CompactionSummaryMessage and BranchSummaryMessage directly.
+	 * Does not allow writing BranchSummaryMessage directly.
 	 * Reason: we want these to be top-level entries in the session, not message session entries,
 	 * so it is easier to find them.
-	 * These need to be appended via appendCompaction() and appendBranchSummary() methods.
+	 * These need to be appended via appendBranchSummary() methods.
 	 */
 	appendMessage(
 		message:
@@ -1526,33 +1453,6 @@ export class SessionManager {
 			parentId: this.#leafId,
 			timestamp: new Date().toISOString(),
 			...init,
-		};
-		this.#appendEntry(entry);
-		return entry.id;
-	}
-
-	/** Append a compaction summary as child of current leaf, then advance leaf. Returns entry id. */
-	appendCompaction<T = unknown>(
-		summary: string,
-		shortSummary: string | undefined,
-		firstKeptEntryId: string,
-		tokensBefore: number,
-		details?: T,
-		fromExtension?: boolean,
-		preserveData?: Record<string, unknown>,
-	): string {
-		const entry: CompactionEntry<T> = {
-			type: "compaction",
-			id: generateId(this.#byId),
-			parentId: this.#leafId,
-			timestamp: new Date().toISOString(),
-			summary,
-			shortSummary,
-			firstKeptEntryId,
-			tokensBefore,
-			details,
-			fromExtension,
-			preserveData,
 		};
 		this.#appendEntry(entry);
 		return entry.id;
@@ -1726,7 +1626,7 @@ export class SessionManager {
 
 	/**
 	 * Walk from entry to root, returning all entries in path order.
-	 * Includes all entry types (messages, compaction, model changes, etc.).
+	 * Includes all entry types (messages, model changes, etc.).
 	 * Use buildSessionContext() to get the resolved messages for the LLM.
 	 */
 	getBranch(fromId?: string): SessionEntry[] {

@@ -45,14 +45,9 @@ export class FooterComponent implements Component {
 	#cachedBranch: string | null | undefined = undefined; // undefined = not checked yet, null = not in git repo, string = branch name
 	#gitWatcher: fs.FSWatcher | null = null;
 	#onBranchChange: (() => void) | null = null;
-	#autoCompactEnabled: boolean = true;
 	#extensionStatuses: Map<string, string> = new Map();
 
 	constructor(private readonly session: AgentSession) {}
-
-	setAutoCompactEnabled(enabled: boolean): void {
-		this.#autoCompactEnabled = enabled;
-	}
 
 	/**
 	 * Set extension status text to display in the footer.
@@ -157,7 +152,7 @@ export class FooterComponent implements Component {
 	render(width: number): string[] {
 		const state = this.session.state;
 
-		// Calculate cumulative usage from ALL session entries (not just post-compaction messages)
+		// Calculate cumulative usage from ALL session entries
 		let totalInput = 0;
 		let totalOutput = 0;
 		let totalCacheRead = 0;
@@ -174,8 +169,7 @@ export class FooterComponent implements Component {
 			}
 		}
 
-		// Calculate context usage from session (handles compaction correctly).
-		// After compaction, tokens are unknown until the next LLM response.
+		// Calculate context usage from session.
 		const contextUsage = this.session.getContextUsage();
 		const contextWindow = contextUsage?.contextWindow ?? state.model?.contextWindow ?? 0;
 		const contextPercentValue = contextUsage?.percent ?? 0;
@@ -227,11 +221,10 @@ export class FooterComponent implements Component {
 
 		// Colorize context percentage based on usage
 		let contextPercentStr: string;
-		const autoIndicator = this.#autoCompactEnabled ? " (auto)" : "";
 		const contextPercentDisplay =
 			contextPercent === "?"
-				? `?/${formatTokens(contextWindow)}${autoIndicator}`
-				: `${contextPercent}%/${formatTokens(contextWindow)}${autoIndicator}`;
+				? `?/${formatTokens(contextWindow)}`
+				: `${contextPercent}%/${formatTokens(contextWindow)}`;
 		if (contextPercentValue > 90) {
 			contextPercentStr = theme.fg("error", contextPercentDisplay);
 		} else if (contextPercentValue > 70) {

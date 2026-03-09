@@ -8,11 +8,9 @@ import type { AgentMessage } from "@nghyane/arcane-agent";
 import type { ImageContent, Message, TextContent, ToolResultMessage } from "@nghyane/arcane-ai";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import branchSummaryContextPrompt from "../prompts/compaction/branch-summary-context.md" with { type: "text" };
-import compactionSummaryContextPrompt from "../prompts/compaction/compaction-summary-context.md" with { type: "text" };
 import type { OutputMeta } from "../tools/output-meta";
 import { formatOutputNotice } from "../tools/output-meta";
 
-const COMPACTION_SUMMARY_TEMPLATE = compactionSummaryContextPrompt;
 const BRANCH_SUMMARY_TEMPLATE = branchSummaryContextPrompt;
 
 export const SKILL_PROMPT_MESSAGE_TYPE = "skill-prompt";
@@ -97,14 +95,6 @@ export interface BranchSummaryMessage {
 	timestamp: number;
 }
 
-export interface CompactionSummaryMessage {
-	role: "compactionSummary";
-	summary: string;
-	shortSummary?: string;
-	tokensBefore: number;
-	timestamp: number;
-}
-
 /**
  * Message type for auto-read file mentions via @filepath syntax.
  */
@@ -132,7 +122,6 @@ declare module "@nghyane/arcane-agent" {
 		custom: CustomMessage;
 		hookMessage: HookMessage;
 		branchSummary: BranchSummaryMessage;
-		compactionSummary: CompactionSummaryMessage;
 		fileMention: FileMentionMessage;
 	}
 }
@@ -180,21 +169,6 @@ export function createBranchSummaryMessage(summary: string, fromId: string, time
 		role: "branchSummary",
 		summary,
 		fromId,
-		timestamp: new Date(timestamp).getTime(),
-	};
-}
-
-export function createCompactionSummaryMessage(
-	summary: string,
-	tokensBefore: number,
-	timestamp: string,
-	shortSummary?: string,
-): CompactionSummaryMessage {
-	return {
-		role: "compactionSummary",
-		summary,
-		shortSummary,
-		tokensBefore,
 		timestamp: new Date(timestamp).getTime(),
 	};
 }
@@ -263,17 +237,6 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 							{
 								type: "text" as const,
 								text: renderPromptTemplate(BRANCH_SUMMARY_TEMPLATE, { summary: m.summary }),
-							},
-						],
-						timestamp: m.timestamp,
-					};
-				case "compactionSummary":
-					return {
-						role: "user",
-						content: [
-							{
-								type: "text" as const,
-								text: renderPromptTemplate(COMPACTION_SUMMARY_TEMPLATE, { summary: m.summary }),
 							},
 						],
 						timestamp: m.timestamp,

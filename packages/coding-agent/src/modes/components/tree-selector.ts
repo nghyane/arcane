@@ -372,9 +372,6 @@ class TreeList implements Component {
 				}
 				break;
 			}
-			case "compaction":
-				parts.push("compaction");
-				break;
 			case "branch_summary":
 				parts.push("branch summary", entry.summary);
 				break;
@@ -571,11 +568,6 @@ class TreeList implements Component {
 								.map(c => c.text)
 								.join("");
 				result = theme.fg("customMessageLabel", `[${entry.customType}]: `) + normalize(content);
-				break;
-			}
-			case "compaction": {
-				const tokens = Math.round(entry.tokensBefore / 1000);
-				result = theme.fg("borderAccent", `[compaction: ${tokens}k tokens]`);
 				break;
 			}
 			case "branch_summary":
