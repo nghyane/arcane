@@ -2055,8 +2055,9 @@ Be thorough - include exact file paths, function names, error messages, and tech
 				}
 				return !!result;
 			} catch (err) {
-				// handoff() failed (likely context too full to generate doc) — fall back to lightweight handoff
-				// Skip emitting auto_handoff_end here; #handleContextOverflow will emit its own start/end
+				// handoff() failed (likely context too full to generate doc)
+				// End the current handoff event before falling back to overflow handler
+				await this.#emitSessionEvent({ type: "auto_handoff_end", success: false, error: String(err) });
 				return this.#handleContextOverflow();
 			}
 		}
