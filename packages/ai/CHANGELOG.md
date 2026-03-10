@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added regression test to ensure OpenAI responses history conversion preserves assistant text signature metadata (`id` and `phase`)
+
 ## [0.1.14] - 2026-03-08
 
 ### Added
