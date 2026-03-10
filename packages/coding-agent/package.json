@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "@nghyane/arcane",
-	"version": "0.1.29",
+	"version": "0.1.30",
 	"description": "Coding agent CLI with read, bash, edit, write tools and session management",
 	"homepage": "https://github.com/nghyane/arcane",
 	"author": "Can Bölük",
@@ -44,9 +44,9 @@
 	},
 	"dependencies": {
 		"@mozilla/readability": "0.6.0",
-		"@nghyane/arcane-stats": "^0.1.14",
-		"@nghyane/arcane-agent": "^0.1.18",
-		"@nghyane/arcane-ai": "^0.1.14",
+		"@nghyane/arcane-stats": "^0.1.15",
+		"@nghyane/arcane-agent": "^0.1.19",
+		"@nghyane/arcane-ai": "^0.1.15",
 		"@nghyane/arcane-natives": "^0.1.11",
 		"@nghyane/arcane-tui": "^0.1.15",
 		"@nghyane/arcane-utils": "^0.1.8",
