@@ -208,6 +208,12 @@ export interface TextContent {
 	textSignature?: string; // e.g., for OpenAI responses, the message ID
 }
 
+export interface TextSignatureV1 {
+	v: 1;
+	id: string;
+	phase?: "commentary" | "final_answer";
+}
+
 export interface ThinkingContent {
 	type: "thinking";
 	thinking: string;

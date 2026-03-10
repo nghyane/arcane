@@ -1,5 +1,6 @@
 import * as os from "node:os";
 import { $env, abortableSleep, readSseJson } from "@nghyane/arcane-utils";
+import type OpenAI from "openai";
 import type {
 	ResponseFunctionToolCall,
 	ResponseInput,
@@ -22,6 +23,7 @@ import type {
 	StreamFunction,
 	StreamOptions,
 	TextContent,
+	TextSignatureV1,
 	ThinkingContent,
 	Tool,
 	ToolCall,
@@ -272,6 +274,32 @@ function normalizeResponsesToolCallId(id: string): { callId: string; itemId: str
 	}
 	const hash = Bun.hash.xxHash64(id).toString(36);
 	return { callId: `call_${hash}`, itemId: `item_${hash}` };
+}
+
+function encodeTextSignatureV1(id: string, phase?: TextSignatureV1["phase"]): string {
+	const payload: TextSignatureV1 = { v: 1, id };
+	if (phase) payload.phase = phase;
+	return JSON.stringify(payload);
+}
+
+function parseTextSignature(
+	signature: string | undefined,
+): { id: string; phase?: TextSignatureV1["phase"] } | undefined {
+	if (!signature) return undefined;
+	if (signature.startsWith("{")) {
+		try {
+			const parsed = JSON.parse(signature) as Partial<TextSignatureV1>;
+			if (parsed.v === 1 && typeof parsed.id === "string") {
+				if (parsed.phase === "commentary" || parsed.phase === "final_answer") {
+					return { id: parsed.id, phase: parsed.phase };
+				}
+				return { id: parsed.id };
+			}
+		} catch {
+			// Fall through to legacy plain-string handling.
+		}
+	}
+	return { id: signature };
 }
 
 function normalizeCodexToolChoice(choice: ToolChoice | undefined): string | Record<string, unknown> | undefined {
@@ -641,7 +669,9 @@ export const streamOpenAICodexResponses: StreamFunction<"openai-codex-responses"
 								currentBlock.text = item.content
 									.map(c => (c.type === "output_text" ? c.text : c.refusal))
 									.join("");
-								currentBlock.textSignature = item.id;
+								const phase =
+									item.phase === "commentary" || item.phase === "final_answer" ? item.phase : undefined;
+								currentBlock.textSignature = encodeTextSignatureV1(item.id, phase);
 								stream.push({
 									type: "text_end",
 									contentIndex: blockIndex(),
@@ -700,7 +730,7 @@ export const streamOpenAICodexResponses: StreamFunction<"openai-codex-responses"
 								websocketState.canAppend = eventType === "response.done";
 							}
 							calculateCost(model, output.usage);
-							output.stopReason = mapStopReason(response?.status);
+							output.stopReason = mapStopReason(response?.status as OpenAI.Responses.ResponseStatus | undefined);
 							if (output.content.some(b => b.type === "toolCall") && output.stopReason === "stop") {
 								output.stopReason = "toolUse";
 							}
@@ -1455,8 +1485,8 @@ async function fetchWithRetry(url: string, init: RequestInit, signal?: AbortSign
 				return response;
 			}
 			if (signal?.aborted) return response;
-			// Read error body for retry delay parsing
-			const errorBody = await response.text();
+			// Clone before reading body so the original can still be consumed by the caller
+			const errorBody = await response.clone().text();
 			const { delay, serverProvided } = getRetryDelayMs(response, attempt, errorBody);
 			// For 429s with a server-provided delay, use a time budget instead of attempt count
 			if (response.status === 429 && serverProvided) {
@@ -1606,7 +1636,8 @@ function convertMessages(model: Model<"openai-codex-responses">, context: Contex
 					}
 				} else if (block.type === "text") {
 					const textBlock = block as TextContent;
-					let msgId = textBlock.textSignature;
+					const parsedSignature = parseTextSignature(textBlock.textSignature);
+					let msgId = parsedSignature?.id;
 					if (!msgId) {
 						msgId = `msg_${msgIndex}`;
 					} else if (msgId.length > 64) {
@@ -1618,6 +1649,7 @@ function convertMessages(model: Model<"openai-codex-responses">, context: Contex
 						content: [{ type: "output_text", text: sanitizeSurrogates(textBlock.text), annotations: [] }],
 						status: "completed",
 						id: msgId,
+						phase: parsedSignature?.phase,
 					} satisfies ResponseOutputMessage);
 				} else if (block.type === "toolCall" && msg.stopReason !== "error") {
 					const toolCall = block as ToolCall;
@@ -1689,7 +1721,7 @@ function convertTools(
 	}));
 }
 
-function mapStopReason(status: string | undefined): StopReason {
+function mapStopReason(status: OpenAI.Responses.ResponseStatus | undefined): StopReason {
 	if (!status) return "stop";
 	switch (status) {
 		case "completed":
@@ -1702,8 +1734,10 @@ function mapStopReason(status: string | undefined): StopReason {
 		case "in_progress":
 		case "queued":
 			return "stop";
-		default:
-			return "stop";
+		default: {
+			const exhaustive: never = status;
+			throw new Error(`Unhandled stop reason: ${exhaustive}`);
+		}
 	}
 }
 
