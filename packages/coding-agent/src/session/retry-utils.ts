@@ -8,7 +8,7 @@
  * Matches: overloaded, rate limit, usage limit, 429, 5xx, connection errors.
  */
 export function isRetryableErrorMessage(errorMessage: string): boolean {
-	return /overloaded|rate.?limit|usage.?limit|too many requests|429|500|502|503|504|service.?unavailable|server error|internal error|connection.?error|unable to connect|fetch failed|retry delay/i.test(
+	return /overloaded|rate.?limit|usage.?limit|too many requests|429|500|502|503|504|service.?unavailable|server error|internal error|connection.?error|unable to connect|fetch failed|retry delay|json parse error/i.test(
 		errorMessage,
 	);
 }
